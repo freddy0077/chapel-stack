@@ -1,0 +1,304 @@
+"""
+Branch Management schema - handles multi-branch/parish functionality
+"""
+
+enum BranchType {
+  PARISH
+  MISSION
+  CATHEDRAL
+  CHAPEL
+  MINISTRY_CENTER
+  HEADQUARTERS
+}
+
+type Branch {
+  id: ID!
+  name: String!
+  code: String!
+  type: BranchType!
+  address: Address
+  phone: String
+  email: String
+  website: String
+  timezone: String!
+  locale: String!
+  currency: String!
+  logo: String
+  coverImage: String
+  status: Status!
+  primaryContact: User
+  pastors: [User!]
+  members: [BranchMember!]
+  memberCount: Int!
+  parent: Branch
+  children: [Branch!]
+  region: String
+  diocese: String
+  establishedDate: Date
+  services: [Service!]
+  ministries: [Ministry!]
+  defaultCalendar: Calendar
+  customFields: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type BranchMember {
+  id: ID!
+  branch: Branch!
+  user: User!
+  role: BranchRole!
+  status: Status!
+  customPermissions: [Permission!]
+  joinDate: Date!
+  membershipHistory: [MembershipHistoryRecord!]
+  ministries: [MinistryMember!]
+  committees: [CommitteeMember!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MembershipHistoryRecord {
+  id: ID!
+  branch: Branch!
+  role: BranchRole
+  startDate: Date!
+  endDate: Date
+  reason: String
+  notes: String
+  createdBy: User
+  createdAt: DateTime!
+}
+
+type Address {
+  street1: String!
+  street2: String
+  city: String!
+  state: String!
+  postalCode: String!
+  country: String!
+  latitude: Float
+  longitude: Float
+  formattedAddress: String
+}
+
+type Service {
+  id: ID!
+  branch: Branch!
+  name: String!
+  dayOfWeek: Int!
+  startTime: Time!
+  endTime: Time!
+  description: String
+  location: String
+  isRegular: Boolean!
+  status: Status!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all branches (with optional filtering)
+  branches(
+    search: String
+    type: BranchType
+    status: Status
+    regionFilter: String
+    dioceseFilter: String
+    pagination: PaginationInput
+  ): BranchConnection! @auth(requires: [GUEST])
+  
+  # Get a specific branch by ID
+  branch(id: ID!): Branch @auth(requires: [GUEST])
+  
+  # Get all member branches for the current user
+  myBranches: [Branch!]! @auth(requires: [MEMBER])
+  
+  # Get all members of a branch
+  branchMembers(
+    branchId: ID!
+    search: String
+    role: BranchRole
+    status: Status
+    ministryId: ID
+    pagination: PaginationInput
+  ): BranchMemberConnection! @auth(requires: [STAFF]) @branchAccess(requires: [STAFF])
+  
+  # Get a specific branch member
+  branchMember(id: ID!): BranchMember @auth(requires: [STAFF])
+  
+  # Get all services for a branch
+  branchServices(branchId: ID!): [Service!]! @auth(requires: [GUEST])
+}
+
+type BranchConnection {
+  edges: [BranchEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type BranchEdge {
+  node: Branch!
+  cursor: String!
+}
+
+type BranchMemberConnection {
+  edges: [BranchMemberEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type BranchMemberEdge {
+  node: BranchMember!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create a new branch
+  createBranch(input: CreateBranchInput!): Branch! @auth(requires: [ADMIN])
+  
+  # Update an existing branch
+  updateBranch(id: ID!, input: UpdateBranchInput!): Branch! @auth(requires: [BRANCH_ADMIN])
+  
+  # Change branch status
+  changeBranchStatus(id: ID!, status: Status!): Branch! @auth(requires: [ADMIN])
+  
+  # Add a member to a branch
+  addBranchMember(input: AddBranchMemberInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
+  
+  # Update a branch member
+  updateBranchMember(id: ID!, input: UpdateBranchMemberInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
+  
+  # Remove a member from a branch
+  removeBranchMember(id: ID!, reason: String): Boolean! @auth(requires: [BRANCH_ADMIN])
+  
+  # Transfer a member between branches
+  transferMember(input: MemberTransferInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
+  
+  # Create a new service for a branch
+  createService(input: CreateServiceInput!): Service! @auth(requires: [BRANCH_ADMIN])
+  
+  # Update a service
+  updateService(id: ID!, input: UpdateServiceInput!): Service! @auth(requires: [BRANCH_ADMIN])
+  
+  # Delete a service
+  deleteService(id: ID!): Boolean! @auth(requires: [BRANCH_ADMIN])
+}
+
+input CreateBranchInput {
+  name: String!
+  code: String!
+  type: BranchType!
+  address: AddressInput
+  phone: String
+  email: String
+  website: String
+  timezone: String!
+  locale: String!
+  currency: String!
+  logo: Upload
+  coverImage: Upload
+  status: Status!
+  primaryContactId: ID
+  regionId: ID
+  dioceseId: ID
+  parentBranchId: ID
+  establishedDate: Date
+  customFields: JSON
+}
+
+input UpdateBranchInput {
+  name: String
+  code: String
+  type: BranchType
+  address: AddressInput
+  phone: String
+  email: String
+  website: String
+  timezone: String
+  locale: String
+  currency: String
+  logo: Upload
+  coverImage: Upload
+  status: Status
+  primaryContactId: ID
+  regionId: ID
+  dioceseId: ID
+  parentBranchId: ID
+  establishedDate: Date
+  customFields: JSON
+}
+
+input AddressInput {
+  street1: String!
+  street2: String
+  city: String!
+  state: String!
+  postalCode: String!
+  country: String!
+  latitude: Float
+  longitude: Float
+}
+
+input AddBranchMemberInput {
+  branchId: ID!
+  userId: ID!
+  role: BranchRole!
+  status: Status!
+  customPermissionIds: [ID!]
+  joinDate: Date!
+  notes: String
+}
+
+input UpdateBranchMemberInput {
+  role: BranchRole
+  status: Status
+  customPermissionIds: [ID!]
+  notes: String
+}
+
+input MemberTransferInput {
+  memberId: ID!
+  fromBranchId: ID!
+  toBranchId: ID!
+  newRole: BranchRole
+  transferDate: Date!
+  reason: String
+  notes: String
+  maintainHistory: Boolean!
+}
+
+input CreateServiceInput {
+  branchId: ID!
+  name: String!
+  dayOfWeek: Int!
+  startTime: Time!
+  endTime: Time!
+  description: String
+  location: String
+  isRegular: Boolean!
+  status: Status!
+}
+
+input UpdateServiceInput {
+  name: String
+  dayOfWeek: Int
+  startTime: Time
+  endTime: Time
+  description: String
+  location: String
+  isRegular: Boolean
+  status: Status
+}
+
+extend type Subscription {
+  # Notify when a new branch is created
+  branchCreated: Branch! @auth(requires: [ADMIN])
+  
+  # Notify when a branch is updated
+  branchUpdated(id: ID!): Branch! @auth(requires: [STAFF])
+  
+  # Notify when a member is added to a branch
+  branchMemberAdded(branchId: ID!): BranchMember! @auth(requires: [STAFF])
+  
+  # Notify when a member is removed from a branch
+  branchMemberRemoved(branchId: ID!): BranchMember! @auth(requires: [STAFF])
+}

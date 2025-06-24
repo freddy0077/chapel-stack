@@ -1,0 +1,714 @@
+"""
+Website Integration schema - handles connection between CMS and public website
+"""
+
+enum ApiEndpointMethod {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  TESTING
+  PENDING
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum MediaSharingPolicy {
+  ALL
+  CURATED
+  NONE
+}
+
+enum SyncFrequency {
+  REAL_TIME
+  HOURLY
+  DAILY
+  WEEKLY
+  MANUAL
+}
+
+enum MediaOptimizationLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  EXTREME
+}
+
+enum AuthenticationMethod {
+  API_KEY
+  JWT
+  OAUTH
+  SSO
+  NONE
+}
+
+type WebsiteIntegration {
+  id: ID!
+  branch: Branch!
+  status: IntegrationStatus!
+  websiteUrl: String!
+  webhookUrl: String
+  enableIntegration: Boolean!
+  allowPublicAccess: Boolean!
+  syncChangesAutomatically: Boolean!
+  enableSSOWithWebsite: Boolean!
+  enableAnalytics: Boolean!
+  enableDebugMode: Boolean!
+  authenticationMethod: AuthenticationMethod!
+  syncFrequency: SyncFrequency!
+  lastSyncAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  apiSettings: ApiSettings
+  eventsIntegration: EventsIntegration
+  sermonIntegration: SermonIntegration
+  memberPortalIntegration: MemberPortalIntegration
+  mediaIntegration: MediaIntegration
+}
+
+type ApiSettings {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  apiKeys: [ApiKey!]!
+  apiRateLimit: Int!
+  enabledEndpoints: [ApiEndpoint!]!
+  securitySettings: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ApiKey {
+  id: ID!
+  apiSettings: ApiSettings!
+  name: String!
+  key: String! # Masked version for display
+  status: ApiKeyStatus!
+  permissions: [String!]!
+  createdBy: User!
+  createdAt: DateTime!
+  expiresAt: DateTime
+  lastUsedAt: DateTime
+  lastUsedIp: String
+  lastUsedUserAgent: String
+  usage: ApiKeyUsage
+}
+
+type ApiKeyUsage {
+  id: ID!
+  apiKey: ApiKey!
+  totalRequests: Int!
+  requestsLast24Hours: Int!
+  requestsLast7Days: Int!
+  requestsLast30Days: Int!
+  mostUsedEndpoints: [ApiEndpointUsage!]!
+  usageByDay: [DailyUsage!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ApiEndpointUsage {
+  endpoint: String!
+  requestCount: Int!
+}
+
+type DailyUsage {
+  date: Date!
+  requestCount: Int!
+}
+
+type ApiEndpoint {
+  id: ID!
+  apiSettings: ApiSettings!
+  name: String!
+  endpoint: String!
+  method: ApiEndpointMethod!
+  enabled: Boolean!
+  description: String
+  requiresApproval: Boolean!
+  throttleLimit: Int!
+  cacheTimeSeconds: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EventsIntegration {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  syncEvents: Boolean!
+  allowRegistration: Boolean!
+  showFullDetails: Boolean!
+  enableEmailReminders: Boolean!
+  limitPastEvents: Boolean!
+  requireApproval: Boolean!
+  pastEventLimit: Int!
+  eventCategories: [EventCategory!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EventCategory {
+  id: ID!
+  eventsIntegration: EventsIntegration!
+  name: String!
+  color: String!
+  displayed: Boolean!
+  requiresApproval: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SermonIntegration {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  enableSermonArchive: Boolean!
+  showSermonSeries: Boolean!
+  allowAudioDownload: Boolean!
+  allowVideoDownload: Boolean!
+  enableComments: Boolean!
+  requireApproval: Boolean!
+  enableSubscription: Boolean!
+  showSpeakerBio: Boolean!
+  embedCode: String!
+  sermonCategories: [SermonCategory!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SermonCategory {
+  id: ID!
+  sermonIntegration: SermonIntegration!
+  name: String!
+  displayed: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MemberPortalIntegration {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  enableMemberPortal: Boolean!
+  useSSO: Boolean!
+  requireMFA: Boolean!
+  showFamilyMembers: Boolean!
+  allowProfileEdits: Boolean!
+  requireEmailVerification: Boolean!
+  showDonationHistory: Boolean!
+  autoApproveRegistrations: Boolean!
+  portalUrl: String!
+  sessionTimeoutMinutes: Int!
+  memberFeatures: [MemberFeature!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MemberFeature {
+  id: ID!
+  memberPortalIntegration: MemberPortalIntegration!
+  name: String!
+  description: String!
+  enabled: Boolean!
+  requiresApproval: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MediaIntegration {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  enableMediaSharing: Boolean!
+  allowDownloads: Boolean!
+  showAttribution: Boolean!
+  enableLightbox: Boolean!
+  optimizeImages: Boolean!
+  enableWatermark: Boolean!
+  requireMediaApproval: Boolean!
+  syncAutomatically: Boolean!
+  watermarkText: String
+  galleryUrl: String!
+  maxFileSizeMB: Int!
+  optimizationLevel: MediaOptimizationLevel!
+  mediaCategories: [MediaCategory!]!
+  uploadWidget: UploadWidget
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MediaCategory {
+  id: ID!
+  mediaIntegration: MediaIntegration!
+  name: String!
+  shared: Boolean!
+  requiresApproval: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UploadWidget {
+  id: ID!
+  mediaIntegration: MediaIntegration!
+  enabled: Boolean!
+  embedCode: String!
+  requireApproval: Boolean!
+  allowedFileTypes: [String!]!
+  maxFileSize: Int!
+  maxFilesPerUpload: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WebsiteIntegrationActivity {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  action: String!
+  description: String!
+  performedBy: User!
+  performedAt: DateTime!
+  ipAddress: String
+  userAgent: String
+  status: String!
+  metadata: JSON
+  createdAt: DateTime!
+}
+
+type WebsiteIntegrationStats {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  apiRequestsTotal: Int!
+  apiRequestsLast30Days: Int!
+  eventsShared: Int!
+  sermonsShared: Int!
+  mediaFilesShared: Int!
+  memberPortalLogins: Int!
+  lastUpdatedAt: DateTime!
+}
+
+type WebhookDelivery {
+  id: ID!
+  websiteIntegration: WebsiteIntegration!
+  event: String!
+  payload: JSON!
+  sentAt: DateTime!
+  status: String!
+  statusCode: Int
+  responseBody: String
+  responseTime: Int
+  retryCount: Int!
+  createdAt: DateTime!
+}
+
+extend type Query {
+  # Get website integration settings for a branch
+  websiteIntegration(branchId: ID!): WebsiteIntegration! @auth(requires: [STAFF])
+  
+  # Get API settings
+  apiSettings(branchId: ID!): ApiSettings! @auth(requires: [STAFF])
+  
+  # Get API keys
+  apiKeys(
+    branchId: ID!
+    status: ApiKeyStatus
+    pagination: PaginationInput
+  ): ApiKeyConnection! @auth(requires: [STAFF])
+  
+  # Get a specific API key
+  apiKey(id: ID!): ApiKey @auth(requires: [STAFF])
+  
+  # Get API key usage statistics
+  apiKeyUsage(
+    keyId: ID!
+    dateRange: DateRangeInput
+  ): ApiKeyUsage! @auth(requires: [STAFF])
+  
+  # Get API endpoints
+  apiEndpoints(
+    branchId: ID!
+    enabled: Boolean
+    pagination: PaginationInput
+  ): ApiEndpointConnection! @auth(requires: [STAFF])
+  
+  # Get events integration settings
+  eventsIntegration(branchId: ID!): EventsIntegration! @auth(requires: [STAFF])
+  
+  # Get event categories
+  eventCategories(
+    branchId: ID!
+    displayed: Boolean
+    pagination: PaginationInput
+  ): EventCategoryConnection! @auth(requires: [STAFF])
+  
+  # Get sermon integration settings
+  sermonIntegration(branchId: ID!): SermonIntegration! @auth(requires: [STAFF])
+  
+  # Get sermon categories
+  sermonCategories(
+    branchId: ID!
+    displayed: Boolean
+    pagination: PaginationInput
+  ): SermonCategoryConnection! @auth(requires: [STAFF])
+  
+  # Get member portal integration settings
+  memberPortalIntegration(branchId: ID!): MemberPortalIntegration! @auth(requires: [STAFF])
+  
+  # Get member features
+  memberFeatures(
+    branchId: ID!
+    enabled: Boolean
+    pagination: PaginationInput
+  ): MemberFeatureConnection! @auth(requires: [STAFF])
+  
+  # Get media integration settings
+  mediaIntegration(branchId: ID!): MediaIntegration! @auth(requires: [STAFF])
+  
+  # Get media categories
+  mediaCategories(
+    branchId: ID!
+    shared: Boolean
+    pagination: PaginationInput
+  ): MediaCategoryConnection! @auth(requires: [STAFF])
+  
+  # Get website integration activity log
+  websiteIntegrationActivity(
+    branchId: ID!
+    action: String
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): WebsiteIntegrationActivityConnection! @auth(requires: [STAFF])
+  
+  # Get website integration statistics
+  websiteIntegrationStats(branchId: ID!): WebsiteIntegrationStats! @auth(requires: [STAFF])
+  
+  # Get webhook delivery logs
+  webhookDeliveries(
+    branchId: ID!
+    status: String
+    event: String
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): WebhookDeliveryConnection! @auth(requires: [STAFF])
+  
+  # Test webhook delivery
+  testWebhook(branchId: ID!): WebhookDelivery! @auth(requires: [STAFF])
+  
+  # Validate API key (public endpoint)
+  validateApiKey(key: String!): Boolean!
+}
+
+type ApiKeyConnection {
+  edges: [ApiKeyEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ApiKeyEdge {
+  node: ApiKey!
+  cursor: String!
+}
+
+type ApiEndpointConnection {
+  edges: [ApiEndpointEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ApiEndpointEdge {
+  node: ApiEndpoint!
+  cursor: String!
+}
+
+type EventCategoryConnection {
+  edges: [EventCategoryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EventCategoryEdge {
+  node: EventCategory!
+  cursor: String!
+}
+
+type SermonCategoryConnection {
+  edges: [SermonCategoryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SermonCategoryEdge {
+  node: SermonCategory!
+  cursor: String!
+}
+
+type MemberFeatureConnection {
+  edges: [MemberFeatureEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MemberFeatureEdge {
+  node: MemberFeature!
+  cursor: String!
+}
+
+type MediaCategoryConnection {
+  edges: [MediaCategoryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MediaCategoryEdge {
+  node: MediaCategory!
+  cursor: String!
+}
+
+type WebsiteIntegrationActivityConnection {
+  edges: [WebsiteIntegrationActivityEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type WebsiteIntegrationActivityEdge {
+  node: WebsiteIntegrationActivity!
+  cursor: String!
+}
+
+type WebhookDeliveryConnection {
+  edges: [WebhookDeliveryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type WebhookDeliveryEdge {
+  node: WebhookDelivery!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Update general website integration settings
+  updateWebsiteIntegration(branchId: ID!, input: UpdateWebsiteIntegrationInput!): WebsiteIntegration! @auth(requires: [STAFF])
+  
+  # Create API key
+  createApiKey(input: CreateApiKeyInput!): ApiKey! @auth(requires: [STAFF])
+  
+  # Regenerate API key
+  regenerateApiKey(id: ID!): ApiKey! @auth(requires: [STAFF])
+  
+  # Revoke API key
+  revokeApiKey(id: ID!, reason: String): Boolean! @auth(requires: [STAFF])
+  
+  # Update API settings
+  updateApiSettings(branchId: ID!, input: UpdateApiSettingsInput!): ApiSettings! @auth(requires: [STAFF])
+  
+  # Update API endpoint settings
+  updateApiEndpoint(id: ID!, input: UpdateApiEndpointInput!): ApiEndpoint! @auth(requires: [STAFF])
+  
+  # Update events integration settings
+  updateEventsIntegration(branchId: ID!, input: UpdateEventsIntegrationInput!): EventsIntegration! @auth(requires: [STAFF])
+  
+  # Create event category
+  createEventCategory(input: CreateEventCategoryInput!): EventCategory! @auth(requires: [STAFF])
+  
+  # Update event category
+  updateEventCategory(id: ID!, input: UpdateEventCategoryInput!): EventCategory! @auth(requires: [STAFF])
+  
+  # Delete event category
+  deleteEventCategory(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update sermon integration settings
+  updateSermonIntegration(branchId: ID!, input: UpdateSermonIntegrationInput!): SermonIntegration! @auth(requires: [STAFF])
+  
+  # Create sermon category
+  createSermonCategory(input: CreateSermonCategoryInput!): SermonCategory! @auth(requires: [STAFF])
+  
+  # Update sermon category
+  updateSermonCategory(id: ID!, input: UpdateSermonCategoryInput!): SermonCategory! @auth(requires: [STAFF])
+  
+  # Delete sermon category
+  deleteSermonCategory(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update member portal integration settings
+  updateMemberPortalIntegration(branchId: ID!, input: UpdateMemberPortalIntegrationInput!): MemberPortalIntegration! @auth(requires: [STAFF])
+  
+  # Update member feature
+  updateMemberFeature(id: ID!, input: UpdateMemberFeatureInput!): MemberFeature! @auth(requires: [STAFF])
+  
+  # Update media integration settings
+  updateMediaIntegration(branchId: ID!, input: UpdateMediaIntegrationInput!): MediaIntegration! @auth(requires: [STAFF])
+  
+  # Create media category
+  createMediaCategory(input: CreateMediaCategoryInput!): MediaCategory! @auth(requires: [STAFF])
+  
+  # Update media category
+  updateMediaCategory(id: ID!, input: UpdateMediaCategoryInput!): MediaCategory! @auth(requires: [STAFF])
+  
+  # Delete media category
+  deleteMediaCategory(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update upload widget settings
+  updateUploadWidget(branchId: ID!, input: UpdateUploadWidgetInput!): UploadWidget! @auth(requires: [STAFF])
+  
+  # Manually trigger webhook
+  triggerWebhook(branchId: ID!, event: String!, payload: JSON!): WebhookDelivery! @auth(requires: [STAFF])
+  
+  # Retry failed webhook delivery
+  retryWebhookDelivery(id: ID!): WebhookDelivery! @auth(requires: [STAFF])
+  
+  # Purge webhook delivery logs
+  purgeWebhookLogs(branchId: ID!, olderThan: DateTime!): Boolean! @auth(requires: [ADMIN])
+}
+
+input UpdateWebsiteIntegrationInput {
+  status: IntegrationStatus
+  websiteUrl: String
+  webhookUrl: String
+  enableIntegration: Boolean
+  allowPublicAccess: Boolean
+  syncChangesAutomatically: Boolean
+  enableSSOWithWebsite: Boolean
+  enableAnalytics: Boolean
+  enableDebugMode: Boolean
+  authenticationMethod: AuthenticationMethod
+  syncFrequency: SyncFrequency
+}
+
+input CreateApiKeyInput {
+  branchId: ID!
+  name: String!
+  permissions: [String!]!
+  expiresAt: DateTime
+}
+
+input UpdateApiSettingsInput {
+  apiRateLimit: Int
+  securitySettings: JSON
+}
+
+input UpdateApiEndpointInput {
+  enabled: Boolean
+  description: String
+  requiresApproval: Boolean
+  throttleLimit: Int
+  cacheTimeSeconds: Int
+}
+
+input UpdateEventsIntegrationInput {
+  syncEvents: Boolean
+  allowRegistration: Boolean
+  showFullDetails: Boolean
+  enableEmailReminders: Boolean
+  limitPastEvents: Boolean
+  requireApproval: Boolean
+  pastEventLimit: Int
+}
+
+input CreateEventCategoryInput {
+  branchId: ID!
+  name: String!
+  color: String!
+  displayed: Boolean!
+  requiresApproval: Boolean!
+}
+
+input UpdateEventCategoryInput {
+  name: String
+  color: String
+  displayed: Boolean
+  requiresApproval: Boolean
+}
+
+input UpdateSermonIntegrationInput {
+  enableSermonArchive: Boolean
+  showSermonSeries: Boolean
+  allowAudioDownload: Boolean
+  allowVideoDownload: Boolean
+  enableComments: Boolean
+  requireApproval: Boolean
+  enableSubscription: Boolean
+  showSpeakerBio: Boolean
+  embedCode: String
+}
+
+input CreateSermonCategoryInput {
+  branchId: ID!
+  name: String!
+  displayed: Boolean!
+}
+
+input UpdateSermonCategoryInput {
+  name: String
+  displayed: Boolean
+}
+
+input UpdateMemberPortalIntegrationInput {
+  enableMemberPortal: Boolean
+  useSSO: Boolean
+  requireMFA: Boolean
+  showFamilyMembers: Boolean
+  allowProfileEdits: Boolean
+  requireEmailVerification: Boolean
+  showDonationHistory: Boolean
+  autoApproveRegistrations: Boolean
+  portalUrl: String
+  sessionTimeoutMinutes: Int
+}
+
+input UpdateMemberFeatureInput {
+  name: String
+  description: String
+  enabled: Boolean
+  requiresApproval: Boolean
+}
+
+input UpdateMediaIntegrationInput {
+  enableMediaSharing: Boolean
+  allowDownloads: Boolean
+  showAttribution: Boolean
+  enableLightbox: Boolean
+  optimizeImages: Boolean
+  enableWatermark: Boolean
+  requireMediaApproval: Boolean
+  syncAutomatically: Boolean
+  watermarkText: String
+  galleryUrl: String
+  maxFileSizeMB: Int
+  optimizationLevel: MediaOptimizationLevel
+}
+
+input CreateMediaCategoryInput {
+  branchId: ID!
+  name: String!
+  shared: Boolean!
+  requiresApproval: Boolean!
+}
+
+input UpdateMediaCategoryInput {
+  name: String
+  shared: Boolean
+  requiresApproval: Boolean
+}
+
+input UpdateUploadWidgetInput {
+  enabled: Boolean
+  requireApproval: Boolean
+  allowedFileTypes: [String!]
+  maxFileSize: Int
+  maxFilesPerUpload: Int
+}
+
+extend type Subscription {
+  # Get notified of new API key creation
+  apiKeyCreated(branchId: ID!): ApiKey! @auth(requires: [STAFF])
+  
+  # Get notified of API key revocation
+  apiKeyRevoked(branchId: ID!): ApiKey! @auth(requires: [STAFF])
+  
+  # Get notified of high API usage
+  apiUsageThresholdExceeded(branchId: ID!): ApiKeyUsage! @auth(requires: [STAFF])
+  
+  # Get notified of failed webhook deliveries
+  webhookDeliveryFailed(branchId: ID!): WebhookDelivery! @auth(requires: [STAFF])
+  
+  # Get notified of external content requests
+  externalContentRequested(branchId: ID!): WebsiteIntegrationActivity! @auth(requires: [STAFF])
+}

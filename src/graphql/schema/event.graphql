@@ -1,0 +1,533 @@
+"""
+Event and Calendar Management schema - handles events, services, scheduling, and registration
+"""
+
+enum EventType {
+  SERVICE
+  MASS
+  PRAYER
+  RETREAT
+  CONFERENCE
+  WORKSHOP
+  MEETING
+  SACRAMENT
+  TRAINING
+  OUTREACH
+  FELLOWSHIP
+  FUNDRAISER
+  HOLIDAY
+  OTHER
+}
+
+enum EventRecurrenceType {
+  NONE
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+enum EventVisibility {
+  PUBLIC
+  MEMBERS
+  MINISTRY
+  PRIVATE
+  DRAFT
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITLISTED
+  CANCELLED
+  CHECKED_IN
+  NO_SHOW
+}
+
+enum ResourceType {
+  ROOM
+  EQUIPMENT
+  VEHICLE
+  STAFF
+  OTHER
+}
+
+type Event {
+  id: ID!
+  title: String!
+  description: String
+  eventType: EventType!
+  startDate: Date!
+  endDate: Date!
+  startTime: Time!
+  endTime: Time!
+  allDay: Boolean!
+  isRecurring: Boolean!
+  recurrenceType: EventRecurrenceType
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  location: String
+  address: Address
+  isOnline: Boolean!
+  onlineUrl: String
+  branch: Branch!
+  visibility: EventVisibility!
+  status: Status!
+  capacity: Int
+  registrationRequired: Boolean!
+  registrationDeadline: DateTime
+  registrationCount: Int!
+  waitlistEnabled: Boolean!
+  waitlistCount: Int
+  fee: Float
+  currency: String
+  featuredImage: String
+  calendar: Calendar!
+  ministry: Ministry
+  organizer: User!
+  registrations: [EventRegistration!]!
+  resources: [ResourceBooking!]!
+  tags: [String!]
+  customFields: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EventRegistration {
+  id: ID!
+  event: Event!
+  member: Member!
+  registrationDate: DateTime!
+  status: RegistrationStatus!
+  checkInTime: DateTime
+  checkOutTime: DateTime
+  attendeeCount: Int!
+  guestNames: [String!]
+  paymentStatus: String
+  paymentAmount: Float
+  paymentReference: String
+  comments: String
+  customFields: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Calendar {
+  id: ID!
+  name: String!
+  description: String
+  color: String!
+  branch: Branch
+  ministry: Ministry
+  isDefault: Boolean!
+  isPublic: Boolean!
+  events: [Event!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Resource {
+  id: ID!
+  name: String!
+  description: String
+  type: ResourceType!
+  branch: Branch!
+  capacity: Int
+  location: String
+  isAvailable: Boolean!
+  bookings: [ResourceBooking!]!
+  customFields: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ResourceBooking {
+  id: ID!
+  resource: Resource!
+  event: Event
+  bookedBy: User!
+  startDateTime: DateTime!
+  endDateTime: DateTime!
+  notes: String
+  status: Status!
+  approvedBy: User
+  approvalDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all events with filtering
+  events(
+    search: String
+    eventType: EventType
+    branchId: ID
+    ministryId: ID
+    calendarId: ID
+    dateRange: DateRangeInput
+    visibility: EventVisibility
+    status: Status
+    registrationRequired: Boolean
+    pagination: PaginationInput
+    sortField: String
+    sortOrder: SortOrder
+  ): EventConnection! @auth(requires: [GUEST])
+  
+  # Get a specific event
+  event(id: ID!): Event @auth(requires: [GUEST])
+  
+  # Get event occurrences within a date range (handles recurring events)
+  eventOccurrences(
+    startDate: Date!
+    endDate: Date!
+    branchId: ID
+    ministryId: ID
+    calendarId: ID
+    eventType: EventType
+  ): [Event!]! @auth(requires: [GUEST])
+  
+  # Get registrations for an event
+  eventRegistrations(
+    eventId: ID!
+    status: RegistrationStatus
+    search: String
+    pagination: PaginationInput
+  ): EventRegistrationConnection! @auth(requires: [STAFF])
+  
+  # Get a specific registration
+  eventRegistration(id: ID!): EventRegistration @auth(requires: [STAFF])
+  
+  # Get all calendars
+  calendars(
+    branchId: ID
+    ministryId: ID
+    isPublic: Boolean
+  ): [Calendar!]! @auth(requires: [GUEST])
+  
+  # Get a specific calendar
+  calendar(id: ID!): Calendar @auth(requires: [GUEST])
+  
+  # Get all resources
+  resources(
+    branchId: ID!
+    type: ResourceType
+    isAvailable: Boolean
+    pagination: PaginationInput
+  ): ResourceConnection! @auth(requires: [STAFF])
+  
+  # Get a specific resource
+  resource(id: ID!): Resource @auth(requires: [STAFF])
+  
+  # Check resource availability
+  resourceAvailability(
+    resourceId: ID!
+    startDateTime: DateTime!
+    endDateTime: DateTime!
+  ): Boolean! @auth(requires: [STAFF])
+  
+  # Get resource bookings for a date range
+  resourceBookings(
+    resourceId: ID!
+    startDateTime: DateTime!
+    endDateTime: DateTime!
+  ): [ResourceBooking!]! @auth(requires: [STAFF])
+  
+  # Get a member's event registrations
+  memberEventRegistrations(
+    memberId: ID!
+    status: RegistrationStatus
+    upcoming: Boolean
+    pagination: PaginationInput
+  ): EventRegistrationConnection! @auth(requires: [STAFF])
+  
+  # Get my event registrations (for authenticated members)
+  myEventRegistrations(
+    status: RegistrationStatus
+    upcoming: Boolean
+    pagination: PaginationInput
+  ): EventRegistrationConnection! @auth(requires: [MEMBER])
+  
+  # Search available timeslots for resources in a date range
+  findAvailableTimeslots(
+    resourceIds: [ID!]!
+    startDate: Date!
+    endDate: Date!
+    duration: Int!
+  ): [DateTime!]! @auth(requires: [STAFF])
+}
+
+type EventConnection {
+  edges: [EventEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EventEdge {
+  node: Event!
+  cursor: String!
+}
+
+type EventRegistrationConnection {
+  edges: [EventRegistrationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EventRegistrationEdge {
+  node: EventRegistration!
+  cursor: String!
+}
+
+type ResourceConnection {
+  edges: [ResourceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceEdge {
+  node: Resource!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create a new event
+  createEvent(input: CreateEventInput!): Event! @auth(requires: [STAFF])
+  
+  # Update an existing event
+  updateEvent(id: ID!, input: UpdateEventInput!): Event! @auth(requires: [STAFF])
+  
+  # Delete an event
+  deleteEvent(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Cancel an event
+  cancelEvent(id: ID!, reason: String!): Event! @auth(requires: [STAFF])
+  
+  # Create multiple event occurrences (bulk create)
+  createEventSeries(input: CreateEventSeriesInput!): [Event!]! @auth(requires: [STAFF])
+  
+  # Register for an event
+  registerForEvent(input: EventRegistrationInput!): EventRegistration! @auth(requires: [MEMBER])
+  
+  # Update an event registration
+  updateEventRegistration(id: ID!, input: UpdateEventRegistrationInput!): EventRegistration! @auth(requires: [STAFF])
+  
+  # Cancel an event registration
+  cancelEventRegistration(id: ID!, reason: String): EventRegistration! @auth(requires: [MEMBER])
+  
+  # Check in a registrant
+  checkInRegistration(id: ID!, checkInTime: DateTime): EventRegistration! @auth(requires: [STAFF])
+  
+  # Check out a registrant
+  checkOutRegistration(id: ID!, checkOutTime: DateTime): EventRegistration! @auth(requires: [STAFF])
+  
+  # Create a new calendar
+  createCalendar(input: CreateCalendarInput!): Calendar! @auth(requires: [STAFF])
+  
+  # Update a calendar
+  updateCalendar(id: ID!, input: UpdateCalendarInput!): Calendar! @auth(requires: [STAFF])
+  
+  # Delete a calendar
+  deleteCalendar(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a new resource
+  createResource(input: CreateResourceInput!): Resource! @auth(requires: [STAFF])
+  
+  # Update a resource
+  updateResource(id: ID!, input: UpdateResourceInput!): Resource! @auth(requires: [STAFF])
+  
+  # Delete a resource
+  deleteResource(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Book a resource
+  bookResource(input: BookResourceInput!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Update a resource booking
+  updateResourceBooking(id: ID!, input: UpdateResourceBookingInput!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Cancel a resource booking
+  cancelResourceBooking(id: ID!, reason: String): Boolean! @auth(requires: [STAFF])
+  
+  # Approve a resource booking
+  approveResourceBooking(id: ID!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Import events from external calendar
+  importExternalEvents(input: ImportEventsInput!): [Event!]! @auth(requires: [STAFF])
+}
+
+input CreateEventInput {
+  title: String!
+  description: String
+  eventType: EventType!
+  startDate: Date!
+  endDate: Date!
+  startTime: Time!
+  endTime: Time!
+  allDay: Boolean!
+  isRecurring: Boolean!
+  recurrenceType: EventRecurrenceType
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  location: String
+  address: AddressInput
+  isOnline: Boolean!
+  onlineUrl: String
+  branchId: ID!
+  visibility: EventVisibility!
+  status: Status!
+  capacity: Int
+  registrationRequired: Boolean!
+  registrationDeadline: DateTime
+  waitlistEnabled: Boolean
+  fee: Float
+  currency: String
+  featuredImage: Upload
+  calendarId: ID!
+  ministryId: ID
+  tags: [String!]
+  customFields: JSON
+  resourceIds: [ID!]
+}
+
+input UpdateEventInput {
+  title: String
+  description: String
+  eventType: EventType
+  startDate: Date
+  endDate: Date
+  startTime: Time
+  endTime: Time
+  allDay: Boolean
+  isRecurring: Boolean
+  recurrenceType: EventRecurrenceType
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  location: String
+  address: AddressInput
+  isOnline: Boolean
+  onlineUrl: String
+  visibility: EventVisibility
+  status: Status
+  capacity: Int
+  registrationRequired: Boolean
+  registrationDeadline: DateTime
+  waitlistEnabled: Boolean
+  fee: Float
+  currency: String
+  featuredImage: Upload
+  calendarId: ID
+  ministryId: ID
+  tags: [String!]
+  customFields: JSON
+  resourceIds: [ID!]
+  updateAllOccurrences: Boolean
+}
+
+input CreateEventSeriesInput {
+  eventInput: CreateEventInput!
+  dates: [Date!]!
+  applyTimeToAllDates: Boolean!
+}
+
+input EventRegistrationInput {
+  eventId: ID!
+  memberId: ID
+  attendeeCount: Int!
+  guestNames: [String!]
+  comments: String
+  customFields: JSON
+}
+
+input UpdateEventRegistrationInput {
+  status: RegistrationStatus
+  attendeeCount: Int
+  guestNames: [String!]
+  paymentStatus: String
+  paymentAmount: Float
+  paymentReference: String
+  comments: String
+  customFields: JSON
+}
+
+input CreateCalendarInput {
+  name: String!
+  description: String
+  color: String!
+  branchId: ID
+  ministryId: ID
+  isDefault: Boolean!
+  isPublic: Boolean!
+}
+
+input UpdateCalendarInput {
+  name: String
+  description: String
+  color: String
+  isDefault: Boolean
+  isPublic: Boolean
+}
+
+input CreateResourceInput {
+  name: String!
+  description: String
+  type: ResourceType!
+  branchId: ID!
+  capacity: Int
+  location: String
+  isAvailable: Boolean!
+  customFields: JSON
+}
+
+input UpdateResourceInput {
+  name: String
+  description: String
+  type: ResourceType
+  capacity: Int
+  location: String
+  isAvailable: Boolean
+  customFields: JSON
+}
+
+input BookResourceInput {
+  resourceId: ID!
+  eventId: ID
+  startDateTime: DateTime!
+  endDateTime: DateTime!
+  notes: String
+  status: Status!
+}
+
+input UpdateResourceBookingInput {
+  startDateTime: DateTime
+  endDateTime: DateTime
+  notes: String
+  status: Status
+}
+
+input ImportEventsInput {
+  calendarId: ID!
+  sourceType: String!
+  sourceUrl: String
+  icsFile: Upload
+  branchId: ID!
+  defaultEventType: EventType!
+  startDate: Date
+  endDate: Date
+}
+
+extend type Subscription {
+  # Get notified when an event is created
+  eventCreated(branchId: ID, calendarId: ID): Event! @auth(requires: [MEMBER])
+  
+  # Get notified when an event is updated
+  eventUpdated(id: ID!): Event! @auth(requires: [MEMBER])
+  
+  # Get notified when an event is cancelled
+  eventCancelled(id: ID!): Event! @auth(requires: [MEMBER])
+  
+  # Get notified when someone registers for an event
+  eventRegistrationReceived(eventId: ID!): EventRegistration! @auth(requires: [STAFF])
+  
+  # Get notified when a resource booking is created
+  resourceBooked(resourceId: ID!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Get notified when a resource booking requires approval
+  resourceBookingRequiresApproval(branchId: ID): ResourceBooking! @auth(requires: [STAFF])
+}

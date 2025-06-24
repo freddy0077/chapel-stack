@@ -1,0 +1,888 @@
+"""
+Onboarding schema - handles member, staff, volunteer, and branch onboarding processes
+"""
+
+enum OnboardingType {
+  MEMBER
+  VISITOR
+  STAFF
+  VOLUNTEER
+  MINISTRY_LEADER
+  BRANCH
+  SYSTEM
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum OnboardingStepStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  SKIPPED
+  BLOCKED
+}
+
+enum WelcomePackageStatus {
+  PENDING
+  PREPARED
+  DELIVERED
+  RECEIVED
+}
+
+enum TrainingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+  NEEDS_RENEWAL
+}
+
+type Onboarding {
+  id: ID!
+  type: OnboardingType!
+  subject: OnboardingSubject!
+  assignedTo: User
+  status: OnboardingStatus!
+  startedAt: DateTime
+  completedAt: DateTime
+  currentStep: OnboardingStep
+  progress: Float!
+  steps: [OnboardingStep!]!
+  notes: String
+  customFields: JSON
+  branch: Branch!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+union OnboardingSubject = Member | Visitor | User | Branch
+
+type OnboardingStep {
+  id: ID!
+  onboarding: Onboarding!
+  title: String!
+  description: String
+  order: Int!
+  status: OnboardingStepStatus!
+  isRequired: Boolean!
+  requiredRoles: [String!]
+  assignedTo: User
+  startedAt: DateTime
+  completedAt: DateTime
+  dueDate: DateTime
+  resources: [OnboardingResource!]!
+  tasks: [OnboardingTask!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingTask {
+  id: ID!
+  step: OnboardingStep!
+  title: String!
+  description: String
+  isCompleted: Boolean!
+  completedAt: DateTime
+  completedBy: User
+  assignedTo: User
+  dueDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingResource {
+  id: ID!
+  step: OnboardingStep!
+  title: String!
+  description: String
+  type: String!
+  url: String
+  fileUrl: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingTemplate {
+  id: ID!
+  name: String!
+  description: String
+  type: OnboardingType!
+  isActive: Boolean!
+  steps: [OnboardingTemplateStep!]!
+  defaultAssigneeRole: String
+  requiredFields: [String!]
+  branch: Branch
+  isGlobal: Boolean!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingTemplateStep {
+  id: ID!
+  template: OnboardingTemplate!
+  title: String!
+  description: String
+  order: Int!
+  isRequired: Boolean!
+  requiredRoles: [String!]
+  defaultAssigneeRole: String
+  estimatedDurationMinutes: Int
+  resources: [OnboardingTemplateResource!]!
+  tasks: [OnboardingTemplateTask!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingTemplateResource {
+  id: ID!
+  step: OnboardingTemplateStep!
+  title: String!
+  description: String
+  type: String!
+  url: String
+  fileUrl: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingTemplateTask {
+  id: ID!
+  step: OnboardingTemplateStep!
+  title: String!
+  description: String
+  assigneeRole: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WelcomePackage {
+  id: ID!
+  member: Member!
+  packageType: String!
+  status: WelcomePackageStatus!
+  contents: [WelcomePackageItem!]!
+  preparedBy: User
+  preparedAt: DateTime
+  deliveredBy: User
+  deliveredAt: DateTime
+  receivedAt: DateTime
+  notes: String
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WelcomePackageItem {
+  id: ID!
+  welcomePackage: WelcomePackage!
+  name: String!
+  description: String
+  quantity: Int!
+  category: String
+  isIncluded: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TrainingModule {
+  id: ID!
+  title: String!
+  description: String
+  requiredFor: [String!]!
+  durationMinutes: Int!
+  validityPeriod: Int
+  content: String
+  mediaUrl: String
+  assessmentUrl: String
+  passingScore: Int
+  isRequired: Boolean!
+  isActive: Boolean!
+  branch: Branch
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TrainingAssignment {
+  id: ID!
+  trainee: User!
+  module: TrainingModule!
+  status: TrainingStatus!
+  assignedBy: User!
+  assignedAt: DateTime!
+  startedAt: DateTime
+  completedAt: DateTime
+  expiresAt: DateTime
+  score: Int
+  attempts: Int!
+  certificationUrl: String
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type NewMemberNotification {
+  id: ID!
+  member: Member!
+  notificationType: String!
+  sentTo: [User!]!
+  sentAt: DateTime!
+  isRead: Boolean!
+  readAt: DateTime
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MembershipClass {
+  id: ID!
+  title: String!
+  description: String
+  startDate: DateTime!
+  endDate: DateTime!
+  location: String!
+  facilitator: User!
+  capacity: Int!
+  registeredMembers: [Member!]!
+  completedMembers: [Member!]!
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type BranchSetupProgress {
+  id: ID!
+  branch: Branch!
+  overallProgress: Float!
+  essentialSetupComplete: Boolean!
+  userSetupComplete: Boolean!
+  memberSetupComplete: Boolean!
+  ministrySetupComplete: Boolean!
+  financialSetupComplete: Boolean!
+  calendarSetupComplete: Boolean!
+  websiteSetupComplete: Boolean!
+  lastActivity: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingNote {
+  id: ID!
+  onboarding: Onboarding!
+  content: String!
+  author: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OnboardingStatistics {
+  totalOnboarding: Int!
+  activeOnboarding: Int!
+  completedLast30Days: Int!
+  averageCompletionTimeInDays: Float!
+  onboardingByType: [OnboardingTypeCount!]!
+  popularSteps: [PopularStep!]!
+}
+
+type OnboardingTypeCount {
+  type: OnboardingType!
+  count: Int!
+}
+
+type PopularStep {
+  title: String!
+  count: Int!
+  averageTimeToCompleteInDays: Float!
+}
+
+extend type Query {
+  # Get onboarding processes with filtering
+  onboardings(
+    type: OnboardingType
+    status: OnboardingStatus
+    subjectId: ID
+    branchId: ID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): OnboardingConnection! @auth(requires: [STAFF])
+  
+  # Get a specific onboarding process
+  onboarding(id: ID!): Onboarding @auth(requires: [STAFF])
+  
+  # Get onboarding steps
+  onboardingSteps(
+    onboardingId: ID!
+    status: OnboardingStepStatus
+    pagination: PaginationInput
+  ): OnboardingStepConnection! @auth(requires: [STAFF])
+  
+  # Get onboarding step details
+  onboardingStep(id: ID!): OnboardingStep @auth(requires: [STAFF])
+  
+  # Get onboarding templates
+  onboardingTemplates(
+    type: OnboardingType
+    isActive: Boolean
+    isGlobal: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): OnboardingTemplateConnection! @auth(requires: [STAFF])
+  
+  # Get a specific onboarding template
+  onboardingTemplate(id: ID!): OnboardingTemplate @auth(requires: [STAFF])
+  
+  # Get welcome packages
+  welcomePackages(
+    status: WelcomePackageStatus
+    memberId: ID
+    branchId: ID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): WelcomePackageConnection! @auth(requires: [STAFF])
+  
+  # Get a specific welcome package
+  welcomePackage(id: ID!): WelcomePackage @auth(requires: [STAFF])
+  
+  # Get training modules
+  trainingModules(
+    requiredFor: String
+    isActive: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): TrainingModuleConnection! @auth(requires: [STAFF])
+  
+  # Get a specific training module
+  trainingModule(id: ID!): TrainingModule @auth(requires: [STAFF])
+  
+  # Get training assignments
+  trainingAssignments(
+    traineeId: ID
+    moduleId: ID
+    status: TrainingStatus
+    branchId: ID
+    pagination: PaginationInput
+  ): TrainingAssignmentConnection! @auth(requires: [STAFF])
+  
+  # Get a specific training assignment
+  trainingAssignment(id: ID!): TrainingAssignment @auth(requires: [STAFF])
+  
+  # Get new member notifications
+  newMemberNotifications(
+    isRead: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): NewMemberNotificationConnection! @auth(requires: [STAFF])
+  
+  # Get membership classes
+  membershipClasses(
+    active: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): MembershipClassConnection! @auth(requires: [STAFF])
+  
+  # Get a specific membership class
+  membershipClass(id: ID!): MembershipClass @auth(requires: [STAFF])
+  
+  # Get branch setup progress
+  branchSetupProgress(branchId: ID!): BranchSetupProgress! @auth(requires: [STAFF])
+  
+  # Get my training assignments
+  myTrainingAssignments(
+    status: TrainingStatus
+    pagination: PaginationInput
+  ): TrainingAssignmentConnection! @auth(requires: [STAFF])
+  
+  # Get onboarding notes
+  onboardingNotes(
+    onboardingId: ID!
+    pagination: PaginationInput
+  ): OnboardingNoteConnection! @auth(requires: [STAFF])
+  
+  # Get onboarding statistics
+  onboardingStatistics(
+    type: OnboardingType
+    branchId: ID
+    dateRange: DateRangeInput
+  ): OnboardingStatistics! @auth(requires: [STAFF])
+}
+
+type OnboardingConnection {
+  edges: [OnboardingEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type OnboardingEdge {
+  node: Onboarding!
+  cursor: String!
+}
+
+type OnboardingStepConnection {
+  edges: [OnboardingStepEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type OnboardingStepEdge {
+  node: OnboardingStep!
+  cursor: String!
+}
+
+type OnboardingTemplateConnection {
+  edges: [OnboardingTemplateEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type OnboardingTemplateEdge {
+  node: OnboardingTemplate!
+  cursor: String!
+}
+
+type WelcomePackageConnection {
+  edges: [WelcomePackageEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type WelcomePackageEdge {
+  node: WelcomePackage!
+  cursor: String!
+}
+
+type TrainingModuleConnection {
+  edges: [TrainingModuleEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TrainingModuleEdge {
+  node: TrainingModule!
+  cursor: String!
+}
+
+type TrainingAssignmentConnection {
+  edges: [TrainingAssignmentEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TrainingAssignmentEdge {
+  node: TrainingAssignment!
+  cursor: String!
+}
+
+type NewMemberNotificationConnection {
+  edges: [NewMemberNotificationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type NewMemberNotificationEdge {
+  node: NewMemberNotification!
+  cursor: String!
+}
+
+type MembershipClassConnection {
+  edges: [MembershipClassEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MembershipClassEdge {
+  node: MembershipClass!
+  cursor: String!
+}
+
+type OnboardingNoteConnection {
+  edges: [OnboardingNoteEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type OnboardingNoteEdge {
+  node: OnboardingNote!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create an onboarding process from template
+  createOnboarding(input: CreateOnboardingInput!): Onboarding! @auth(requires: [STAFF])
+  
+  # Create a custom onboarding process
+  createCustomOnboarding(input: CreateCustomOnboardingInput!): Onboarding! @auth(requires: [STAFF])
+  
+  # Update an onboarding process
+  updateOnboarding(id: ID!, input: UpdateOnboardingInput!): Onboarding! @auth(requires: [STAFF])
+  
+  # Delete an onboarding process
+  deleteOnboarding(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Start an onboarding process
+  startOnboarding(id: ID!): Onboarding! @auth(requires: [STAFF])
+  
+  # Complete an onboarding process
+  completeOnboarding(id: ID!, notes: String): Onboarding! @auth(requires: [STAFF])
+  
+  # Pause an onboarding process
+  pauseOnboarding(id: ID!, reason: String!): Onboarding! @auth(requires: [STAFF])
+  
+  # Cancel an onboarding process
+  cancelOnboarding(id: ID!, reason: String!): Onboarding! @auth(requires: [STAFF])
+  
+  # Update an onboarding step status
+  updateOnboardingStepStatus(id: ID!, status: OnboardingStepStatus!, notes: String): OnboardingStep! @auth(requires: [STAFF])
+  
+  # Complete an onboarding task
+  completeOnboardingTask(id: ID!): OnboardingTask! @auth(requires: [STAFF])
+  
+  # Create an onboarding template
+  createOnboardingTemplate(input: CreateOnboardingTemplateInput!): OnboardingTemplate! @auth(requires: [STAFF])
+  
+  # Update an onboarding template
+  updateOnboardingTemplate(id: ID!, input: UpdateOnboardingTemplateInput!): OnboardingTemplate! @auth(requires: [STAFF])
+  
+  # Delete an onboarding template
+  deleteOnboardingTemplate(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Clone an onboarding template
+  cloneOnboardingTemplate(id: ID!, name: String!): OnboardingTemplate! @auth(requires: [STAFF])
+  
+  # Add step to onboarding template
+  addOnboardingTemplateStep(input: AddOnboardingTemplateStepInput!): OnboardingTemplateStep! @auth(requires: [STAFF])
+  
+  # Update onboarding template step
+  updateOnboardingTemplateStep(id: ID!, input: UpdateOnboardingTemplateStepInput!): OnboardingTemplateStep! @auth(requires: [STAFF])
+  
+  # Delete onboarding template step
+  deleteOnboardingTemplateStep(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Reorder onboarding template steps
+  reorderOnboardingTemplateSteps(templateId: ID!, stepIds: [ID!]!): [OnboardingTemplateStep!]! @auth(requires: [STAFF])
+  
+  # Create a welcome package
+  createWelcomePackage(input: CreateWelcomePackageInput!): WelcomePackage! @auth(requires: [STAFF])
+  
+  # Update a welcome package
+  updateWelcomePackage(id: ID!, input: UpdateWelcomePackageInput!): WelcomePackage! @auth(requires: [STAFF])
+  
+  # Delete a welcome package
+  deleteWelcomePackage(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update welcome package status
+  updateWelcomePackageStatus(id: ID!, status: WelcomePackageStatus!, notes: String): WelcomePackage! @auth(requires: [STAFF])
+  
+  # Add item to welcome package
+  addWelcomePackageItem(input: AddWelcomePackageItemInput!): WelcomePackageItem! @auth(requires: [STAFF])
+  
+  # Update welcome package item
+  updateWelcomePackageItem(id: ID!, input: UpdateWelcomePackageItemInput!): WelcomePackageItem! @auth(requires: [STAFF])
+  
+  # Remove item from welcome package
+  removeWelcomePackageItem(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a training module
+  createTrainingModule(input: CreateTrainingModuleInput!): TrainingModule! @auth(requires: [STAFF])
+  
+  # Update a training module
+  updateTrainingModule(id: ID!, input: UpdateTrainingModuleInput!): TrainingModule! @auth(requires: [STAFF])
+  
+  # Delete a training module
+  deleteTrainingModule(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Assign training module
+  assignTrainingModule(input: AssignTrainingModuleInput!): TrainingAssignment! @auth(requires: [STAFF])
+  
+  # Update training assignment
+  updateTrainingAssignment(id: ID!, input: UpdateTrainingAssignmentInput!): TrainingAssignment! @auth(requires: [STAFF])
+  
+  # Complete training assignment
+  completeTrainingAssignment(id: ID!, score: Int): TrainingAssignment! @auth(requires: [STAFF])
+  
+  # Create a membership class
+  createMembershipClass(input: CreateMembershipClassInput!): MembershipClass! @auth(requires: [STAFF])
+  
+  # Update a membership class
+  updateMembershipClass(id: ID!, input: UpdateMembershipClassInput!): MembershipClass! @auth(requires: [STAFF])
+  
+  # Delete a membership class
+  deleteMembershipClass(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Register member for membership class
+  registerForMembershipClass(classId: ID!, memberId: ID!): MembershipClass! @auth(requires: [STAFF])
+  
+  # Complete membership class for member
+  completeMembershipClass(classId: ID!, memberId: ID!): MembershipClass! @auth(requires: [STAFF])
+  
+  # Add onboarding note
+  addOnboardingNote(input: AddOnboardingNoteInput!): OnboardingNote! @auth(requires: [STAFF])
+  
+  # Bulk create onboarding processes
+  bulkCreateOnboarding(input: [CreateOnboardingInput!]!): [Onboarding!]! @auth(requires: [STAFF])
+  
+  # Bulk assign training modules
+  bulkAssignTrainingModules(input: [AssignTrainingModuleInput!]!): [TrainingAssignment!]! @auth(requires: [STAFF])
+}
+
+input CreateOnboardingInput {
+  templateId: ID!
+  subjectId: ID!
+  subjectType: OnboardingType!
+  assignedToId: ID
+  branchId: ID!
+  notes: String
+  customFields: JSON
+  startImmediately: Boolean
+}
+
+input CreateCustomOnboardingInput {
+  title: String!
+  subjectId: ID!
+  subjectType: OnboardingType!
+  steps: [CreateOnboardingStepInput!]!
+  assignedToId: ID
+  branchId: ID!
+  notes: String
+  customFields: JSON
+  startImmediately: Boolean
+}
+
+input UpdateOnboardingInput {
+  status: OnboardingStatus
+  assignedToId: ID
+  notes: String
+  customFields: JSON
+}
+
+input CreateOnboardingStepInput {
+  title: String!
+  description: String
+  order: Int!
+  isRequired: Boolean!
+  requiredRoles: [String!]
+  assignedToId: ID
+  dueDate: DateTime
+  resources: [CreateOnboardingResourceInput!]
+  tasks: [CreateOnboardingTaskInput!]
+}
+
+input CreateOnboardingResourceInput {
+  title: String!
+  description: String
+  type: String!
+  url: String
+  fileUrl: String
+}
+
+input CreateOnboardingTaskInput {
+  title: String!
+  description: String
+  assignedToId: ID
+  dueDate: DateTime
+}
+
+input CreateOnboardingTemplateInput {
+  name: String!
+  description: String
+  type: OnboardingType!
+  isActive: Boolean!
+  defaultAssigneeRole: String
+  requiredFields: [String!]
+  branchId: ID
+  isGlobal: Boolean!
+  steps: [CreateOnboardingTemplateStepInput!]
+}
+
+input UpdateOnboardingTemplateInput {
+  name: String
+  description: String
+  isActive: Boolean
+  defaultAssigneeRole: String
+  requiredFields: [String!]
+  isGlobal: Boolean
+}
+
+input CreateOnboardingTemplateStepInput {
+  title: String!
+  description: String
+  order: Int!
+  isRequired: Boolean!
+  requiredRoles: [String!]
+  defaultAssigneeRole: String
+  estimatedDurationMinutes: Int
+  resources: [CreateOnboardingTemplateResourceInput!]
+  tasks: [CreateOnboardingTemplateTaskInput!]
+}
+
+input UpdateOnboardingTemplateStepInput {
+  title: String
+  description: String
+  order: Int
+  isRequired: Boolean
+  requiredRoles: [String!]
+  defaultAssigneeRole: String
+  estimatedDurationMinutes: Int
+}
+
+input AddOnboardingTemplateStepInput {
+  templateId: ID!
+  title: String!
+  description: String
+  order: Int!
+  isRequired: Boolean!
+  requiredRoles: [String!]
+  defaultAssigneeRole: String
+  estimatedDurationMinutes: Int
+  resources: [CreateOnboardingTemplateResourceInput!]
+  tasks: [CreateOnboardingTemplateTaskInput!]
+}
+
+input CreateOnboardingTemplateResourceInput {
+  title: String!
+  description: String
+  type: String!
+  url: String
+  fileUrl: String
+}
+
+input CreateOnboardingTemplateTaskInput {
+  title: String!
+  description: String
+  assigneeRole: String
+}
+
+input CreateWelcomePackageInput {
+  memberId: ID!
+  packageType: String!
+  status: WelcomePackageStatus!
+  items: [CreateWelcomePackageItemInput!]!
+  notes: String
+  branchId: ID!
+}
+
+input UpdateWelcomePackageInput {
+  packageType: String
+  status: WelcomePackageStatus
+  preparedById: ID
+  preparedAt: DateTime
+  deliveredById: ID
+  deliveredAt: DateTime
+  receivedAt: DateTime
+  notes: String
+}
+
+input CreateWelcomePackageItemInput {
+  name: String!
+  description: String
+  quantity: Int!
+  category: String
+  isIncluded: Boolean!
+}
+
+input AddWelcomePackageItemInput {
+  welcomePackageId: ID!
+  name: String!
+  description: String
+  quantity: Int!
+  category: String
+  isIncluded: Boolean!
+}
+
+input UpdateWelcomePackageItemInput {
+  name: String
+  description: String
+  quantity: Int
+  category: String
+  isIncluded: Boolean
+}
+
+input CreateTrainingModuleInput {
+  title: String!
+  description: String
+  requiredFor: [String!]!
+  durationMinutes: Int!
+  validityPeriod: Int
+  content: String
+  mediaUrl: String
+  assessmentUrl: String
+  passingScore: Int
+  isRequired: Boolean!
+  isActive: Boolean!
+  branchId: ID
+}
+
+input UpdateTrainingModuleInput {
+  title: String
+  description: String
+  requiredFor: [String!]
+  durationMinutes: Int
+  validityPeriod: Int
+  content: String
+  mediaUrl: String
+  assessmentUrl: String
+  passingScore: Int
+  isRequired: Boolean
+  isActive: Boolean
+}
+
+input AssignTrainingModuleInput {
+  traineeId: ID!
+  moduleId: ID!
+  expiresAt: DateTime
+  branchId: ID!
+}
+
+input UpdateTrainingAssignmentInput {
+  status: TrainingStatus
+  expiresAt: DateTime
+  score: Int
+  attempts: Int
+  certificationUrl: String
+}
+
+input CreateMembershipClassInput {
+  title: String!
+  description: String
+  startDate: DateTime!
+  endDate: DateTime!
+  location: String!
+  facilitatorId: ID!
+  capacity: Int!
+  branchId: ID!
+}
+
+input UpdateMembershipClassInput {
+  title: String
+  description: String
+  startDate: DateTime
+  endDate: DateTime
+  location: String
+  facilitatorId: ID
+  capacity: Int
+}
+
+input AddOnboardingNoteInput {
+  onboardingId: ID!
+  content: String!
+}
+
+extend type Subscription {
+  # Get notified when a new onboarding process is created
+  onboardingCreated(branchId: ID): Onboarding! @auth(requires: [STAFF])
+  
+  # Get notified when an onboarding process status changes
+  onboardingStatusChanged(branchId: ID): Onboarding! @auth(requires: [STAFF])
+  
+  # Get notified when a new welcome package is created
+  welcomePackageCreated(branchId: ID): WelcomePackage! @auth(requires: [STAFF])
+  
+  # Get notified when a welcome package status changes
+  welcomePackageStatusChanged(branchId: ID): WelcomePackage! @auth(requires: [STAFF])
+  
+  # Get notified when a training assignment is created
+  trainingAssignmentCreated(traineeId: ID): TrainingAssignment! @auth(requires: [STAFF])
+  
+  # Get notified of new member notifications
+  newMemberNotificationCreated(branchId: ID): NewMemberNotification! @auth(requires: [STAFF])
+  
+  # Get notified of membership class registration
+  membershipClassRegistration(classId: ID!): MembershipClass! @auth(requires: [STAFF])
+}

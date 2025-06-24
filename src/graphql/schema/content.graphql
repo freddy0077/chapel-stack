@@ -1,0 +1,640 @@
+"""
+Content Management System schema - handles sermons, media library, and content management
+"""
+
+enum MediaType {
+  AUDIO
+  VIDEO
+  IMAGE
+  DOCUMENT
+  PRESENTATION
+  OTHER
+}
+
+enum SermonCategory {
+  SUNDAY_SERVICE
+  SPECIAL_SERVICE
+  RETREAT
+  CONFERENCE
+  BIBLE_STUDY
+  YOUTH_MESSAGE
+  WORKSHOP
+  OTHER
+}
+
+enum PublishStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  PRIVATE
+}
+
+enum ResourceType {
+  SERMON
+  DEVOTIONAL
+  BIBLE_STUDY
+  BLOG_POST
+  NEWS
+  ANNOUNCEMENT
+  PAGE
+  EVENT
+  TESTIMONY
+  OTHER
+}
+
+type MediaFile {
+  id: ID!
+  title: String!
+  description: String
+  fileUrl: String!
+  thumbnailUrl: String
+  fileType: MediaType!
+  mimeType: String!
+  fileSize: Int!
+  duration: Int
+  dimensions: String
+  uploadedBy: User!
+  uploadedAt: DateTime!
+  lastModified: DateTime!
+  tags: [String!]
+  published: Boolean!
+  publishedAt: DateTime
+  branches: [Branch!]
+  sermons: [Sermon!]
+  resources: [Resource!]
+  meta: JSON
+  downloads: Int!
+  views: Int!
+}
+
+type Sermon {
+  id: ID!
+  title: String!
+  subtitle: String
+  description: String
+  scripture: String
+  speaker: User!
+  date: Date!
+  series: SermonSeries
+  category: SermonCategory!
+  media: [MediaFile!]
+  audioFile: MediaFile
+  videoFile: MediaFile
+  documentFile: MediaFile
+  transcript: String
+  notes: String
+  tags: [String!]
+  branches: [Branch!]
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  featuredImage: MediaFile
+  relatedSermons: [Sermon!]
+  relatedResources: [Resource!]
+  meta: JSON
+  downloads: Int!
+  views: Int!
+  comments: [Comment!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SermonSeries {
+  id: ID!
+  title: String!
+  description: String
+  startDate: Date
+  endDate: Date
+  imageUrl: String
+  sermons: [Sermon!]!
+  tags: [String!]
+  branches: [Branch!]
+  publishStatus: PublishStatus!
+  meta: JSON
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  resource: ID!
+  resourceType: ResourceType!
+  parentComment: Comment
+  replies: [Comment!]
+  approved: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Resource {
+  id: ID!
+  title: String!
+  subtitle: String
+  description: String
+  content: String
+  type: ResourceType!
+  author: User!
+  featuredImage: MediaFile
+  media: [MediaFile!]
+  tags: [String!]
+  categories: [String!]
+  branches: [Branch!]
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  expiryDate: DateTime
+  relatedResources: [Resource!]
+  meta: JSON
+  views: Int!
+  comments: [Comment!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Page {
+  id: ID!
+  title: String!
+  slug: String!
+  content: String!
+  author: User!
+  template: String
+  featuredImage: MediaFile
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  order: Int
+  parent: Page
+  children: [Page!]
+  branches: [Branch!]
+  meta: JSON
+  views: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ContentCategory {
+  id: ID!
+  name: String!
+  description: String
+  parent: ContentCategory
+  children: [ContentCategory!]
+  resources: [Resource!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  resources: [Resource!]
+  sermons: [Sermon!]
+  createdAt: DateTime!
+}
+
+extend type Query {
+  # Media files
+  mediaFiles(
+    search: String
+    mediaType: MediaType
+    tags: [String!]
+    branchId: ID
+    pagination: PaginationInput
+  ): MediaFileConnection! @auth(requires: [STAFF])
+  
+  mediaFile(id: ID!): MediaFile @auth(requires: [MEMBER])
+  
+  # Sermons
+  sermons(
+    search: String
+    speakerId: ID
+    seriesId: ID
+    category: SermonCategory
+    dateRange: DateRangeInput
+    tags: [String!]
+    publishStatus: PublishStatus
+    branchId: ID
+    pagination: PaginationInput
+  ): SermonConnection! @auth(requires: [MEMBER])
+  
+  sermon(id: ID!): Sermon @auth(requires: [MEMBER])
+  
+  # Sermon series
+  sermonSeries(
+    search: String
+    dateRange: DateRangeInput
+    publishStatus: PublishStatus
+    branchId: ID
+    pagination: PaginationInput
+  ): SermonSeriesConnection! @auth(requires: [MEMBER])
+  
+  sermonSeriesById(id: ID!): SermonSeries @auth(requires: [MEMBER])
+  
+  # Resources
+  resources(
+    search: String
+    type: ResourceType
+    authorId: ID
+    tags: [String!]
+    categories: [String!]
+    publishStatus: PublishStatus
+    branchId: ID
+    pagination: PaginationInput
+  ): ResourceConnection! @auth(requires: [MEMBER])
+  
+  resource(id: ID!): Resource @auth(requires: [MEMBER])
+  
+  # Pages
+  pages(
+    search: String
+    publishStatus: PublishStatus
+    branchId: ID
+    pagination: PaginationInput
+  ): PageConnection! @auth(requires: [MEMBER])
+  
+  page(id: ID!): Page @auth(requires: [MEMBER])
+  pageBySlug(slug: String!, branchId: ID): Page @auth(requires: [MEMBER])
+  
+  # Content categories
+  contentCategories(
+    search: String
+    parentId: ID
+    pagination: PaginationInput
+  ): ContentCategoryConnection! @auth(requires: [MEMBER])
+  
+  contentCategory(id: ID!): ContentCategory @auth(requires: [MEMBER])
+  
+  # Tags
+  tags(
+    search: String
+    pagination: PaginationInput
+  ): TagConnection! @auth(requires: [MEMBER])
+  
+  tag(id: ID!): Tag @auth(requires: [MEMBER])
+  
+  # Comments
+  comments(
+    resourceId: ID!
+    resourceType: ResourceType!
+    parentId: ID
+    approved: Boolean
+    pagination: PaginationInput
+  ): CommentConnection! @auth(requires: [MEMBER])
+  
+  # Search across all content types
+  searchContent(
+    query: String!
+    types: [ResourceType!]
+    branchId: ID
+    pagination: PaginationInput
+  ): ContentSearchResult! @auth(requires: [MEMBER])
+}
+
+type MediaFileConnection {
+  edges: [MediaFileEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MediaFileEdge {
+  node: MediaFile!
+  cursor: String!
+}
+
+type SermonConnection {
+  edges: [SermonEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SermonEdge {
+  node: Sermon!
+  cursor: String!
+}
+
+type SermonSeriesConnection {
+  edges: [SermonSeriesEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SermonSeriesEdge {
+  node: SermonSeries!
+  cursor: String!
+}
+
+type ResourceConnection {
+  edges: [ResourceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceEdge {
+  node: Resource!
+  cursor: String!
+}
+
+type PageConnection {
+  edges: [PageEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type PageEdge {
+  node: Page!
+  cursor: String!
+}
+
+type ContentCategoryConnection {
+  edges: [ContentCategoryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ContentCategoryEdge {
+  node: ContentCategory!
+  cursor: String!
+}
+
+type TagConnection {
+  edges: [TagEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TagEdge {
+  node: Tag!
+  cursor: String!
+}
+
+type CommentConnection {
+  edges: [CommentEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CommentEdge {
+  node: Comment!
+  cursor: String!
+}
+
+type ContentSearchResult {
+  sermons: [Sermon!]
+  resources: [Resource!]
+  pages: [Page!]
+  mediaFiles: [MediaFile!]
+  totalCount: Int!
+  pageInfo: PaginationInfo!
+}
+
+extend type Mutation {
+  # Media files
+  uploadMediaFile(input: UploadMediaFileInput!): MediaFile! @auth(requires: [STAFF])
+  updateMediaFile(id: ID!, input: UpdateMediaFileInput!): MediaFile! @auth(requires: [STAFF])
+  deleteMediaFile(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Sermons
+  createSermon(input: CreateSermonInput!): Sermon! @auth(requires: [STAFF])
+  updateSermon(id: ID!, input: UpdateSermonInput!): Sermon! @auth(requires: [STAFF])
+  deleteSermon(id: ID!): Boolean! @auth(requires: [STAFF])
+  publishSermon(id: ID!, publishDate: DateTime): Sermon! @auth(requires: [STAFF])
+  unpublishSermon(id: ID!): Sermon! @auth(requires: [STAFF])
+  
+  # Sermon series
+  createSermonSeries(input: CreateSermonSeriesInput!): SermonSeries! @auth(requires: [STAFF])
+  updateSermonSeries(id: ID!, input: UpdateSermonSeriesInput!): SermonSeries! @auth(requires: [STAFF])
+  deleteSermonSeries(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Resources
+  createResource(input: CreateResourceInput!): Resource! @auth(requires: [STAFF])
+  updateResource(id: ID!, input: UpdateResourceInput!): Resource! @auth(requires: [STAFF])
+  deleteResource(id: ID!): Boolean! @auth(requires: [STAFF])
+  publishResource(id: ID!, publishDate: DateTime): Resource! @auth(requires: [STAFF])
+  unpublishResource(id: ID!): Resource! @auth(requires: [STAFF])
+  
+  # Pages
+  createPage(input: CreatePageInput!): Page! @auth(requires: [STAFF])
+  updatePage(id: ID!, input: UpdatePageInput!): Page! @auth(requires: [STAFF])
+  deletePage(id: ID!): Boolean! @auth(requires: [STAFF])
+  publishPage(id: ID!, publishDate: DateTime): Page! @auth(requires: [STAFF])
+  unpublishPage(id: ID!): Page! @auth(requires: [STAFF])
+  
+  # Content categories
+  createContentCategory(input: CreateContentCategoryInput!): ContentCategory! @auth(requires: [STAFF])
+  updateContentCategory(id: ID!, input: UpdateContentCategoryInput!): ContentCategory! @auth(requires: [STAFF])
+  deleteContentCategory(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Tags
+  createTag(input: CreateTagInput!): Tag! @auth(requires: [STAFF])
+  updateTag(id: ID!, input: UpdateTagInput!): Tag! @auth(requires: [STAFF])
+  deleteTag(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Comments
+  createComment(input: CreateCommentInput!): Comment! @auth(requires: [MEMBER])
+  updateComment(id: ID!, input: UpdateCommentInput!): Comment! @auth(requires: [MEMBER])
+  deleteComment(id: ID!): Boolean! @auth(requires: [MEMBER])
+  approveComment(id: ID!): Comment! @auth(requires: [STAFF])
+  rejectComment(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Content views and downloads
+  recordContentView(id: ID!, contentType: ResourceType!): Boolean! @auth(requires: [MEMBER])
+  recordContentDownload(id: ID!, contentType: ResourceType!): Boolean! @auth(requires: [MEMBER])
+}
+
+input UploadMediaFileInput {
+  title: String!
+  description: String
+  file: Upload!
+  thumbnail: Upload
+  fileType: MediaType!
+  tags: [String!]
+  published: Boolean
+  branchIds: [ID!]
+  meta: JSON
+}
+
+input UpdateMediaFileInput {
+  title: String
+  description: String
+  thumbnail: Upload
+  tags: [String!]
+  published: Boolean
+  branchIds: [ID!]
+  meta: JSON
+}
+
+input CreateSermonInput {
+  title: String!
+  subtitle: String
+  description: String
+  scripture: String
+  speakerId: ID!
+  date: Date!
+  seriesId: ID
+  category: SermonCategory!
+  mediaIds: [ID!]
+  audioFileId: ID
+  videoFileId: ID
+  documentFileId: ID
+  transcript: String
+  notes: String
+  tags: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  featuredImageId: ID
+  relatedSermonIds: [ID!]
+  meta: JSON
+}
+
+input UpdateSermonInput {
+  title: String
+  subtitle: String
+  description: String
+  scripture: String
+  speakerId: ID
+  date: Date
+  seriesId: ID
+  category: SermonCategory
+  mediaIds: [ID!]
+  audioFileId: ID
+  videoFileId: ID
+  documentFileId: ID
+  transcript: String
+  notes: String
+  tags: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus
+  publishDate: DateTime
+  featuredImageId: ID
+  relatedSermonIds: [ID!]
+  meta: JSON
+}
+
+input CreateSermonSeriesInput {
+  title: String!
+  description: String
+  startDate: Date
+  endDate: Date
+  image: Upload
+  sermonIds: [ID!]
+  tags: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus!
+  meta: JSON
+}
+
+input UpdateSermonSeriesInput {
+  title: String
+  description: String
+  startDate: Date
+  endDate: Date
+  image: Upload
+  sermonIds: [ID!]
+  tags: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus
+  meta: JSON
+}
+
+input CreateResourceInput {
+  title: String!
+  subtitle: String
+  description: String
+  content: String
+  type: ResourceType!
+  authorId: ID!
+  featuredImageId: ID
+  mediaIds: [ID!]
+  tags: [String!]
+  categories: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  expiryDate: DateTime
+  relatedResourceIds: [ID!]
+  meta: JSON
+}
+
+input UpdateResourceInput {
+  title: String
+  subtitle: String
+  description: String
+  content: String
+  type: ResourceType
+  authorId: ID
+  featuredImageId: ID
+  mediaIds: [ID!]
+  tags: [String!]
+  categories: [String!]
+  branchIds: [ID!]
+  publishStatus: PublishStatus
+  publishDate: DateTime
+  expiryDate: DateTime
+  relatedResourceIds: [ID!]
+  meta: JSON
+}
+
+input CreatePageInput {
+  title: String!
+  slug: String!
+  content: String!
+  authorId: ID!
+  template: String
+  featuredImageId: ID
+  publishStatus: PublishStatus!
+  publishDate: DateTime
+  order: Int
+  parentId: ID
+  branchIds: [ID!]
+  meta: JSON
+}
+
+input UpdatePageInput {
+  title: String
+  slug: String
+  content: String
+  authorId: ID
+  template: String
+  featuredImageId: ID
+  publishStatus: PublishStatus
+  publishDate: DateTime
+  order: Int
+  parentId: ID
+  branchIds: [ID!]
+  meta: JSON
+}
+
+input CreateContentCategoryInput {
+  name: String!
+  description: String
+  parentId: ID
+}
+
+input UpdateContentCategoryInput {
+  name: String
+  description: String
+  parentId: ID
+}
+
+input CreateTagInput {
+  name: String!
+}
+
+input UpdateTagInput {
+  name: String!
+}
+
+input CreateCommentInput {
+  content: String!
+  resourceId: ID!
+  resourceType: ResourceType!
+  parentId: ID
+}
+
+input UpdateCommentInput {
+  content: String!
+}
+
+extend type Subscription {
+  # Get notified when a new sermon is published
+  sermonPublished(branchId: ID): Sermon! @auth(requires: [MEMBER])
+  
+  # Get notified when a new resource is published
+  resourcePublished(type: ResourceType, branchId: ID): Resource! @auth(requires: [MEMBER])
+  
+  # Get notified when a new comment is posted on a resource
+  commentAdded(resourceId: ID!, resourceType: ResourceType!): Comment! @auth(requires: [MEMBER])
+}

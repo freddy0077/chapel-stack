@@ -1,0 +1,736 @@
+"""
+Admin Operations schema - handles system administration, global settings, and maintenance
+"""
+
+enum AuditEntityType {
+  USER
+  MEMBER
+  BRANCH
+  MINISTRY
+  ROLE
+  GROUP
+  ATTENDANCE
+  SACRAMENT
+  DONATION
+  EVENT
+  PRAYER
+  SETTING
+  FORM
+  RESOURCE
+  COMMUNICATION
+  SECURITY
+  SYSTEM
+}
+
+enum AuditActionType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  APPROVE
+  REJECT
+  ASSIGN
+  REVOKE
+  CONFIGURE
+  BACKUP
+  RESTORE
+}
+
+enum SystemHealth {
+  EXCELLENT
+  GOOD
+  FAIR
+  DEGRADED
+  CRITICAL
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+enum DataOperation {
+  IMPORT
+  EXPORT
+  BACKUP
+  RESTORE
+  ARCHIVE
+  PURGE
+}
+
+enum BackupFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  MANUAL
+}
+
+type AuditLog {
+  id: ID!
+  entityType: AuditEntityType!
+  entityId: ID
+  actionType: AuditActionType!
+  performedBy: User!
+  performedAt: DateTime!
+  ipAddress: String
+  userAgent: String
+  previousState: JSON
+  newState: JSON
+  branch: Branch
+  details: String
+  success: Boolean!
+  metadata: JSON
+  createdAt: DateTime!
+}
+
+type SystemConfiguration {
+  id: ID!
+  key: String!
+  value: JSON!
+  description: String
+  isEncrypted: Boolean!
+  isGlobal: Boolean!
+  branch: Branch
+  category: String!
+  updatedBy: User!
+  updatedAt: DateTime!
+  createdAt: DateTime!
+}
+
+type MaintenanceSchedule {
+  id: ID!
+  title: String!
+  description: String!
+  type: String!
+  scheduledStart: DateTime!
+  scheduledEnd: DateTime!
+  actualStart: DateTime
+  actualEnd: DateTime
+  status: MaintenanceStatus!
+  affectedServices: [String!]!
+  notificationSent: Boolean!
+  performedBy: User
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DataOperationJob {
+  id: ID!
+  type: DataOperation!
+  status: String!
+  progress: Float
+  startedAt: DateTime
+  completedAt: DateTime
+  initiatedBy: User!
+  affectedRecords: Int
+  targetFile: String
+  sourceFile: String
+  logs: [String!]
+  errorMessage: String
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CustomField {
+  id: ID!
+  name: String!
+  key: String!
+  description: String
+  entityType: String!
+  fieldType: String!
+  isRequired: Boolean!
+  isSearchable: Boolean!
+  isPrivate: Boolean!
+  options: [String!]
+  defaultValue: JSON
+  validationRules: JSON
+  order: Int!
+  branch: Branch
+  isGlobal: Boolean!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PermissionTemplate {
+  id: ID!
+  name: String!
+  description: String
+  permissions: [String!]!
+  applicableRoles: [String!]!
+  isDefault: Boolean!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SystemMetric {
+  id: ID!
+  name: String!
+  value: Float!
+  unit: String
+  timestamp: DateTime!
+  type: String!
+  metadata: JSON
+}
+
+type SystemHealthCheck {
+  id: ID!
+  performedAt: DateTime!
+  overallHealth: SystemHealth!
+  databaseStatus: SystemHealth!
+  storageStatus: SystemHealth!
+  apiStatus: SystemHealth!
+  cacheStatus: SystemHealth!
+  performedBy: User
+  issues: [SystemIssue!]
+  recommendations: [String!]
+  metrics: [SystemMetric!]!
+}
+
+type SystemIssue {
+  id: ID!
+  component: String!
+  severity: String!
+  description: String!
+  detectedAt: DateTime!
+  resolvedAt: DateTime
+  resolutionSteps: [String!]
+  assignedTo: User
+}
+
+type BackupConfiguration {
+  id: ID!
+  isEnabled: Boolean!
+  frequency: BackupFrequency!
+  retentionCount: Int!
+  lastBackupAt: DateTime
+  nextBackupAt: DateTime
+  storageLocation: String!
+  includeAttachments: Boolean!
+  backupTime: String!
+  notifyOnCompletion: Boolean!
+  notifyOnFailure: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ApiKey {
+  id: ID!
+  name: String!
+  key: String! # Actually returns a masked version
+  permissions: [String!]!
+  expiresAt: DateTime
+  lastUsed: DateTime
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isActive: Boolean!
+}
+
+type MultibranchPolicy {
+  id: ID!
+  name: String!
+  description: String
+  policyType: String!
+  settings: JSON!
+  affectedBranches: [Branch!]!
+  isEnabled: Boolean!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get audit logs with filtering
+  auditLogs(
+    entityType: AuditEntityType
+    entityId: ID
+    actionType: AuditActionType
+    performedById: ID
+    dateRange: DateRangeInput
+    branchId: ID
+    pagination: PaginationInput
+  ): AuditLogConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific audit log
+  auditLog(id: ID!): AuditLog @auth(requires: [ADMIN])
+  
+  # Get system configurations
+  systemConfigurations(
+    category: String
+    search: String
+    isGlobal: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): SystemConfigurationConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific system configuration
+  systemConfiguration(id: ID!): SystemConfiguration @auth(requires: [ADMIN])
+  
+  # Get system configuration by key
+  systemConfigurationByKey(key: String!): SystemConfiguration @auth(requires: [ADMIN])
+  
+  # Get maintenance schedules
+  maintenanceSchedules(
+    status: MaintenanceStatus
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): MaintenanceScheduleConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific maintenance schedule
+  maintenanceSchedule(id: ID!): MaintenanceSchedule @auth(requires: [ADMIN])
+  
+  # Get data operation jobs
+  dataOperationJobs(
+    type: DataOperation
+    status: String
+    initiatedById: ID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): DataOperationJobConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific data operation job
+  dataOperationJob(id: ID!): DataOperationJob @auth(requires: [ADMIN])
+  
+  # Get custom fields
+  customFields(
+    entityType: String
+    search: String
+    isGlobal: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): CustomFieldConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific custom field
+  customField(id: ID!): CustomField @auth(requires: [ADMIN])
+  
+  # Get permission templates
+  permissionTemplates(
+    search: String
+    applicableRole: String
+    pagination: PaginationInput
+  ): PermissionTemplateConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific permission template
+  permissionTemplate(id: ID!): PermissionTemplate @auth(requires: [ADMIN])
+  
+  # Get system health check
+  systemHealthCheck: SystemHealthCheck! @auth(requires: [ADMIN])
+  
+  # Get system metrics
+  systemMetrics(
+    type: String
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): SystemMetricConnection! @auth(requires: [ADMIN])
+  
+  # Get system issues
+  systemIssues(
+    component: String
+    severity: String
+    isResolved: Boolean
+    pagination: PaginationInput
+  ): SystemIssueConnection! @auth(requires: [ADMIN])
+  
+  # Get backup configuration
+  backupConfiguration: BackupConfiguration! @auth(requires: [ADMIN])
+  
+  # Get API keys
+  apiKeys(
+    isActive: Boolean
+    pagination: PaginationInput
+  ): ApiKeyConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific API key
+  apiKey(id: ID!): ApiKey @auth(requires: [ADMIN])
+  
+  # Get multibranch policies
+  multibranchPolicies(
+    policyType: String
+    isEnabled: Boolean
+    pagination: PaginationInput
+  ): MultibranchPolicyConnection! @auth(requires: [ADMIN])
+  
+  # Get a specific multibranch policy
+  multibranchPolicy(id: ID!): MultibranchPolicy @auth(requires: [ADMIN])
+}
+
+type AuditLogConnection {
+  edges: [AuditLogEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type AuditLogEdge {
+  node: AuditLog!
+  cursor: String!
+}
+
+type SystemConfigurationConnection {
+  edges: [SystemConfigurationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SystemConfigurationEdge {
+  node: SystemConfiguration!
+  cursor: String!
+}
+
+type MaintenanceScheduleConnection {
+  edges: [MaintenanceScheduleEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MaintenanceScheduleEdge {
+  node: MaintenanceSchedule!
+  cursor: String!
+}
+
+type DataOperationJobConnection {
+  edges: [DataOperationJobEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type DataOperationJobEdge {
+  node: DataOperationJob!
+  cursor: String!
+}
+
+type CustomFieldConnection {
+  edges: [CustomFieldEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CustomFieldEdge {
+  node: CustomField!
+  cursor: String!
+}
+
+type PermissionTemplateConnection {
+  edges: [PermissionTemplateEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type PermissionTemplateEdge {
+  node: PermissionTemplate!
+  cursor: String!
+}
+
+type SystemMetricConnection {
+  edges: [SystemMetricEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SystemMetricEdge {
+  node: SystemMetric!
+  cursor: String!
+}
+
+type SystemIssueConnection {
+  edges: [SystemIssueEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SystemIssueEdge {
+  node: SystemIssue!
+  cursor: String!
+}
+
+type ApiKeyConnection {
+  edges: [ApiKeyEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ApiKeyEdge {
+  node: ApiKey!
+  cursor: String!
+}
+
+type MultibranchPolicyConnection {
+  edges: [MultibranchPolicyEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MultibranchPolicyEdge {
+  node: MultibranchPolicy!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Update system configuration
+  updateSystemConfiguration(id: ID!, input: UpdateSystemConfigurationInput!): SystemConfiguration! @auth(requires: [ADMIN])
+  
+  # Create system configuration
+  createSystemConfiguration(input: CreateSystemConfigurationInput!): SystemConfiguration! @auth(requires: [ADMIN])
+  
+  # Delete system configuration
+  deleteSystemConfiguration(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Schedule maintenance
+  scheduleMaintenanceWindow(input: ScheduleMaintenanceInput!): MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # Update maintenance schedule
+  updateMaintenanceSchedule(id: ID!, input: UpdateMaintenanceScheduleInput!): MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # Delete maintenance schedule
+  deleteMaintenanceSchedule(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Start maintenance window
+  startMaintenanceWindow(id: ID!): MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # End maintenance window
+  endMaintenanceWindow(id: ID!, notes: String): MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # Cancel maintenance window
+  cancelMaintenanceWindow(id: ID!, reason: String!): MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # Start data import
+  startDataImport(input: StartDataImportInput!): DataOperationJob! @auth(requires: [ADMIN])
+  
+  # Start data export
+  startDataExport(input: StartDataExportInput!): DataOperationJob! @auth(requires: [ADMIN])
+  
+  # Start system backup
+  startSystemBackup(input: StartBackupInput!): DataOperationJob! @auth(requires: [ADMIN])
+  
+  # Start system restore
+  startSystemRestore(input: StartRestoreInput!): DataOperationJob! @auth(requires: [ADMIN])
+  
+  # Cancel data operation job
+  cancelDataOperationJob(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Create custom field
+  createCustomField(input: CreateCustomFieldInput!): CustomField! @auth(requires: [ADMIN])
+  
+  # Update custom field
+  updateCustomField(id: ID!, input: UpdateCustomFieldInput!): CustomField! @auth(requires: [ADMIN])
+  
+  # Delete custom field
+  deleteCustomField(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Create permission template
+  createPermissionTemplate(input: CreatePermissionTemplateInput!): PermissionTemplate! @auth(requires: [ADMIN])
+  
+  # Update permission template
+  updatePermissionTemplate(id: ID!, input: UpdatePermissionTemplateInput!): PermissionTemplate! @auth(requires: [ADMIN])
+  
+  # Delete permission template
+  deletePermissionTemplate(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Apply permission template to role
+  applyPermissionTemplate(templateId: ID!, roleId: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Run system health check
+  runSystemHealthCheck: SystemHealthCheck! @auth(requires: [ADMIN])
+  
+  # Resolve system issue
+  resolveSystemIssue(id: ID!, resolutionSteps: [String!]!): SystemIssue! @auth(requires: [ADMIN])
+  
+  # Update backup configuration
+  updateBackupConfiguration(input: UpdateBackupConfigurationInput!): BackupConfiguration! @auth(requires: [ADMIN])
+  
+  # Create API key
+  createApiKey(input: CreateApiKeyInput!): ApiKey! @auth(requires: [ADMIN])
+  
+  # Update API key
+  updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey! @auth(requires: [ADMIN])
+  
+  # Revoke API key
+  revokeApiKey(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Create multibranch policy
+  createMultibranchPolicy(input: CreateMultibranchPolicyInput!): MultibranchPolicy! @auth(requires: [ADMIN])
+  
+  # Update multibranch policy
+  updateMultibranchPolicy(id: ID!, input: UpdateMultibranchPolicyInput!): MultibranchPolicy! @auth(requires: [ADMIN])
+  
+  # Delete multibranch policy
+  deleteMultibranchPolicy(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Apply multibranch policy
+  applyMultibranchPolicy(id: ID!, branchIds: [ID!]!): Boolean! @auth(requires: [ADMIN])
+  
+  # Purge audit logs
+  purgeAuditLogs(olderThan: DateTime!, entityTypes: [AuditEntityType!]): Boolean! @auth(requires: [SUPER_ADMIN])
+}
+
+input CreateSystemConfigurationInput {
+  key: String!
+  value: JSON!
+  description: String
+  isEncrypted: Boolean!
+  isGlobal: Boolean!
+  branchId: ID
+  category: String!
+}
+
+input UpdateSystemConfigurationInput {
+  value: JSON
+  description: String
+  isEncrypted: Boolean
+  isGlobal: Boolean
+  branchId: ID
+  category: String
+}
+
+input ScheduleMaintenanceInput {
+  title: String!
+  description: String!
+  type: String!
+  scheduledStart: DateTime!
+  scheduledEnd: DateTime!
+  affectedServices: [String!]!
+  sendNotification: Boolean!
+}
+
+input UpdateMaintenanceScheduleInput {
+  title: String
+  description: String
+  type: String
+  scheduledStart: DateTime
+  scheduledEnd: DateTime
+  affectedServices: [String!]
+  sendNotification: Boolean
+}
+
+input StartDataImportInput {
+  sourceFile: String!
+  entityType: String!
+  options: JSON!
+  skipValidation: Boolean
+  updateExisting: Boolean
+}
+
+input StartDataExportInput {
+  entityType: String!
+  filters: JSON
+  format: String!
+  includeRelations: Boolean
+  destination: String
+}
+
+input StartBackupInput {
+  includeAttachments: Boolean!
+  description: String
+  storageLocation: String
+}
+
+input StartRestoreInput {
+  backupFile: String!
+  restoreOptions: JSON!
+}
+
+input CreateCustomFieldInput {
+  name: String!
+  key: String!
+  description: String
+  entityType: String!
+  fieldType: String!
+  isRequired: Boolean!
+  isSearchable: Boolean!
+  isPrivate: Boolean!
+  options: [String!]
+  defaultValue: JSON
+  validationRules: JSON
+  order: Int!
+  branchId: ID
+  isGlobal: Boolean!
+}
+
+input UpdateCustomFieldInput {
+  name: String
+  description: String
+  fieldType: String
+  isRequired: Boolean
+  isSearchable: Boolean
+  isPrivate: Boolean
+  options: [String!]
+  defaultValue: JSON
+  validationRules: JSON
+  order: Int
+  isGlobal: Boolean
+}
+
+input CreatePermissionTemplateInput {
+  name: String!
+  description: String
+  permissions: [String!]!
+  applicableRoles: [String!]!
+  isDefault: Boolean!
+}
+
+input UpdatePermissionTemplateInput {
+  name: String
+  description: String
+  permissions: [String!]
+  applicableRoles: [String!]
+  isDefault: Boolean
+}
+
+input UpdateBackupConfigurationInput {
+  isEnabled: Boolean
+  frequency: BackupFrequency
+  retentionCount: Int
+  storageLocation: String
+  includeAttachments: Boolean
+  backupTime: String
+  notifyOnCompletion: Boolean
+  notifyOnFailure: Boolean
+}
+
+input CreateApiKeyInput {
+  name: String!
+  permissions: [String!]!
+  expiresAt: DateTime
+}
+
+input UpdateApiKeyInput {
+  name: String
+  permissions: [String!]
+  expiresAt: DateTime
+  isActive: Boolean
+}
+
+input CreateMultibranchPolicyInput {
+  name: String!
+  description: String
+  policyType: String!
+  settings: JSON!
+  branchIds: [ID!]!
+  isEnabled: Boolean!
+}
+
+input UpdateMultibranchPolicyInput {
+  name: String
+  description: String
+  settings: JSON
+  isEnabled: Boolean
+}
+
+extend type Subscription {
+  # Get notified of maintenance schedule events
+  maintenanceScheduleUpdated: MaintenanceSchedule! @auth(requires: [ADMIN])
+  
+  # Get notified of data operation job status changes
+  dataOperationJobStatusChanged(jobId: ID!): DataOperationJob! @auth(requires: [ADMIN])
+  
+  # Get notified of new system issues
+  systemIssueDetected: SystemIssue! @auth(requires: [ADMIN])
+  
+  # Get notified of significant audit events
+  significantAuditEvent: AuditLog! @auth(requires: [ADMIN])
+  
+  # Get notified of backup completion
+  backupCompleted: DataOperationJob! @auth(requires: [ADMIN])
+}

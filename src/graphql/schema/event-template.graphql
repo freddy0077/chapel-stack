@@ -1,0 +1,130 @@
+"""
+Event Template schema - handles reusable templates for creating church events
+"""
+
+type EventTemplate {
+  id: ID!
+  title: String!
+  description: String
+  eventType: EventType!
+  duration: Int! # Duration in minutes
+  isRecurring: Boolean!
+  recurrenceType: EventRecurrenceType
+  recurrenceRule: String
+  resources: [String!]
+  volunteerRoles: [VolunteerRoleRequirement!]
+  applicableBranches: [ID!]
+  requiredSetup: String
+  customFields: JSON
+  isActive: Boolean!
+  usageCount: Int!
+  lastUsed: DateTime
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerRoleRequirement {
+  role: String!
+  count: Int!
+  description: String
+}
+
+extend type Query {
+  # Get all event templates with filtering
+  eventTemplates(
+    search: String
+    eventType: EventType
+    branch: ID
+    includeInactive: Boolean = false
+    pagination: PaginationInput
+  ): EventTemplateConnection! @auth(requires: [STAFF])
+  
+  # Get a specific event template by ID
+  eventTemplate(id: ID!): EventTemplate @auth(requires: [STAFF])
+}
+
+extend type Mutation {
+  # Create a new event template
+  createEventTemplate(input: CreateEventTemplateInput!): EventTemplate! @auth(requires: [STAFF])
+  
+  # Update an existing event template
+  updateEventTemplate(id: ID!, input: UpdateEventTemplateInput!): EventTemplate! @auth(requires: [STAFF])
+  
+  # Delete an event template
+  deleteEventTemplate(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create an event from a template
+  createEventFromTemplate(templateId: ID!, input: CreateEventFromTemplateInput!): Event! @auth(requires: [STAFF])
+}
+
+type EventTemplateConnection {
+  edges: [EventTemplateEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EventTemplateEdge {
+  node: EventTemplate!
+  cursor: String!
+}
+
+input CreateEventTemplateInput {
+  title: String!
+  description: String
+  eventType: EventType!
+  duration: Int! # Duration in minutes
+  isRecurring: Boolean! = false
+  recurrenceType: EventRecurrenceType
+  recurrenceRule: String
+  resources: [String!]
+  volunteerRoles: [VolunteerRoleRequirementInput!]
+  applicableBranches: [ID!]!
+  requiredSetup: String
+  customFields: JSON
+  isActive: Boolean! = true
+}
+
+input UpdateEventTemplateInput {
+  title: String
+  description: String
+  eventType: EventType
+  duration: Int
+  isRecurring: Boolean
+  recurrenceType: EventRecurrenceType
+  recurrenceRule: String
+  resources: [String!]
+  volunteerRoles: [VolunteerRoleRequirementInput!]
+  applicableBranches: [ID!]
+  requiredSetup: String
+  customFields: JSON
+  isActive: Boolean
+}
+
+input VolunteerRoleRequirementInput {
+  role: String!
+  count: Int!
+  description: String
+}
+
+input CreateEventFromTemplateInput {
+  startDate: Date!
+  endDate: Date
+  startTime: Time!
+  endTime: Time
+  location: String
+  address: AddressInput
+  isOnline: Boolean
+  onlineUrl: String
+  branchId: ID!
+  visibility: EventVisibility
+  capacity: Int
+  registrationRequired: Boolean
+  registrationDeadline: DateTime
+  waitlistEnabled: Boolean
+  fee: Float
+  currency: String
+  featuredImage: String
+  calendarId: ID!
+  ministryId: ID
+  customFields: JSON
+}

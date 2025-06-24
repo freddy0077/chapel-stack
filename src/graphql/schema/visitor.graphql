@@ -1,0 +1,725 @@
+"""
+Visitor Management schema - handles visitor tracking, follow-up, and conversion processes
+"""
+
+enum VisitorSource {
+  WEBSITE
+  SOCIAL_MEDIA
+  PERSONAL_INVITATION
+  COMMUNITY_EVENT
+  ADVERTISEMENT
+  SEARCH_ENGINE
+  WALK_IN
+  REFERRAL
+  OTHER
+}
+
+enum VisitorStatus {
+  NEW
+  ACTIVE
+  CONTACTED
+  IN_FOLLOW_UP
+  CONVERTED
+  INACTIVE
+  DO_NOT_CONTACT
+}
+
+enum FollowUpStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SCHEDULED
+  CANCELLED
+  FAILED
+}
+
+enum FollowUpMethod {
+  EMAIL
+  PHONE_CALL
+  TEXT_MESSAGE
+  VISIT
+  LETTER
+  SOCIAL_MEDIA
+  IN_PERSON
+  VIDEO_CALL
+  OTHER
+}
+
+enum FollowUpOutcome {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  NO_RESPONSE
+  REQUESTED_MORE_INFO
+  SCHEDULED_VISIT
+  SCHEDULED_MEETING
+  COMPLETED_NEXT_STEPS
+  OTHER
+}
+
+enum VisitorInterestLevel {
+  VERY_INTERESTED
+  INTERESTED
+  NEUTRAL
+  SOMEWHAT_INTERESTED
+  NOT_INTERESTED
+  UNKNOWN
+}
+
+type Visitor {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String
+  phone: String
+  address: Address
+  source: VisitorSource!
+  dateOfFirstVisit: Date!
+  mostRecentVisit: Date
+  status: VisitorStatus!
+  notes: String
+  interests: [String!]
+  interestLevel: VisitorInterestLevel
+  visitorEvents: [VisitorEvent!]!
+  followUps: [VisitorFollowUp!]!
+  interactions: [VisitorInteraction!]!
+  prayerRequests: [PrayerRequest!]!
+  preferences: VisitorPreferences
+  branch: Branch!
+  memberProfile: Member
+  conversionDate: Date
+  invitedBy: Member
+  tags: [String!]
+  meta: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VisitorEvent {
+  id: ID!
+  visitor: Visitor!
+  event: Event!
+  registrationDate: DateTime!
+  checkedIn: Boolean!
+  checkInTime: DateTime
+  notes: String
+  feedback: String
+  rating: Int
+  followUpRequired: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VisitorFollowUp {
+  id: ID!
+  visitor: Visitor!
+  assignedTo: User!
+  status: FollowUpStatus!
+  method: FollowUpMethod!
+  scheduledDate: DateTime
+  completedDate: DateTime
+  outcome: FollowUpOutcome
+  notes: String
+  nextSteps: String
+  nextFollowUpDate: DateTime
+  priority: Int!
+  history: [FollowUpInteraction!]!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FollowUpInteraction {
+  id: ID!
+  followUp: VisitorFollowUp!
+  interactionDate: DateTime!
+  method: FollowUpMethod!
+  outcome: FollowUpOutcome!
+  notes: String
+  duration: Int
+  performedBy: User!
+  createdAt: DateTime!
+}
+
+type VisitorInteraction {
+  id: ID!
+  visitor: Visitor!
+  interactionDate: DateTime!
+  interactionType: String!
+  description: String!
+  staff: User
+  location: String
+  notes: String
+  outcome: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VisitorPreferences {
+  id: ID!
+  visitor: Visitor!
+  preferredContactMethod: FollowUpMethod!
+  preferredContactTime: String
+  preferredServiceTime: String
+  interestedInMinistries: [Ministry!]
+  needsTranslation: Boolean!
+  languagePreference: String
+  accommodationNeeds: String
+  dietaryRestrictions: String
+  updatedAt: DateTime!
+}
+
+type VisitorCampaign {
+  id: ID!
+  name: String!
+  description: String
+  startDate: Date!
+  endDate: Date
+  status: Status!
+  goal: Int
+  invitationsSent: Int!
+  visitorsAttended: Int!
+  branch: Branch!
+  events: [Event!]!
+  resources: [Resource!]
+  followUpTemplate: VisitorFollowUp
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VisitorJourney {
+  id: ID!
+  visitor: Visitor!
+  startDate: Date!
+  currentStage: String!
+  stageHistory: [VisitorJourneyStage!]!
+  targetCompletionDate: Date
+  completionDate: Date
+  success: Boolean
+  assignedGuide: User
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VisitorJourneyStage {
+  id: ID!
+  journey: VisitorJourney!
+  stageName: String!
+  startDate: Date!
+  completionDate: Date
+  duration: Int
+  notes: String
+  createdAt: DateTime!
+}
+
+type VisitorConversionFunnel {
+  id: ID!
+  name: String!
+  description: String
+  branch: Branch!
+  stages: [ConversionFunnelStage!]!
+  dateRange: DateRange!
+  totalVisitors: Int!
+  conversionRate: Float!
+  averageDaysToConversion: Float
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ConversionFunnelStage {
+  id: ID!
+  funnel: VisitorConversionFunnel!
+  name: String!
+  description: String
+  order: Int!
+  visitorCount: Int!
+  dropOffRate: Float
+  conversionRate: Float
+  averageDuration: Float
+}
+
+type VisitorMetrics {
+  id: ID!
+  branch: Branch!
+  period: DateRange!
+  totalVisitors: Int!
+  newVisitors: Int!
+  returningVisitors: Int!
+  conversionRate: Float!
+  averageFollowUps: Float!
+  topSources: [SourceMetric!]!
+  averageDaysToConversion: Float
+  visitorsWithoutFollowUp: Int!
+  pendingFollowUps: Int!
+  completedFollowUps: Int!
+  generatedAt: DateTime!
+}
+
+type SourceMetric {
+  source: VisitorSource!
+  count: Int!
+  percentage: Float!
+}
+
+extend type Query {
+  # Visitors
+  visitors(
+    search: String
+    status: VisitorStatus
+    source: VisitorSource
+    dateRange: DateRangeInput
+    interestLevel: VisitorInterestLevel
+    branchId: ID
+    pagination: PaginationInput
+  ): VisitorConnection! @auth(requires: [STAFF])
+  
+  visitor(id: ID!): Visitor @auth(requires: [STAFF])
+  
+  # Visitor events
+  visitorEvents(
+    visitorId: ID!
+    pagination: PaginationInput
+  ): VisitorEventConnection! @auth(requires: [STAFF])
+  
+  # Visitor follow-ups
+  visitorFollowUps(
+    visitorId: ID
+    assignedToId: ID
+    status: FollowUpStatus
+    method: FollowUpMethod
+    dateRange: DateRangeInput
+    branchId: ID
+    pagination: PaginationInput
+  ): VisitorFollowUpConnection! @auth(requires: [STAFF])
+  
+  visitorFollowUp(id: ID!): VisitorFollowUp @auth(requires: [STAFF])
+  
+  # My assigned follow-ups
+  myAssignedFollowUps(
+    status: FollowUpStatus
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): VisitorFollowUpConnection! @auth(requires: [STAFF])
+  
+  # Follow-up interactions
+  followUpInteractions(
+    followUpId: ID!
+    pagination: PaginationInput
+  ): FollowUpInteractionConnection! @auth(requires: [STAFF])
+  
+  # Visitor interactions
+  visitorInteractions(
+    visitorId: ID!
+    pagination: PaginationInput
+  ): VisitorInteractionConnection! @auth(requires: [STAFF])
+  
+  # Visitor preferences
+  visitorPreferences(visitorId: ID!): VisitorPreferences @auth(requires: [STAFF])
+  
+  # Visitor campaigns
+  visitorCampaigns(
+    status: Status
+    dateRange: DateRangeInput
+    branchId: ID
+    pagination: PaginationInput
+  ): VisitorCampaignConnection! @auth(requires: [STAFF])
+  
+  visitorCampaign(id: ID!): VisitorCampaign @auth(requires: [STAFF])
+  
+  # Visitor journey
+  visitorJourney(visitorId: ID!): VisitorJourney @auth(requires: [STAFF])
+  
+  visitorJourneys(
+    currentStage: String
+    guideId: ID
+    pagination: PaginationInput
+  ): VisitorJourneyConnection! @auth(requires: [STAFF])
+  
+  # Visitor conversion funnels
+  visitorConversionFunnels(
+    branchId: ID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): VisitorConversionFunnelConnection! @auth(requires: [STAFF])
+  
+  visitorConversionFunnel(id: ID!): VisitorConversionFunnel @auth(requires: [STAFF])
+  
+  # Visitor metrics
+  visitorMetrics(
+    branchId: ID
+    dateRange: DateRangeInput
+  ): VisitorMetrics! @auth(requires: [STAFF])
+  
+  # Upcoming follow-ups
+  upcomingFollowUps(
+    days: Int
+    assignedToId: ID
+    branchId: ID
+    pagination: PaginationInput
+  ): VisitorFollowUpConnection! @auth(requires: [STAFF])
+  
+  # Overdue follow-ups
+  overdueFollowUps(
+    assignedToId: ID
+    branchId: ID
+    pagination: PaginationInput
+  ): VisitorFollowUpConnection! @auth(requires: [STAFF])
+}
+
+type VisitorConnection {
+  edges: [VisitorEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorEdge {
+  node: Visitor!
+  cursor: String!
+}
+
+type VisitorEventConnection {
+  edges: [VisitorEventEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorEventEdge {
+  node: VisitorEvent!
+  cursor: String!
+}
+
+type VisitorFollowUpConnection {
+  edges: [VisitorFollowUpEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorFollowUpEdge {
+  node: VisitorFollowUp!
+  cursor: String!
+}
+
+type FollowUpInteractionConnection {
+  edges: [FollowUpInteractionEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FollowUpInteractionEdge {
+  node: FollowUpInteraction!
+  cursor: String!
+}
+
+type VisitorInteractionConnection {
+  edges: [VisitorInteractionEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorInteractionEdge {
+  node: VisitorInteraction!
+  cursor: String!
+}
+
+type VisitorCampaignConnection {
+  edges: [VisitorCampaignEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorCampaignEdge {
+  node: VisitorCampaign!
+  cursor: String!
+}
+
+type VisitorJourneyConnection {
+  edges: [VisitorJourneyEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorJourneyEdge {
+  node: VisitorJourney!
+  cursor: String!
+}
+
+type VisitorConversionFunnelConnection {
+  edges: [VisitorConversionFunnelEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisitorConversionFunnelEdge {
+  node: VisitorConversionFunnel!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Visitors
+  createVisitor(input: CreateVisitorInput!): Visitor! @auth(requires: [STAFF])
+  updateVisitor(id: ID!, input: UpdateVisitorInput!): Visitor! @auth(requires: [STAFF])
+  deleteVisitor(id: ID!): Boolean! @auth(requires: [STAFF])
+  convertVisitorToMember(visitorId: ID!, memberId: ID): Member! @auth(requires: [STAFF])
+  
+  # Visitor check-in
+  checkInVisitor(input: CheckInVisitorInput!): VisitorEvent! @auth(requires: [STAFF])
+  
+  # Visitor follow-ups
+  createVisitorFollowUp(input: CreateFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
+  updateVisitorFollowUp(id: ID!, input: UpdateFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
+  deleteVisitorFollowUp(id: ID!): Boolean! @auth(requires: [STAFF])
+  reassignFollowUp(id: ID!, newAssigneeId: ID!): VisitorFollowUp! @auth(requires: [STAFF])
+  completeFollowUp(id: ID!, input: CompleteFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
+  scheduleNextFollowUp(followUpId: ID!, input: ScheduleNextFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
+  
+  # Follow-up interactions
+  recordFollowUpInteraction(input: RecordInteractionInput!): FollowUpInteraction! @auth(requires: [STAFF])
+  
+  # Visitor interactions
+  recordVisitorInteraction(input: RecordVisitorInteractionInput!): VisitorInteraction! @auth(requires: [STAFF])
+  updateVisitorInteraction(id: ID!, input: UpdateVisitorInteractionInput!): VisitorInteraction! @auth(requires: [STAFF])
+  deleteVisitorInteraction(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Visitor preferences
+  updateVisitorPreferences(visitorId: ID!, input: UpdateVisitorPreferencesInput!): VisitorPreferences! @auth(requires: [STAFF])
+  
+  # Visitor campaigns
+  createVisitorCampaign(input: CreateVisitorCampaignInput!): VisitorCampaign! @auth(requires: [STAFF])
+  updateVisitorCampaign(id: ID!, input: UpdateVisitorCampaignInput!): VisitorCampaign! @auth(requires: [STAFF])
+  deleteVisitorCampaign(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Visitor journey
+  createVisitorJourney(input: CreateVisitorJourneyInput!): VisitorJourney! @auth(requires: [STAFF])
+  updateVisitorJourney(id: ID!, input: UpdateVisitorJourneyInput!): VisitorJourney! @auth(requires: [STAFF])
+  addJourneyStage(journeyId: ID!, input: AddJourneyStageInput!): VisitorJourneyStage! @auth(requires: [STAFF])
+  completeJourneyStage(stageId: ID!, completionDate: Date!, notes: String): VisitorJourneyStage! @auth(requires: [STAFF])
+  
+  # Visitor conversion funnels
+  createConversionFunnel(input: CreateConversionFunnelInput!): VisitorConversionFunnel! @auth(requires: [STAFF])
+  updateConversionFunnel(id: ID!, input: UpdateConversionFunnelInput!): VisitorConversionFunnel! @auth(requires: [STAFF])
+  deleteConversionFunnel(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Bulk operations
+  bulkAssignFollowUps(followUpIds: [ID!]!, assigneeId: ID!): Int! @auth(requires: [STAFF])
+  bulkUpdateVisitorStatus(visitorIds: [ID!]!, status: VisitorStatus!): Int! @auth(requires: [STAFF])
+  generateFollowUpsForVisitors(visitorIds: [ID!]!, template: CreateFollowUpInput!): Int! @auth(requires: [STAFF])
+}
+
+input CreateVisitorInput {
+  firstName: String!
+  lastName: String!
+  email: String
+  phone: String
+  address: AddressInput
+  source: VisitorSource!
+  dateOfFirstVisit: Date!
+  status: VisitorStatus!
+  notes: String
+  interests: [String!]
+  interestLevel: VisitorInterestLevel
+  branchId: ID!
+  invitedById: ID
+  tags: [String!]
+  meta: JSON
+  preferences: CreateVisitorPreferencesInput
+}
+
+input UpdateVisitorInput {
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  address: AddressInput
+  source: VisitorSource
+  dateOfFirstVisit: Date
+  mostRecentVisit: Date
+  status: VisitorStatus
+  notes: String
+  interests: [String!]
+  interestLevel: VisitorInterestLevel
+  branchId: ID
+  invitedById: ID
+  tags: [String!]
+  meta: JSON
+}
+
+input CreateVisitorPreferencesInput {
+  preferredContactMethod: FollowUpMethod!
+  preferredContactTime: String
+  preferredServiceTime: String
+  interestedInMinistryIds: [ID!]
+  needsTranslation: Boolean!
+  languagePreference: String
+  accommodationNeeds: String
+  dietaryRestrictions: String
+}
+
+input UpdateVisitorPreferencesInput {
+  preferredContactMethod: FollowUpMethod
+  preferredContactTime: String
+  preferredServiceTime: String
+  interestedInMinistryIds: [ID!]
+  needsTranslation: Boolean
+  languagePreference: String
+  accommodationNeeds: String
+  dietaryRestrictions: String
+}
+
+input CheckInVisitorInput {
+  visitorId: ID!
+  eventId: ID!
+  notes: String
+  followUpRequired: Boolean
+}
+
+input CreateFollowUpInput {
+  visitorId: ID!
+  assignedToId: ID!
+  status: FollowUpStatus!
+  method: FollowUpMethod!
+  scheduledDate: DateTime
+  notes: String
+  nextSteps: String
+  priority: Int!
+}
+
+input UpdateFollowUpInput {
+  assignedToId: ID
+  status: FollowUpStatus
+  method: FollowUpMethod
+  scheduledDate: DateTime
+  notes: String
+  nextSteps: String
+  priority: Int
+}
+
+input CompleteFollowUpInput {
+  completedDate: DateTime!
+  outcome: FollowUpOutcome!
+  notes: String
+  nextSteps: String
+  nextFollowUpDate: DateTime
+}
+
+input ScheduleNextFollowUpInput {
+  scheduledDate: DateTime!
+  method: FollowUpMethod!
+  notes: String
+  assignedToId: ID
+  priority: Int
+}
+
+input RecordInteractionInput {
+  followUpId: ID!
+  interactionDate: DateTime!
+  method: FollowUpMethod!
+  outcome: FollowUpOutcome!
+  notes: String
+  duration: Int
+}
+
+input RecordVisitorInteractionInput {
+  visitorId: ID!
+  interactionDate: DateTime!
+  interactionType: String!
+  description: String!
+  staffId: ID
+  location: String
+  notes: String
+  outcome: String
+}
+
+input UpdateVisitorInteractionInput {
+  interactionDate: DateTime
+  interactionType: String
+  description: String
+  staffId: ID
+  location: String
+  notes: String
+  outcome: String
+}
+
+input CreateVisitorCampaignInput {
+  name: String!
+  description: String
+  startDate: Date!
+  endDate: Date
+  goal: Int
+  branchId: ID!
+  eventIds: [ID!]!
+  resourceIds: [ID!]
+  followUpTemplateId: ID
+}
+
+input UpdateVisitorCampaignInput {
+  name: String
+  description: String
+  startDate: Date
+  endDate: Date
+  status: Status
+  goal: Int
+  eventIds: [ID!]
+  resourceIds: [ID!]
+  followUpTemplateId: ID
+}
+
+input CreateVisitorJourneyInput {
+  visitorId: ID!
+  startDate: Date!
+  currentStage: String!
+  targetCompletionDate: Date
+  assignedGuideId: ID
+  notes: String
+  initialStages: [JourneyStageInput!]
+}
+
+input UpdateVisitorJourneyInput {
+  currentStage: String
+  targetCompletionDate: Date
+  completionDate: Date
+  success: Boolean
+  assignedGuideId: ID
+  notes: String
+}
+
+input JourneyStageInput {
+  stageName: String!
+  startDate: Date!
+  completionDate: Date
+  notes: String
+}
+
+input AddJourneyStageInput {
+  stageName: String!
+  startDate: Date!
+  notes: String
+}
+
+input CreateConversionFunnelInput {
+  name: String!
+  description: String
+  branchId: ID!
+  dateRange: DateRangeInput!
+  stages: [ConversionFunnelStageInput!]!
+}
+
+input UpdateConversionFunnelInput {
+  name: String
+  description: String
+  dateRange: DateRangeInput
+  stages: [ConversionFunnelStageInput!]
+}
+
+input ConversionFunnelStageInput {
+  name: String!
+  description: String
+  order: Int!
+}
+
+extend type Subscription {
+  # Get notified when a new visitor is created
+  visitorCreated(branchId: ID): Visitor! @auth(requires: [STAFF])
+  
+  # Get notified when a visitor is converted to a member
+  visitorConverted(branchId: ID): Member! @auth(requires: [STAFF])
+  
+  # Get notified of new assigned follow-ups
+  followUpAssigned(userId: ID!): VisitorFollowUp! @auth(requires: [STAFF])
+  
+  # Get notified when a follow-up is due soon
+  followUpDueSoon(userId: ID!, hoursBefore: Int!): VisitorFollowUp! @auth(requires: [STAFF])
+}

@@ -1,0 +1,82 @@
+"""
+Base schema file containing shared scalar definitions and directives
+"""
+
+scalar Date
+scalar DateTime
+scalar Time
+scalar Upload
+scalar JSON
+scalar JSONObject
+
+directive @auth(requires: [Role!]) on FIELD_DEFINITION
+directive @branchAccess(requires: [BranchRole!]) on FIELD_DEFINITION
+directive @deprecated(reason: String) on FIELD_DEFINITION | ENUM_VALUE
+directive @cacheControl(
+  maxAge: Int
+  scope: CacheControlScope
+) on FIELD_DEFINITION | OBJECT | INTERFACE
+
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  BRANCH_ADMIN
+  PASTOR
+  STAFF
+  MINISTRY_LEADER
+  VOLUNTEER
+  MEMBER
+  GUEST
+}
+
+enum BranchRole {
+  ADMIN
+  PASTOR
+  STAFF
+  MINISTRY_LEADER
+  VOLUNTEER
+  MEMBER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  PENDING
+  ARCHIVED
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input PaginationInput {
+  page: Int = 1
+  perPage: Int = 20
+}
+
+type PaginationInfo {
+  currentPage: Int!
+  perPage: Int!
+  totalPages: Int!
+  totalItems: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+type Query {
+  _empty: String
+}
+
+type Mutation {
+  _empty: String
+}
+
+type Subscription {
+  _empty: String
+}

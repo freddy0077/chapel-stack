@@ -1,0 +1,454 @@
+"""
+Member Management schema - handles member profiles, families, and related functionality
+"""
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+  OTHER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  VISITOR
+  FIRST_TIME_VISITOR
+  RETURNING_VISITOR
+  TRANSFERRED_OUT
+  DECEASED
+  EXCOMMUNICATED
+  PENDING
+  PROSPECTIVE
+}
+
+enum RelationshipType {
+  SPOUSE
+  CHILD
+  PARENT
+  SIBLING
+  EXTENDED_FAMILY
+  GUARDIAN
+  DEPENDENT
+  OTHER
+}
+
+enum ContactPreference {
+  EMAIL
+  PHONE
+  SMS
+  POSTAL_MAIL
+  NO_CONTACT
+}
+
+type Member {
+  id: ID!
+  user: User
+  firstName: String!
+  middleName: String
+  lastName: String!
+  displayName: String
+  prefix: String
+  suffix: String
+  gender: Gender
+  dateOfBirth: Date
+  profileImage: String
+  email: String
+  phone: String
+  alternatePhone: String
+  address: Address
+  mailingAddress: Address
+  occupation: String
+  employer: String
+  maritalStatus: MaritalStatus
+  anniversaryDate: Date
+  status: MemberStatus!
+  primaryBranch: Branch!
+  branches: [BranchMember!]!
+  notes: String
+  isVisitor: Boolean!
+  firstVisitDate: Date
+  visitorNotes: String
+  isActive: Boolean!
+  family: Family
+  relationships: [Relationship!]
+  checkIns: [CheckIn!]
+  attendance: [Attendance!]
+  sacraments: [Sacrament!]
+  ministries: [MinistryMember!]
+  committees: [CommitteeMember!]
+  groups: [GroupMember!]
+  followUps: [FollowUp!]
+  contributions: [Contribution!]
+  membershipNumber: String
+  joinDate: Date
+  baptismDate: Date
+  communicationPreference: ContactPreference
+  preferredLanguage: String
+  skills: [Skill!]
+  interests: [Interest!]
+  customFields: JSON
+  emergencyContact: EmergencyContact
+  lastUpdated: DateTime!
+  createdAt: DateTime!
+  createdBy: User
+  updatedBy: User
+}
+
+type EmergencyContact {
+  name: String!
+  relationship: String!
+  phone: String!
+  alternatePhone: String
+  email: String
+}
+
+type Family {
+  id: ID!
+  name: String!
+  familyPhoto: String
+  primaryContact: Member
+  headOfHousehold: Member
+  members: [Member!]!
+  address: Address
+  familyNotes: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Relationship {
+  id: ID!
+  member: Member!
+  relatedMember: Member!
+  relationshipType: RelationshipType!
+  isPrimary: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Skill {
+  id: ID!
+  name: String!
+  description: String
+}
+
+type Interest {
+  id: ID!
+  name: String!
+  description: String
+}
+
+type FollowUp {
+  id: ID!
+  member: Member!
+  assignedTo: User
+  type: String!
+  status: String!
+  notes: String
+  completedDate: DateTime
+  scheduledDate: DateTime
+  outcome: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all members with filtering
+  members(
+    search: String
+    status: MemberStatus
+    branchId: ID
+    ageRange: AgeRangeInput
+    joinDateRange: DateRangeInput
+    familyId: ID
+    membershipStatus: MemberStatus
+    ministryId: ID
+    pagination: PaginationInput
+    sortBy: String
+    sortDirection: SortOrder
+  ): MemberConnection! @auth(requires: [STAFF])
+  
+  # Get a specific member by ID
+  member(id: ID!): Member @auth(requires: [STAFF])
+  
+  # Get a specific member by user ID
+  memberByUserId(userId: ID!): Member @auth(requires: [STAFF])
+  
+  # Get my member profile (for authenticated users)
+  myProfile: Member @auth(requires: [MEMBER])
+  
+  # Get all families
+  families(
+    search: String, 
+    branchId: ID, 
+    pagination: PaginationInput
+  ): FamilyConnection! @auth(requires: [STAFF])
+  
+  # Get a specific family
+  family(id: ID!): Family @auth(requires: [STAFF])
+  
+  # Get follow-ups
+  followUps(
+    status: String, 
+    assignedToId: ID, 
+    dateRange: DateRangeInput, 
+    branchId: ID, 
+    pagination: PaginationInput
+  ): FollowUpConnection! @auth(requires: [STAFF])
+  
+  # Get all skills
+  skills: [Skill!]! @auth(requires: [STAFF])
+  
+  # Get all interests
+  interests: [Interest!]! @auth(requires: [STAFF])
+  
+  # Search members (simpler version with fewer filters)
+  searchMembers(query: String!, limit: Int): [Member!]! @auth(requires: [STAFF])
+  
+  # Get relationships for a member
+  memberRelationships(memberId: ID!): [Relationship!]! @auth(requires: [STAFF])
+}
+
+type MemberConnection {
+  edges: [MemberEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MemberEdge {
+  node: Member!
+  cursor: String!
+}
+
+type FamilyConnection {
+  edges: [FamilyEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FamilyEdge {
+  node: Family!
+  cursor: String!
+}
+
+type FollowUpConnection {
+  edges: [FollowUpEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FollowUpEdge {
+  node: FollowUp!
+  cursor: String!
+}
+
+input AgeRangeInput {
+  min: Int
+  max: Int
+}
+
+input DateRangeInput {
+  startDate: Date
+  endDate: Date
+}
+
+extend type Mutation {
+  # Create a new member
+  createMember(input: CreateMemberInput!): Member! @auth(requires: [STAFF])
+  
+  # Update an existing member
+  updateMember(id: ID!, input: UpdateMemberInput!): Member! @auth(requires: [STAFF])
+  
+  # Delete a member
+  deleteMember(id: ID!, reason: String): Boolean! @auth(requires: [ADMIN])
+  
+  # Update member status
+  updateMemberStatus(id: ID!, status: MemberStatus!, reason: String, notes: String): Member! @auth(requires: [STAFF])
+  
+  # Create a new family
+  createFamily(input: CreateFamilyInput!): Family! @auth(requires: [STAFF])
+  
+  # Update an existing family
+  updateFamily(id: ID!, input: UpdateFamilyInput!): Family! @auth(requires: [STAFF])
+  
+  # Add a member to a family
+  addMemberToFamily(familyId: ID!, memberId: ID!, relationshipType: RelationshipType!): Family! @auth(requires: [STAFF])
+  
+  # Remove a member from a family
+  removeMemberFromFamily(familyId: ID!, memberId: ID!): Family! @auth(requires: [STAFF])
+  
+  # Create a relationship between members
+  createRelationship(input: CreateRelationshipInput!): Relationship! @auth(requires: [STAFF])
+  
+  # Update a relationship
+  updateRelationship(id: ID!, relationshipType: RelationshipType!, isPrimary: Boolean): Relationship! @auth(requires: [STAFF])
+  
+  # Delete a relationship
+  deleteRelationship(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a follow-up task
+  createFollowUp(input: CreateFollowUpInput!): FollowUp! @auth(requires: [STAFF])
+  
+  # Update a follow-up task
+  updateFollowUp(id: ID!, input: UpdateFollowUpInput!): FollowUp! @auth(requires: [STAFF])
+  
+  # Complete a follow-up task
+  completeFollowUp(id: ID!, outcome: String!): FollowUp! @auth(requires: [STAFF])
+  
+  # Add or update member's emergency contact
+  updateEmergencyContact(memberId: ID!, input: EmergencyContactInput!): Member! @auth(requires: [STAFF])
+  
+  # Create a new skill
+  createSkill(name: String!, description: String): Skill! @auth(requires: [STAFF])
+  
+  # Create a new interest
+  createInterest(name: String!, description: String): Interest! @auth(requires: [STAFF])
+  
+  # Add skills to a member
+  addSkillsToMember(memberId: ID!, skillIds: [ID!]!): Member! @auth(requires: [STAFF])
+  
+  # Add interests to a member
+  addInterestsToMember(memberId: ID!, interestIds: [ID!]!): Member! @auth(requires: [STAFF])
+}
+
+input CreateMemberInput {
+  firstName: String!
+  middleName: String
+  lastName: String!
+  prefix: String
+  suffix: String
+  gender: Gender
+  dateOfBirth: Date
+  profileImage: Upload
+  email: String
+  phone: String
+  alternatePhone: String
+  address: AddressInput
+  mailingAddress: AddressInput
+  occupation: String
+  employer: String
+  maritalStatus: MaritalStatus
+  anniversaryDate: Date
+  status: MemberStatus!
+  primaryBranchId: ID!
+  notes: String
+  visitorNotes: String
+  firstVisitDate: Date
+  membershipNumber: String
+  joinDate: Date
+  baptismDate: Date
+  communicationPreference: ContactPreference
+  preferredLanguage: String
+  skillIds: [ID!]
+  interestIds: [ID!]
+  customFields: JSON
+  emergencyContact: EmergencyContactInput
+  createLogin: Boolean
+  familyId: ID
+  relationshipToFamilyHead: RelationshipType
+}
+
+input UpdateMemberInput {
+  firstName: String
+  middleName: String
+  lastName: String
+  prefix: String
+  suffix: String
+  gender: Gender
+  dateOfBirth: Date
+  profileImage: Upload
+  email: String
+  phone: String
+  alternatePhone: String
+  address: AddressInput
+  mailingAddress: AddressInput
+  occupation: String
+  employer: String
+  maritalStatus: MaritalStatus
+  anniversaryDate: Date
+  status: MemberStatus
+  primaryBranchId: ID
+  notes: String
+  visitorNotes: String
+  firstVisitDate: Date
+  membershipNumber: String
+  joinDate: Date
+  baptismDate: Date
+  communicationPreference: ContactPreference
+  preferredLanguage: String
+  skillIds: [ID!]
+  interestIds: [ID!]
+  customFields: JSON
+}
+
+input EmergencyContactInput {
+  name: String!
+  relationship: String!
+  phone: String!
+  alternatePhone: String
+  email: String
+}
+
+input CreateFamilyInput {
+  name: String!
+  familyPhoto: Upload
+  primaryContactId: ID
+  headOfHouseholdId: ID
+  address: AddressInput
+  notes: String
+  memberIds: [ID!]
+}
+
+input UpdateFamilyInput {
+  name: String
+  familyPhoto: Upload
+  primaryContactId: ID
+  headOfHouseholdId: ID
+  address: AddressInput
+  notes: String
+  isActive: Boolean
+}
+
+input CreateRelationshipInput {
+  memberId: ID!
+  relatedMemberId: ID!
+  relationshipType: RelationshipType!
+  isPrimary: Boolean!
+}
+
+input CreateFollowUpInput {
+  memberId: ID!
+  assignedToId: ID!
+  type: String!
+  notes: String
+  scheduledDate: DateTime!
+}
+
+input UpdateFollowUpInput {
+  assignedToId: ID
+  type: String
+  status: String
+  notes: String
+  scheduledDate: DateTime
+}
+
+extend type Subscription {
+  # Get notified when a new member is created
+  memberCreated(branchId: ID): Member! @auth(requires: [STAFF])
+  
+  # Get notified when a member's status changes
+  memberStatusChanged(branchId: ID): Member! @auth(requires: [STAFF])
+  
+  # Get notified when a follow-up is assigned to you
+  followUpAssigned: FollowUp! @auth(requires: [STAFF])
+  
+  # Get notified when a follow-up status changes
+  followUpStatusChanged(assignedToId: ID): FollowUp! @auth(requires: [STAFF])
+}

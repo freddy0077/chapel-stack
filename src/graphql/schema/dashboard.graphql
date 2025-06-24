@@ -1,0 +1,624 @@
+"""
+Dashboard schema - provides real-time metrics and data for dashboard views across the system
+"""
+
+enum DashboardTimeframe {
+  TODAY
+  YESTERDAY
+  THIS_WEEK
+  LAST_WEEK
+  THIS_MONTH
+  LAST_MONTH
+  THIS_QUARTER
+  LAST_QUARTER
+  THIS_YEAR
+  LAST_YEAR
+  CUSTOM
+}
+
+enum DashboardViewType {
+  OVERVIEW
+  ATTENDANCE
+  MEMBERSHIP
+  FINANCIAL
+  MINISTRY
+  VISITOR
+  EVENTS
+  SECURITY
+  SACRAMENTS
+  COMMUNICATION
+  CUSTOM
+}
+
+enum DashboardWidgetType {
+  COUNTER
+  PROGRESS
+  CHART_BAR
+  CHART_LINE
+  CHART_PIE
+  CHART_AREA
+  TABLE
+  CALENDAR
+  ALERT
+  MAP
+  TIMELINE
+  CHECKLIST
+  CUSTOM
+}
+
+enum DashboardComparisonPeriod {
+  PREVIOUS_PERIOD
+  SAME_PERIOD_LAST_YEAR
+  YEAR_TO_DATE
+  CUSTOM
+}
+
+type DashboardOverview {
+  lastUpdated: DateTime!
+  totalMembers: Int!
+  totalVisitors: Int!
+  attendanceToday: Int!
+  upcomingEvents: Int!
+  newMembersThisMonth: Int!
+  totalMinistries: Int!
+  activeVolunteers: Int!
+  pendingFollowUps: Int!
+  recentDonations: Float!
+  prayerRequestsToday: Int!
+  activeCampaigns: Int!
+  branch: Branch
+}
+
+type DashboardAttendanceMetrics {
+  lastUpdated: DateTime!
+  todayCount: Int!
+  todayUniqueCount: Int!
+  previousPeriodCount: Int!
+  percentChange: Float!
+  checkedInNow: Int!
+  recentCheckins: [CheckIn!]!
+  upcomingEvents: [Event!]!
+  checkinsPerHour: [HourlyCheckInCount!]!
+  staffPresent: Int!
+  newVisitorsToday: Int!
+  lateCheckins: Int!
+  branch: Branch
+}
+
+type DashboardAttendanceTrends {
+  lastUpdated: DateTime!
+  labels: [String!]!
+  totalSeries: [Int!]!
+  adultSeries: [Int!]!
+  childrenSeries: [Int!]!
+  firstTimeSeries: [Int!]!
+  growthRates: [Float!]!
+  compareToLastYear: [Float!]!
+  peakTimes: [PeakTimeData!]!
+  averageWeeklyAttendance: Float!
+  retentionRate: Float!
+  branch: Branch
+}
+
+type HourlyCheckInCount {
+  hour: Int!
+  count: Int!
+}
+
+type PeakTimeData {
+  dayOfWeek: String!
+  hour: Int!
+  averageCount: Int!
+}
+
+type DashboardMembershipMetrics {
+  lastUpdated: DateTime!
+  totalMembers: Int!
+  activeMembers: Int!
+  inactiveMembers: Int!
+  newMembersThisPeriod: Int!
+  membershipGrowthRate: Float!
+  upcomingBirthdays: [Member!]!
+  upcomingAnniversaries: [Member!]!
+  ageDistribution: [AgeGroupCount!]!
+  genderDistribution: [GenderCount!]!
+  membershipByStatus: [StatusCount!]!
+  topFamilies: [FamilySizeCount!]!
+  branch: Branch
+}
+
+type AgeGroupCount {
+  ageGroup: String!
+  count: Int!
+  percentChange: Float
+}
+
+type GenderCount {
+  gender: String!
+  count: Int!
+  percentage: Float!
+}
+
+type StatusCount {
+  status: String!
+  count: Int!
+  percentage: Float!
+}
+
+type FamilySizeCount {
+  family: Family!
+  size: Int!
+}
+
+type DashboardFinancialMetrics {
+  lastUpdated: DateTime!
+  totalIncome: Float!
+  totalExpenses: Float!
+  netBalance: Float!
+  thisWeekDonations: Float!
+  lastWeekDonations: Float!
+  percentChange: Float!
+  recentTransactions: [Transaction!]!
+  donationsByCategory: [CategoryAmount!]!
+  expensesByCategory: [CategoryAmount!]!
+  monthlyTrend: [MonthlyFinancialData!]!
+  topDonors: [DonorAmount!]!
+  campaignProgress: [CampaignProgress!]!
+  branch: Branch
+}
+
+type CategoryAmount {
+  category: String!
+  amount: Float!
+  percentage: Float!
+}
+
+type MonthlyFinancialData {
+  month: String!
+  income: Float!
+  expenses: Float!
+  net: Float!
+}
+
+type DonorAmount {
+  donor: Member!
+  amount: Float!
+  frequency: String!
+}
+
+type CampaignProgress {
+  campaign: Campaign!
+  raised: Float!
+  goal: Float!
+  percentage: Float!
+  daysLeft: Int
+}
+
+type DashboardMinistryMetrics {
+  lastUpdated: DateTime!
+  totalMinistries: Int!
+  activeMinistries: Int!
+  totalVolunteers: Int!
+  volunteerHoursThisMonth: Int!
+  upcomingMeetings: [Event!]!
+  ministryParticipation: [MinistryCount!]!
+  recentCommunications: [Message!]!
+  resourceUtilization: Float!
+  volunteerNeeds: Int!
+  ministryGrowthRate: [MinistryGrowth!]!
+  branch: Branch
+}
+
+type MinistryCount {
+  ministry: Ministry!
+  memberCount: Int!
+  percentChange: Float!
+}
+
+type MinistryGrowth {
+  ministry: Ministry!
+  growthRate: Float!
+  newMembers: Int!
+}
+
+type DashboardVisitorMetrics {
+  lastUpdated: DateTime!
+  newVisitorsToday: Int!
+  newVisitorsThisWeek: Int!
+  newVisitorsThisMonth: Int!
+  returnVisitorsThisMonth: Int!
+  conversionRate: Float!
+  pendingFollowUps: Int!
+  completedFollowUps: Int!
+  visitorsBySource: [SourceCount!]!
+  conversionBySource: [SourceConversionRate!]!
+  topVisitorInterests: [InterestCount!]!
+  visitorTrends: [VisitorTrendData!]!
+  branch: Branch
+}
+
+type SourceCount {
+  source: String!
+  count: Int!
+  percentage: Float!
+}
+
+type SourceConversionRate {
+  source: String!
+  conversionRate: Float!
+  totalConverted: Int!
+}
+
+type InterestCount {
+  interest: String!
+  count: Int!
+}
+
+type VisitorTrendData {
+  date: String!
+  newVisitors: Int!
+  returningVisitors: Int!
+  convertedToMembers: Int!
+}
+
+type DashboardEventMetrics {
+  lastUpdated: DateTime!
+  upcomingEvents: [Event!]!
+  todayEvents: [Event!]!
+  thisWeekEvents: Int!
+  thisMonthEvents: Int!
+  registrationsOpen: Int!
+  totalRegistrations: Int!
+  registrationsByEvent: [EventRegistrationCount!]!
+  eventCategories: [EventCategoryCount!]!
+  resourceUtilization: [ResourceUtilization!]!
+  popularTimeSlots: [TimeSlotPopularity!]!
+  branch: Branch
+}
+
+type EventRegistrationCount {
+  event: Event!
+  registrationCount: Int!
+  capacity: Int!
+  percentageFull: Float!
+}
+
+type EventCategoryCount {
+  category: String!
+  count: Int!
+  percentage: Float!
+}
+
+type ResourceUtilization {
+  resource: Resource!
+  utilizationRate: Float!
+  hoursBooked: Int!
+}
+
+type TimeSlotPopularity {
+  dayOfWeek: String!
+  timeSlot: String!
+  bookingCount: Int!
+}
+
+type DashboardSacramentMetrics {
+  lastUpdated: DateTime!
+  baptismsThisYear: Int!
+  baptismsByMonth: [MonthCount!]!
+  upcomingBaptisms: Int!
+  confirmationsThisYear: Int!
+  upcomingConfirmations: Int!
+  communionAttendance: [CommunionAttendance!]!
+  upcomingWeddings: Int!
+  weddingsThisYear: Int!
+  pendingSacramentalPreparations: Int!
+  sacramentsByPriest: [PriestSacramentCount!]!
+  branch: Branch
+}
+
+type MonthCount {
+  month: String!
+  count: Int!
+}
+
+type CommunionAttendance {
+  date: Date!
+  attendanceCount: Int!
+  percentageOfMembers: Float!
+}
+
+type PriestSacramentCount {
+  priest: User!
+  baptisms: Int!
+  weddings: Int!
+  confirmations: Int!
+  confessions: Int!
+  anointings: Int!
+}
+
+type DashboardCommunicationMetrics {
+  lastUpdated: DateTime!
+  emailsSentToday: Int!
+  textsSentToday: Int!
+  openRate: Float!
+  clickRate: Float!
+  bounceRate: Float!
+  topPerformingMessages: [Message!]!
+  communicationsByType: [CommunicationTypeCount!]!
+  scheduledMessages: Int!
+  activeCampaigns: Int!
+  unreadNotifications: Int!
+  responseRate: Float!
+  branch: Branch
+}
+
+type CommunicationTypeCount {
+  type: String!
+  count: Int!
+  percentage: Float!
+}
+
+type DashboardSecurityMetrics {
+  lastUpdated: DateTime!
+  activeSessions: Int!
+  loginAttempts24h: Int!
+  failedLogins24h: Int!
+  passwordResets24h: Int!
+  usersByRole: [RoleCount!]!
+  recentSecurityEvents: [AuditLog!]!
+  pendingAccessRequests: Int!
+  sensitiveDataAccesses: Int!
+  usersWithoutMFA: Int!
+  branchAccessDistribution: [BranchAccessCount!]!
+}
+
+type RoleCount {
+  role: String!
+  count: Int!
+  percentage: Float!
+}
+
+type BranchAccessCount {
+  branch: Branch!
+  userCount: Int!
+  percentage: Float!
+}
+
+type DashboardWidget {
+  id: ID!
+  title: String!
+  description: String
+  type: DashboardWidgetType!
+  dataSource: String!
+  dataQuery: JSON!
+  refreshInterval: Int!
+  size: String!
+  position: JSON!
+  styling: JSON
+  permissions: [UserRole!]!
+  lastRefreshed: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DashboardView {
+  id: ID!
+  name: String!
+  description: String
+  type: DashboardViewType!
+  widgets: [DashboardWidget!]!
+  layout: JSON!
+  isDefault: Boolean!
+  roles: [UserRole!]!
+  branches: [Branch!]
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get dashboard overview with combined metrics
+  dashboardOverview(
+    branchId: ID
+    timeframe: DashboardTimeframe = TODAY
+  ): DashboardOverview! @auth(requires: [STAFF])
+  
+  # Get attendance metrics for dashboard
+  dashboardAttendanceMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = TODAY
+  ): DashboardAttendanceMetrics! @auth(requires: [STAFF])
+  
+  # Get attendance trends for dashboard
+  dashboardAttendanceTrends(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_WEEK
+    intervals: Int = 12
+    eventTypes: [EventType!]
+  ): DashboardAttendanceTrends! @auth(requires: [STAFF])
+  
+  # Get membership metrics for dashboard
+  dashboardMembershipMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+  ): DashboardMembershipMetrics! @auth(requires: [STAFF])
+  
+  # Get financial metrics for dashboard
+  dashboardFinancialMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+    comparisonPeriod: DashboardComparisonPeriod = PREVIOUS_PERIOD
+  ): DashboardFinancialMetrics! @auth(requires: [STAFF])
+  
+  # Get ministry metrics for dashboard
+  dashboardMinistryMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+    ministryId: ID
+  ): DashboardMinistryMetrics! @auth(requires: [STAFF])
+  
+  # Get visitor metrics for dashboard
+  dashboardVisitorMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+  ): DashboardVisitorMetrics! @auth(requires: [STAFF])
+  
+  # Get event metrics for dashboard
+  dashboardEventMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+  ): DashboardEventMetrics! @auth(requires: [STAFF])
+  
+  # Get sacrament metrics for dashboard
+  dashboardSacramentMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_YEAR
+  ): DashboardSacramentMetrics! @auth(requires: [STAFF])
+  
+  # Get communication metrics for dashboard
+  dashboardCommunicationMetrics(
+    branchId: ID
+    timeframe: DashboardTimeframe = THIS_MONTH
+  ): DashboardCommunicationMetrics! @auth(requires: [STAFF])
+  
+  # Get security metrics for dashboard (Super Admin only)
+  dashboardSecurityMetrics(
+    timeframe: DashboardTimeframe = THIS_MONTH
+  ): DashboardSecurityMetrics! @auth(requires: [ADMIN])
+  
+  # Get user dashboard views
+  dashboardViews(
+    type: DashboardViewType
+    branchId: ID
+  ): [DashboardView!]! @auth(requires: [STAFF])
+  
+  # Get a specific dashboard view
+  dashboardView(id: ID!): DashboardView @auth(requires: [STAFF])
+  
+  # Get default dashboard view for user
+  defaultDashboardView: DashboardView! @auth(requires: [STAFF])
+  
+  # Get dashboard widgets
+  dashboardWidgets(
+    dashboardId: ID!
+  ): [DashboardWidget!]! @auth(requires: [STAFF])
+  
+  # Get a specific dashboard widget
+  dashboardWidget(id: ID!): DashboardWidget @auth(requires: [STAFF])
+  
+  # Get widget data
+  widgetData(
+    widgetId: ID!
+    parameters: JSON
+  ): JSON! @auth(requires: [STAFF])
+  
+  # Get all available widget types and data sources
+  availableWidgetOptions: JSON! @auth(requires: [STAFF])
+}
+
+extend type Mutation {
+  # Create a custom dashboard view
+  createDashboardView(input: CreateDashboardViewInput!): DashboardView! @auth(requires: [STAFF])
+  
+  # Update a dashboard view
+  updateDashboardView(id: ID!, input: UpdateDashboardViewInput!): DashboardView! @auth(requires: [STAFF])
+  
+  # Delete a dashboard view
+  deleteDashboardView(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Set default dashboard view
+  setDefaultDashboardView(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a dashboard widget
+  createDashboardWidget(input: CreateDashboardWidgetInput!): DashboardWidget! @auth(requires: [STAFF])
+  
+  # Update a dashboard widget
+  updateDashboardWidget(id: ID!, input: UpdateDashboardWidgetInput!): DashboardWidget! @auth(requires: [STAFF])
+  
+  # Delete a dashboard widget
+  deleteDashboardWidget(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update dashboard layout
+  updateDashboardLayout(dashboardId: ID!, layout: JSON!): DashboardView! @auth(requires: [STAFF])
+  
+  # Clone a dashboard view
+  cloneDashboardView(id: ID!, name: String!): DashboardView! @auth(requires: [STAFF])
+  
+  # Share a dashboard view with other users
+  shareDashboardView(id: ID!, roleIds: [ID!]!, branchIds: [ID!]): Boolean! @auth(requires: [STAFF])
+  
+  # Refresh widget data
+  refreshWidgetData(widgetId: ID!): JSON! @auth(requires: [STAFF])
+}
+
+input CreateDashboardViewInput {
+  name: String!
+  description: String
+  type: DashboardViewType!
+  widgets: [DashboardWidgetInput!]
+  layout: JSON
+  isDefault: Boolean
+  roleIds: [ID!]
+  branchIds: [ID!]
+}
+
+input UpdateDashboardViewInput {
+  name: String
+  description: String
+  type: DashboardViewType
+  isDefault: Boolean
+  roleIds: [ID!]
+  branchIds: [ID!]
+}
+
+input DashboardWidgetInput {
+  id: ID
+  title: String!
+  description: String
+  type: DashboardWidgetType!
+  dataSource: String!
+  dataQuery: JSON!
+  refreshInterval: Int!
+  size: String!
+  position: JSON!
+  styling: JSON
+  permissions: [UserRole!]
+}
+
+input CreateDashboardWidgetInput {
+  dashboardId: ID!
+  title: String!
+  description: String
+  type: DashboardWidgetType!
+  dataSource: String!
+  dataQuery: JSON!
+  refreshInterval: Int!
+  size: String!
+  position: JSON!
+  styling: JSON
+  permissions: [UserRole!]
+}
+
+input UpdateDashboardWidgetInput {
+  title: String
+  description: String
+  type: DashboardWidgetType
+  dataSource: String
+  dataQuery: JSON
+  refreshInterval: Int
+  size: String
+  position: JSON
+  styling: JSON
+  permissions: [UserRole!]
+}
+
+extend type Subscription {
+  # Get real-time updates for dashboard data
+  dashboardDataUpdated(dashboardId: ID!): JSON! @auth(requires: [STAFF])
+  
+  # Get widget data updates
+  widgetDataUpdated(widgetId: ID!): JSON! @auth(requires: [STAFF])
+  
+  # Get alerts for dashboard metrics (thresholds)
+  dashboardAlert(branchId: ID, type: DashboardViewType): JSON! @auth(requires: [STAFF])
+}

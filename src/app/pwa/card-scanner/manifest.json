@@ -1,0 +1,33 @@
+{
+  "name": "Church Card Scanner",
+  "short_name": "Card Scanner",
+  "description": "Scan member cards for attendance tracking",
+  "start_url": "/pwa/card-scanner",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities"],
+  "permissions": ["nfc"],
+  "shortcuts": [
+    {
+      "name": "Start Scanning",
+      "short_name": "Scan",
+      "description": "Begin scanning member cards",
+      "url": "/pwa/card-scanner",
+      "icons": [{ "src": "/icons/scan-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

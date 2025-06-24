@@ -1,0 +1,484 @@
+"""
+Sacramental Records schema - handles baptism, confirmation, communion, marriage records
+"""
+
+enum SacramentType {
+  BAPTISM
+  CONFIRMATION
+  FIRST_COMMUNION
+  MARRIAGE
+  HOLY_ORDERS
+  ANOINTING_OF_SICK
+  CONFESSION
+}
+
+enum MarriageStatus {
+  ENGAGED
+  MARRIED
+  ANNULLED
+  WIDOWED
+  DIVORCED
+}
+
+type Sacrament {
+  id: ID!
+  type: SacramentType!
+  member: Member!
+  date: Date!
+  branch: Branch!
+  performedBy: String!
+  certificate: Document
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  godparents: [Godparent!]
+  isVerified: Boolean!
+  verifiedBy: User
+  verificationDate: DateTime
+  customFields: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: User
+}
+
+type Godparent {
+  id: ID!
+  name: String!
+  relationship: String
+  email: String
+  phone: String
+  isMember: Boolean!
+  member: Member
+}
+
+type Baptism {
+  id: ID!
+  sacrament: Sacrament!
+  birthDate: Date!
+  birthPlace: String!
+  fatherName: String
+  motherName: String
+  motherMaidenName: String
+  godfather: Godparent
+  godmother: Godparent
+  minister: String!
+  baptismType: String!
+  emergencyBaptism: Boolean!
+  baptismCondition: String
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+}
+
+type Confirmation {
+  id: ID!
+  sacrament: Sacrament!
+  confirmationName: String
+  sponsor: Godparent!
+  bishop: String!
+  baptismPlace: String
+  baptismDate: Date
+  baptismCertificate: Document
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+}
+
+type FirstCommunion {
+  id: ID!
+  sacrament: Sacrament!
+  preparationClass: String
+  instructor: String
+  baptismCertificate: Document
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+}
+
+type Marriage {
+  id: ID!
+  sacrament: Sacrament!
+  groom: Member!
+  bride: Member!
+  groomBaptismCertificate: Document
+  brideBaptismCertificate: Document
+  groomConfirmationCertificate: Document
+  brideConfirmationCertificate: Document
+  witnesses: [String!]!
+  preNuptialFile: Document
+  civilMarriageCertificate: Document
+  dispensations: [String!]
+  permissions: [String!]
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  marriageStatus: MarriageStatus!
+  anniversary: Date!
+}
+
+type Document {
+  id: ID!
+  title: String!
+  filename: String!
+  fileUrl: String!
+  fileType: String!
+  fileSize: Int!
+  isVerified: Boolean!
+  verifiedBy: User
+  verificationDate: DateTime
+  uploadedBy: User!
+  uploadedAt: DateTime!
+}
+
+type CertificateTemplate {
+  id: ID!
+  name: String!
+  description: String
+  sacramentType: SacramentType!
+  templateFile: String!
+  branch: Branch
+  isDefault: Boolean!
+  fields: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all sacraments for a member
+  memberSacraments(memberId: ID!): [Sacrament!]! @auth(requires: [STAFF])
+  
+  # Get a specific sacrament
+  sacrament(id: ID!): Sacrament @auth(requires: [STAFF])
+  
+  # Get baptism record
+  baptism(sacramentId: ID!): Baptism @auth(requires: [STAFF])
+  
+  # Get confirmation record
+  confirmation(sacramentId: ID!): Confirmation @auth(requires: [STAFF])
+  
+  # Get first communion record
+  firstCommunion(sacramentId: ID!): FirstCommunion @auth(requires: [STAFF])
+  
+  # Get marriage record
+  marriage(sacramentId: ID!): Marriage @auth(requires: [STAFF])
+  
+  # Search sacramental records
+  searchSacraments(
+    type: SacramentType
+    branchId: ID
+    performedBy: String
+    dateRange: DateRangeInput
+    search: String
+    pagination: PaginationInput
+  ): SacramentConnection! @auth(requires: [STAFF])
+  
+  # Get all certificate templates
+  certificateTemplates(
+    sacramentType: SacramentType
+    branchId: ID
+  ): [CertificateTemplate!]! @auth(requires: [STAFF])
+  
+  # Get a specific certificate template
+  certificateTemplate(id: ID!): CertificateTemplate @auth(requires: [STAFF])
+  
+  # Get marriages for a date range
+  marriagesByDateRange(
+    branchId: ID!
+    startDate: Date!
+    endDate: Date!
+  ): [Marriage!]! @auth(requires: [STAFF])
+  
+  # Get baptisms for a date range
+  baptismsByDateRange(
+    branchId: ID!
+    startDate: Date!
+    endDate: Date!
+  ): [Baptism!]! @auth(requires: [STAFF])
+  
+  # Get upcoming anniversaries
+  upcomingAnniversaries(
+    branchId: ID!
+    days: Int!
+  ): [Marriage!]! @auth(requires: [STAFF])
+}
+
+type SacramentConnection {
+  edges: [SacramentEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SacramentEdge {
+  node: Sacrament!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create a baptism record
+  createBaptism(input: CreateBaptismInput!): Baptism! @auth(requires: [STAFF])
+  
+  # Update a baptism record
+  updateBaptism(id: ID!, input: UpdateBaptismInput!): Baptism! @auth(requires: [STAFF])
+  
+  # Create a confirmation record
+  createConfirmation(input: CreateConfirmationInput!): Confirmation! @auth(requires: [STAFF])
+  
+  # Update a confirmation record
+  updateConfirmation(id: ID!, input: UpdateConfirmationInput!): Confirmation! @auth(requires: [STAFF])
+  
+  # Create a first communion record
+  createFirstCommunion(input: CreateFirstCommunionInput!): FirstCommunion! @auth(requires: [STAFF])
+  
+  # Update a first communion record
+  updateFirstCommunion(id: ID!, input: UpdateFirstCommunionInput!): FirstCommunion! @auth(requires: [STAFF])
+  
+  # Create a marriage record
+  createMarriage(input: CreateMarriageInput!): Marriage! @auth(requires: [STAFF])
+  
+  # Update a marriage record
+  updateMarriage(id: ID!, input: UpdateMarriageInput!): Marriage! @auth(requires: [STAFF])
+  
+  # Upload a sacrament certificate
+  uploadSacramentCertificate(input: UploadDocumentInput!): Document! @auth(requires: [STAFF])
+  
+  # Verify a sacrament record
+  verifySacrament(id: ID!): Sacrament! @auth(requires: [STAFF])
+  
+  # Create a certificate template
+  createCertificateTemplate(input: CreateTemplateInput!): CertificateTemplate! @auth(requires: [ADMIN])
+  
+  # Update a certificate template
+  updateCertificateTemplate(id: ID!, input: UpdateTemplateInput!): CertificateTemplate! @auth(requires: [ADMIN])
+  
+  # Delete a certificate template
+  deleteCertificateTemplate(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Generate a certificate from a template
+  generateCertificate(sacramentId: ID!, templateId: ID!): String! @auth(requires: [STAFF])
+}
+
+input CreateBaptismInput {
+  memberId: ID!
+  date: Date!
+  branchId: ID!
+  performedBy: String!
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  godparents: [GodparentInput!]
+  customFields: JSON
+  
+  birthDate: Date!
+  birthPlace: String!
+  fatherName: String
+  motherName: String
+  motherMaidenName: String
+  minister: String!
+  baptismType: String!
+  emergencyBaptism: Boolean!
+  baptismCondition: String
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input UpdateBaptismInput {
+  date: Date
+  branchId: ID
+  performedBy: String
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  godparents: [GodparentInput!]
+  customFields: JSON
+  
+  birthDate: Date
+  birthPlace: String
+  fatherName: String
+  motherName: String
+  motherMaidenName: String
+  minister: String
+  baptismType: String
+  emergencyBaptism: Boolean
+  baptismCondition: String
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input GodparentInput {
+  name: String!
+  relationship: String
+  email: String
+  phone: String
+  isMember: Boolean!
+  memberId: ID
+}
+
+input CreateConfirmationInput {
+  memberId: ID!
+  date: Date!
+  branchId: ID!
+  performedBy: String!
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  godparents: [GodparentInput!]
+  customFields: JSON
+  
+  confirmationName: String
+  sponsor: GodparentInput!
+  bishop: String!
+  baptismPlace: String
+  baptismDate: Date
+  baptismCertificate: Upload
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input UpdateConfirmationInput {
+  date: Date
+  branchId: ID
+  performedBy: String
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  godparents: [GodparentInput!]
+  customFields: JSON
+  
+  confirmationName: String
+  sponsor: GodparentInput
+  bishop: String
+  baptismPlace: String
+  baptismDate: Date
+  baptismCertificate: Upload
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input CreateFirstCommunionInput {
+  memberId: ID!
+  date: Date!
+  branchId: ID!
+  performedBy: String!
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  customFields: JSON
+  
+  preparationClass: String
+  instructor: String
+  baptismCertificate: Upload
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input UpdateFirstCommunionInput {
+  date: Date
+  branchId: ID
+  performedBy: String
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  customFields: JSON
+  
+  preparationClass: String
+  instructor: String
+  baptismCertificate: Upload
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  certificate: Upload
+}
+
+input CreateMarriageInput {
+  memberId: ID!
+  date: Date!
+  branchId: ID!
+  performedBy: String!
+  witnesses: [String!]!
+  notes: String
+  specialPermissions: String
+  customFields: JSON
+  
+  groomId: ID!
+  brideId: ID!
+  groomBaptismCertificate: Upload
+  brideBaptismCertificate: Upload
+  groomConfirmationCertificate: Upload
+  brideConfirmationCertificate: Upload
+  preNuptialFile: Upload
+  civilMarriageCertificate: Upload
+  dispensations: [String!]
+  permissions: [String!]
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  marriageStatus: MarriageStatus!
+  certificate: Upload
+}
+
+input UpdateMarriageInput {
+  date: Date
+  branchId: ID
+  performedBy: String
+  witnesses: [String!]
+  notes: String
+  specialPermissions: String
+  customFields: JSON
+  
+  groomBaptismCertificate: Upload
+  brideBaptismCertificate: Upload
+  groomConfirmationCertificate: Upload
+  brideConfirmationCertificate: Upload
+  preNuptialFile: Upload
+  civilMarriageCertificate: Upload
+  dispensations: [String!]
+  permissions: [String!]
+  registryVolume: String
+  registryPage: String
+  registryNumber: String
+  marriageStatus: MarriageStatus
+  certificate: Upload
+}
+
+input UploadDocumentInput {
+  title: String!
+  file: Upload!
+  sacramentId: ID!
+  isVerified: Boolean
+}
+
+input CreateTemplateInput {
+  name: String!
+  description: String
+  sacramentType: SacramentType!
+  templateFile: Upload!
+  branchId: ID
+  isDefault: Boolean!
+  fields: [String!]!
+}
+
+input UpdateTemplateInput {
+  name: String
+  description: String
+  templateFile: Upload
+  branchId: ID
+  isDefault: Boolean
+  fields: [String!]
+}
+
+extend type Subscription {
+  # Get notified when a new sacrament is recorded
+  sacramentRecorded(branchId: ID, type: SacramentType): Sacrament! @auth(requires: [STAFF])
+  
+  # Get notified when a certificate is generated
+  certificateGenerated(branchId: ID): Document! @auth(requires: [STAFF])
+}

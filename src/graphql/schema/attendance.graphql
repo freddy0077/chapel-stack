@@ -1,0 +1,429 @@
+"""
+Attendance Tracking schema - handles check-ins, attendance records, and related functionality
+"""
+
+enum CheckInMethod {
+  CARD_SCAN
+  NFC
+  QR_CODE
+  MANUAL
+  KIOSK
+  MOBILE_APP
+}
+
+enum CheckInStatus {
+  CHECKED_IN
+  CHECKED_OUT
+  ABSENT
+  LATE
+  EARLY_DEPARTURE
+}
+
+enum AttendanceType {
+  SERVICE
+  EVENT
+  MINISTRY
+  GROUP
+  CLASS
+  OTHER
+}
+
+type CheckIn {
+  id: ID!
+  member: Member!
+  branch: Branch!
+  checkedInBy: User
+  checkedOutBy: User
+  checkInTime: DateTime!
+  checkOutTime: DateTime
+  checkInMethod: CheckInMethod!
+  checkInDevice: Device
+  checkInLocation: String
+  status: CheckInStatus!
+  notes: String
+  event: Event
+  service: Service
+  ministry: Ministry
+  group: Group
+  attendance: Attendance
+  family: Family
+  isFamily: Boolean!
+  familyMembers: [Member!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Attendance {
+  id: ID!
+  branch: Branch!
+  date: Date!
+  startTime: DateTime!
+  endTime: DateTime
+  type: AttendanceType!
+  totalAttendees: Int!
+  maleCount: Int
+  femaleCount: Int
+  childrenCount: Int
+  youthCount: Int
+  adultCount: Int
+  seniorCount: Int
+  firstTimeVisitorCount: Int
+  returningVisitorCount: Int
+  checkIns: [CheckIn!]!
+  service: Service
+  event: Event
+  ministry: Ministry
+  group: Group
+  notes: String
+  recordedBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Device {
+  id: ID!
+  name: String!
+  type: String!
+  serialNumber: String
+  status: Status!
+  lastSyncTime: DateTime
+  lastUsedTime: DateTime
+  branch: Branch!
+  location: String
+  assignedTo: User
+  isOfflineCapable: Boolean!
+  batteryLevel: Int
+  networkStatus: String
+  version: String
+  logs: [DeviceLog!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DeviceLog {
+  id: ID!
+  device: Device!
+  action: String!
+  timestamp: DateTime!
+  details: String
+  user: User
+  success: Boolean!
+  errorMessage: String
+}
+
+type AttendanceSummary {
+  totalAttendees: Int!
+  uniqueAttendees: Int!
+  avgAttendance: Float!
+  maxAttendance: Int!
+  minAttendance: Int!
+  firstTimeVisitors: Int!
+  returningVisitors: Int!
+  checkInCount: Int!
+  malePercentage: Float
+  femalePercentage: Float
+  childrenPercentage: Float
+  youthPercentage: Float
+  adultPercentage: Float
+  seniorPercentage: Float
+}
+
+type AttendanceTrend {
+  date: Date!
+  count: Int!
+  type: AttendanceType
+}
+
+type MemberAttendanceStats {
+  member: Member!
+  totalAttendance: Int!
+  attendancePercentage: Float!
+  lastAttended: Date
+  consecutiveAbsences: Int
+  averageCheckInTime: Time
+  attendanceTrend: [AttendanceTrend!]!
+}
+
+extend type Query {
+  # Get all attendance records with filtering
+  attendanceRecords(
+    branchId: ID
+    dateRange: DateRangeInput
+    type: AttendanceType
+    serviceId: ID
+    eventId: ID
+    ministryId: ID
+    groupId: ID
+    pagination: PaginationInput
+  ): AttendanceConnection! @auth(requires: [STAFF])
+  
+  # Attendance statistics
+  attendanceStatistics(
+    eventType: EventType
+    branchId: ID
+    ministryId: ID
+    dateRange: DateRangeInput!
+  ): AttendanceStatistics! @auth(requires: [STAFF])
+  
+  # Dashboard attendance metrics (real-time)
+  dashboardAttendanceMetrics(
+    branchId: ID
+    timeframe: String = "TODAY" # TODAY, WEEK, MONTH, YEAR
+  ): DashboardAttendanceMetrics! @auth(requires: [STAFF])
+  
+  # Dashboard attendance trends
+  dashboardAttendanceTrends(
+    branchId: ID
+    period: String = "WEEKLY" # DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUAL
+    intervals: Int = 12
+    eventTypes: [EventType!]
+  ): DashboardAttendanceTrends! @auth(requires: [STAFF])
+  
+  # Get a specific attendance record
+  attendance(id: ID!): Attendance @auth(requires: [STAFF])
+  
+  # Get all check-ins for a specific date/event/service
+  checkIns(
+    branchId: ID!
+    date: Date
+    serviceId: ID
+    eventId: ID
+    ministryId: ID
+    groupId: ID
+    status: CheckInStatus
+    pagination: PaginationInput
+  ): CheckInConnection! @auth(requires: [STAFF])
+  
+  # Get a specific check-in
+  checkIn(id: ID!): CheckIn @auth(requires: [STAFF])
+  
+  # Check if a member is checked in
+  isMemberCheckedIn(memberId: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Get attendance summary statistics
+  attendanceSummary(
+    branchId: ID
+    dateRange: DateRangeInput
+    type: AttendanceType
+    serviceId: ID
+    eventId: ID
+    ministryId: ID
+    groupId: ID
+  ): AttendanceSummary! @auth(requires: [STAFF])
+  
+  # Get attendance trends
+  attendanceTrends(
+    branchId: ID!
+    dateRange: DateRangeInput!
+    type: AttendanceType
+    interval: String!
+  ): [AttendanceTrend!]! @auth(requires: [STAFF])
+  
+  # Get attendance statistics for a specific member
+  memberAttendanceStats(memberId: ID!): MemberAttendanceStats! @auth(requires: [STAFF])
+  
+  # Get all registered devices
+  devices(
+    branchId: ID
+    status: Status
+    pagination: PaginationInput
+  ): DeviceConnection! @auth(requires: [STAFF])
+  
+  # Get a specific device
+  device(id: ID!): Device @auth(requires: [STAFF])
+  
+  # Get device logs
+  deviceLogs(
+    deviceId: ID!
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): DeviceLogConnection! @auth(requires: [STAFF])
+  
+  # Get members with attendance issues (missing several services)
+  membersWithAttendanceIssues(
+    branchId: ID!
+    minimumConsecutiveAbsences: Int!
+    attendanceType: AttendanceType
+    pagination: PaginationInput
+  ): MemberConnection! @auth(requires: [STAFF])
+}
+
+type AttendanceConnection {
+  edges: [AttendanceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type AttendanceEdge {
+  node: Attendance!
+  cursor: String!
+}
+
+type CheckInConnection {
+  edges: [CheckInEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CheckInEdge {
+  node: CheckIn!
+  cursor: String!
+}
+
+type DeviceConnection {
+  edges: [DeviceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type DeviceEdge {
+  node: Device!
+  cursor: String!
+}
+
+type DeviceLogConnection {
+  edges: [DeviceLogEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type DeviceLogEdge {
+  node: DeviceLog!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create a new attendance record
+  createAttendance(input: CreateAttendanceInput!): Attendance! @auth(requires: [STAFF])
+  
+  # Update an attendance record
+  updateAttendance(id: ID!, input: UpdateAttendanceInput!): Attendance! @auth(requires: [STAFF])
+  
+  # Delete an attendance record
+  deleteAttendance(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Check in a member
+  checkInMember(input: CheckInMemberInput!): CheckIn! @auth(requires: [STAFF])
+  
+  # Check out a member
+  checkOutMember(id: ID!, checkOutTime: DateTime): CheckIn! @auth(requires: [STAFF])
+  
+  # Check in a family (multiple members at once)
+  checkInFamily(input: CheckInFamilyInput!): [CheckIn!]! @auth(requires: [STAFF])
+  
+  # Record absence for a member
+  recordAbsence(memberId: ID!, date: Date!, reason: String): Boolean! @auth(requires: [STAFF])
+  
+  # Bulk check-in (for processing offline check-ins)
+  bulkCheckIn(input: [CheckInMemberInput!]!): [CheckIn!]! @auth(requires: [STAFF])
+  
+  # Register a new device
+  registerDevice(input: RegisterDeviceInput!): Device! @auth(requires: [BRANCH_ADMIN])
+  
+  # Update a device
+  updateDevice(id: ID!, input: UpdateDeviceInput!): Device! @auth(requires: [BRANCH_ADMIN])
+  
+  # Deactivate a device
+  deactivateDevice(id: ID!, reason: String): Device! @auth(requires: [BRANCH_ADMIN])
+  
+  # Sync device data (for offline devices)
+  syncDeviceData(deviceId: ID!, data: JSON!): Boolean! @auth(requires: [STAFF])
+  
+  # Generate QR code for check-in
+  generateCheckInQR(
+    eventId: ID
+    serviceId: ID
+    ministryId: ID
+    groupId: ID
+    expiresInMinutes: Int!
+  ): String! @auth(requires: [STAFF])
+}
+
+input CreateAttendanceInput {
+  branchId: ID!
+  date: Date!
+  startTime: DateTime!
+  endTime: DateTime
+  type: AttendanceType!
+  serviceId: ID
+  eventId: ID
+  ministryId: ID
+  groupId: ID
+  notes: String
+  checkInIds: [ID!]
+}
+
+input UpdateAttendanceInput {
+  date: Date
+  startTime: DateTime
+  endTime: DateTime
+  type: AttendanceType
+  serviceId: ID
+  eventId: ID
+  ministryId: ID
+  groupId: ID
+  notes: String
+  checkInIds: [ID!]
+}
+
+input CheckInMemberInput {
+  memberId: ID!
+  branchId: ID!
+  checkInTime: DateTime!
+  checkInMethod: CheckInMethod!
+  deviceId: ID
+  checkInLocation: String
+  serviceId: ID
+  eventId: ID
+  ministryId: ID
+  groupId: ID
+  notes: String
+}
+
+input CheckInFamilyInput {
+  familyId: ID!
+  memberIds: [ID!]!
+  branchId: ID!
+  checkInTime: DateTime!
+  checkInMethod: CheckInMethod!
+  deviceId: ID
+  checkInLocation: String
+  serviceId: ID
+  eventId: ID
+  ministryId: ID
+  groupId: ID
+  notes: String
+}
+
+input RegisterDeviceInput {
+  name: String!
+  type: String!
+  serialNumber: String
+  branchId: ID!
+  location: String
+  assignedToId: ID
+  isOfflineCapable: Boolean!
+  version: String
+}
+
+input UpdateDeviceInput {
+  name: String
+  type: String
+  serialNumber: String
+  branchId: ID
+  location: String
+  assignedToId: ID
+  status: Status
+  isOfflineCapable: Boolean
+  version: String
+}
+
+extend type Subscription {
+  # Get real-time check-ins for a branch
+  checkInReceived(branchId: ID!): CheckIn! @auth(requires: [STAFF])
+  
+  # Get real-time check-outs for a branch
+  checkOutReceived(branchId: ID!): CheckIn! @auth(requires: [STAFF])
+  
+  # Get device status updates
+  deviceStatusUpdated(branchId: ID): Device! @auth(requires: [STAFF])
+  
+  # Get notifications for members with attendance issues
+  memberAttendanceAlert(branchId: ID!): Member! @auth(requires: [STAFF])
+}

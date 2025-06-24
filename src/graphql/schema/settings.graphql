@@ -1,0 +1,425 @@
+"""
+Settings schema - handles user preferences, security settings, and account configuration
+"""
+
+enum LanguageCode {
+  ENGLISH
+  SPANISH
+  FRENCH
+  GERMAN
+  PORTUGUESE
+  ITALIAN
+}
+
+enum TimeZone {
+  AMERICA_NEW_YORK
+  AMERICA_CHICAGO
+  AMERICA_DENVER
+  AMERICA_LOS_ANGELES
+  AMERICA_ANCHORAGE
+  PACIFIC_HONOLULU
+  EUROPE_LONDON
+  EUROPE_PARIS
+  ASIA_TOKYO
+  AUSTRALIA_SYDNEY
+  AFRICA_CAIRO
+}
+
+enum DateFormat {
+  MM_DD_YYYY
+  DD_MM_YYYY
+  YYYY_MM_DD
+  MMM_D_YYYY
+  D_MMM_YYYY
+}
+
+enum TimeFormat {
+  TWELVE_HOUR
+  TWENTY_FOUR_HOUR
+}
+
+enum ThemeMode {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
+  TABLET
+  OTHER
+}
+
+enum CardType {
+  NFC
+  QR_CODE
+  BARCODE
+  RFID
+}
+
+enum SessionTimeoutDuration {
+  FIFTEEN_MINUTES
+  THIRTY_MINUTES
+  ONE_HOUR
+  TWO_HOURS
+  FOUR_HOURS
+  EIGHT_HOURS
+}
+
+type GeneralSettings {
+  id: ID!
+  user: User!
+  language: LanguageCode!
+  timeZone: TimeZone!
+  dateFormat: DateFormat!
+  timeFormat: TimeFormat!
+  theme: ThemeMode!
+  highContrastMode: Boolean!
+  autoSave: Boolean!
+  fontScale: Float!
+  compactView: Boolean!
+  colorblindMode: Boolean!
+  primaryBranch: Branch
+  updatedAt: DateTime!
+}
+
+type NotificationSettings {
+  id: ID!
+  user: User!
+  emailEnabled: Boolean!
+  smsEnabled: Boolean!
+  pushEnabled: Boolean!
+  inAppEnabled: Boolean!
+  emailAddress: String
+  phoneNumber: String
+  deviceTokens: [String!]
+  categories: [NotificationCategorySetting!]!
+  updatedAt: DateTime!
+}
+
+type NotificationCategorySetting {
+  id: ID!
+  notificationSettings: NotificationSettings!
+  category: String!
+  description: String
+  email: Boolean!
+  sms: Boolean!
+  push: Boolean!
+  inApp: Boolean!
+}
+
+type SecuritySettings {
+  id: ID!
+  user: User!
+  twoFactorEnabled: Boolean!
+  twoFactorMethod: String
+  loginAlerts: Boolean!
+  sessionTimeout: SessionTimeoutDuration!
+  lastPasswordChange: DateTime
+  requirePasswordChange: Boolean!
+  activeSessions: [ActiveSession!]!
+  securityEvents: [SecurityEvent!]!
+  recentLogins: [LoginActivity!]!
+  updatedAt: DateTime!
+}
+
+type ActiveSession {
+  id: ID!
+  user: User!
+  device: String!
+  browser: String
+  operatingSystem: String
+  ipAddress: String
+  location: String
+  lastActive: DateTime!
+  isCurrent: Boolean!
+  createdAt: DateTime!
+}
+
+type SecurityEvent {
+  id: ID!
+  user: User!
+  eventType: String!
+  description: String!
+  ipAddress: String
+  device: String
+  location: String
+  timestamp: DateTime!
+}
+
+type LoginActivity {
+  id: ID!
+  user: User!
+  success: Boolean!
+  ipAddress: String!
+  device: String!
+  location: String
+  timestamp: DateTime!
+}
+
+type BranchSettings {
+  id: ID!
+  user: User!
+  defaultBranch: Branch!
+  branchNotifications: [BranchNotificationSetting!]!
+  branchAccess: [BranchAccessSetting!]!
+  updatedAt: DateTime!
+}
+
+type BranchNotificationSetting {
+  id: ID!
+  branchSettings: BranchSettings!
+  branch: Branch!
+  announcements: Boolean!
+  events: Boolean!
+  ministryUpdates: Boolean!
+}
+
+type BranchAccessSetting {
+  id: ID!
+  branchSettings: BranchSettings!
+  branch: Branch!
+  role: String!
+  permissions: [String!]!
+}
+
+type DeviceSettings {
+  id: ID!
+  user: User!
+  connectedDevices: [ConnectedDevice!]!
+  attendanceCards: [AttendanceCard!]!
+  autoCheckIn: Boolean!
+  checkInNotifications: Boolean!
+  locationServicesEnabled: Boolean!
+  backgroundSyncEnabled: Boolean!
+  biometricAuthEnabled: Boolean!
+  updatedAt: DateTime!
+}
+
+type ConnectedDevice {
+  id: ID!
+  deviceSettings: DeviceSettings!
+  name: String!
+  type: DeviceType!
+  browser: String
+  operatingSystem: String
+  lastUsed: DateTime!
+  status: Status!
+  isTrusted: Boolean!
+  isCurrentDevice: Boolean!
+}
+
+type AttendanceCard {
+  id: ID!
+  deviceSettings: DeviceSettings!
+  cardType: CardType!
+  cardId: String!
+  isActive: Boolean!
+  label: String
+  registeredAt: DateTime!
+  lastUsed: DateTime
+}
+
+# User settings bundle - combines all settings for a user
+type UserSettings {
+  id: ID!
+  user: User!
+  general: GeneralSettings!
+  notifications: NotificationSettings!
+  security: SecuritySettings!
+  branch: BranchSettings!
+  device: DeviceSettings!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all user settings in a single query
+  userSettings: UserSettings! @auth(requires: [MEMBER])
+  
+  # Get individual settings categories
+  generalSettings: GeneralSettings! @auth(requires: [MEMBER])
+  notificationSettings: NotificationSettings! @auth(requires: [MEMBER])
+  securitySettings: SecuritySettings! @auth(requires: [MEMBER])
+  branchSettings: BranchSettings! @auth(requires: [MEMBER])
+  deviceSettings: DeviceSettings! @auth(requires: [MEMBER])
+  
+  # Get active sessions
+  activeSessions: [ActiveSession!]! @auth(requires: [MEMBER])
+  
+  # Get security audit events (limited to recent for regular users)
+  securityEvents(
+    limit: Int = 10,
+    offset: Int = 0
+  ): [SecurityEvent!]! @auth(requires: [MEMBER])
+  
+  # Get all security audit events (for admins, with filtering)
+  allSecurityEvents(
+    userId: ID,
+    eventType: String,
+    dateRange: DateRangeInput,
+    pagination: PaginationInput
+  ): SecurityEventConnection! @auth(requires: [ADMIN])
+  
+  # Get connected devices
+  connectedDevices: [ConnectedDevice!]! @auth(requires: [MEMBER])
+  
+  # Get attendance cards
+  attendanceCards: [AttendanceCard!]! @auth(requires: [MEMBER])
+  
+  # Get available language options
+  availableLanguages: [LanguageOption!]! @auth(requires: [MEMBER])
+  
+  # Get available timezone options
+  availableTimeZones: [TimeZoneOption!]! @auth(requires: [MEMBER])
+}
+
+type LanguageOption {
+  code: LanguageCode!
+  name: String!
+  nativeName: String!
+}
+
+type TimeZoneOption {
+  code: TimeZone!
+  name: String!
+  offset: String!
+}
+
+type SecurityEventConnection {
+  edges: [SecurityEventEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SecurityEventEdge {
+  node: SecurityEvent!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Update general settings
+  updateGeneralSettings(input: UpdateGeneralSettingsInput!): GeneralSettings! @auth(requires: [MEMBER])
+  
+  # Update notification settings
+  updateNotificationSettings(input: UpdateNotificationSettingsInput!): NotificationSettings! @auth(requires: [MEMBER])
+  
+  # Update category notification preferences
+  updateNotificationCategorySettings(input: UpdateNotificationCategoryInput!): NotificationCategorySetting! @auth(requires: [MEMBER])
+  
+  # Update all notification categories at once
+  bulkUpdateNotificationCategories(input: [UpdateNotificationCategoryInput!]!): [NotificationCategorySetting!]! @auth(requires: [MEMBER])
+  
+  # Security settings mutations
+  changePassword(input: ChangePasswordInput!): Boolean! @auth(requires: [MEMBER])
+  enableTwoFactor(input: EnableTwoFactorInput!): SecuritySettings! @auth(requires: [MEMBER])
+  disableTwoFactor(password: String!): SecuritySettings! @auth(requires: [MEMBER])
+  updateLoginAlerts(enabled: Boolean!): SecuritySettings! @auth(requires: [MEMBER])
+  updateSessionTimeout(timeout: SessionTimeoutDuration!): SecuritySettings! @auth(requires: [MEMBER])
+  
+  # Session management
+  revokeSession(sessionId: ID!): Boolean! @auth(requires: [MEMBER])
+  revokeAllSessions(exceptCurrent: Boolean = true): Boolean! @auth(requires: [MEMBER])
+  
+  # Branch settings mutations
+  updateDefaultBranch(branchId: ID!): BranchSettings! @auth(requires: [MEMBER])
+  updateBranchNotifications(input: UpdateBranchNotificationsInput!): BranchNotificationSetting! @auth(requires: [MEMBER])
+  
+  # Device settings mutations
+  updateDeviceSettings(input: UpdateDeviceSettingsInput!): DeviceSettings! @auth(requires: [MEMBER])
+  removeConnectedDevice(deviceId: ID!): Boolean! @auth(requires: [MEMBER])
+  updateDeviceTrustStatus(deviceId: ID!, isTrusted: Boolean!): ConnectedDevice! @auth(requires: [MEMBER])
+  
+  # Attendance card mutations
+  registerAttendanceCard(input: RegisterAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
+  updateAttendanceCard(id: ID!, input: UpdateAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
+  deactivateAttendanceCard(id: ID!): AttendanceCard! @auth(requires: [MEMBER])
+  replaceAttendanceCard(oldCardId: ID!, input: RegisterAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
+}
+
+input UpdateGeneralSettingsInput {
+  language: LanguageCode
+  timeZone: TimeZone
+  dateFormat: DateFormat
+  timeFormat: TimeFormat
+  theme: ThemeMode
+  highContrastMode: Boolean
+  autoSave: Boolean
+  fontScale: Float
+  compactView: Boolean
+  colorblindMode: Boolean
+  primaryBranchId: ID
+}
+
+input UpdateNotificationSettingsInput {
+  emailEnabled: Boolean
+  smsEnabled: Boolean
+  pushEnabled: Boolean
+  inAppEnabled: Boolean
+  emailAddress: String
+  phoneNumber: String
+  deviceToken: String
+}
+
+input UpdateNotificationCategoryInput {
+  category: String!
+  email: Boolean
+  sms: Boolean
+  push: Boolean
+  inApp: Boolean
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+  confirmPassword: String!
+}
+
+input EnableTwoFactorInput {
+  method: String!
+  phoneNumber: String
+  password: String!
+}
+
+input UpdateBranchNotificationsInput {
+  branchId: ID!
+  announcements: Boolean
+  events: Boolean
+  ministryUpdates: Boolean
+}
+
+input UpdateDeviceSettingsInput {
+  autoCheckIn: Boolean
+  checkInNotifications: Boolean
+  locationServicesEnabled: Boolean
+  backgroundSyncEnabled: Boolean
+  biometricAuthEnabled: Boolean
+}
+
+input RegisterAttendanceCardInput {
+  cardType: CardType!
+  cardId: String!
+  label: String
+}
+
+input UpdateAttendanceCardInput {
+  isActive: Boolean
+  label: String
+}
+
+extend type Subscription {
+  # Get notified when a new device connects to your account
+  deviceConnected: ConnectedDevice! @auth(requires: [MEMBER])
+  
+  # Get notified of security events
+  securityEventOccurred: SecurityEvent! @auth(requires: [MEMBER])
+  
+  # Get notified when settings change
+  settingsUpdated: UserSettings! @auth(requires: [MEMBER])
+}

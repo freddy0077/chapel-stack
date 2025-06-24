@@ -1,0 +1,820 @@
+"""
+Financial Management schema - handles tithes, offerings, donations, and financial transactions
+"""
+
+enum TransactionType {
+  TITHE
+  OFFERING
+  DONATION
+  PLEDGE
+  PAYMENT
+  REFUND
+  PURCHASE
+  EXPENSE
+  TRANSFER
+  ADJUSTMENT
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  MOBILE_PAYMENT
+  ONLINE_PAYMENT
+  CRYPTO
+  OTHER
+}
+
+enum FundType {
+  GENERAL
+  BUILDING
+  MISSIONS
+  BENEVOLENCE
+  YOUTH
+  CHILDREN
+  WORSHIP
+  MAINTENANCE
+  SPECIAL_PROJECT
+  SCHOLARSHIP
+  DESIGNATED
+  OTHER
+}
+
+enum PledgeStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  ONE_TIME
+}
+
+type Transaction {
+  id: ID!
+  transactionNumber: String!
+  transactionDate: DateTime!
+  transactionType: TransactionType!
+  amount: Float!
+  currency: String!
+  paymentMethod: PaymentMethod!
+  status: Status!
+  source: String
+  member: Member
+  household: Family
+  envelope: String
+  checkNumber: String
+  notes: String
+  category: String
+  fund: Fund
+  campaign: Campaign
+  batch: Batch
+  isRecurring: Boolean!
+  recurrenceFrequency: RecurrenceFrequency
+  recurrenceEndDate: Date
+  isAnonymous: Boolean!
+  receiptSent: Boolean!
+  receiptDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: User!
+  branch: Branch!
+  customFields: JSON
+}
+
+type Fund {
+  id: ID!
+  name: String!
+  description: String
+  type: FundType!
+  isActive: Boolean!
+  startDate: Date
+  endDate: Date
+  goal: Float
+  amountRaised: Float!
+  branch: Branch!
+  transactions: [Transaction!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Campaign {
+  id: ID!
+  name: String!
+  description: String
+  startDate: Date!
+  endDate: Date
+  goal: Float!
+  amountRaised: Float!
+  fundId: ID!
+  fund: Fund!
+  status: Status!
+  branch: Branch!
+  pledges: [Pledge!]!
+  transactions: [Transaction!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Pledge {
+  id: ID!
+  member: Member!
+  campaign: Campaign!
+  amount: Float!
+  startDate: Date!
+  endDate: Date
+  status: PledgeStatus!
+  completedAmount: Float!
+  remainingAmount: Float!
+  frequency: RecurrenceFrequency!
+  lastPaymentDate: DateTime
+  nextPaymentDate: DateTime
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Batch {
+  id: ID!
+  batchNumber: String!
+  batchDate: Date!
+  totalAmount: Float!
+  currency: String!
+  status: Status!
+  notes: String
+  countedBy: [User!]!
+  verifiedBy: User
+  depositDate: Date
+  bankDepositReference: String
+  transactions: [Transaction!]!
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Budget {
+  id: ID!
+  name: String!
+  description: String
+  fiscalYear: String!
+  startDate: Date!
+  endDate: Date!
+  totalAmount: Float!
+  branch: Branch!
+  status: Status!
+  categories: [BudgetCategory!]!
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type BudgetCategory {
+  id: ID!
+  budget: Budget!
+  name: String!
+  description: String
+  plannedAmount: Float!
+  actualAmount: Float!
+  variance: Float!
+  parentCategory: BudgetCategory
+  subcategories: [BudgetCategory!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FinancialStatement {
+  id: ID!
+  statementType: String!
+  startDate: Date!
+  endDate: Date!
+  branch: Branch!
+  fiscalYear: String!
+  quarter: Int
+  month: Int
+  totalIncome: Float!
+  totalExpenses: Float!
+  netAmount: Float!
+  generatedBy: User!
+  generatedAt: DateTime!
+  fileUrl: String
+}
+
+type ContributionStatement {
+  id: ID!
+  member: Member!
+  startDate: Date!
+  endDate: Date!
+  totalAmount: Float!
+  transactions: [Transaction!]!
+  generatedBy: User!
+  generatedAt: DateTime!
+  fileUrl: String
+  sentDate: DateTime
+  sentMethod: String
+}
+
+extend type Query {
+  # Get all transactions with filtering
+  transactions(
+    search: String
+    branchId: ID
+    transactionType: TransactionType
+    dateRange: DateRangeInput
+    memberId: ID
+    fundId: ID
+    campaignId: ID
+    batchId: ID
+    status: Status
+    paymentMethod: PaymentMethod
+    pagination: PaginationInput
+    sortField: String
+    sortOrder: SortOrder
+  ): TransactionConnection! @auth(requires: [STAFF])
+  
+  # Get a specific transaction
+  transaction(id: ID!): Transaction @auth(requires: [STAFF])
+  
+  # Get all funds
+  funds(
+    branchId: ID
+    type: FundType
+    isActive: Boolean
+    pagination: PaginationInput
+  ): FundConnection! @auth(requires: [STAFF])
+  
+  # Get a specific fund
+  fund(id: ID!): Fund @auth(requires: [STAFF])
+  
+  # Get all campaigns
+  campaigns(
+    branchId: ID
+    status: Status
+    fundId: ID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): CampaignConnection! @auth(requires: [STAFF])
+  
+  # Get a specific campaign
+  campaign(id: ID!): Campaign @auth(requires: [STAFF])
+  
+  # Get all pledges
+  pledges(
+    campaignId: ID
+    memberId: ID
+    status: PledgeStatus
+    pagination: PaginationInput
+  ): PledgeConnection! @auth(requires: [STAFF])
+  
+  # Get a specific pledge
+  pledge(id: ID!): Pledge @auth(requires: [STAFF])
+  
+  # Get all batches
+  batches(
+    branchId: ID
+    status: Status
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): BatchConnection! @auth(requires: [STAFF])
+  
+  # Get a specific batch
+  batch(id: ID!): Batch @auth(requires: [STAFF])
+  
+  # Get all budgets
+  budgets(
+    branchId: ID
+    fiscalYear: String
+    status: Status
+    pagination: PaginationInput
+  ): BudgetConnection! @auth(requires: [STAFF])
+  
+  # Get a specific budget
+  budget(id: ID!): Budget @auth(requires: [STAFF])
+  
+  # Get all budget categories for a budget
+  budgetCategories(budgetId: ID!): [BudgetCategory!]! @auth(requires: [STAFF])
+  
+  # Get financial statements
+  financialStatements(
+    branchId: ID!
+    statementType: String
+    fiscalYear: String
+    quarter: Int
+    month: Int
+    pagination: PaginationInput
+  ): FinancialStatementConnection! @auth(requires: [STAFF])
+  
+  # Get contribution statements
+  contributionStatements(
+    branchId: ID!
+    memberId: ID
+    year: String
+    pagination: PaginationInput
+  ): ContributionStatementConnection! @auth(requires: [STAFF])
+  
+  # Get member contributions
+  memberContributions(
+    memberId: ID!
+    dateRange: DateRangeInput
+    transactionType: TransactionType
+    pagination: PaginationInput
+  ): TransactionConnection! @auth(requires: [STAFF])
+  
+  # Get my contributions (for authenticated members)
+  myContributions(
+    dateRange: DateRangeInput
+    transactionType: TransactionType
+    pagination: PaginationInput
+  ): TransactionConnection! @auth(requires: [MEMBER])
+  
+  # Get financial dashboard data
+  financialDashboard(
+    branchId: ID!
+    period: String!
+    startDate: Date
+    endDate: Date
+  ): FinancialDashboard! @auth(requires: [STAFF])
+}
+
+type TransactionConnection {
+  edges: [TransactionEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TransactionEdge {
+  node: Transaction!
+  cursor: String!
+}
+
+type FundConnection {
+  edges: [FundEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FundEdge {
+  node: Fund!
+  cursor: String!
+}
+
+type CampaignConnection {
+  edges: [CampaignEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CampaignEdge {
+  node: Campaign!
+  cursor: String!
+}
+
+type PledgeConnection {
+  edges: [PledgeEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type PledgeEdge {
+  node: Pledge!
+  cursor: String!
+}
+
+type BatchConnection {
+  edges: [BatchEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type BatchEdge {
+  node: Batch!
+  cursor: String!
+}
+
+type BudgetConnection {
+  edges: [BudgetEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type BudgetEdge {
+  node: Budget!
+  cursor: String!
+}
+
+type FinancialStatementConnection {
+  edges: [FinancialStatementEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FinancialStatementEdge {
+  node: FinancialStatement!
+  cursor: String!
+}
+
+type ContributionStatementConnection {
+  edges: [ContributionStatementEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ContributionStatementEdge {
+  node: ContributionStatement!
+  cursor: String!
+}
+
+type FinancialDashboard {
+  totalIncome: Float!
+  totalExpenses: Float!
+  netIncome: Float!
+  incomeByCategory: [CategoryAmount!]!
+  expensesByCategory: [CategoryAmount!]!
+  transactionsByMethod: [MethodAmount!]!
+  topFunds: [FundAmount!]!
+  recentTransactions: [Transaction!]!
+  contributionTrends: [DateAmount!]!
+  campaignProgress: [CampaignProgress!]!
+}
+
+type CategoryAmount {
+  category: String!
+  amount: Float!
+  percentage: Float!
+}
+
+type MethodAmount {
+  method: PaymentMethod!
+  amount: Float!
+  count: Int!
+}
+
+type FundAmount {
+  fund: Fund!
+  amount: Float!
+  percentage: Float!
+}
+
+type DateAmount {
+  date: Date!
+  amount: Float!
+}
+
+type CampaignProgress {
+  campaign: Campaign!
+  goal: Float!
+  raised: Float!
+  percentage: Float!
+  remainingDays: Int
+}
+
+extend type Mutation {
+  # Create a new transaction
+  createTransaction(input: CreateTransactionInput!): Transaction! @auth(requires: [STAFF])
+  
+  # Update a transaction
+  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction! @auth(requires: [STAFF])
+  
+  # Delete a transaction
+  deleteTransaction(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Record a member contribution
+  recordContribution(input: ContributionInput!): Transaction! @auth(requires: [STAFF])
+  
+  # Create a new fund
+  createFund(input: CreateFundInput!): Fund! @auth(requires: [STAFF])
+  
+  # Update a fund
+  updateFund(id: ID!, input: UpdateFundInput!): Fund! @auth(requires: [STAFF])
+  
+  # Delete a fund
+  deleteFund(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a new campaign
+  createCampaign(input: CreateCampaignInput!): Campaign! @auth(requires: [STAFF])
+  
+  # Update a campaign
+  updateCampaign(id: ID!, input: UpdateCampaignInput!): Campaign! @auth(requires: [STAFF])
+  
+  # Delete a campaign
+  deleteCampaign(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a new pledge
+  createPledge(input: CreatePledgeInput!): Pledge! @auth(requires: [STAFF])
+  
+  # Update a pledge
+  updatePledge(id: ID!, input: UpdatePledgeInput!): Pledge! @auth(requires: [STAFF])
+  
+  # Delete a pledge
+  deletePledge(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Record pledge payment
+  recordPledgePayment(input: PledgePaymentInput!): Transaction! @auth(requires: [STAFF])
+  
+  # Create a new batch
+  createBatch(input: CreateBatchInput!): Batch! @auth(requires: [STAFF])
+  
+  # Update a batch
+  updateBatch(id: ID!, input: UpdateBatchInput!): Batch! @auth(requires: [STAFF])
+  
+  # Close a batch
+  closeBatch(id: ID!, depositDate: Date!, bankReference: String): Batch! @auth(requires: [STAFF])
+  
+  # Add transactions to a batch
+  addTransactionsToBatch(batchId: ID!, transactionIds: [ID!]!): Batch! @auth(requires: [STAFF])
+  
+  # Remove transactions from a batch
+  removeTransactionsFromBatch(batchId: ID!, transactionIds: [ID!]!): Batch! @auth(requires: [STAFF])
+  
+  # Create a new budget
+  createBudget(input: CreateBudgetInput!): Budget! @auth(requires: [STAFF])
+  
+  # Update a budget
+  updateBudget(id: ID!, input: UpdateBudgetInput!): Budget! @auth(requires: [STAFF])
+  
+  # Delete a budget
+  deleteBudget(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a budget category
+  createBudgetCategory(input: CreateBudgetCategoryInput!): BudgetCategory! @auth(requires: [STAFF])
+  
+  # Update a budget category
+  updateBudgetCategory(id: ID!, input: UpdateBudgetCategoryInput!): BudgetCategory! @auth(requires: [STAFF])
+  
+  # Delete a budget category
+  deleteBudgetCategory(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Generate financial statement
+  generateFinancialStatement(input: GenerateStatementInput!): FinancialStatement! @auth(requires: [STAFF])
+  
+  # Generate contribution statements
+  generateContributionStatements(input: GenerateContributionStatementsInput!): [ContributionStatement!]! @auth(requires: [STAFF])
+  
+  # Send contribution statements
+  sendContributionStatements(
+    statementIds: [ID!]!
+    sendMethod: String!
+  ): Boolean! @auth(requires: [STAFF])
+  
+  # Setup recurring contribution
+  setupRecurringContribution(input: RecurringContributionInput!): Transaction! @auth(requires: [MEMBER])
+  
+  # Cancel recurring contribution
+  cancelRecurringContribution(id: ID!): Boolean! @auth(requires: [MEMBER])
+}
+
+input CreateTransactionInput {
+  transactionDate: DateTime!
+  transactionType: TransactionType!
+  amount: Float!
+  currency: String!
+  paymentMethod: PaymentMethod!
+  source: String
+  memberId: ID
+  householdId: ID
+  envelope: String
+  checkNumber: String
+  notes: String
+  category: String
+  fundId: ID
+  campaignId: ID
+  batchId: ID
+  isRecurring: Boolean!
+  recurrenceFrequency: RecurrenceFrequency
+  recurrenceEndDate: Date
+  isAnonymous: Boolean!
+  branchId: ID!
+  customFields: JSON
+}
+
+input UpdateTransactionInput {
+  transactionDate: DateTime
+  transactionType: TransactionType
+  amount: Float
+  currency: String
+  paymentMethod: PaymentMethod
+  status: Status
+  source: String
+  memberId: ID
+  householdId: ID
+  envelope: String
+  checkNumber: String
+  notes: String
+  category: String
+  fundId: ID
+  campaignId: ID
+  batchId: ID
+  isRecurring: Boolean
+  recurrenceFrequency: RecurrenceFrequency
+  recurrenceEndDate: Date
+  isAnonymous: Boolean
+  customFields: JSON
+}
+
+input ContributionInput {
+  memberId: ID!
+  transactionDate: DateTime!
+  amount: Float!
+  currency: String!
+  transactionType: TransactionType!
+  paymentMethod: PaymentMethod!
+  fundId: ID
+  campaignId: ID
+  batchId: ID
+  checkNumber: String
+  envelope: String
+  notes: String
+  branchId: ID!
+  customFields: JSON
+}
+
+input CreateFundInput {
+  name: String!
+  description: String
+  type: FundType!
+  isActive: Boolean!
+  startDate: Date
+  endDate: Date
+  goal: Float
+  branchId: ID!
+}
+
+input UpdateFundInput {
+  name: String
+  description: String
+  type: FundType
+  isActive: Boolean
+  startDate: Date
+  endDate: Date
+  goal: Float
+}
+
+input CreateCampaignInput {
+  name: String!
+  description: String
+  startDate: Date!
+  endDate: Date
+  goal: Float!
+  fundId: ID!
+  status: Status!
+  branchId: ID!
+}
+
+input UpdateCampaignInput {
+  name: String
+  description: String
+  startDate: Date
+  endDate: Date
+  goal: Float
+  fundId: ID
+  status: Status
+}
+
+input CreatePledgeInput {
+  memberId: ID!
+  campaignId: ID!
+  amount: Float!
+  startDate: Date!
+  endDate: Date
+  frequency: RecurrenceFrequency!
+  notes: String
+}
+
+input UpdatePledgeInput {
+  amount: Float
+  startDate: Date
+  endDate: Date
+  status: PledgeStatus
+  frequency: RecurrenceFrequency
+  notes: String
+}
+
+input PledgePaymentInput {
+  pledgeId: ID!
+  amount: Float!
+  paymentDate: DateTime!
+  paymentMethod: PaymentMethod!
+  notes: String
+}
+
+input CreateBatchInput {
+  batchDate: Date!
+  totalAmount: Float!
+  currency: String!
+  notes: String
+  countedByIds: [ID!]!
+  transactionIds: [ID!]
+  branchId: ID!
+}
+
+input UpdateBatchInput {
+  batchDate: Date
+  totalAmount: Float
+  currency: String
+  notes: String
+  countedByIds: [ID!]
+  status: Status
+  depositDate: Date
+  bankDepositReference: String
+}
+
+input CreateBudgetInput {
+  name: String!
+  description: String
+  fiscalYear: String!
+  startDate: Date!
+  endDate: Date!
+  totalAmount: Float!
+  branchId: ID!
+  status: Status!
+  notes: String
+  categories: [BudgetCategoryInput!]
+}
+
+input UpdateBudgetInput {
+  name: String
+  description: String
+  fiscalYear: String
+  startDate: Date
+  endDate: Date
+  totalAmount: Float
+  status: Status
+  notes: String
+}
+
+input BudgetCategoryInput {
+  name: String!
+  description: String
+  plannedAmount: Float!
+  parentCategoryId: ID
+}
+
+input CreateBudgetCategoryInput {
+  budgetId: ID!
+  name: String!
+  description: String
+  plannedAmount: Float!
+  parentCategoryId: ID
+}
+
+input UpdateBudgetCategoryInput {
+  name: String
+  description: String
+  plannedAmount: Float
+  actualAmount: Float
+  parentCategoryId: ID
+}
+
+input GenerateStatementInput {
+  statementType: String!
+  startDate: Date!
+  endDate: Date!
+  branchId: ID!
+  fiscalYear: String!
+  quarter: Int
+  month: Int
+}
+
+input GenerateContributionStatementsInput {
+  startDate: Date!
+  endDate: Date!
+  branchId: ID!
+  memberIds: [ID!]
+  includeZeroContributions: Boolean!
+  includeEmailNotification: Boolean!
+  includeLetterhead: Boolean!
+  customMessage: String
+}
+
+input RecurringContributionInput {
+  memberId: ID!
+  amount: Float!
+  currency: String!
+  transactionType: TransactionType!
+  fundId: ID
+  campaignId: ID
+  frequency: RecurrenceFrequency!
+  startDate: Date!
+  endDate: Date
+  paymentMethod: PaymentMethod!
+  paymentDetails: JSON
+  notes: String
+  branchId: ID!
+}
+
+extend type Subscription {
+  # Get notified when a new transaction is recorded
+  transactionRecorded(branchId: ID): Transaction! @auth(requires: [STAFF])
+  
+  # Get notified when a batch is closed
+  batchClosed(branchId: ID): Batch! @auth(requires: [STAFF])
+  
+  # Get notified when a new campaign is created
+  campaignCreated(branchId: ID): Campaign! @auth(requires: [STAFF])
+  
+  # Get notified when a new pledge is created
+  pledgeCreated(campaignId: ID): Pledge! @auth(requires: [STAFF])
+  
+  # Get notified when a contribution statement is generated
+  contributionStatementGenerated(memberId: ID): ContributionStatement! @auth(requires: [STAFF])
+}

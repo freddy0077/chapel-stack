@@ -1,0 +1,716 @@
+"""
+Reporting & Analytics schema - handles comprehensive reporting, insights, and data analysis
+"""
+
+enum ReportType {
+  ATTENDANCE
+  MEMBERSHIP
+  FINANCIAL
+  MINISTRY
+  SACRAMENT
+  VISITOR
+  COMPARATIVE
+  CUSTOM
+  DASHBOARD
+}
+
+enum ReportFormat {
+  PDF
+  CSV
+  EXCEL
+  JSON
+  HTML
+  EMAIL
+}
+
+enum ChartType {
+  BAR
+  LINE
+  PIE
+  AREA
+  SCATTER
+  BUBBLE
+  RADAR
+  POLAR
+  TABLE
+  CARD
+  HEATMAP
+  GAUGE
+}
+
+enum ReportScheduleFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  CUSTOM
+}
+
+enum MetricType {
+  COUNT
+  SUM
+  AVERAGE
+  PERCENTAGE
+  RATIO
+  GROWTH
+  COMPARISON
+  CUSTOM
+}
+
+enum SegmentationType {
+  AGE
+  GENDER
+  LOCATION
+  BRANCH
+  MINISTRY
+  ATTENDANCE_FREQUENCY
+  GIVING_LEVEL
+  FAMILY_STATUS
+  SACRAMENT_STATUS
+  CUSTOM
+}
+
+type Report {
+  id: ID!
+  name: String!
+  description: String
+  type: ReportType!
+  parameters: JSON
+  filters: JSON
+  dateRange: DateRangeInput
+  comparisons: [ReportComparison!]
+  visualizations: [Visualization!]
+  owner: User!
+  isPublic: Boolean!
+  branches: [Branch!]
+  accessRoles: [UserRole!]
+  lastRunAt: DateTime
+  schedule: ReportSchedule
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ReportComparison {
+  id: ID!
+  report: Report!
+  name: String!
+  baseMetric: String!
+  compareMetric: String!
+  baseParameters: JSON
+  compareParameters: JSON
+  visualizationId: ID
+  createdAt: DateTime!
+}
+
+type Visualization {
+  id: ID!
+  name: String!
+  description: String
+  chartType: ChartType!
+  dataSource: String!
+  dataQuery: JSON!
+  parameters: JSON
+  styling: JSON
+  dimensions: [String!]
+  measures: [String!]
+  sortBy: JSON
+  filters: JSON
+  report: Report
+  dashboard: Dashboard
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ReportSchedule {
+  id: ID!
+  report: Report!
+  frequency: ReportScheduleFrequency!
+  dayOfWeek: Int
+  dayOfMonth: Int
+  month: Int
+  time: String!
+  recipients: [ReportRecipient!]!
+  formats: [ReportFormat!]!
+  startDate: Date!
+  endDate: Date
+  lastRunAt: DateTime
+  nextRunAt: DateTime
+  active: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ReportRecipient {
+  id: ID!
+  schedule: ReportSchedule!
+  user: User
+  email: String
+  name: String
+  createdAt: DateTime!
+}
+
+type ReportResult {
+  id: ID!
+  report: Report!
+  generatedBy: User!
+  parameters: JSON
+  data: JSON!
+  summary: JSON
+  insights: [ReportInsight!]
+  format: ReportFormat!
+  fileUrl: String
+  generatedAt: DateTime!
+  expiresAt: DateTime
+  meta: JSON
+}
+
+type ReportInsight {
+  id: ID!
+  reportResult: ReportResult!
+  title: String!
+  description: String!
+  metricName: String
+  metricValue: Float
+  metricChange: Float
+  trend: String
+  priority: Int
+  category: String
+  createdAt: DateTime!
+}
+
+type Dashboard {
+  id: ID!
+  name: String!
+  description: String
+  layout: JSON!
+  visualizations: [Visualization!]!
+  owner: User!
+  isPublic: Boolean!
+  branches: [Branch!]
+  accessRoles: [UserRole!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MetricDefinition {
+  id: ID!
+  name: String!
+  description: String
+  type: MetricType!
+  formula: String
+  dataSource: String!
+  parameters: JSON
+  unit: String
+  targetValue: Float
+  comparisonPeriod: String
+  category: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Segmentation {
+  id: ID!
+  name: String!
+  description: String
+  type: SegmentationType!
+  criteria: JSON!
+  dataSource: String!
+  segments: [Segment!]!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Segment {
+  id: ID!
+  segmentation: Segmentation!
+  name: String!
+  description: String
+  criteria: JSON!
+  color: String
+  order: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Reports
+  reports(
+    type: ReportType
+    search: String
+    ownerId: ID
+    branchId: ID
+    isPublic: Boolean
+    pagination: PaginationInput
+  ): ReportConnection! @auth(requires: [STAFF])
+  
+  report(id: ID!): Report @auth(requires: [STAFF])
+  
+  # Report results
+  reportResults(
+    reportId: ID!
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): ReportResultConnection! @auth(requires: [STAFF])
+  
+  reportResult(id: ID!): ReportResult @auth(requires: [STAFF])
+  
+  # Generate a report on demand
+  generateReport(
+    reportId: ID!
+    parameters: JSON
+    format: ReportFormat
+  ): ReportResult! @auth(requires: [STAFF])
+  
+  # Dashboards
+  dashboards(
+    search: String
+    ownerId: ID
+    branchId: ID
+    isPublic: Boolean
+    pagination: PaginationInput
+  ): DashboardConnection! @auth(requires: [STAFF])
+  
+  dashboard(id: ID!): Dashboard @auth(requires: [STAFF])
+  
+  # Visualizations
+  visualizations(
+    search: String
+    chartType: ChartType
+    reportId: ID
+    dashboardId: ID
+    pagination: PaginationInput
+  ): VisualizationConnection! @auth(requires: [STAFF])
+  
+  visualization(id: ID!): Visualization @auth(requires: [STAFF])
+  
+  # Report schedules
+  reportSchedules(
+    reportId: ID!
+    active: Boolean
+    pagination: PaginationInput
+  ): ReportScheduleConnection! @auth(requires: [STAFF])
+  
+  reportSchedule(id: ID!): ReportSchedule @auth(requires: [STAFF])
+  
+  # Metrics
+  metricDefinitions(
+    search: String
+    type: MetricType
+    category: String
+    isActive: Boolean
+    pagination: PaginationInput
+  ): MetricDefinitionConnection! @auth(requires: [STAFF])
+  
+  metricDefinition(id: ID!): MetricDefinition @auth(requires: [STAFF])
+  
+  # Segmentations
+  segmentations(
+    search: String
+    type: SegmentationType
+    isActive: Boolean
+    pagination: PaginationInput
+  ): SegmentationConnection! @auth(requires: [STAFF])
+  
+  segmentation(id: ID!): Segmentation @auth(requires: [STAFF])
+  
+  # Branch comparisons
+  branchComparisonReport(
+    branchIds: [ID!]!
+    metrics: [String!]!
+    dateRange: DateRangeInput!
+    segmentBy: String
+  ): JSON! @auth(requires: [BRANCH_ADMIN])
+  
+  # Growth metrics
+  growthReport(
+    branchId: ID
+    metricType: String!
+    period: String!
+    compareWithPreviousPeriod: Boolean
+    dateRange: DateRangeInput!
+  ): JSON! @auth(requires: [STAFF])
+  
+  # Ministry effectiveness
+  ministryEffectivenessReport(
+    ministryIds: [ID!]!
+    metrics: [String!]!
+    dateRange: DateRangeInput!
+  ): JSON! @auth(requires: [STAFF])
+  
+  # Visitor conversion report
+  visitorConversionReport(
+    branchId: ID
+    dateRange: DateRangeInput!
+    segmentBy: String
+  ): JSON! @auth(requires: [STAFF])
+  
+  # Financial insights
+  financialInsightsReport(
+    branchId: ID
+    metrics: [String!]!
+    dateRange: DateRangeInput!
+    fundIds: [ID!]
+    campaignIds: [ID!]
+    compareWithBudget: Boolean
+  ): JSON! @auth(requires: [STAFF])
+  
+  # Attendance patterns
+  attendancePatternsReport(
+    branchId: ID
+    eventTypes: [String!]
+    dateRange: DateRangeInput!
+    segmentBy: String
+  ): JSON! @auth(requires: [STAFF])
+}
+
+type ReportConnection {
+  edges: [ReportEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ReportEdge {
+  node: Report!
+  cursor: String!
+}
+
+type ReportResultConnection {
+  edges: [ReportResultEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ReportResultEdge {
+  node: ReportResult!
+  cursor: String!
+}
+
+type DashboardConnection {
+  edges: [DashboardEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type DashboardEdge {
+  node: Dashboard!
+  cursor: String!
+}
+
+type VisualizationConnection {
+  edges: [VisualizationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VisualizationEdge {
+  node: Visualization!
+  cursor: String!
+}
+
+type ReportScheduleConnection {
+  edges: [ReportScheduleEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ReportScheduleEdge {
+  node: ReportSchedule!
+  cursor: String!
+}
+
+type MetricDefinitionConnection {
+  edges: [MetricDefinitionEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MetricDefinitionEdge {
+  node: MetricDefinition!
+  cursor: String!
+}
+
+type SegmentationConnection {
+  edges: [SegmentationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type SegmentationEdge {
+  node: Segmentation!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Reports
+  createReport(input: CreateReportInput!): Report! @auth(requires: [STAFF])
+  updateReport(id: ID!, input: UpdateReportInput!): Report! @auth(requires: [STAFF])
+  deleteReport(id: ID!): Boolean! @auth(requires: [STAFF])
+  cloneReport(id: ID!, name: String!): Report! @auth(requires: [STAFF])
+  
+  # Report comparisons
+  addReportComparison(reportId: ID!, input: AddComparisonInput!): ReportComparison! @auth(requires: [STAFF])
+  updateReportComparison(id: ID!, input: UpdateComparisonInput!): ReportComparison! @auth(requires: [STAFF])
+  removeReportComparison(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Visualizations
+  createVisualization(input: CreateVisualizationInput!): Visualization! @auth(requires: [STAFF])
+  updateVisualization(id: ID!, input: UpdateVisualizationInput!): Visualization! @auth(requires: [STAFF])
+  deleteVisualization(id: ID!): Boolean! @auth(requires: [STAFF])
+  cloneVisualization(id: ID!, name: String!): Visualization! @auth(requires: [STAFF])
+  
+  # Dashboards
+  createDashboard(input: CreateDashboardInput!): Dashboard! @auth(requires: [STAFF])
+  updateDashboard(id: ID!, input: UpdateDashboardInput!): Dashboard! @auth(requires: [STAFF])
+  deleteDashboard(id: ID!): Boolean! @auth(requires: [STAFF])
+  cloneDashboard(id: ID!, name: String!): Dashboard! @auth(requires: [STAFF])
+  addVisualizationToDashboard(dashboardId: ID!, visualizationId: ID!, position: JSON!): Dashboard! @auth(requires: [STAFF])
+  removeVisualizationFromDashboard(dashboardId: ID!, visualizationId: ID!): Dashboard! @auth(requires: [STAFF])
+  updateDashboardLayout(dashboardId: ID!, layout: JSON!): Dashboard! @auth(requires: [STAFF])
+  
+  # Report scheduling
+  createReportSchedule(reportId: ID!, input: CreateReportScheduleInput!): ReportSchedule! @auth(requires: [STAFF])
+  updateReportSchedule(id: ID!, input: UpdateReportScheduleInput!): ReportSchedule! @auth(requires: [STAFF])
+  deleteReportSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
+  activateReportSchedule(id: ID!): ReportSchedule! @auth(requires: [STAFF])
+  deactivateReportSchedule(id: ID!): ReportSchedule! @auth(requires: [STAFF])
+  
+  # Report recipients
+  addReportRecipient(scheduleId: ID!, input: AddReportRecipientInput!): ReportRecipient! @auth(requires: [STAFF])
+  removeReportRecipient(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Metric definitions
+  createMetricDefinition(input: CreateMetricDefinitionInput!): MetricDefinition! @auth(requires: [ADMIN])
+  updateMetricDefinition(id: ID!, input: UpdateMetricDefinitionInput!): MetricDefinition! @auth(requires: [ADMIN])
+  deleteMetricDefinition(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Segmentations
+  createSegmentation(input: CreateSegmentationInput!): Segmentation! @auth(requires: [ADMIN])
+  updateSegmentation(id: ID!, input: UpdateSegmentationInput!): Segmentation! @auth(requires: [ADMIN])
+  deleteSegmentation(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Segments
+  addSegment(segmentationId: ID!, input: AddSegmentInput!): Segment! @auth(requires: [ADMIN])
+  updateSegment(id: ID!, input: UpdateSegmentInput!): Segment! @auth(requires: [ADMIN])
+  removeSegment(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Report results
+  deleteReportResult(id: ID!): Boolean! @auth(requires: [STAFF])
+  shareReportResult(id: ID!, input: ShareReportResultInput!): String! @auth(requires: [STAFF])
+  exportReportResult(id: ID!, format: ReportFormat!): String! @auth(requires: [STAFF])
+}
+
+input CreateReportInput {
+  name: String!
+  description: String
+  type: ReportType!
+  parameters: JSON
+  filters: JSON
+  dateRange: DateRangeInput
+  isPublic: Boolean!
+  branchIds: [ID!]
+  accessRoles: [UserRole!]
+}
+
+input UpdateReportInput {
+  name: String
+  description: String
+  type: ReportType
+  parameters: JSON
+  filters: JSON
+  dateRange: DateRangeInput
+  isPublic: Boolean
+  branchIds: [ID!]
+  accessRoles: [UserRole!]
+}
+
+input AddComparisonInput {
+  name: String!
+  baseMetric: String!
+  compareMetric: String!
+  baseParameters: JSON
+  compareParameters: JSON
+  visualizationId: ID
+}
+
+input UpdateComparisonInput {
+  name: String
+  baseMetric: String
+  compareMetric: String
+  baseParameters: JSON
+  compareParameters: JSON
+  visualizationId: ID
+}
+
+input CreateVisualizationInput {
+  name: String!
+  description: String
+  chartType: ChartType!
+  dataSource: String!
+  dataQuery: JSON!
+  parameters: JSON
+  styling: JSON
+  dimensions: [String!]
+  measures: [String!]
+  sortBy: JSON
+  filters: JSON
+  reportId: ID
+  dashboardId: ID
+}
+
+input UpdateVisualizationInput {
+  name: String
+  description: String
+  chartType: ChartType
+  dataSource: String
+  dataQuery: JSON
+  parameters: JSON
+  styling: JSON
+  dimensions: [String!]
+  measures: [String!]
+  sortBy: JSON
+  filters: JSON
+  reportId: ID
+  dashboardId: ID
+}
+
+input CreateDashboardInput {
+  name: String!
+  description: String
+  layout: JSON!
+  visualizationIds: [ID!]
+  isPublic: Boolean!
+  branchIds: [ID!]
+  accessRoles: [UserRole!]
+}
+
+input UpdateDashboardInput {
+  name: String
+  description: String
+  layout: JSON
+  visualizationIds: [ID!]
+  isPublic: Boolean
+  branchIds: [ID!]
+  accessRoles: [UserRole!]
+}
+
+input CreateReportScheduleInput {
+  frequency: ReportScheduleFrequency!
+  dayOfWeek: Int
+  dayOfMonth: Int
+  month: Int
+  time: String!
+  recipients: [ReportRecipientInput!]!
+  formats: [ReportFormat!]!
+  startDate: Date!
+  endDate: Date
+  active: Boolean!
+}
+
+input UpdateReportScheduleInput {
+  frequency: ReportScheduleFrequency
+  dayOfWeek: Int
+  dayOfMonth: Int
+  month: Int
+  time: String
+  formats: [ReportFormat!]
+  startDate: Date
+  endDate: Date
+  active: Boolean
+}
+
+input ReportRecipientInput {
+  userId: ID
+  email: String
+  name: String
+}
+
+input AddReportRecipientInput {
+  userId: ID
+  email: String
+  name: String
+}
+
+input CreateMetricDefinitionInput {
+  name: String!
+  description: String
+  type: MetricType!
+  formula: String
+  dataSource: String!
+  parameters: JSON
+  unit: String
+  targetValue: Float
+  comparisonPeriod: String
+  category: String
+  isActive: Boolean!
+}
+
+input UpdateMetricDefinitionInput {
+  name: String
+  description: String
+  type: MetricType
+  formula: String
+  dataSource: String
+  parameters: JSON
+  unit: String
+  targetValue: Float
+  comparisonPeriod: String
+  category: String
+  isActive: Boolean
+}
+
+input CreateSegmentationInput {
+  name: String!
+  description: String
+  type: SegmentationType!
+  criteria: JSON!
+  dataSource: String!
+  segments: [SegmentInput!]!
+  isActive: Boolean!
+}
+
+input UpdateSegmentationInput {
+  name: String
+  description: String
+  type: SegmentationType
+  criteria: JSON
+  dataSource: String
+  isActive: Boolean
+}
+
+input SegmentInput {
+  name: String!
+  description: String
+  criteria: JSON!
+  color: String
+  order: Int
+}
+
+input AddSegmentInput {
+  name: String!
+  description: String
+  criteria: JSON!
+  color: String
+  order: Int
+}
+
+input UpdateSegmentInput {
+  name: String
+  description: String
+  criteria: JSON
+  color: String
+  order: Int
+}
+
+input ShareReportResultInput {
+  emails: [String!]
+  message: String
+  expiresIn: Int
+  password: String
+}
+
+extend type Subscription {
+  # Get notified when a report schedule completes
+  reportCompleted(reportId: ID): ReportResult! @auth(requires: [STAFF])
+  
+  # Get notified when a dashboard is updated
+  dashboardUpdated(dashboardId: ID!): Dashboard! @auth(requires: [STAFF])
+  
+  # Get notified of new insights from reports
+  newReportInsight(reportId: ID): ReportInsight! @auth(requires: [STAFF])
+}

@@ -1,0 +1,908 @@
+"""
+Facilities & Resources schema - handles facility management, room booking, and equipment
+"""
+
+enum ResourceType {
+  ROOM
+  EQUIPMENT
+  VEHICLE
+  FURNITURE
+  TECHNOLOGY
+  SUPPLIES
+  INSTRUMENT
+  BUILDING
+  OUTDOOR_SPACE
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  CHECKED_IN
+  CHECKED_OUT
+  NO_SHOW
+}
+
+enum BookingRecurrence {
+  NONE
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum MaintenanceType {
+  ROUTINE
+  PREVENTATIVE
+  CORRECTIVE
+  EMERGENCY
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  DAMAGED
+  LOST
+  RETIRED
+}
+
+type Facility {
+  id: ID!
+  name: String!
+  description: String
+  address: Address!
+  capacity: Int
+  squareFeet: Int
+  floors: Int
+  isActive: Boolean!
+  openingTime: String
+  closingTime: String
+  photos: [String!]
+  features: [String!]
+  branch: Branch!
+  mainContact: User
+  resources: [Resource!]!
+  buildingMap: String
+  accessRestrictions: String
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Resource {
+  id: ID!
+  name: String!
+  description: String
+  type: ResourceType!
+  facility: Facility!
+  location: String
+  capacity: Int
+  availableQuantity: Int!
+  totalQuantity: Int!
+  photos: [String!]
+  features: [String!]
+  isActive: Boolean!
+  setupTime: Int
+  cleanupTime: Int
+  minimumReservationTime: Int
+  maximumReservationTime: Int
+  costPerHour: Float
+  isApprovalRequired: Boolean!
+  approvalRoles: [String!]
+  allowedDaysInAdvance: Int
+  availabilitySchedule: [DailySchedule!]
+  customFields: JSON
+  maintenanceSchedule: [ResourceMaintenance!]!
+  equipmentItems: [EquipmentItem!]
+  attributes: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DailySchedule {
+  id: ID!
+  resource: Resource!
+  dayOfWeek: Int!
+  openingTime: String!
+  closingTime: String!
+  isAvailable: Boolean!
+  specialHours: Boolean!
+  notes: String
+}
+
+type ResourceBooking {
+  id: ID!
+  resource: Resource!
+  requestedBy: User!
+  event: Event
+  purpose: String!
+  status: BookingStatus!
+  startTime: DateTime!
+  endTime: DateTime!
+  actualStartTime: DateTime
+  actualEndTime: DateTime
+  setupStartTime: DateTime
+  cleanupEndTime: DateTime
+  attendeeCount: Int
+  recurrence: BookingRecurrence
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  notes: String
+  technicalRequirements: String
+  setupInstructions: String
+  checkedInBy: User
+  checkedOutBy: User
+  checkedInAt: DateTime
+  checkedOutAt: DateTime
+  approvedBy: User
+  approvedAt: DateTime
+  cancellationReason: String
+  damageReport: String
+  attachments: [String!]
+  cost: Float
+  isPaid: Boolean
+  ministry: Ministry
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ResourceMaintenance {
+  id: ID!
+  resource: Resource!
+  type: MaintenanceType!
+  priority: MaintenancePriority!
+  scheduledDate: Date!
+  completedDate: Date
+  assignedTo: User
+  description: String!
+  cost: Float
+  isRecurring: Boolean!
+  recurrencePattern: String
+  notes: String
+  status: String!
+  attachments: [String!]
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EquipmentItem {
+  id: ID!
+  resource: Resource!
+  serialNumber: String
+  barcode: String
+  purchaseDate: Date
+  warrantyExpiration: Date
+  condition: String!
+  status: EquipmentStatus!
+  location: String
+  notes: String
+  lastMaintenance: Date
+  nextMaintenance: Date
+  assignedTo: User
+  history: [EquipmentHistoryEntry!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EquipmentHistoryEntry {
+  id: ID!
+  equipment: EquipmentItem!
+  action: String!
+  performedBy: User!
+  performedAt: DateTime!
+  notes: String
+  details: JSON
+  createdAt: DateTime!
+}
+
+type ResourceConflict {
+  id: ID!
+  resource: Resource!
+  bookings: [ResourceBooking!]!
+  startTime: DateTime!
+  endTime: DateTime!
+  severity: String!
+  isResolved: Boolean!
+  resolution: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FacilityUsageReport {
+  facility: Facility!
+  totalBookings: Int!
+  totalHours: Float!
+  utilizationRate: Float!
+  popularResources: [ResourceUsage!]!
+  usageByDayOfWeek: [DayOfWeekUsage!]!
+  usageByHour: [HourUsage!]!
+  usageByMinistry: [MinistryUsage!]!
+}
+
+type ResourceUsage {
+  resource: Resource!
+  bookingCount: Int!
+  totalHours: Float!
+  utilizationRate: Float!
+}
+
+type DayOfWeekUsage {
+  dayOfWeek: Int!
+  bookingCount: Int!
+  totalHours: Float!
+}
+
+type HourUsage {
+  hour: Int!
+  bookingCount: Int!
+}
+
+type MinistryUsage {
+  ministry: Ministry!
+  bookingCount: Int!
+  totalHours: Float!
+}
+
+type MaintenanceSchedule {
+  id: ID!
+  name: String!
+  description: String
+  facility: Facility
+  resources: [Resource!]!
+  frequency: String!
+  nextDate: Date!
+  assignedTo: User
+  tasks: [String!]!
+  duration: Int!
+  priority: MaintenancePriority!
+  isActive: Boolean!
+  lastPerformed: Date
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ServiceProvider {
+  id: ID!
+  name: String!
+  serviceType: String!
+  contactName: String!
+  phone: String!
+  email: String!
+  address: Address
+  website: String
+  contractNumber: String
+  contractStartDate: Date
+  contractEndDate: Date
+  notes: String
+  maintenanceTasks: [ResourceMaintenance!]!
+  insuranceInfo: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get facilities with filtering
+  facilities(
+    search: String
+    branchId: ID
+    isActive: Boolean
+    capacity: Int
+    pagination: PaginationInput
+  ): FacilityConnection! @auth(requires: [MEMBER])
+  
+  # Get a specific facility
+  facility(id: ID!): Facility @auth(requires: [MEMBER])
+  
+  # Get resources with filtering
+  resources(
+    search: String
+    facilityId: ID
+    type: ResourceType
+    isActive: Boolean
+    isAvailable: Boolean
+    minCapacity: Int
+    pagination: PaginationInput
+  ): ResourceConnection! @auth(requires: [MEMBER])
+  
+  # Get a specific resource
+  resource(id: ID!): Resource @auth(requires: [MEMBER])
+  
+  # Check resource availability
+  resourceAvailability(
+    resourceId: ID!
+    startTime: DateTime!
+    endTime: DateTime!
+  ): Boolean! @auth(requires: [MEMBER])
+  
+  # Find available resources
+  availableResources(
+    startTime: DateTime!
+    endTime: DateTime!
+    resourceType: ResourceType
+    facilityId: ID
+    minCapacity: Int
+    pagination: PaginationInput
+  ): ResourceConnection! @auth(requires: [MEMBER])
+  
+  # Get resource bookings with filtering
+  resourceBookings(
+    resourceId: ID
+    facilityId: ID
+    status: BookingStatus
+    dateRange: DateRangeInput
+    ministryId: ID
+    requestedById: ID
+    eventId: ID
+    pagination: PaginationInput
+  ): ResourceBookingConnection! @auth(requires: [STAFF])
+  
+  # Get a specific resource booking
+  resourceBooking(id: ID!): ResourceBooking @auth(requires: [STAFF])
+  
+  # Get my resource bookings
+  myResourceBookings(
+    status: BookingStatus
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): ResourceBookingConnection! @auth(requires: [MEMBER])
+  
+  # Get resource maintenance records
+  resourceMaintenance(
+    resourceId: ID
+    facilityId: ID
+    type: MaintenanceType
+    status: String
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): ResourceMaintenanceConnection! @auth(requires: [STAFF])
+  
+  # Get a specific maintenance record
+  maintenanceRecord(id: ID!): ResourceMaintenance @auth(requires: [STAFF])
+  
+  # Get equipment items
+  equipmentItems(
+    resourceId: ID!
+    status: EquipmentStatus
+    pagination: PaginationInput
+  ): EquipmentItemConnection! @auth(requires: [STAFF])
+  
+  # Get a specific equipment item
+  equipmentItem(id: ID!): EquipmentItem @auth(requires: [STAFF])
+  
+  # Get equipment history
+  equipmentHistory(
+    equipmentId: ID!
+    pagination: PaginationInput
+  ): EquipmentHistoryEntryConnection! @auth(requires: [STAFF])
+  
+  # Get resource conflicts
+  resourceConflicts(
+    resourceId: ID
+    facilityId: ID
+    isResolved: Boolean
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): ResourceConflictConnection! @auth(requires: [STAFF])
+  
+  # Get facility usage report
+  facilityUsageReport(
+    facilityId: ID!
+    dateRange: DateRangeInput!
+  ): FacilityUsageReport! @auth(requires: [STAFF])
+  
+  # Get maintenance schedules
+  maintenanceSchedules(
+    facilityId: ID
+    resourceId: ID
+    isActive: Boolean
+    pagination: PaginationInput
+  ): MaintenanceScheduleConnection! @auth(requires: [STAFF])
+  
+  # Get a specific maintenance schedule
+  maintenanceSchedule(id: ID!): MaintenanceSchedule @auth(requires: [STAFF])
+  
+  # Get service providers
+  serviceProviders(
+    search: String
+    serviceType: String
+    pagination: PaginationInput
+  ): ServiceProviderConnection! @auth(requires: [STAFF])
+  
+  # Get a specific service provider
+  serviceProvider(id: ID!): ServiceProvider @auth(requires: [STAFF])
+}
+
+type FacilityConnection {
+  edges: [FacilityEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type FacilityEdge {
+  node: Facility!
+  cursor: String!
+}
+
+type ResourceConnection {
+  edges: [ResourceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceEdge {
+  node: Resource!
+  cursor: String!
+}
+
+type ResourceBookingConnection {
+  edges: [ResourceBookingEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceBookingEdge {
+  node: ResourceBooking!
+  cursor: String!
+}
+
+type ResourceMaintenanceConnection {
+  edges: [ResourceMaintenanceEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceMaintenanceEdge {
+  node: ResourceMaintenance!
+  cursor: String!
+}
+
+type EquipmentItemConnection {
+  edges: [EquipmentItemEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EquipmentItemEdge {
+  node: EquipmentItem!
+  cursor: String!
+}
+
+type EquipmentHistoryEntryConnection {
+  edges: [EquipmentHistoryEntryEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type EquipmentHistoryEntryEdge {
+  node: EquipmentHistoryEntry!
+  cursor: String!
+}
+
+type ResourceConflictConnection {
+  edges: [ResourceConflictEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ResourceConflictEdge {
+  node: ResourceConflict!
+  cursor: String!
+}
+
+type MaintenanceScheduleConnection {
+  edges: [MaintenanceScheduleEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type MaintenanceScheduleEdge {
+  node: MaintenanceSchedule!
+  cursor: String!
+}
+
+type ServiceProviderConnection {
+  edges: [ServiceProviderEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ServiceProviderEdge {
+  node: ServiceProvider!
+  cursor: String!
+}
+
+extend type Mutation {
+  # Create a facility
+  createFacility(input: CreateFacilityInput!): Facility! @auth(requires: [ADMIN])
+  
+  # Update a facility
+  updateFacility(id: ID!, input: UpdateFacilityInput!): Facility! @auth(requires: [ADMIN])
+  
+  # Delete a facility
+  deleteFacility(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Create a resource
+  createResource(input: CreateResourceInput!): Resource! @auth(requires: [ADMIN])
+  
+  # Update a resource
+  updateResource(id: ID!, input: UpdateResourceInput!): Resource! @auth(requires: [ADMIN])
+  
+  # Delete a resource
+  deleteResource(id: ID!): Boolean! @auth(requires: [ADMIN])
+  
+  # Update resource availability schedule
+  updateResourceAvailability(
+    resourceId: ID!,
+    schedules: [DailyScheduleInput!]!
+  ): [DailySchedule!]! @auth(requires: [STAFF])
+  
+  # Request a resource booking
+  requestResourceBooking(input: ResourceBookingInput!): ResourceBooking! @auth(requires: [MEMBER])
+  
+  # Update a resource booking
+  updateResourceBooking(id: ID!, input: UpdateResourceBookingInput!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Cancel a resource booking
+  cancelResourceBooking(id: ID!, reason: String!): ResourceBooking! @auth(requires: [MEMBER])
+  
+  # Approve a resource booking
+  approveResourceBooking(id: ID!, notes: String): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Reject a resource booking
+  rejectResourceBooking(id: ID!, reason: String!): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Check in for a resource booking
+  checkInResourceBooking(id: ID!, notes: String): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Check out for a resource booking
+  checkOutResourceBooking(id: ID!, damageReport: String): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Create a maintenance record
+  createMaintenanceRecord(input: CreateMaintenanceInput!): ResourceMaintenance! @auth(requires: [STAFF])
+  
+  # Update a maintenance record
+  updateMaintenanceRecord(id: ID!, input: UpdateMaintenanceInput!): ResourceMaintenance! @auth(requires: [STAFF])
+  
+  # Complete a maintenance task
+  completeMaintenanceTask(id: ID!, input: CompleteMaintenanceInput!): ResourceMaintenance! @auth(requires: [STAFF])
+  
+  # Delete a maintenance record
+  deleteMaintenanceRecord(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create an equipment item
+  createEquipmentItem(input: CreateEquipmentItemInput!): EquipmentItem! @auth(requires: [STAFF])
+  
+  # Update an equipment item
+  updateEquipmentItem(id: ID!, input: UpdateEquipmentItemInput!): EquipmentItem! @auth(requires: [STAFF])
+  
+  # Delete an equipment item
+  deleteEquipmentItem(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update equipment status
+  updateEquipmentStatus(id: ID!, status: EquipmentStatus!, notes: String): EquipmentItem! @auth(requires: [STAFF])
+  
+  # Assign equipment to user
+  assignEquipment(id: ID!, userId: ID!, notes: String): EquipmentItem! @auth(requires: [STAFF])
+  
+  # Unassign equipment from user
+  unassignEquipment(id: ID!, notes: String): EquipmentItem! @auth(requires: [STAFF])
+  
+  # Add equipment history entry
+  addEquipmentHistoryEntry(input: AddEquipmentHistoryInput!): EquipmentHistoryEntry! @auth(requires: [STAFF])
+  
+  # Resolve resource conflict
+  resolveResourceConflict(id: ID!, resolution: String!): ResourceConflict! @auth(requires: [STAFF])
+  
+  # Create a maintenance schedule
+  createMaintenanceSchedule(input: CreateMaintenanceScheduleInput!): MaintenanceSchedule! @auth(requires: [STAFF])
+  
+  # Update a maintenance schedule
+  updateMaintenanceSchedule(id: ID!, input: UpdateMaintenanceScheduleInput!): MaintenanceSchedule! @auth(requires: [STAFF])
+  
+  # Delete a maintenance schedule
+  deleteMaintenanceSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a service provider
+  createServiceProvider(input: CreateServiceProviderInput!): ServiceProvider! @auth(requires: [STAFF])
+  
+  # Update a service provider
+  updateServiceProvider(id: ID!, input: UpdateServiceProviderInput!): ServiceProvider! @auth(requires: [STAFF])
+  
+  # Delete a service provider
+  deleteServiceProvider(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Bulk approve resource bookings
+  bulkApproveResourceBookings(ids: [ID!]!, notes: String): [ResourceBooking!]! @auth(requires: [STAFF])
+  
+  # Bulk reject resource bookings
+  bulkRejectResourceBookings(ids: [ID!]!, reason: String!): [ResourceBooking!]! @auth(requires: [STAFF])
+}
+
+input CreateFacilityInput {
+  name: String!
+  description: String
+  address: AddressInput!
+  capacity: Int
+  squareFeet: Int
+  floors: Int
+  isActive: Boolean!
+  openingTime: String
+  closingTime: String
+  photos: [String!]
+  features: [String!]
+  branchId: ID!
+  mainContactId: ID
+  buildingMap: String
+  accessRestrictions: String
+  notes: String
+}
+
+input UpdateFacilityInput {
+  name: String
+  description: String
+  address: AddressInput
+  capacity: Int
+  squareFeet: Int
+  floors: Int
+  isActive: Boolean
+  openingTime: String
+  closingTime: String
+  photos: [String!]
+  features: [String!]
+  mainContactId: ID
+  buildingMap: String
+  accessRestrictions: String
+  notes: String
+}
+
+input CreateResourceInput {
+  name: String!
+  description: String
+  type: ResourceType!
+  facilityId: ID!
+  location: String
+  capacity: Int
+  availableQuantity: Int!
+  totalQuantity: Int!
+  photos: [String!]
+  features: [String!]
+  isActive: Boolean!
+  setupTime: Int
+  cleanupTime: Int
+  minimumReservationTime: Int
+  maximumReservationTime: Int
+  costPerHour: Float
+  isApprovalRequired: Boolean!
+  approvalRoles: [String!]
+  allowedDaysInAdvance: Int
+  availabilitySchedule: [DailyScheduleInput!]
+  customFields: JSON
+  attributes: JSON
+}
+
+input UpdateResourceInput {
+  name: String
+  description: String
+  type: ResourceType
+  location: String
+  capacity: Int
+  availableQuantity: Int
+  totalQuantity: Int
+  photos: [String!]
+  features: [String!]
+  isActive: Boolean
+  setupTime: Int
+  cleanupTime: Int
+  minimumReservationTime: Int
+  maximumReservationTime: Int
+  costPerHour: Float
+  isApprovalRequired: Boolean
+  approvalRoles: [String!]
+  allowedDaysInAdvance: Int
+  customFields: JSON
+  attributes: JSON
+}
+
+input DailyScheduleInput {
+  dayOfWeek: Int!
+  openingTime: String!
+  closingTime: String!
+  isAvailable: Boolean!
+  specialHours: Boolean!
+  notes: String
+}
+
+input ResourceBookingInput {
+  resourceId: ID!
+  eventId: ID
+  purpose: String!
+  startTime: DateTime!
+  endTime: DateTime!
+  setupStartTime: DateTime
+  cleanupEndTime: DateTime
+  attendeeCount: Int
+  recurrence: BookingRecurrence
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  notes: String
+  technicalRequirements: String
+  setupInstructions: String
+  ministryId: ID
+}
+
+input UpdateResourceBookingInput {
+  purpose: String
+  startTime: DateTime
+  endTime: DateTime
+  setupStartTime: DateTime
+  cleanupEndTime: DateTime
+  attendeeCount: Int
+  recurrence: BookingRecurrence
+  recurrenceEndDate: Date
+  recurrenceRule: String
+  notes: String
+  technicalRequirements: String
+  setupInstructions: String
+  status: BookingStatus
+  ministryId: ID
+  cost: Float
+  isPaid: Boolean
+}
+
+input CreateMaintenanceInput {
+  resourceId: ID!
+  type: MaintenanceType!
+  priority: MaintenancePriority!
+  scheduledDate: Date!
+  assignedToId: ID
+  description: String!
+  cost: Float
+  isRecurring: Boolean!
+  recurrencePattern: String
+  notes: String
+  status: String!
+  attachments: [String!]
+}
+
+input UpdateMaintenanceInput {
+  type: MaintenanceType
+  priority: MaintenancePriority
+  scheduledDate: Date
+  assignedToId: ID
+  description: String
+  cost: Float
+  isRecurring: Boolean
+  recurrencePattern: String
+  notes: String
+  status: String
+  attachments: [String!]
+}
+
+input CompleteMaintenanceInput {
+  completedDate: Date!
+  cost: Float
+  notes: String
+  attachments: [String!]
+}
+
+input CreateEquipmentItemInput {
+  resourceId: ID!
+  serialNumber: String
+  barcode: String
+  purchaseDate: Date
+  warrantyExpiration: Date
+  condition: String!
+  status: EquipmentStatus!
+  location: String
+  notes: String
+  lastMaintenance: Date
+  nextMaintenance: Date
+  assignedToId: ID
+}
+
+input UpdateEquipmentItemInput {
+  serialNumber: String
+  barcode: String
+  purchaseDate: Date
+  warrantyExpiration: Date
+  condition: String
+  status: EquipmentStatus
+  location: String
+  notes: String
+  lastMaintenance: Date
+  nextMaintenance: Date
+  assignedToId: ID
+}
+
+input AddEquipmentHistoryInput {
+  equipmentId: ID!
+  action: String!
+  notes: String
+  details: JSON
+}
+
+input CreateMaintenanceScheduleInput {
+  name: String!
+  description: String
+  facilityId: ID
+  resourceIds: [ID!]!
+  frequency: String!
+  nextDate: Date!
+  assignedToId: ID
+  tasks: [String!]!
+  duration: Int!
+  priority: MaintenancePriority!
+  isActive: Boolean!
+  notes: String
+}
+
+input UpdateMaintenanceScheduleInput {
+  name: String
+  description: String
+  resourceIds: [ID!]
+  frequency: String
+  nextDate: Date
+  assignedToId: ID
+  tasks: [String!]
+  duration: Int
+  priority: MaintenancePriority
+  isActive: Boolean
+  lastPerformed: Date
+  notes: String
+}
+
+input CreateServiceProviderInput {
+  name: String!
+  serviceType: String!
+  contactName: String!
+  phone: String!
+  email: String!
+  address: AddressInput
+  website: String
+  contractNumber: String
+  contractStartDate: Date
+  contractEndDate: Date
+  notes: String
+  insuranceInfo: String
+}
+
+input UpdateServiceProviderInput {
+  name: String
+  serviceType: String
+  contactName: String
+  phone: String
+  email: String
+  address: AddressInput
+  website: String
+  contractNumber: String
+  contractStartDate: Date
+  contractEndDate: Date
+  notes: String
+  insuranceInfo: String
+}
+
+extend type Subscription {
+  # Get notified of new resource booking requests
+  resourceBookingRequested(facilityId: ID): ResourceBooking! @auth(requires: [STAFF])
+  
+  # Get notified of resource booking status changes
+  resourceBookingStatusChanged(id: ID!): ResourceBooking! @auth(requires: [MEMBER])
+  
+  # Get notified of upcoming maintenance
+  upcomingMaintenance(resourceId: ID): ResourceMaintenance! @auth(requires: [STAFF])
+  
+  # Get notified of maintenance completion
+  maintenanceCompleted(resourceId: ID): ResourceMaintenance! @auth(requires: [STAFF])
+  
+  # Get notified of resource conflicts
+  resourceConflictDetected: ResourceConflict! @auth(requires: [STAFF])
+  
+  # Get notified of low resource availability
+  lowResourceAvailability(facilityId: ID): Resource! @auth(requires: [STAFF])
+}

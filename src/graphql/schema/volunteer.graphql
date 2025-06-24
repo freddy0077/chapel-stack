@@ -1,0 +1,988 @@
+"""
+Volunteer Management schema - handles volunteer records, scheduling, training, and recognition
+"""
+
+enum VolunteerStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  PENDING_APPROVAL
+  TRAINING
+  FORMER
+}
+
+enum VolunteerAvailability {
+  WEEKDAY_MORNING
+  WEEKDAY_AFTERNOON
+  WEEKDAY_EVENING
+  WEEKEND_MORNING
+  WEEKEND_AFTERNOON
+  WEEKEND_EVENING
+  FLEXIBLE
+  CUSTOM
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  CERTIFIED
+}
+
+enum RecognitionType {
+  AWARD
+  CERTIFICATE
+  MILESTONE
+  SPECIAL_RECOGNITION
+  APPRECIATION
+  ACHIEVEMENT
+}
+
+type Volunteer {
+  id: ID!
+  member: Member!
+  status: VolunteerStatus!
+  startDate: Date!
+  endDate: Date
+  availability: [VolunteerAvailability!]!
+  customAvailability: String
+  skills: [Skill!]!
+  interests: [String!]!
+  preferredMinistries: [Ministry!]!
+  activeMinistries: [VolunteerMinistry!]!
+  previousMinistries: [VolunteerMinistry!]!
+  emergencyContact: EmergencyContact
+  backgroundCheckStatus: String
+  backgroundCheckDate: Date
+  agreements: [VolunteerAgreement!]!
+  trainings: [VolunteerTraining!]!
+  recognitions: [VolunteerRecognition!]!
+  notes: String
+  schedule: [VolunteerSchedule!]!
+  hoursLogged: [VolunteerHours!]!
+  totalHours: Float!
+  tags: [String!]!
+  meta: JSON
+  branch: Branch!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Skill {
+  id: ID!
+  name: String!
+  category: String!
+  level: SkillLevel!
+  yearsExperience: Int
+  isVerified: Boolean!
+  verifiedBy: User
+  verifiedAt: DateTime
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EmergencyContact {
+  id: ID!
+  name: String!
+  relationship: String!
+  phone: String!
+  email: String
+  isNotified: Boolean!
+}
+
+type VolunteerMinistry {
+  id: ID!
+  volunteer: Volunteer!
+  ministry: Ministry!
+  role: String!
+  startDate: Date!
+  endDate: Date
+  isLeader: Boolean!
+  isActive: Boolean!
+  supervisor: User
+  responsibilities: [String!]!
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerAgreement {
+  id: ID!
+  volunteer: Volunteer!
+  name: String!
+  agreementText: String!
+  signedAt: DateTime!
+  expiresAt: DateTime
+  witnessedBy: User
+  documentUrl: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerTraining {
+  id: ID!
+  volunteer: Volunteer!
+  trainingType: TrainingType!
+  completedAt: DateTime!
+  expiresAt: DateTime
+  passedAssessment: Boolean
+  assessmentScore: Float
+  certificateUrl: String
+  notes: String
+  trainer: User
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TrainingType {
+  id: ID!
+  name: String!
+  description: String!
+  isRequired: Boolean!
+  durationHours: Float!
+  validityPeriod: Int
+  materials: [String!]
+  assessmentRequired: Boolean!
+  ministry: Ministry
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerRecognition {
+  id: ID!
+  volunteer: Volunteer!
+  type: RecognitionType!
+  title: String!
+  description: String!
+  awardedAt: DateTime!
+  awardedBy: User!
+  imageUrl: String
+  event: RecognitionEvent
+  yearsOfService: Int
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type RecognitionEvent {
+  id: ID!
+  name: String!
+  date: Date!
+  location: String!
+  description: String!
+  attendees: [Volunteer!]!
+  recognitions: [VolunteerRecognition!]!
+  photos: [String!]
+  branch: Branch!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerSchedule {
+  id: ID!
+  volunteer: Volunteer!
+  ministry: Ministry
+  event: Event
+  service: Service
+  startTime: DateTime!
+  endTime: DateTime!
+  role: String!
+  status: String!
+  isRecurring: Boolean!
+  recurrencePattern: String
+  notes: String
+  checkedIn: Boolean
+  checkedInAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerHours {
+  id: ID!
+  volunteer: Volunteer!
+  ministry: Ministry
+  event: Event
+  date: Date!
+  startTime: DateTime!
+  endTime: DateTime!
+  duration: Float!
+  description: String!
+  approvedBy: User
+  approvedAt: DateTime
+  status: String!
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerOpportunity {
+  id: ID!
+  title: String!
+  description: String!
+  ministry: Ministry!
+  branch: Branch!
+  startDate: Date!
+  endDate: Date
+  timeCommitment: String!
+  requiredSkills: [String!]
+  responsibilities: [String!]!
+  isActive: Boolean!
+  numberOfVolunteersNeeded: Int!
+  numberOfVolunteersAssigned: Int!
+  location: String
+  contactPerson: User!
+  applicationDeadline: Date
+  applications: [VolunteerApplication!]!
+  createdBy: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerApplication {
+  id: ID!
+  opportunity: VolunteerOpportunity!
+  member: Member!
+  status: String!
+  submittedAt: DateTime!
+  reviewedBy: User
+  reviewedAt: DateTime
+  startDate: Date
+  notes: String!
+  previousExperience: String
+  reasonForApplying: String!
+  availability: [VolunteerAvailability!]!
+  customAvailability: String
+  responseMessage: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VolunteerTeam {
+  id: ID!
+  name: String!
+  description: String!
+  ministry: Ministry!
+  leader: Volunteer!
+  members: [Volunteer!]!
+  schedule: [VolunteerSchedule!]!
+  meetings: [Event!]!
+  communications: [TeamCommunication!]!
+  notes: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TeamCommunication {
+  id: ID!
+  team: VolunteerTeam!
+  sender: User!
+  title: String!
+  message: String!
+  sentAt: DateTime!
+  readBy: [Volunteer!]!
+  attachments: [String!]
+  isPinned: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get all volunteers
+  volunteers(
+    search: String
+    status: VolunteerStatus
+    ministryId: ID
+    skillIds: [ID!]
+    branchId: ID
+    pagination: PaginationInput
+  ): VolunteerConnection! @auth(requires: [STAFF])
+  
+  # Get a specific volunteer
+  volunteer(id: ID!): Volunteer @auth(requires: [STAFF])
+  
+  # Get volunteer profile (for authenticated volunteers)
+  myVolunteerProfile: Volunteer @auth(requires: [VOLUNTEER])
+  
+  # Get volunteer skills
+  volunteerSkills(
+    volunteerId: ID!
+  ): [Skill!]! @auth(requires: [STAFF])
+  
+  # Get volunteer ministries
+  volunteerMinistries(
+    volunteerId: ID!,
+    isActive: Boolean
+  ): [VolunteerMinistry!]! @auth(requires: [STAFF])
+  
+  # Get volunteer trainings
+  volunteerTrainings(
+    volunteerId: ID!,
+    isExpired: Boolean
+  ): [VolunteerTraining!]! @auth(requires: [STAFF])
+  
+  # Get volunteer schedule
+  volunteerSchedule(
+    volunteerId: ID!,
+    dateRange: DateRangeInput!
+  ): [VolunteerSchedule!]! @auth(requires: [STAFF])
+  
+  # Get volunteer hours
+  volunteerHours(
+    volunteerId: ID!,
+    dateRange: DateRangeInput!,
+    ministryId: ID
+  ): [VolunteerHours!]! @auth(requires: [STAFF])
+  
+  # Get volunteer recognitions
+  volunteerRecognitions(
+    volunteerId: ID!
+  ): [VolunteerRecognition!]! @auth(requires: [STAFF])
+  
+  # Get recognition events
+  recognitionEvents(
+    dateRange: DateRangeInput,
+    branchId: ID,
+    pagination: PaginationInput
+  ): RecognitionEventConnection! @auth(requires: [STAFF])
+  
+  # Get a specific recognition event
+  recognitionEvent(id: ID!): RecognitionEvent @auth(requires: [STAFF])
+  
+  # Get volunteer opportunities
+  volunteerOpportunities(
+    isActive: Boolean,
+    ministryId: ID,
+    branchId: ID,
+    pagination: PaginationInput
+  ): VolunteerOpportunityConnection! @auth(requires: [MEMBER])
+  
+  # Get a specific volunteer opportunity
+  volunteerOpportunity(id: ID!): VolunteerOpportunity @auth(requires: [MEMBER])
+  
+  # Get volunteer applications
+  volunteerApplications(
+    opportunityId: ID,
+    status: String,
+    pagination: PaginationInput
+  ): VolunteerApplicationConnection! @auth(requires: [STAFF])
+  
+  # Get my volunteer applications (for authenticated members)
+  myVolunteerApplications(
+    status: String,
+    pagination: PaginationInput
+  ): VolunteerApplicationConnection! @auth(requires: [MEMBER])
+  
+  # Get volunteer teams
+  volunteerTeams(
+    ministryId: ID,
+    isActive: Boolean,
+    pagination: PaginationInput
+  ): VolunteerTeamConnection! @auth(requires: [STAFF])
+  
+  # Get a specific volunteer team
+  volunteerTeam(id: ID!): VolunteerTeam @auth(requires: [STAFF])
+  
+  # Get team communications
+  teamCommunications(
+    teamId: ID!,
+    pagination: PaginationInput
+  ): TeamCommunicationConnection! @auth(requires: [VOLUNTEER])
+  
+  # Get training types
+  trainingTypes(
+    isRequired: Boolean,
+    ministryId: ID,
+    pagination: PaginationInput
+  ): TrainingTypeConnection! @auth(requires: [STAFF])
+  
+  # Get volunteers needing training
+  volunteersNeedingTraining(
+    trainingTypeId: ID!,
+    pagination: PaginationInput
+  ): VolunteerConnection! @auth(requires: [STAFF])
+  
+  # Get volunteers available for schedule
+  availableVolunteers(
+    ministryId: ID!,
+    startTime: DateTime!,
+    endTime: DateTime!,
+    requiredSkills: [ID!],
+    pagination: PaginationInput
+  ): VolunteerConnection! @auth(requires: [STAFF])
+  
+  # Get volunteer statistics
+  volunteerStatistics(
+    branchId: ID,
+    dateRange: DateRangeInput
+  ): VolunteerStatistics! @auth(requires: [STAFF])
+}
+
+type VolunteerConnection {
+  edges: [VolunteerEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VolunteerEdge {
+  node: Volunteer!
+  cursor: String!
+}
+
+type RecognitionEventConnection {
+  edges: [RecognitionEventEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type RecognitionEventEdge {
+  node: RecognitionEvent!
+  cursor: String!
+}
+
+type VolunteerOpportunityConnection {
+  edges: [VolunteerOpportunityEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VolunteerOpportunityEdge {
+  node: VolunteerOpportunity!
+  cursor: String!
+}
+
+type VolunteerApplicationConnection {
+  edges: [VolunteerApplicationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VolunteerApplicationEdge {
+  node: VolunteerApplication!
+  cursor: String!
+}
+
+type VolunteerTeamConnection {
+  edges: [VolunteerTeamEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type VolunteerTeamEdge {
+  node: VolunteerTeam!
+  cursor: String!
+}
+
+type TeamCommunicationConnection {
+  edges: [TeamCommunicationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TeamCommunicationEdge {
+  node: TeamCommunication!
+  cursor: String!
+}
+
+type TrainingTypeConnection {
+  edges: [TrainingTypeEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type TrainingTypeEdge {
+  node: TrainingType!
+  cursor: String!
+}
+
+type VolunteerStatistics {
+  totalVolunteers: Int!
+  activeVolunteers: Int!
+  inactiveVolunteers: Int!
+  newVolunteersThisPeriod: Int!
+  volunteersByMinistry: [MinistryVolunteerCount!]!
+  totalHoursLogged: Float!
+  averageHoursPerVolunteer: Float!
+  retentionRate: Float!
+  topSkills: [SkillCount!]!
+}
+
+type MinistryVolunteerCount {
+  ministry: Ministry!
+  count: Int!
+  percentChange: Float
+}
+
+type SkillCount {
+  skill: String!
+  count: Int!
+  percentage: Float!
+}
+
+extend type Mutation {
+  # Create a volunteer from a member
+  createVolunteer(input: CreateVolunteerInput!): Volunteer! @auth(requires: [STAFF])
+  
+  # Update a volunteer
+  updateVolunteer(id: ID!, input: UpdateVolunteerInput!): Volunteer! @auth(requires: [STAFF])
+  
+  # Add volunteer skill
+  addVolunteerSkill(volunteerId: ID!, input: AddSkillInput!): Skill! @auth(requires: [STAFF])
+  
+  # Update volunteer skill
+  updateVolunteerSkill(id: ID!, input: UpdateSkillInput!): Skill! @auth(requires: [STAFF])
+  
+  # Remove volunteer skill
+  removeVolunteerSkill(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Verify volunteer skill
+  verifyVolunteerSkill(id: ID!): Skill! @auth(requires: [STAFF])
+  
+  # Add volunteer to ministry
+  addVolunteerToMinistry(input: AddVolunteerToMinistryInput!): VolunteerMinistry! @auth(requires: [STAFF])
+  
+  # Update volunteer ministry
+  updateVolunteerMinistry(id: ID!, input: UpdateVolunteerMinistryInput!): VolunteerMinistry! @auth(requires: [STAFF])
+  
+  # Remove volunteer from ministry
+  removeVolunteerFromMinistry(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Add volunteer agreement
+  addVolunteerAgreement(input: AddVolunteerAgreementInput!): VolunteerAgreement! @auth(requires: [STAFF])
+  
+  # Update volunteer agreement
+  updateVolunteerAgreement(id: ID!, input: UpdateVolunteerAgreementInput!): VolunteerAgreement! @auth(requires: [STAFF])
+  
+  # Remove volunteer agreement
+  removeVolunteerAgreement(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Record volunteer training
+  recordVolunteerTraining(input: RecordVolunteerTrainingInput!): VolunteerTraining! @auth(requires: [STAFF])
+  
+  # Update volunteer training
+  updateVolunteerTraining(id: ID!, input: UpdateVolunteerTrainingInput!): VolunteerTraining! @auth(requires: [STAFF])
+  
+  # Remove volunteer training
+  removeVolunteerTraining(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create training type
+  createTrainingType(input: CreateTrainingTypeInput!): TrainingType! @auth(requires: [STAFF])
+  
+  # Update training type
+  updateTrainingType(id: ID!, input: UpdateTrainingTypeInput!): TrainingType! @auth(requires: [STAFF])
+  
+  # Delete training type
+  deleteTrainingType(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Award volunteer recognition
+  awardVolunteerRecognition(input: AwardVolunteerRecognitionInput!): VolunteerRecognition! @auth(requires: [STAFF])
+  
+  # Update volunteer recognition
+  updateVolunteerRecognition(id: ID!, input: UpdateVolunteerRecognitionInput!): VolunteerRecognition! @auth(requires: [STAFF])
+  
+  # Remove volunteer recognition
+  removeVolunteerRecognition(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create recognition event
+  createRecognitionEvent(input: CreateRecognitionEventInput!): RecognitionEvent! @auth(requires: [STAFF])
+  
+  # Update recognition event
+  updateRecognitionEvent(id: ID!, input: UpdateRecognitionEventInput!): RecognitionEvent! @auth(requires: [STAFF])
+  
+  # Delete recognition event
+  deleteRecognitionEvent(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Schedule volunteer
+  scheduleVolunteer(input: ScheduleVolunteerInput!): VolunteerSchedule! @auth(requires: [STAFF])
+  
+  # Update volunteer schedule
+  updateVolunteerSchedule(id: ID!, input: UpdateVolunteerScheduleInput!): VolunteerSchedule! @auth(requires: [STAFF])
+  
+  # Remove volunteer schedule
+  removeVolunteerSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Check in scheduled volunteer
+  checkInScheduledVolunteer(id: ID!): VolunteerSchedule! @auth(requires: [STAFF])
+  
+  # Log volunteer hours
+  logVolunteerHours(input: LogVolunteerHoursInput!): VolunteerHours! @auth(requires: [STAFF])
+  
+  # Log my volunteer hours (for authenticated volunteers)
+  logMyVolunteerHours(input: LogMyVolunteerHoursInput!): VolunteerHours! @auth(requires: [VOLUNTEER])
+  
+  # Approve volunteer hours
+  approveVolunteerHours(id: ID!): VolunteerHours! @auth(requires: [STAFF])
+  
+  # Reject volunteer hours
+  rejectVolunteerHours(id: ID!, reason: String!): VolunteerHours! @auth(requires: [STAFF])
+  
+  # Create volunteer opportunity
+  createVolunteerOpportunity(input: CreateVolunteerOpportunityInput!): VolunteerOpportunity! @auth(requires: [STAFF])
+  
+  # Update volunteer opportunity
+  updateVolunteerOpportunity(id: ID!, input: UpdateVolunteerOpportunityInput!): VolunteerOpportunity! @auth(requires: [STAFF])
+  
+  # Delete volunteer opportunity
+  deleteVolunteerOpportunity(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Submit volunteer application
+  submitVolunteerApplication(input: SubmitVolunteerApplicationInput!): VolunteerApplication! @auth(requires: [MEMBER])
+  
+  # Review volunteer application
+  reviewVolunteerApplication(id: ID!, input: ReviewVolunteerApplicationInput!): VolunteerApplication! @auth(requires: [STAFF])
+  
+  # Create volunteer team
+  createVolunteerTeam(input: CreateVolunteerTeamInput!): VolunteerTeam! @auth(requires: [STAFF])
+  
+  # Update volunteer team
+  updateVolunteerTeam(id: ID!, input: UpdateVolunteerTeamInput!): VolunteerTeam! @auth(requires: [STAFF])
+  
+  # Delete volunteer team
+  deleteVolunteerTeam(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Add volunteer to team
+  addVolunteerToTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam! @auth(requires: [STAFF])
+  
+  # Remove volunteer from team
+  removeVolunteerFromTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam! @auth(requires: [STAFF])
+  
+  # Send team communication
+  sendTeamCommunication(input: SendTeamCommunicationInput!): TeamCommunication! @auth(requires: [STAFF])
+  
+  # Update team communication
+  updateTeamCommunication(id: ID!, input: UpdateTeamCommunicationInput!): TeamCommunication! @auth(requires: [STAFF])
+  
+  # Delete team communication
+  deleteTeamCommunication(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Mark team communication as read
+  markTeamCommunicationAsRead(id: ID!): TeamCommunication! @auth(requires: [VOLUNTEER])
+}
+
+input CreateVolunteerInput {
+  memberId: ID!
+  status: VolunteerStatus!
+  startDate: Date!
+  availability: [VolunteerAvailability!]!
+  customAvailability: String
+  interests: [String!]
+  preferredMinistryIds: [ID!]
+  emergencyContact: EmergencyContactInput
+  backgroundCheckStatus: String
+  backgroundCheckDate: Date
+  notes: String
+  tags: [String!]
+  meta: JSON
+  branchId: ID!
+}
+
+input UpdateVolunteerInput {
+  status: VolunteerStatus
+  startDate: Date
+  endDate: Date
+  availability: [VolunteerAvailability!]
+  customAvailability: String
+  interests: [String!]
+  preferredMinistryIds: [ID!]
+  emergencyContact: EmergencyContactInput
+  backgroundCheckStatus: String
+  backgroundCheckDate: Date
+  notes: String
+  tags: [String!]
+  meta: JSON
+  branchId: ID
+}
+
+input EmergencyContactInput {
+  name: String!
+  relationship: String!
+  phone: String!
+  email: String
+  isNotified: Boolean!
+}
+
+input AddSkillInput {
+  name: String!
+  category: String!
+  level: SkillLevel!
+  yearsExperience: Int
+  isVerified: Boolean
+  notes: String
+}
+
+input UpdateSkillInput {
+  name: String
+  category: String
+  level: SkillLevel
+  yearsExperience: Int
+  isVerified: Boolean
+  notes: String
+}
+
+input AddVolunteerToMinistryInput {
+  volunteerId: ID!
+  ministryId: ID!
+  role: String!
+  startDate: Date!
+  isLeader: Boolean!
+  supervisorId: ID
+  responsibilities: [String!]
+  notes: String
+}
+
+input UpdateVolunteerMinistryInput {
+  role: String
+  endDate: Date
+  isLeader: Boolean
+  isActive: Boolean
+  supervisorId: ID
+  responsibilities: [String!]
+  notes: String
+}
+
+input AddVolunteerAgreementInput {
+  volunteerId: ID!
+  name: String!
+  agreementText: String!
+  signedAt: DateTime!
+  expiresAt: DateTime
+  witnessedById: ID
+  documentUrl: String
+  isActive: Boolean!
+}
+
+input UpdateVolunteerAgreementInput {
+  name: String
+  agreementText: String
+  signedAt: DateTime
+  expiresAt: DateTime
+  witnessedById: ID
+  documentUrl: String
+  isActive: Boolean
+}
+
+input RecordVolunteerTrainingInput {
+  volunteerId: ID!
+  trainingTypeId: ID!
+  completedAt: DateTime!
+  expiresAt: DateTime
+  passedAssessment: Boolean
+  assessmentScore: Float
+  certificateUrl: String
+  notes: String
+  trainerId: ID
+}
+
+input UpdateVolunteerTrainingInput {
+  completedAt: DateTime
+  expiresAt: DateTime
+  passedAssessment: Boolean
+  assessmentScore: Float
+  certificateUrl: String
+  notes: String
+  trainerId: ID
+}
+
+input CreateTrainingTypeInput {
+  name: String!
+  description: String!
+  isRequired: Boolean!
+  durationHours: Float!
+  validityPeriod: Int
+  materials: [String!]
+  assessmentRequired: Boolean!
+  ministryId: ID
+}
+
+input UpdateTrainingTypeInput {
+  name: String
+  description: String
+  isRequired: Boolean
+  durationHours: Float
+  validityPeriod: Int
+  materials: [String!]
+  assessmentRequired: Boolean
+  ministryId: ID
+}
+
+input AwardVolunteerRecognitionInput {
+  volunteerId: ID!
+  type: RecognitionType!
+  title: String!
+  description: String!
+  awardedAt: DateTime!
+  imageUrl: String
+  eventId: ID
+  yearsOfService: Int
+  notes: String
+}
+
+input UpdateVolunteerRecognitionInput {
+  type: RecognitionType
+  title: String
+  description: String
+  awardedAt: DateTime
+  imageUrl: String
+  eventId: ID
+  yearsOfService: Int
+  notes: String
+}
+
+input CreateRecognitionEventInput {
+  name: String!
+  date: Date!
+  location: String!
+  description: String!
+  branchId: ID!
+  photos: [String!]
+}
+
+input UpdateRecognitionEventInput {
+  name: String
+  date: Date
+  location: String
+  description: String
+  photos: [String!]
+}
+
+input ScheduleVolunteerInput {
+  volunteerId: ID!
+  ministryId: ID
+  eventId: ID
+  serviceId: ID
+  startTime: DateTime!
+  endTime: DateTime!
+  role: String!
+  isRecurring: Boolean!
+  recurrencePattern: String
+  notes: String
+}
+
+input UpdateVolunteerScheduleInput {
+  ministryId: ID
+  eventId: ID
+  serviceId: ID
+  startTime: DateTime
+  endTime: DateTime
+  role: String
+  status: String
+  isRecurring: Boolean
+  recurrencePattern: String
+  notes: String
+}
+
+input LogVolunteerHoursInput {
+  volunteerId: ID!
+  ministryId: ID
+  eventId: ID
+  date: Date!
+  startTime: DateTime!
+  endTime: DateTime!
+  description: String!
+  notes: String
+}
+
+input LogMyVolunteerHoursInput {
+  ministryId: ID
+  eventId: ID
+  date: Date!
+  startTime: DateTime!
+  endTime: DateTime!
+  description: String!
+  notes: String
+}
+
+input CreateVolunteerOpportunityInput {
+  title: String!
+  description: String!
+  ministryId: ID!
+  branchId: ID!
+  startDate: Date!
+  endDate: Date
+  timeCommitment: String!
+  requiredSkills: [String!]
+  responsibilities: [String!]!
+  numberOfVolunteersNeeded: Int!
+  location: String
+  applicationDeadline: Date
+}
+
+input UpdateVolunteerOpportunityInput {
+  title: String
+  description: String
+  ministryId: ID
+  startDate: Date
+  endDate: Date
+  timeCommitment: String
+  requiredSkills: [String!]
+  responsibilities: [String!]
+  isActive: Boolean
+  numberOfVolunteersNeeded: Int
+  location: String
+  contactPersonId: ID
+  applicationDeadline: Date
+}
+
+input SubmitVolunteerApplicationInput {
+  opportunityId: ID!
+  previousExperience: String
+  reasonForApplying: String!
+  availability: [VolunteerAvailability!]!
+  customAvailability: String
+  startDate: Date
+  notes: String
+}
+
+input ReviewVolunteerApplicationInput {
+  status: String!
+  startDate: Date
+  notes: String
+  responseMessage: String
+}
+
+input CreateVolunteerTeamInput {
+  name: String!
+  description: String!
+  ministryId: ID!
+  leaderId: ID!
+  memberIds: [ID!]
+  notes: String
+}
+
+input UpdateVolunteerTeamInput {
+  name: String
+  description: String
+  ministryId: ID
+  leaderId: ID
+  isActive: Boolean
+  notes: String
+}
+
+input SendTeamCommunicationInput {
+  teamId: ID!
+  title: String!
+  message: String!
+  attachments: [String!]
+  isPinned: Boolean
+}
+
+input UpdateTeamCommunicationInput {
+  title: String
+  message: String
+  attachments: [String!]
+  isPinned: Boolean
+}
+
+extend type Subscription {
+  # Get notifications for volunteer schedule changes
+  volunteerScheduleUpdated(volunteerId: ID!): VolunteerSchedule! @auth(requires: [VOLUNTEER])
+  
+  # Get notifications for new team communications
+  teamCommunicationReceived(teamId: ID!): TeamCommunication! @auth(requires: [VOLUNTEER])
+  
+  # Get notifications when volunteer hours are approved/rejected
+  volunteerHoursStatusChanged(volunteerId: ID!): VolunteerHours! @auth(requires: [VOLUNTEER])
+  
+  # Get notifications for new volunteer applications
+  volunteerApplicationReceived(opportunityId: ID!): VolunteerApplication! @auth(requires: [STAFF])
+  
+  # Get notifications for volunteer recognition
+  volunteerRecognitionAnnounced(branchId: ID): VolunteerRecognition! @auth(requires: [MEMBER])
+}

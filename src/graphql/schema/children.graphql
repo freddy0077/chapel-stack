@@ -1,0 +1,865 @@
+"""
+Children's Ministry schema - handles children's programs, check-in, and parent management
+"""
+
+enum AgeGroup {
+  INFANT
+  TODDLER
+  PRESCHOOL
+  KINDERGARTEN
+  ELEMENTARY_LOWER
+  ELEMENTARY_UPPER
+  MIDDLE_SCHOOL
+  HIGH_SCHOOL
+}
+
+enum CheckInRequirement {
+  GUARDIAN_PRESENT
+  TWO_FACTOR_VERIFICATION
+  PHOTO_ID
+  SECURITY_CODE
+  BARCODE_SCAN
+  NONE
+}
+
+enum AllergyLevel {
+  NONE
+  MILD
+  MODERATE
+  SEVERE
+  LIFE_THREATENING
+}
+
+type ChildProfile {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  dateOfBirth: Date!
+  ageGroup: AgeGroup!
+  primaryGuardians: [Guardian!]!
+  authorizedPickups: [Guardian!]!
+  allergies: [Allergy!]
+  medicalNotes: String
+  specialNeeds: String
+  photo: String
+  registrationDate: Date!
+  lastAttendance: Date
+  attendanceCount: Int!
+  branch: Branch!
+  notes: String
+  securityNotes: String
+  currentClassroom: Classroom
+  memberRecord: Member
+  status: Status!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Guardian {
+  id: ID!
+  relationship: String!
+  member: Member
+  firstName: String
+  lastName: String
+  phone: String
+  email: String
+  isEmergencyContact: Boolean!
+  receiveNotifications: Boolean!
+  checkInAuthorization: Boolean!
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Allergy {
+  id: ID!
+  allergen: String!
+  severity: AllergyLevel!
+  reaction: String
+  medication: String
+  notes: String
+}
+
+type Classroom {
+  id: ID!
+  name: String!
+  description: String
+  ageGroups: [AgeGroup!]!
+  location: String!
+  capacity: Int!
+  currentAttendance: Int!
+  leaders: [ClassroomLeader!]!
+  lessons: [Lesson!]
+  checkInRequirements: [CheckInRequirement!]!
+  branch: Branch!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ClassroomLeader {
+  id: ID!
+  classroom: Classroom!
+  member: Member!
+  role: String!
+  isLead: Boolean!
+  backgroundCheckDate: Date
+  trainingCompleted: Boolean!
+  schedule: [ClassroomSchedule!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ClassroomSchedule {
+  id: ID!
+  classroom: Classroom!
+  leader: ClassroomLeader!
+  dayOfWeek: Int!
+  startTime: String!
+  endTime: String!
+  isRecurring: Boolean!
+  effectiveDate: Date!
+  expiryDate: Date
+}
+
+type ChildCheckIn {
+  id: ID!
+  child: ChildProfile!
+  classroom: Classroom!
+  checkedInBy: Member!
+  checkedInAt: DateTime!
+  checkedOutBy: Member
+  checkedOutAt: DateTime
+  securityCode: String!
+  guardian: Guardian
+  specialNotes: String
+  branch: Branch!
+  event: Event
+  service: Service
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Curriculum {
+  id: ID!
+  name: String!
+  description: String
+  ageGroups: [AgeGroup!]!
+  units: [CurriculumUnit!]!
+  isActive: Boolean!
+  startDate: Date
+  endDate: Date
+  branch: Branch
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CurriculumUnit {
+  id: ID!
+  name: String!
+  description: String
+  lessons: [Lesson!]!
+  order: Int!
+  duration: Int!
+}
+
+type Lesson {
+  id: ID!
+  title: String!
+  description: String
+  unit: CurriculumUnit
+  classroom: Classroom
+  content: String
+  materials: [String!]
+  activities: [String!]
+  teacherNotes: String
+  scriptures: [String!]
+  duration: Int!
+  order: Int
+  preparationSteps: [String!]
+  mediaResources: [String!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ChildEvent {
+  id: ID!
+  name: String!
+  description: String
+  date: Date!
+  startTime: String!
+  endTime: String!
+  location: String!
+  ageGroups: [AgeGroup!]!
+  capacity: Int!
+  registeredCount: Int!
+  requiresRegistration: Boolean!
+  registrationDeadline: DateTime
+  checkInRequirements: [CheckInRequirement!]!
+  leadContact: Member!
+  branch: Branch!
+  parentInstructions: String
+  specialNotes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ChildEventRegistration {
+  id: ID!
+  event: ChildEvent!
+  child: ChildProfile!
+  registeredBy: Member!
+  registeredAt: DateTime!
+  attended: Boolean
+  checkedInAt: DateTime
+  checkedOutAt: DateTime
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ChildrenMinistrySettings {
+  id: ID!
+  branch: Branch!
+  requiresBackgroundCheck: Boolean!
+  requiresTraining: Boolean!
+  securityCodeFormat: String!
+  defaultCheckInRequirements: [CheckInRequirement!]!
+  checkInClosesMinutesAfterStart: Int!
+  allowSelfCheckIn: Boolean!
+  enforceTwoPersonRule: Boolean!
+  sendAbsenceNotifications: Boolean!
+  autoAssignAgeGroups: Boolean!
+  updatedBy: User!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  # Get children profiles with filtering
+  children(
+    search: String
+    ageGroup: AgeGroup
+    branchId: ID
+    classroomId: ID
+    pagination: PaginationInput
+  ): ChildProfileConnection! @auth(requires: [STAFF])
+  
+  # Get a specific child profile
+  child(id: ID!): ChildProfile @auth(requires: [STAFF])
+  
+  # Get child check-ins
+  childCheckIns(
+    childId: ID
+    classroomId: ID
+    date: Date
+    branchId: ID
+    pagination: PaginationInput
+  ): ChildCheckInConnection! @auth(requires: [STAFF])
+  
+  # Get child check-in by ID
+  childCheckIn(id: ID!): ChildCheckIn @auth(requires: [STAFF])
+  
+  # Get classrooms
+  classrooms(
+    search: String
+    ageGroup: AgeGroup
+    branchId: ID
+    isActive: Boolean
+    pagination: PaginationInput
+  ): ClassroomConnection! @auth(requires: [STAFF])
+  
+  # Get a specific classroom
+  classroom(id: ID!): Classroom @auth(requires: [STAFF])
+  
+  # Get classroom leaders
+  classroomLeaders(
+    classroomId: ID!
+    pagination: PaginationInput
+  ): ClassroomLeaderConnection! @auth(requires: [STAFF])
+  
+  # Get curricula
+  curricula(
+    search: String
+    ageGroup: AgeGroup
+    isActive: Boolean
+    branchId: ID
+    pagination: PaginationInput
+  ): CurriculumConnection! @auth(requires: [STAFF])
+  
+  # Get a specific curriculum
+  curriculum(id: ID!): Curriculum @auth(requires: [STAFF])
+  
+  # Get curriculum units
+  curriculumUnits(
+    curriculumId: ID!
+    pagination: PaginationInput
+  ): CurriculumUnitConnection! @auth(requires: [STAFF])
+  
+  # Get lessons
+  lessons(
+    unitId: ID
+    classroomId: ID
+    pagination: PaginationInput
+  ): LessonConnection! @auth(requires: [STAFF])
+  
+  # Get a specific lesson
+  lesson(id: ID!): Lesson @auth(requires: [STAFF])
+  
+  # Get child events
+  childEvents(
+    search: String
+    ageGroup: AgeGroup
+    dateRange: DateRangeInput
+    branchId: ID
+    pagination: PaginationInput
+  ): ChildEventConnection! @auth(requires: [STAFF])
+  
+  # Get a specific child event
+  childEvent(id: ID!): ChildEvent @auth(requires: [STAFF])
+  
+  # Get child event registrations
+  childEventRegistrations(
+    eventId: ID!
+    attended: Boolean
+    pagination: PaginationInput
+  ): ChildEventRegistrationConnection! @auth(requires: [STAFF])
+  
+  # Get children's ministry settings
+  childrenMinistrySettings(branchId: ID!): ChildrenMinistrySettings! @auth(requires: [STAFF])
+  
+  # Check if a child is checked in
+  isChildCheckedIn(childId: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Validate security code for child pickup
+  validateSecurityCode(
+    childId: ID!
+    securityCode: String!
+  ): Boolean! @auth(requires: [STAFF])
+  
+  # Get children's attendance report
+  childrenAttendanceReport(
+    dateRange: DateRangeInput!
+    classroomId: ID
+    branchId: ID
+  ): ChildrenAttendanceReport! @auth(requires: [STAFF])
+}
+
+type ChildProfileConnection {
+  edges: [ChildProfileEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ChildProfileEdge {
+  node: ChildProfile!
+  cursor: String!
+}
+
+type ChildCheckInConnection {
+  edges: [ChildCheckInEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ChildCheckInEdge {
+  node: ChildCheckIn!
+  cursor: String!
+}
+
+type ClassroomConnection {
+  edges: [ClassroomEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ClassroomEdge {
+  node: Classroom!
+  cursor: String!
+}
+
+type ClassroomLeaderConnection {
+  edges: [ClassroomLeaderEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ClassroomLeaderEdge {
+  node: ClassroomLeader!
+  cursor: String!
+}
+
+type CurriculumConnection {
+  edges: [CurriculumEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CurriculumEdge {
+  node: Curriculum!
+  cursor: String!
+}
+
+type CurriculumUnitConnection {
+  edges: [CurriculumUnitEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type CurriculumUnitEdge {
+  node: CurriculumUnit!
+  cursor: String!
+}
+
+type LessonConnection {
+  edges: [LessonEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type LessonEdge {
+  node: Lesson!
+  cursor: String!
+}
+
+type ChildEventConnection {
+  edges: [ChildEventEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ChildEventEdge {
+  node: ChildEvent!
+  cursor: String!
+}
+
+type ChildEventRegistrationConnection {
+  edges: [ChildEventRegistrationEdge!]!
+  pageInfo: PaginationInfo!
+}
+
+type ChildEventRegistrationEdge {
+  node: ChildEventRegistration!
+  cursor: String!
+}
+
+type ChildrenAttendanceReport {
+  totalAttendance: Int!
+  uniqueAttendees: Int!
+  averageAttendance: Float!
+  attendanceByAgeGroup: [AgeGroupAttendance!]!
+  attendanceByClassroom: [ClassroomAttendance!]!
+  attendanceByDate: [DateAttendance!]!
+  topAttendees: [ChildAttendanceCount!]!
+}
+
+type AgeGroupAttendance {
+  ageGroup: AgeGroup!
+  count: Int!
+}
+
+type ClassroomAttendance {
+  classroom: Classroom!
+  count: Int!
+}
+
+type DateAttendance {
+  date: Date!
+  count: Int!
+}
+
+type ChildAttendanceCount {
+  child: ChildProfile!
+  count: Int!
+}
+
+extend type Mutation {
+  # Create a child profile
+  createChildProfile(input: CreateChildProfileInput!): ChildProfile! @auth(requires: [STAFF])
+  
+  # Update a child profile
+  updateChildProfile(id: ID!, input: UpdateChildProfileInput!): ChildProfile! @auth(requires: [STAFF])
+  
+  # Delete a child profile
+  deleteChildProfile(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Add a guardian to a child
+  addGuardian(input: AddGuardianInput!): Guardian! @auth(requires: [STAFF])
+  
+  # Update a guardian
+  updateGuardian(id: ID!, input: UpdateGuardianInput!): Guardian! @auth(requires: [STAFF])
+  
+  # Remove a guardian
+  removeGuardian(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Add allergy to a child
+  addAllergy(input: AddAllergyInput!): Allergy! @auth(requires: [STAFF])
+  
+  # Update an allergy
+  updateAllergy(id: ID!, input: UpdateAllergyInput!): Allergy! @auth(requires: [STAFF])
+  
+  # Remove an allergy
+  removeAllergy(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a classroom
+  createClassroom(input: CreateClassroomInput!): Classroom! @auth(requires: [STAFF])
+  
+  # Update a classroom
+  updateClassroom(id: ID!, input: UpdateClassroomInput!): Classroom! @auth(requires: [STAFF])
+  
+  # Delete a classroom
+  deleteClassroom(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Add a leader to a classroom
+  addClassroomLeader(input: AddClassroomLeaderInput!): ClassroomLeader! @auth(requires: [STAFF])
+  
+  # Update a classroom leader
+  updateClassroomLeader(id: ID!, input: UpdateClassroomLeaderInput!): ClassroomLeader! @auth(requires: [STAFF])
+  
+  # Remove a classroom leader
+  removeClassroomLeader(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Check in a child
+  checkInChild(input: CheckInChildInput!): ChildCheckIn! @auth(requires: [STAFF])
+  
+  # Check out a child
+  checkOutChild(id: ID!, input: CheckOutChildInput!): ChildCheckIn! @auth(requires: [STAFF])
+  
+  # Create a curriculum
+  createCurriculum(input: CreateCurriculumInput!): Curriculum! @auth(requires: [STAFF])
+  
+  # Update a curriculum
+  updateCurriculum(id: ID!, input: UpdateCurriculumInput!): Curriculum! @auth(requires: [STAFF])
+  
+  # Delete a curriculum
+  deleteCurriculum(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a curriculum unit
+  createCurriculumUnit(input: CreateCurriculumUnitInput!): CurriculumUnit! @auth(requires: [STAFF])
+  
+  # Update a curriculum unit
+  updateCurriculumUnit(id: ID!, input: UpdateCurriculumUnitInput!): CurriculumUnit! @auth(requires: [STAFF])
+  
+  # Delete a curriculum unit
+  deleteCurriculumUnit(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a lesson
+  createLesson(input: CreateLessonInput!): Lesson! @auth(requires: [STAFF])
+  
+  # Update a lesson
+  updateLesson(id: ID!, input: UpdateLessonInput!): Lesson! @auth(requires: [STAFF])
+  
+  # Delete a lesson
+  deleteLesson(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Create a child event
+  createChildEvent(input: CreateChildEventInput!): ChildEvent! @auth(requires: [STAFF])
+  
+  # Update a child event
+  updateChildEvent(id: ID!, input: UpdateChildEventInput!): ChildEvent! @auth(requires: [STAFF])
+  
+  # Delete a child event
+  deleteChildEvent(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Register a child for an event
+  registerChildForEvent(input: RegisterChildForEventInput!): ChildEventRegistration! @auth(requires: [STAFF])
+  
+  # Cancel a child's event registration
+  cancelChildEventRegistration(id: ID!): Boolean! @auth(requires: [STAFF])
+  
+  # Update children's ministry settings
+  updateChildrenMinistrySettings(branchId: ID!, input: UpdateChildrenMinistrySettingsInput!): ChildrenMinistrySettings! @auth(requires: [STAFF])
+  
+  # Bulk check-in children
+  bulkCheckInChildren(input: [CheckInChildInput!]!): [ChildCheckIn!]! @auth(requires: [STAFF])
+  
+  # Generate security codes for all checked-in children
+  regenerateSecurityCodes(classroomId: ID!): Boolean! @auth(requires: [STAFF])
+}
+
+input CreateChildProfileInput {
+  firstName: String!
+  lastName: String!
+  dateOfBirth: Date!
+  ageGroup: AgeGroup!
+  guardians: [GuardianInput!]!
+  allergies: [AllergyInput!]
+  medicalNotes: String
+  specialNeeds: String
+  photo: String
+  notes: String
+  securityNotes: String
+  classroomId: ID
+  memberId: ID
+  branchId: ID!
+}
+
+input UpdateChildProfileInput {
+  firstName: String
+  lastName: String
+  dateOfBirth: Date
+  ageGroup: AgeGroup
+  medicalNotes: String
+  specialNeeds: String
+  photo: String
+  notes: String
+  securityNotes: String
+  classroomId: ID
+  memberId: ID
+  status: Status
+}
+
+input GuardianInput {
+  relationship: String!
+  memberId: ID
+  firstName: String
+  lastName: String
+  phone: String
+  email: String
+  isEmergencyContact: Boolean!
+  receiveNotifications: Boolean!
+  checkInAuthorization: Boolean!
+  notes: String
+}
+
+input AddGuardianInput {
+  childId: ID!
+  relationship: String!
+  memberId: ID
+  firstName: String
+  lastName: String
+  phone: String
+  email: String
+  isEmergencyContact: Boolean!
+  receiveNotifications: Boolean!
+  checkInAuthorization: Boolean!
+  notes: String
+}
+
+input UpdateGuardianInput {
+  relationship: String
+  memberId: ID
+  firstName: String
+  lastName: String
+  phone: String
+  email: String
+  isEmergencyContact: Boolean
+  receiveNotifications: Boolean
+  checkInAuthorization: Boolean
+  notes: String
+}
+
+input AllergyInput {
+  allergen: String!
+  severity: AllergyLevel!
+  reaction: String
+  medication: String
+  notes: String
+}
+
+input AddAllergyInput {
+  childId: ID!
+  allergen: String!
+  severity: AllergyLevel!
+  reaction: String
+  medication: String
+  notes: String
+}
+
+input UpdateAllergyInput {
+  allergen: String
+  severity: AllergyLevel
+  reaction: String
+  medication: String
+  notes: String
+}
+
+input CreateClassroomInput {
+  name: String!
+  description: String
+  ageGroups: [AgeGroup!]!
+  location: String!
+  capacity: Int!
+  checkInRequirements: [CheckInRequirement!]
+  branchId: ID!
+  isActive: Boolean!
+}
+
+input UpdateClassroomInput {
+  name: String
+  description: String
+  ageGroups: [AgeGroup!]
+  location: String
+  capacity: Int
+  checkInRequirements: [CheckInRequirement!]
+  isActive: Boolean
+}
+
+input AddClassroomLeaderInput {
+  classroomId: ID!
+  memberId: ID!
+  role: String!
+  isLead: Boolean!
+  backgroundCheckDate: Date
+  trainingCompleted: Boolean!
+  schedule: [ClassroomScheduleInput!]
+}
+
+input UpdateClassroomLeaderInput {
+  role: String
+  isLead: Boolean
+  backgroundCheckDate: Date
+  trainingCompleted: Boolean
+  schedule: [ClassroomScheduleInput!]
+}
+
+input ClassroomScheduleInput {
+  dayOfWeek: Int!
+  startTime: String!
+  endTime: String!
+  isRecurring: Boolean!
+  effectiveDate: Date!
+  expiryDate: Date
+}
+
+input CheckInChildInput {
+  childId: ID!
+  classroomId: ID!
+  guardianId: ID
+  checkedInById: ID!
+  specialNotes: String
+  branchId: ID!
+  eventId: ID
+  serviceId: ID
+}
+
+input CheckOutChildInput {
+  checkedOutById: ID!
+  securityCode: String!
+  notes: String
+}
+
+input CreateCurriculumInput {
+  name: String!
+  description: String
+  ageGroups: [AgeGroup!]!
+  isActive: Boolean!
+  startDate: Date
+  endDate: Date
+  branchId: ID
+}
+
+input UpdateCurriculumInput {
+  name: String
+  description: String
+  ageGroups: [AgeGroup!]
+  isActive: Boolean
+  startDate: Date
+  endDate: Date
+}
+
+input CreateCurriculumUnitInput {
+  curriculumId: ID!
+  name: String!
+  description: String
+  order: Int!
+  duration: Int!
+}
+
+input UpdateCurriculumUnitInput {
+  name: String
+  description: String
+  order: Int
+  duration: Int
+}
+
+input CreateLessonInput {
+  title: String!
+  description: String
+  unitId: ID
+  classroomId: ID
+  content: String
+  materials: [String!]
+  activities: [String!]
+  teacherNotes: String
+  scriptures: [String!]
+  duration: Int!
+  order: Int
+  preparationSteps: [String!]
+  mediaResources: [String!]
+}
+
+input UpdateLessonInput {
+  title: String
+  description: String
+  unitId: ID
+  classroomId: ID
+  content: String
+  materials: [String!]
+  activities: [String!]
+  teacherNotes: String
+  scriptures: [String!]
+  duration: Int
+  order: Int
+  preparationSteps: [String!]
+  mediaResources: [String!]
+}
+
+input CreateChildEventInput {
+  name: String!
+  description: String
+  date: Date!
+  startTime: String!
+  endTime: String!
+  location: String!
+  ageGroups: [AgeGroup!]!
+  capacity: Int!
+  requiresRegistration: Boolean!
+  registrationDeadline: DateTime
+  checkInRequirements: [CheckInRequirement!]!
+  leadContactId: ID!
+  branchId: ID!
+  parentInstructions: String
+  specialNotes: String
+}
+
+input UpdateChildEventInput {
+  name: String
+  description: String
+  date: Date
+  startTime: String
+  endTime: String
+  location: String
+  ageGroups: [AgeGroup!]
+  capacity: Int
+  requiresRegistration: Boolean
+  registrationDeadline: DateTime
+  checkInRequirements: [CheckInRequirement!]
+  leadContactId: ID
+  parentInstructions: String
+  specialNotes: String
+}
+
+input RegisterChildForEventInput {
+  eventId: ID!
+  childId: ID!
+  registeredById: ID!
+  notes: String
+}
+
+input UpdateChildrenMinistrySettingsInput {
+  requiresBackgroundCheck: Boolean
+  requiresTraining: Boolean
+  securityCodeFormat: String
+  defaultCheckInRequirements: [CheckInRequirement!]
+  checkInClosesMinutesAfterStart: Int
+  allowSelfCheckIn: Boolean
+  enforceTwoPersonRule: Boolean
+  sendAbsenceNotifications: Boolean
+  autoAssignAgeGroups: Boolean
+}
+
+extend type Subscription {
+  # Get notified when a child is checked in
+  childCheckedIn(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
+  
+  # Get notified when a child is checked out
+  childCheckedOut(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
+  
+  # Get notified of classroom capacity alerts
+  classroomCapacityAlert(branchId: ID!): Classroom! @auth(requires: [STAFF])
+  
+  # Get notified of special needs children check-ins
+  specialNeedsChildCheckIn(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
+}
