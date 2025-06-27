@@ -1,4 +1,4 @@
-import { useLazyQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { SEARCH_MEMBERS } from "../queries/memberQueries";
 import { useEffect } from "react";
 
@@ -11,19 +11,11 @@ export interface SearchMember {
 }
 
 // Accepts search string and optionally a limit, returns { members, loading, error, searchMembers }
-export function useSearchMembers(query: string, limit = 8) {
-  const [searchMembers, { data, loading, error }] = useLazyQuery<{ members: SearchMember[] }>(SEARCH_MEMBERS);
+export function useSearchMembers(searchTerm: string, organisationId: string) {
+  const { data, loading, error } = useQuery(SEARCH_MEMBERS, {
+    variables: { search: searchTerm, organisationId },
+    skip: !searchTerm || !organisationId,
+  });
 
-  useEffect(() => {
-    if (query && query.length >= 2) {
-      searchMembers({ variables: { search: query } });
-    }
-  }, [query, searchMembers]);
-
-  return {
-    members: data?.members?.slice(0, limit) ?? [],
-    loading,
-    error,
-    searchMembers,
-  };
+  return { data: data?.members, loading, error };
 }

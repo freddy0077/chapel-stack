@@ -1,6 +1,5 @@
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { UPDATE_MEMBER } from "../mutations/memberMutations";
-import { Member } from "./useMember";
 
 export interface UpdateMemberInput {
   firstName?: string;

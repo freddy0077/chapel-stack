@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   CreditCardIcon, 
-  DeviceTabletIcon, 
   ChartBarIcon, 
   UsersIcon,
   QrCodeIcon,
@@ -13,11 +12,10 @@ import {
 
 import CardScanningStation from '../components/CardScanningStation';
 import CardManagement from '../components/CardManagement';
-import DeviceManagement from '../components/DeviceManagement';
 import AttendanceAnalytics from '../components/AttendanceAnalytics';
 import { AttendanceRecord } from '../types';
 
-type TabType = 'scanner' | 'cards' | 'devices' | 'analytics';
+type TabType = 'scanner' | 'cards' | 'analytics';
 
 export default function CardScanningDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('scanner');
@@ -79,7 +77,7 @@ export default function CardScanningDashboard() {
               <CreditCardIcon className="h-5 w-5 mr-2 -ml-0.5" />
               Card Management
             </button>
-            <button
+            {/* <button
               onClick={() => setActiveTab('devices')}
               className={`${
                 activeTab === 'devices'
@@ -89,7 +87,7 @@ export default function CardScanningDashboard() {
             >
               <DeviceTabletIcon className="h-5 w-5 mr-2 -ml-0.5" />
               Device Management
-            </button>
+            </button> */}
             <button
               onClick={() => setActiveTab('analytics')}
               className={`${
@@ -192,7 +190,7 @@ export default function CardScanningDashboard() {
 
         {activeTab === 'cards' && <CardManagement />}
         
-        {activeTab === 'devices' && <DeviceManagement />}
+        {/* {activeTab === 'devices' && <DeviceManagement />} */}
         
         {activeTab === 'analytics' && <AttendanceAnalytics />}
       </div>

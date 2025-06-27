@@ -3,18 +3,15 @@
 import { useState, useEffect } from 'react';
 import { 
   CalendarIcon, 
-  UserGroupIcon,
   TrophyIcon,
   PlusIcon,
   ArrowPathIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import Image from 'next/image';
 
 // Mock authentication context
 const useAuth = () => {

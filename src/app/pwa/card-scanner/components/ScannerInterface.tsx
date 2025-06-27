@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   CreditCardIcon, 
   QrCodeIcon,
@@ -31,7 +31,7 @@ export default function ScannerInterface({
     if (scanMode === "NFC" && status === "idle") {
       initNfcReading();
     }
-  }, [scanMode, status]);
+  }, [scanMode, status, initNfcReading]);
 
   // Initialize QR code scanning when in QR mode and idle
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function ScannerInterface({
   // Define a type for the Web NFC API which is experimental
   interface NDEFReader {
     scan: () => Promise<void>;
-    addEventListener: (event: string, callback: any) => void;
+    addEventListener: (event: string, callback: unknown) => void;
   }
 
   // Safe check for NFC support
@@ -56,7 +56,7 @@ export default function ScannerInterface({
     return typeof window !== 'undefined' && 'NDEFReader' in window;
   };
 
-  const initNfcReading = async () => {
+  const initNfcReading = useCallback(async () => {
     if (!checkNfcSupport()) {
       setErrorMessage("NFC is not supported on this device");
       return;
@@ -67,7 +67,7 @@ export default function ScannerInterface({
       const ndef = new (window as any).NDEFReader() as NDEFReader;
       await ndef.scan();
       
-      ndef.addEventListener("reading", (event: any) => {
+      ndef.addEventListener("reading", (event: unknown) => {
         // Use the NFC card's serial number as the card ID
         onScanComplete(event.serialNumber);
       });
@@ -81,7 +81,7 @@ export default function ScannerInterface({
       console.error("Error initializing NFC:", error);
       setErrorMessage("Could not access NFC. Please ensure NFC is enabled on your device.");
     }
-  };
+  }, [onScanComplete]);
 
   const handleSimulateScan = async () => {
     if (simulateCardId.trim()) {

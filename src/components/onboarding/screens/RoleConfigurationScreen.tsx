@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { useMutation } from '@apollo/client';
 import { CREATE_ROLE_WITH_PERMISSIONS } from '@/graphql/mutations/roleMutations';
-import { useAdminRoles } from '@/graphql/hooks/useAdminRoles';
 import { usePermissionsGroupedBySubject } from '@/graphql/hooks/usePermissions';
 
 const DEFAULT_PERMISSIONS = [
@@ -63,13 +62,11 @@ const RoleConfigurationScreen: React.FC<RoleConfigurationScreenProps> = ({ onNex
   const [success, setSuccess] = useState<string | null>(null);
   const [createRoleWithPermissions, { loading: creating }] = useMutation(CREATE_ROLE_WITH_PERMISSIONS);
 
-  const { roles: adminRoles, loading: rolesLoading } = useAdminRoles();
-
-  const { grouped: groupedPermissions, loading: permissionsLoading } = usePermissionsGroupedBySubject();
+  const { grouped: groupedPermissions } = usePermissionsGroupedBySubject();
 
   const allPermissions = useMemo(() => {
     const map = new Map<string, { id: string; action: string; subject: string; description?: string }>();
-    groupedPermissions.flat().forEach((perm: any) => {
+    groupedPermissions.flat().forEach((perm: unknown) => {
       if (!map.has(perm.id)) map.set(perm.id, perm);
     });
     return Array.from(map.values());
@@ -135,7 +132,7 @@ const RoleConfigurationScreen: React.FC<RoleConfigurationScreenProps> = ({ onNex
         setSuccess(null);
         onNext(roles);
       }, 1200);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to save roles.');
     }
   };

@@ -9,7 +9,6 @@ import { ChurchProfile } from '../ModulePreferences';
 interface CompletionScreenProps {
   onFinish: () => void;
   churchProfile: ChurchProfile;
-  selectedModules?: string[];
 }
 
 /**
@@ -18,8 +17,7 @@ interface CompletionScreenProps {
  */
 const CompletionScreen = ({ 
   onFinish,
-  churchProfile,
-  selectedModules = []
+  churchProfile
 }: CompletionScreenProps) => (
   <motion.div 
     initial={{ opacity: 0, scale: 0.95 }}

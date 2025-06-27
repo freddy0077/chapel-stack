@@ -1,11 +1,14 @@
+"use client";
 import React from "react";
-import { useCommunionRecords, CommunionRecord } from "@/graphql/hooks/useCommunionRecords";
+import { useFilteredCommunionRecords, SacramentalRecord } from "@/graphql/hooks/useFilteredSacramentalRecords";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 interface CommunionRecordsLoaderProps {
-  children: (records: CommunionRecord[], loading: boolean, error: unknown) => React.ReactNode;
+  children: (records: SacramentalRecord[], loading: boolean, error: unknown) => React.ReactNode;
 }
 
 export function CommunionRecordsLoader({ children }: CommunionRecordsLoaderProps) {
-  const { records, loading, error } = useCommunionRecords();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { records, loading, error } = useFilteredCommunionRecords(orgBranchFilter);
   return <>{children(records, loading, error)}</>;
 }

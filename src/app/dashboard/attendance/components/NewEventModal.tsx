@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 interface NewEventModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export interface NewEventInput {
   endTime: string;
   type: string;
   location?: string;
+  organisationId?: string;
 }
 
 const EVENT_TYPES = [
@@ -31,7 +33,8 @@ const EVENT_TYPES = [
 ];
 
 export default function NewEventModal({ isOpen, onClose, onCreate, loading, error }: NewEventModalProps) {
-  const [form, setForm] = useState<NewEventInput>({
+  const { organisationId } = useOrganizationBranchFilter();
+  const [form, setForm] = useState<Omit<NewEventInput, 'organisationId'>>({
     name: "",
     description: "",
     date: "",
@@ -54,7 +57,7 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
       setLocalError("Please fill in all required fields.");
       return;
     }
-    onCreate(form);
+    onCreate({ ...form, organisationId });
   };
 
   return (

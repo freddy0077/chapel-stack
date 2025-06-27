@@ -153,47 +153,85 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
   const [openIdx, setOpenIdx] = useState(0);
   // Track expanded section for each branch: 'primary' | 'admin' | 'settings' | 'done'
   const [expandedSection, setExpandedSection] = useState<('primary'|'admin'|'settings'|'done')[]>(
-    Array(branches.length).fill('primary')
+    Array.from({ length: branches.length }, () => 'primary')
   );
 
   // Field handlers
   const handleBranchChange = (idx: number, field: keyof BranchDetailsInput, value: string) => {
-    const updated = [...branches];
-    updated[idx] = { ...updated[idx], [field]: value };
-    setBranches(updated);
+    setBranches(prev => {
+      if (!Array.isArray(prev) || typeof prev[0] !== 'object') {
+        console.error('setBranches called with invalid value', prev);
+        return prev;
+      }
+      const newBranches = prev.map((b, i) =>
+        i === idx ? { ...b, [field]: value } : b
+      );
+      console.log('setBranches', newBranches);
+      return newBranches;
+    });
   };
+
   const handleAdminChange = (idx: number, field: keyof BranchAdminInput, value: string) => {
-    const updated = [...branches];
-    updated[idx] = { ...updated[idx], admin: { ...updated[idx].admin, [field]: value } };
-    setBranches(updated);
+    setBranches(prev =>
+      prev.map((b, i) =>
+        i === idx ? { ...b, admin: { ...b.admin, [field]: value } } : b
+      )
+    );
   };
+
   const handleSettingsChange = (idx: number, field: keyof BranchSettingsInput, value: string) => {
-    const updated = [...branches];
-    updated[idx] = { ...updated[idx], settings: { ...updated[idx].settings, [field]: value } };
-    setBranches(updated);
+    setBranches(prev =>
+      prev.map((b, i) =>
+        i === idx ? { ...b, settings: { ...b.settings, [field]: value } } : b
+      )
+    );
   };
+
   const handleModuleToggle = (idx: number, module: string) => {
-    const updated = [...branches];
-    const modules = updated[idx].modules;
-    updated[idx].modules = modules.includes(module)
-      ? modules.filter(m => m !== module)
-      : [...modules, module];
-    setBranches(updated);
+    setBranches(prev =>
+      prev.map((b, i) =>
+        i === idx
+          ? { ...b, modules: b.modules.includes(module)
+              ? b.modules.filter(m => m !== module)
+              : [...b.modules, module] }
+          : b
+      )
+    );
   };
 
   // Save state for UI feedback
-  const [primarySaved, setPrimarySaved] = useState<boolean[]>(branches.map(() => false));
-  const [primaryLoading, setPrimaryLoading] = useState<boolean[]>(branches.map(() => false));
-  const [primaryError, setPrimaryError] = useState<(string | null)[]>(branches.map(() => null));
-  const [adminSaved, setAdminSaved] = useState<boolean[]>(branches.map(() => false));
-  const [adminLoading, setAdminLoading] = useState<boolean[]>(branches.map(() => false));
-  const [adminError, setAdminError] = useState<(string | null)[]>(branches.map(() => null));
-  const [settingsSaved, setSettingsSaved] = useState<boolean[]>(branches.map(() => false));
-  const [settingsLoading, setSettingsLoading] = useState<boolean[]>(branches.map(() => false));
-  const [settingsError, setSettingsError] = useState<(string | null)[]>(branches.map(() => null));
+  const [primarySaved, setPrimarySaved] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [primaryLoading, setPrimaryLoading] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [primaryError, setPrimaryError] = useState<(string | null)[]>(
+    Array.from({ length: branches.length }, () => null)
+  );
+  const [adminSaved, setAdminSaved] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [adminLoading, setAdminLoading] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [adminError, setAdminError] = useState<(string | null)[]>(
+    Array.from({ length: branches.length }, () => null)
+  );
+  const [settingsSaved, setSettingsSaved] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [settingsLoading, setSettingsLoading] = useState<boolean[]>(
+    Array.from({ length: branches.length }, () => false)
+  );
+  const [settingsError, setSettingsError] = useState<(string | null)[]>(
+    Array.from({ length: branches.length }, () => null)
+  );
 
   // Store branchIds after creation (null if not yet created)
-  const [branchIds, setBranchIds] = useState<(string | null)[]>(branches.map(() => null));
+  const [branchIds, setBranchIds] = useState<(string | null)[]>(
+    Array.from({ length: branches.length }, () => null)
+  );
 
   // CREATE_BRANCH mutation
   const [createBranch] = useMutation(CREATE_BRANCH);
@@ -397,6 +435,42 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
   };
 
   useEffect(() => {
+    setExpandedSection(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || 'primary')
+    );
+    setPrimarySaved(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setPrimaryLoading(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setPrimaryError(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || null)
+    );
+    setAdminSaved(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setAdminLoading(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setAdminError(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || null)
+    );
+    setSettingsSaved(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setSettingsLoading(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || false)
+    );
+    setSettingsError(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || null)
+    );
+    setBranchIds(prev =>
+      Array.from({ length: branches.length }, (_, i) => prev[i] || null)
+    );
+  }, [branches.length]);
+
+  useEffect(() => {
     if (primarySaved.every(Boolean)) markScreenCompleted('BranchPrimaryDetails');
     if (adminSaved.every(Boolean)) markScreenCompleted('BranchAdmin');
     if (settingsSaved.every(Boolean)) markScreenCompleted('BranchSettings');
@@ -415,7 +489,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
         <p className="text-gray-600">Fill in the details for each branch, create an admin, and configure modules and settings.</p>
       </div>
       <div className="flex flex-col gap-6 w-full max-w-screen-md mx-auto">
-        {branches.map((branch, idx) => (
+        {(branches ?? []).map((branch, idx) => (
           <div
             key={idx}
             className={`transition-all duration-300 shadow-xl rounded-2xl border border-gray-100 bg-gradient-to-br ${openIdx === idx ? 'from-indigo-100 to-white' : 'from-gray-50 to-white'} relative`}

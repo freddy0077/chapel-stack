@@ -1,123 +1,63 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  useOnboardingProgress,
-  useInitializeOnboarding,
-  useCompleteOnboardingStep,
-  useInitiateBranchSetup,
-  useConfigureInitialSettings,
-  useImportMemberData,
-  useImportFinancialData,
-  useGenerateMemberImportTemplate,
-  useGenerateFundsImportTemplate
-} from '@/graphql/hooks/useOnboarding';
-import { 
-  OnboardingStep, 
-  CompleteOnboardingStepInput,
-  ChurchProfileData
-} from '@/graphql/types/onboardingTypes';
+import { useOnboardingState } from './hooks/useOnboardingState';
+import { ChurchProfileData } from '@/graphql/types/onboardingTypes';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@tremor/react';
 
 // Import extracted screen components
 import WelcomeScreen from './screens/WelcomeScreen';
-import BranchCountScreen from './screens/BranchCountScreen';
-import BranchDetailsScreen, { BranchDetailsInput } from './screens/BranchDetailsScreen';
 import ChurchProfileScreen from './screens/ChurchProfileScreen';
-import ModuleSelectionScreen from './screens/ModuleSelectionScreen';
-import MemberDataImportScreen from './screens/MemberDataImportScreen';
-import FinancialDataImportScreen from './screens/FinancialDataImportScreen';
-import CompletionScreen from './screens/CompletionScreen';
 import AdminSetupScreen from './screens/AdminSetupScreen';
 import BrandingScreen from './screens/BrandingScreen';
 import UserInvitationsScreen from './screens/UserInvitationsScreen';
 import RoleConfigurationScreen from './screens/RoleConfigurationScreen';
-import MemberImportScreen from './screens/MemberImportScreen';
 import FinanceSetupScreen from './screens/FinanceSetupScreen';
 import OnboardingCompletionScreen from './screens/OnboardingCompletionScreen';
+import BranchCountScreen from './screens/BranchCountScreen';
+import BranchDetailsScreen from './screens/BranchDetailsScreen';
 
 // Import common components
 import LoadingSpinner from './common/LoadingSpinner';
 
 // Import types and utilities
-import { ChurchProfile } from './ModulePreferences';
-import { useOnboardingState } from './hooks/useOnboardingState';
 import { getCompletedScreens } from './utils/completedScreens';
 import { ONBOARDING_SCREEN_ORDER } from './utils/onboardingStepOrder';
+
+// Import type for BranchDetailsInput
+import type { BranchDetailsInput } from './screens/BranchDetailsScreen';
 
 // Main onboarding flow component
 interface ModernOnboardingFlowProps {
   branchId: string | null;
-  onComplete: (selectedModules: string[], churchProfile: ChurchProfile) => void;
-}
-
-// Basic mapping from backend OnboardingStep to local UI step index
-function backendStepToLocalIndex(backendStep: OnboardingStep | string | undefined): number {
-  // Handle case where it's a string
-  const step = typeof backendStep === 'string' 
-    ? backendStep as unknown as OnboardingStep 
-    : backendStep;
-    
-  switch(step) {
-    case OnboardingStep.WELCOME:
-      return 0;
-    case OnboardingStep.ADMIN_SETUP: 
-      return 1;
-    case OnboardingStep.MODULE_QUICK_START:
-      return 2;
-    case OnboardingStep.MEMBER_IMPORT:
-      return 3;
-    case OnboardingStep.FINANCIAL_SETUP:
-      return 4;
-    case OnboardingStep.BRANCH_SETUP:
-      return 5; // Completion step
-    default:
-      return 0; // Default to first step if unrecognized
-  }
+  onComplete: (selectedModules: string[], churchProfile: ChurchProfileData) => void;
 }
 
 const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProps) => {
   // New: State for branch onboarding
   const [branchStep, setBranchStep] = useState<number>(0); // 0: Welcome, 1: Church Profile, 2: Admin Setup, 3: BranchCount, 4: BranchDetails, ...
+  const [churchProfile, setChurchProfile] = useState<ChurchProfileData | null>(null);
+  const [isLoadingApi, setIsLoadingApi] = useState(false);
+  const [apiError] = useState<string | null>(null);
+
+  // Branch onboarding state
   const [branchCount, setBranchCount] = useState<number>(1);
   const [branches, setBranches] = useState<BranchDetailsInput[]>([]);
 
-  // Options for modules and currencies (could be fetched from API)
+  // Optionally: module/currency options for BranchDetailsScreen
   const moduleOptions = [
-    'Attendance', 'Finance', 'Sermons', 'Communication', 'Events', 'Ministries', 'Members', 'Reports'
+    'Attendance', 'Finance', 'Groups', 'Ministries', 'Sacraments', 'Staff', 'Reports', 'Events', 'Media', 'Messaging', 'Settings',
   ];
   const currencyOptions = [
-    'USD', 'GHS', 'NGN', 'EUR', 'GBP'
+    'USD', 'EUR', 'GBP', 'GHS', 'NGN', 'KES', 'ZAR', 'INR', 'CNY', 'JPY', 'BRL', 'MXN', 'AUD', 'CAD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'RUB', 'TRY', 'EGP', 'MAD', 'AED', 'SAR', 'ILS', 'PKR', 'BDT', 'UAH', 'ARS', 'CLP', 'COP', 'PEN', 'VND', 'THB', 'SGD', 'MYR', 'IDR', 'KRW', 'PHP', 'NZD', 'HKD', 'TWD', 'CZK', 'HUF', 'RON', 'HRK', 'BGN', 'SRD', 'XOF', 'XAF', 'XCD', 'XPF', 'XDR', 'XAG', 'XAU', 'XPT', 'XPD', 'BTC', 'ETH', 'USDT', 'USDC', 'BUSD', 'DAI', 'SOL', 'BNB', 'MATIC', 'DOGE', 'SHIB', 'LTC', 'TRX', 'DOT', 'AVAX', 'UNI', 'LINK', 'ADA', 'XRP', 'BCH', 'XLM', 'FIL', 'ETC', 'EOS', 'XTZ', 'ATOM', 'NEO', 'AAVE', 'KSM', 'YFI', 'SUSHI', 'COMP', 'SNX', 'CRV', 'MKR', 'ZRX', 'ENJ', 'BAT', 'CHZ', 'GRT', '1INCH', 'REN', 'BAL', 'SRM', 'ALGO', 'AMP', 'ANKR', 'BAND', 'CVC', 'DNT', 'GNO', 'KNC', 'LOOM', 'LRC', 'MANA', 'NMR', 'OXT', 'PAX', 'RLC', 'STORJ', 'UMA', 'ZEC', 'ZEN', 'ZIL', 'ZRX',
   ];
+
   // Use the centralized onboarding state hook
   const {
     currentStep,
-    totalSteps,
-    churchProfile,
-    selectedModules,
-    memberFile,
-    financialFile,
-    memberImportError,
-    financialImportError,
-    isLoadingApi,
-    apiError,
-    completingStepLoading,
-    memberImportLoading,
-    financialImportLoading,
-    memberTemplateLoading,
-    fundsTemplateLoading,
-    setMemberFile,
-    setFinancialFile,
-    setChurchProfile,
-    fetchOrInitializeProgress,
     handleNext,
     handleBack,
-    handleModulesSelected,
-    handleMemberTemplateDownload,
-    handleFinancialTemplateDownload,
-    handleMemberImport,
-    handleFinancialImport,
     handleFinish
   } = useOnboardingState({ branchId, onComplete });
 
@@ -131,17 +71,15 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
     'Branding',
     'User Invitations',
     'Role Configuration',
-    //'Member Import', // hidden for now
-    'Finance Setup',
     'Complete',
   ];
 
   function Stepper({ currentStep }: { currentStep: number }) {
     return (
       <div className="flex items-center justify-center gap-0 md:gap-2 mb-10 w-full overflow-x-auto">
-        {ONBOARDING_STEPS.map((label, idx) => {
-          const isActive = idx === currentStep;
-          const isCompleted = idx < currentStep;
+        {ONBOARDING_STEPS.map((label) => {
+          const isActive = ONBOARDING_STEPS.indexOf(label) === currentStep;
+          const isCompleted = ONBOARDING_STEPS.indexOf(label) < currentStep;
           return (
             <div key={label} className="flex items-center">
               <div
@@ -151,11 +89,11 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
                   className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg border-4 transition
                     ${isActive ? 'bg-indigo-600 border-indigo-600 text-white' : isCompleted ? 'bg-green-400 border-green-400 text-white' : 'bg-white border-gray-300 text-gray-400'}`}
                 >
-                  {isCompleted ? <span>&#10003;</span> : idx + 1}
+                  {isCompleted ? <span>&#10003;</span> : ONBOARDING_STEPS.indexOf(label) + 1}
                 </div>
                 <span className={`mt-2 text-xs md:text-sm font-medium text-center ${isActive ? 'text-indigo-700' : isCompleted ? 'text-green-700' : 'text-gray-400'}`}>{label}</span>
               </div>
-              {idx < ONBOARDING_STEPS.length - 1 && (
+              {ONBOARDING_STEPS.indexOf(label) < ONBOARDING_STEPS.length - 1 && (
                 <div className="w-8 h-1 bg-gray-200 md:w-12 mx-1 md:mx-2 rounded-full" />
               )}
             </div>
@@ -190,7 +128,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <Button
           color="red"
           className="mt-4"
-          onClick={fetchOrInitializeProgress}
+          onClick={() => setIsLoadingApi(true)}
         >
           Try Again
         </Button>
@@ -202,7 +140,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
   const handleSkipToEnd = () => {
     setBranchStep(ONBOARDING_STEPS.length - 1);
     // Mark all steps as completed in localStorage
-    ONBOARDING_STEPS.forEach((step, idx) => {
+    ONBOARDING_STEPS.forEach((step) => {
       localStorage.setItem(`onboardingStepData_${step}`, JSON.stringify({ completed: true }));
     });
     localStorage.setItem('onboardingProgress', JSON.stringify(ONBOARDING_STEPS.map((_, i) => i)));
@@ -216,7 +154,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <WelcomeScreen
           onNext={() => setBranchStep(1)}
           onSkip={handleSkipToEnd}
-          isLoading={completingStepLoading}
+          isLoading={false}
         />
       );
     }
@@ -226,7 +164,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <ChurchProfileScreen
           onNext={() => setBranchStep(2)}
           onBack={() => setBranchStep(0)}
-          isLoading={completingStepLoading}
+          isLoading={false}
           churchProfile={churchProfile}
           setChurchProfile={setChurchProfile}
         />
@@ -238,31 +176,47 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <AdminSetupScreen
           onNext={() => setBranchStep(3)}
           onBack={() => setBranchStep(1)}
-          isLoading={completingStepLoading}
+          isLoading={false}
         />
       );
     }
-    // Step 3: Number of Branches
+    // Step 3: Branch Count
     if (branchStep === 3) {
       return (
         <BranchCountScreen
-          initialCount={branchCount}
-          onNext={(count) => {
+          onNext={(count: number) => {
             setBranchCount(count);
-            // Initialize empty branch objects
-            setBranches(Array.from({length: count}, () => ({
-              branchName: '',
-              address: '',
-              status: 'active',
-              establishedDate: '',
-              currency: currencyOptions[0],
-              modules: [],
-              admin: { name: '', email: '', password: '' },
-              settings: { timezone: '' }
-            })));
+            setBranches(prev => {
+              if (prev.length === count) return prev;
+              if (count > prev.length) {
+                // Extend with empty branches, preserving existing data
+                return [
+                  ...prev,
+                  ...Array.from({ length: count - prev.length }, () => ({
+                    branchName: '',
+                    address: '',
+                    status: '',
+                    establishedDate: '',
+                    city: '',
+                    country: '',
+                    phone: '',
+                    email: '',
+                    website: '',
+                    currency: '',
+                    modules: [],
+                    admin: { name: '', email: '', password: '' },
+                    settings: { timezone: '' },
+                  }))
+                ];
+              } else {
+                // Truncate, preserving existing data
+                return prev.slice(0, count);
+              }
+            });
             setBranchStep(4);
           }}
-          isLoading={completingStepLoading}
+          onBack={() => setBranchStep(2)}
+          isLoading={false}
         />
       );
     }
@@ -272,11 +226,11 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <BranchDetailsScreen
           branches={branches}
           setBranches={setBranches}
-          onNext={() => setBranchStep(5)}
-          onBack={() => setBranchStep(3)}
-          isLoading={completingStepLoading}
           moduleOptions={moduleOptions}
           currencyOptions={currencyOptions}
+          onNext={() => setBranchStep(5)}
+          onBack={() => setBranchStep(3)}
+          isLoading={false}
         />
       );
     }
@@ -286,8 +240,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <BrandingScreen
           onNext={() => setBranchStep(6)}
           onBack={() => setBranchStep(4)}
-          onSkip={() => setBranchStep(6)}
-          isLoading={completingStepLoading}
+          isLoading={false}
         />
       );
     }
@@ -297,8 +250,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <UserInvitationsScreen
           onNext={() => setBranchStep(7)}
           onBack={() => setBranchStep(5)}
-          onSkip={() => setBranchStep(7)}
-          isLoading={completingStepLoading}
+          isLoading={false}
         />
       );
     }
@@ -308,40 +260,13 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <RoleConfigurationScreen
           onNext={() => setBranchStep(8)}
           onBack={() => setBranchStep(6)}
-          onSkip={() => setBranchStep(8)}
-          isLoading={completingStepLoading}
+          isLoading={false}
         />
       );
     }
-    // Step 8: Skip Member Import
+    // Step 8: Complete
     if (branchStep === 8) {
-      return (
-        <FinanceSetupScreen
-          onNext={() => setBranchStep(9)}
-          onBack={() => setBranchStep(7)}
-          onSkip={() => setBranchStep(9)}
-          isLoading={completingStepLoading}
-        />
-      );
-    }
-    // Step 9: Finance Setup
-    if (branchStep === 9) {
-      return (
-        <FinanceSetupScreen
-          onNext={() => setBranchStep(10)}
-          onBack={() => setBranchStep(8)}
-          onSkip={() => setBranchStep(10)}
-          isLoading={completingStepLoading}
-        />
-      );
-    }
-    // Step 10: Onboarding Completion
-    if (branchStep === 10) {
-      return (
-        <OnboardingCompletionScreen
-          onFinish={handleFinish}
-        />
-      );
+      return <OnboardingCompletionScreen onFinish={handleFinish} />;
     }
     // Fallback: show the rest of the onboarding flow (original logic)
     switch (currentStep) {
@@ -352,49 +277,38 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
           <ChurchProfileScreen
             onNext={handleNext}
             onBack={handleBack}
-            isLoading={completingStepLoading}
+            isLoading={false}
             churchProfile={churchProfile}
             setChurchProfile={setChurchProfile}
           />
         );
       case 2: // Module Selection
         return (
-          <ModuleSelectionScreen
+          <AdminSetupScreen
             onNext={handleNext}
             onBack={handleBack}
-            onModulesSelected={handleModulesSelected}
-            isLoading={completingStepLoading}
+            isLoading={false}
           />
         );
       case 3: // Member Data Import
         return (
-          <MemberDataImportScreen
+          <FinanceSetupScreen
             onNext={handleNext}
             onBack={handleBack}
-            isLoading={memberImportLoading}
-            memberFile={memberFile}
-            setMemberFile={setMemberFile}
-            memberImportError={memberImportError}
-            onDownloadTemplate={handleMemberTemplateDownload}
-            isTemplateLoading={memberTemplateLoading}
+            isLoading={false}
           />
         );
       case 4: // Financial Data Import
         return (
-          <FinancialDataImportScreen
+          <FinanceSetupScreen
             onNext={handleNext}
             onBack={handleBack}
-            isLoading={financialImportLoading}
-            financialFile={financialFile}
-            setFinancialFile={setFinancialFile}
-            financialImportError={financialImportError}
-            onDownloadTemplate={handleFinancialTemplateDownload}
-            isTemplateLoading={fundsTemplateLoading}
+            isLoading={false}
           />
         );
       case 5: // Completion
         return (
-          <CompletionScreen
+          <OnboardingCompletionScreen
             onFinish={handleFinish}
             churchProfile={churchProfile}
           />
@@ -410,6 +324,8 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         );
     }
   };
+
+  console.log('ModernOnboardingFlow branches', branches);
 
   return (
     <div className="min-h-screen bg-gray-50">

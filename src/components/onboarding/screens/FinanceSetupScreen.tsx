@@ -3,7 +3,7 @@ import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { markScreenCompleted } from '../utils/completedScreens';
 
 interface FinanceSetupScreenProps {
-  onNext: (financeData: any) => void;
+  onNext: (financeData: unknown) => void;
   onBack?: () => void;
   onSkip?: () => void;
   isLoading?: boolean;
@@ -23,11 +23,11 @@ const FINANCE_IMPORT_TYPES = [
 ];
 
 const FinanceSetupScreen: React.FC<FinanceSetupScreenProps> = ({ onNext, onBack, onSkip, isLoading }) => {
-  const [uploads, setUploads] = useState<Record<string, { fileName: string, previewRows: any[][] }>>({});
+  const [uploads, setUploads] = useState<Record<string, { fileName: string, previewRows: unknown[][] }>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleFileChange = (key: string, headers: string[], sampleData: any[]) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (key: string, headers: string[], sampleData: unknown[]) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     const file = e.target.files?.[0];
     if (!file) return;

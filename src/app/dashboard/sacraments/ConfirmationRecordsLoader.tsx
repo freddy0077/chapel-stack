@@ -1,11 +1,14 @@
+"use client";
 import React from "react";
-import { useConfirmationRecords, ConfirmationRecord } from "@/graphql/hooks/useConfirmationRecords";
+import { useFilteredConfirmationRecords, SacramentalRecord } from "@/graphql/hooks/useFilteredSacramentalRecords";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 interface ConfirmationRecordsLoaderProps {
-  children: (records: ConfirmationRecord[], loading: boolean, error: unknown) => React.ReactNode;
+  children: (records: SacramentalRecord[], loading: boolean, error: unknown) => React.ReactNode;
 }
 
 export function ConfirmationRecordsLoader({ children }: ConfirmationRecordsLoaderProps) {
-  const { records, loading, error } = useConfirmationRecords();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { records, loading, error } = useFilteredConfirmationRecords(orgBranchFilter);
   return <>{children(records, loading, error)}</>;
 }

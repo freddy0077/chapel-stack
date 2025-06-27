@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import { Tab } from '@headlessui/react';
-import { Cog6ToothIcon, UserIcon, BellIcon, ShieldCheckIcon, GlobeAltIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
-import PageHeader from '../components/PageHeader';
+import { Cog6ToothIcon, UserIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import GeneralSettings from './components/GeneralSettings';
 import ProfileSettings from './components/ProfileSettings';
 import NotificationSettings from './components/NotificationSettings';
 import SecuritySettings from './components/SecuritySettings';
-import BranchSettings from './components/BranchSettings';
-import DeviceSettings from './components/DeviceSettings';
 import DashboardHeader from '@/components/DashboardHeader';
 
 const tabs = [
@@ -17,8 +14,6 @@ const tabs = [
   { name: 'Profile', icon: UserIcon, component: ProfileSettings },
   { name: 'Notifications', icon: BellIcon, component: NotificationSettings },
   { name: 'Security', icon: ShieldCheckIcon, component: SecuritySettings },
-  // { name: 'Branch', icon: GlobeAltIcon, component: BranchSettings },
-  // { name: 'Devices', icon: DevicePhoneMobileIcon, component: DeviceSettings }, // Hidden
 ];
 
 export default function SettingsPage() {
@@ -36,7 +31,7 @@ export default function SettingsPage() {
             <div className="sm:flex">
               <Tab.List className="sm:w-72 bg-gradient-to-br from-white/80 via-indigo-50 to-blue-50 p-6 border-r border-gray-200 min-h-full flex flex-col gap-2">
                 <div className="space-y-1">
-                  {tabs.map((tab, index) => (
+                  {tabs.map(tab => (
                     <Tab
                       key={tab.name}
                       className={({ selected }) =>
@@ -54,8 +49,8 @@ export default function SettingsPage() {
                 </div>
               </Tab.List>
               <Tab.Panels className="flex-1 p-8 bg-transparent">
-                {tabs.map((tab, index) => (
-                  <Tab.Panel key={tab.name} className={`space-y-8 transition-opacity duration-300 ${index === selectedIndex ? 'opacity-100 animate-fadeIn' : 'opacity-0'}`}>
+                {tabs.map(tab => (
+                  <Tab.Panel key={tab.name} className={`space-y-8 transition-opacity duration-300 ${tab === tabs[selectedIndex] ? 'opacity-100 animate-fadeIn' : 'opacity-0'}`}>
                     <tab.component />
                   </Tab.Panel>
                 ))}

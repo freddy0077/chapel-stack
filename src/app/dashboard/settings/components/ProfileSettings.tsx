@@ -6,7 +6,7 @@ import { useSettings, useUpdateSetting, useCreateBranchSetting } from '@/graphql
 
 export default function ProfileSettings() {
   // Use global settings for profile fields (for demonstration)
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateSetting] = useUpdateSetting();
   const [createSetting] = useCreateBranchSetting();
 
@@ -71,7 +71,10 @@ export default function ProfileSettings() {
       await Promise.all(updates);
       setSaveSuccess(true);
       refetch();
-    } catch (e) {}
+    } catch {
+      setIsSaving(false);
+      setSaveSuccess(false);
+    }
     setIsSaving(false);
     setTimeout(() => setSaveSuccess(false), 3000);
   };

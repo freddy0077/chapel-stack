@@ -9,11 +9,13 @@ import MessageModal from './MessageModal';
 import AnnouncementModal from './AnnouncementModal';
 import PrayerRequestModal from './PrayerRequestModal';
 import NewMessageModal from './NewMessageModal';
+import NewPrayerRequestModal from './NewPrayerRequestModal';
 import { mockAnnouncements, mockPrayerRequests } from './mockData';
 import { Message, Announcement, PrayerRequest } from './types';
 import { useMessages } from '../../../../graphql/hooks/useMessages';
 import { useAuth } from '../../../../graphql/hooks/useAuth';
-
+import { usePrayerRequests } from '../../../../graphql/hooks/usePrayerRequests';
+import { useOrganizationBranchFilter } from '../../../../graphql/hooks/useOrganizationBranchFilter';
 
 const CommunicationTools = () => {
   // State management
@@ -23,15 +25,17 @@ const CommunicationTools = () => {
   const [selectedPrayerRequest, setSelectedPrayerRequest] = useState<PrayerRequest | null>(null);
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [showNewAnnouncementModal, setShowNewAnnouncementModal] = useState(false);
-  
+  const [showNewPrayerRequestModal, setShowNewPrayerRequestModal] = useState(false);
+
   // Get current user's branch ID for filtering messages
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 
-    ? user.userBranches[0].branch.id 
-    : undefined;
-  
+  const { organisationId, branchId } = useOrganizationBranchFilter();
+
   // Fetch real messages data using the useMessages hook
   const { messages: realMessages, loading: messagesLoading, error: messagesError, refetch: refetchMessages } = useMessages(branchId);
+
+  // Fetch real prayer requests data using the usePrayerRequests hook
+  const { prayerRequests: realPrayerRequests, loading: prayerRequestsLoading, error: prayerRequestsError, refetch: refetchPrayerRequests } = usePrayerRequests(organisationId, branchId);
 
   // Function to handle search
   const handleSearch = (query: string) => {
@@ -48,6 +52,12 @@ const CommunicationTools = () => {
   };
   const openNewAnnouncementModal = () => setShowNewAnnouncementModal(true);
   const closeNewAnnouncementModal = () => setShowNewAnnouncementModal(false);
+  const openNewPrayerRequestModal = () => setShowNewPrayerRequestModal(true);
+  const closeNewPrayerRequestModal = () => {
+    setShowNewPrayerRequestModal(false);
+    // Refetch prayer requests after closing modal to get any newly created requests
+    if (refetchPrayerRequests) refetchPrayerRequests();
+  };
 
   // Stats for the stats component
   const communicationStats = {
@@ -75,7 +85,7 @@ const CommunicationTools = () => {
   }));
 
   // Adapted prayer requests data - create a new type-compatible array
-  const adaptedPrayerRequests = mockPrayerRequests.map(request => {
+  const adaptedPrayerRequests = realPrayerRequests || mockPrayerRequests.map(request => {
     // Convert status if needed to match expected values
     let convertedStatus: 'Active' | 'Archived' | 'Answered' = 'Active';
     if (request.status === 'Answered') {
@@ -175,6 +185,7 @@ const CommunicationTools = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Prayer Requests</h3>
               <button
+                onClick={openNewPrayerRequestModal}
                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 New Prayer Request
@@ -183,11 +194,16 @@ const CommunicationTools = () => {
             <PrayerRequestsList 
               prayerRequests={adaptedPrayerRequests} 
               onViewPrayerRequest={(prayerRequest) => {
-                const originalRequest = mockPrayerRequests.find(r => r.id === prayerRequest.id);
+                const originalRequest = realPrayerRequests.find(r => r.id === prayerRequest.id);
                 if (originalRequest) {
                   setSelectedPrayerRequest(originalRequest);
                 }
               }}
+            />
+            <NewPrayerRequestModal
+              open={showNewPrayerRequestModal}
+              onClose={closeNewPrayerRequestModal}
+              afterCreate={closeNewPrayerRequestModal}
             />
           </div>
         );

@@ -15,9 +15,10 @@ interface MemberSearchComboboxProps {
   disabled?: boolean;
   query?: string;
   onQueryChange?: (query: string) => void;
+  loading?: boolean;
 }
 
-export default function MemberSearchCombobox({ members, value, onChange, disabled, query = "", onQueryChange }: MemberSearchComboboxProps) {
+export default function MemberSearchCombobox({ members, value, onChange, disabled, query = "", onQueryChange, loading }: MemberSearchComboboxProps) {
   const [internalQuery, setInternalQuery] = useState("");
   const actualQuery = onQueryChange ? query : internalQuery;
   const setQuery = onQueryChange || setInternalQuery;
@@ -49,11 +50,15 @@ export default function MemberSearchCombobox({ members, value, onChange, disable
           displayValue={displayValue}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search member by name or ID"
-          disabled={disabled}
+          disabled={disabled || loading}
           autoComplete="off"
         />
         <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-          {filteredMembers.length === 0 && actualQuery !== "" ? (
+          {loading ? (
+            <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+              Loading...
+            </div>
+          ) : filteredMembers.length === 0 && actualQuery !== "" ? (
             <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
               No members found.
             </div>

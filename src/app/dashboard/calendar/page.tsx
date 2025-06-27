@@ -19,9 +19,11 @@ import {
 import DashboardHeader from "@/components/DashboardHeader";
 import NewEventModal from "../../../components/NewEventModal";
 import { Card, Select, SelectItem, Button, Badge, Text, Grid, Metric } from "@tremor/react";
-import { useEvents, useEventsByDateRange, useEventsToCalendarEvents, useBranchEvents } from "@/graphql/hooks/useEvents";
+import { useFilteredEvents } from "@/graphql/hooks/useFilteredEvents";
+import { useOrganizationBranchFilter } from "@/hooks";
 import { Event } from "@/graphql/types/event";
 import Loading from "@/components/ui/Loading";
+import { usePermissions } from '@/hooks/usePermissions';
 
 const isClient = typeof window !== 'undefined';
 
@@ -63,6 +65,7 @@ export default function Calendar() {
 // Move the main calendar logic into a CalendarContent component for clarity
 function CalendarContent() {
   const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const { canManageEvents, isBranchAdmin } = usePermissions();
 
   // FAB: floating action button for new event
   // Always visible at bottom right
@@ -74,37 +77,26 @@ function CalendarContent() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
-  
+
   // Get all events to extract branch and location data
-  const { events: allEvents, loading: allEventsLoading } = useEvents();
-  
-  // Format the current month and year for display
-  const currentMonthYear = format(currentDate, 'MMMM yyyy');
-  
-  // Calculate the start and end dates for the current month
+  const orgBranchFilter = useOrganizationBranchFilter();
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
-  
-  // Fetch events for the current month or branch
-  const isAllBranches = selectedBranch === "all";
-  const eventsByDateRange = useEventsByDateRange(firstDayOfMonth, lastDayOfMonth);
-  const eventsByBranch = useBranchEvents(!isAllBranches ? selectedBranch : undefined);
 
-  // Decide which events to use
-  const loading = isAllBranches ? eventsByDateRange.loading : eventsByBranch.loading;
-  const error = isAllBranches ? eventsByDateRange.error : eventsByBranch.error;
-  const events = isAllBranches ? eventsByDateRange.events : eventsByBranch.events;
-  const refetch = isAllBranches ? eventsByDateRange.refetch : eventsByBranch.refetch;
-  
-  // Convert API events to calendar-friendly format
-  const calendarEvents = useEventsToCalendarEvents(events);
+  // Decide which filter to use for API: organisationId for SUPER_ADMIN, branchId for others
+  const apiFilter = orgBranchFilter.organisationId
+    ? { organisationId: orgBranchFilter.organisationId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined }
+    : { branchId: orgBranchFilter.branchId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined };
+
+  // Use the correct filtered events hook
+  const { events, loading, error, refetch } = useFilteredEvents(apiFilter);
 
   // Dynamically extract branches from all events
   const branchOptions = useMemo(() => {
     const uniqueBranches = new Map<string, {id: string, name: string}>();
     uniqueBranches.set("all", { id: "all", name: "All Branches" });
     
-    allEvents.forEach((event: Event) => {
+    events.forEach((event: Event) => {
       if (event.branchId) {
         uniqueBranches.set(event.branchId, {
           id: event.branchId,
@@ -114,14 +106,14 @@ function CalendarContent() {
     });
     
     return Array.from(uniqueBranches.values());
-  }, [allEvents]);
+  }, [events]);
   
   // Dynamically extract locations from all events
   const locationOptions = useMemo(() => {
     const uniqueLocations = new Map<string, {id: string, name: string}>();
     uniqueLocations.set("all", { id: "all", name: "All Locations" });
     
-    allEvents.forEach((event: Event) => {
+    events.forEach((event: Event) => {
       if (event.location) {
         uniqueLocations.set(event.location, {
           id: event.location,
@@ -131,7 +123,7 @@ function CalendarContent() {
     });
     
     return Array.from(uniqueLocations.values());
-  }, [allEvents]);
+  }, [events]);
   
   // Navigate to previous/next month
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -160,7 +152,7 @@ function CalendarContent() {
   }, [currentDate, refetch]);
   
   // Filter events based on selected filters
-  const filteredEvents = calendarEvents.filter(event => {
+  const filteredEvents = events.filter(event => {
     // Filter by event type
     if (selectedType !== "all" && event.category !== selectedType) {
       return false;
@@ -178,6 +170,9 @@ function CalendarContent() {
     
     return true;
   });
+
+  // Convert API events to calendar-friendly format
+  const calendarEvents = filteredEvents;
 
   // Calendar grid generation
   const getDaysInMonth = (date: Date) => {
@@ -289,16 +284,20 @@ function CalendarContent() {
             </p>
           </div>
         </div>
-        <div className="mt-4 sm:mt-0 self-start">
-          <Link href="/dashboard/calendar/new">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200">
+        {canManageEvents && (
+          <div className="mt-4 sm:mt-0 self-start">
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
+              onClick={() => setShowNewEventModal(true)}
+            >
               <span className="flex items-center gap-1.5">
                 <PlusIcon className="h-4 w-4" />
                 <span>Add Event</span>
               </span>
             </Button>
-          </Link>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Event Statistics */}
@@ -354,69 +353,64 @@ function CalendarContent() {
       </Grid>
 
       {/* Filters */}
-      <div className="bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-100 overflow-hidden">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center">
-            <FunnelIcon className="h-5 w-5 text-blue-600 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-800">Filter Events</h2>
-          </div>
-          <Button 
-            size="xs" 
-            variant="secondary"
-            onClick={resetFilters}
-            className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-200 flex items-center gap-1.5"
-          >
-            <ArrowPathIcon className="h-3.5 w-3.5" />
-            <span>Reset Filters</span>
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Event Type Filter */}
-          <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-50"></div>
-            <div className="relative">
-              <div className="flex items-center mb-3">
-                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-600 text-white mr-3 shadow-md">
-                  <CalendarIcon className="h-4 w-4" />
-                </div>
-                <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700">
-                  Event Type
-                </label>
-              </div>
-              <Select 
-                id="type-filter"
-                value={selectedType}
-                onValueChange={setSelectedType}
-                className="mt-1 border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm" 
-                style={{ backgroundColor: "white" }}
-              >
-                {eventTypeOptions.map((type, idx) => (
-                  <SelectItem key={type.id || idx} value={type.id}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </Select>
+      {canManageEvents && !isBranchAdmin && (
+        <div className="bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center">
+              <FunnelIcon className="h-5 w-5 text-blue-600 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-800">Filter Events</h2>
             </div>
+            <Button 
+              size="xs" 
+              variant="secondary"
+              onClick={resetFilters}
+              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-200 flex items-center gap-1.5"
+            >
+              <ArrowPathIcon className="h-3.5 w-3.5" />
+              <span>Reset Filters</span>
+            </Button>
           </div>
-          {/* Branch Filter */}
-          <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-50"></div>
-            <div className="relative">
-              <div className="flex items-center mb-3">
-                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-purple-600 text-white mr-3 shadow-md">
-                  <UserGroupIcon className="h-4 w-4" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Event Type Filter */}
+            <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-50"></div>
+              <div className="relative">
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-600 text-white mr-3 shadow-md">
+                    <CalendarIcon className="h-4 w-4" />
+                  </div>
+                  <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700">
+                    Event Type
+                  </label>
                 </div>
-                <label htmlFor="branch-filter" className="block text-sm font-medium text-gray-700">
-                  Branch
-                </label>
+                <Select 
+                  id="type-filter"
+                  value={selectedType}
+                  onValueChange={setSelectedType}
+                  className="mt-1 border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm" 
+                  style={{ backgroundColor: "white" }}
+                >
+                  {eventTypeOptions.map((type, idx) => (
+                    <SelectItem key={type.id || idx} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
-              {allEventsLoading ? (
-                <div className="flex items-center space-x-2 py-2.5 px-2 bg-gray-50 rounded-lg">
-                  <ArrowPathIcon className="h-4 w-4 text-gray-400 animate-spin" />
-                  <span className="text-sm text-gray-500">Loading branches...</span>
+            </div>
+            {/* Branch Filter */}
+            <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-50"></div>
+              <div className="relative">
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-purple-600 text-white mr-3 shadow-md">
+                    <UserGroupIcon className="h-4 w-4" />
+                  </div>
+                  <label htmlFor="branch-filter" className="block text-sm font-medium text-gray-700">
+                    Branch
+                  </label>
                 </div>
-              ) : (
                 <Select 
                   id="branch-filter"
                   value={selectedBranch}
@@ -430,27 +424,20 @@ function CalendarContent() {
                     </SelectItem>
                   ))}
                 </Select>
-              )}
-            </div>
-          </div>
-          {/* Location Filter */}
-          <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-green-50 to-teal-50 border border-green-100">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-teal-500/5 opacity-50"></div>
-            <div className="relative">
-              <div className="flex items-center mb-3">
-                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-green-600 text-white mr-3 shadow-md">
-                  <MapPinIcon className="h-4 w-4" />
-                </div>
-                <label htmlFor="location-filter" className="block text-sm font-medium text-gray-700">
-                  Location
-                </label>
               </div>
-              {allEventsLoading ? (
-                <div className="flex items-center space-x-2 py-2.5 px-2 bg-gray-50 rounded-lg">
-                  <ArrowPathIcon className="h-4 w-4 text-gray-400 animate-spin" />
-                  <span className="text-sm text-gray-500">Loading locations...</span>
+            </div>
+            {/* Location Filter */}
+            <div className="relative p-4 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-gradient-to-br from-green-50 to-teal-50 border border-green-100">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-teal-500/5 opacity-50"></div>
+              <div className="relative">
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-green-600 text-white mr-3 shadow-md">
+                    <MapPinIcon className="h-4 w-4" />
+                  </div>
+                  <label htmlFor="location-filter" className="block text-sm font-medium text-gray-700">
+                    Location
+                  </label>
                 </div>
-              ) : (
                 <Select 
                   id="location-filter"
                   value={selectedLocation}
@@ -464,11 +451,11 @@ function CalendarContent() {
                     </SelectItem>
                   ))}
                 </Select>
-              )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Calendar */}
       <div className="bg-white shadow-lg overflow-hidden rounded-2xl border border-gray-200">
@@ -477,7 +464,7 @@ function CalendarContent() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
           <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzRjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyem0wLTE3YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTcgMTdjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyem0wLTE3YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTcgMTdjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyem0wLTE3YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTcgMTdjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyem0wLTE3YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMC0xN2MwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6TTIgNTFjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyem0wLTE3YzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMC0xN2MwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6TTM2IDUxYzAgMS4xLS45IDItMiAycy0yLS45LTItMiAuOS0yIDItMiAyIC45IDIgMnptMTcgMGMwIDEuMS0uOSAyLTIgMnMtMi0uOS0yLTIgLjktMiAyLTIgMiAuOSAyIDJ6bTE3IDBjMCAxLjEtLjkgMi0yIDJzLTItLjktMi0yIC45LTIgMi0yIDIgLjkgMiAyeiI+PC9wYXRoPjwvZz48L2c+PC9zdmc+')]"></div>
           <div className="px-6 py-6 relative flex items-center justify-between text-white">
-            <h2 className="text-2xl font-bold tracking-wide">{currentMonthYear}</h2>
+            <h2 className="text-2xl font-bold tracking-wide">{format(currentDate, 'MMMM yyyy')}</h2>
             <div className="flex space-x-3">
               <button
                 type="button"
@@ -587,9 +574,11 @@ function CalendarContent() {
                 Try adjusting your filters or create a new event to start organizing your church activities.
               </p>
               <div className="mt-6">
-              <Button icon={PlusIcon} size="md" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200" onClick={() => setShowNewEventModal(true)}>
-                Create New Event
-              </Button>
+              {canManageEvents && (
+                <Button icon={PlusIcon} size="md" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200" onClick={() => setShowNewEventModal(true)}>
+                  Create New Event
+                </Button>
+              )}
             </div>
             </div>
           ) : (
@@ -647,16 +636,22 @@ function CalendarContent() {
         </div>
       </div>
       {/* Floating Action Button and Modal */}
-      <button
-        aria-label="Create New Event"
-        className="fixed z-40 bottom-8 right-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl p-4 transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-        onClick={() => setShowNewEventModal(true)}
-        style={{ boxShadow: '0 10px 32px rgba(80, 62, 255, 0.15)' }}
-      >
-        <PlusIcon className="h-6 w-6" />
-        <span className="hidden md:inline font-semibold">New Event</span>
-      </button>
-      <NewEventModal open={showNewEventModal} onClose={() => setShowNewEventModal(false)} />
+      {canManageEvents && (
+        <button
+          aria-label="Create New Event"
+          className="fixed z-40 bottom-8 right-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl p-4 transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+          onClick={() => setShowNewEventModal(true)}
+          style={{ boxShadow: '0 10px 32px rgba(80, 62, 255, 0.15)' }}
+        >
+          <PlusIcon className="h-6 w-6" />
+          <span className="hidden md:inline font-semibold">New Event</span>
+        </button>
+      )}
+      <NewEventModal 
+        open={showNewEventModal} 
+        onClose={() => setShowNewEventModal(false)}
+        onEventCreated={refetch} // Add this prop to trigger refetch after creation
+      />
     </div>
   );
 }

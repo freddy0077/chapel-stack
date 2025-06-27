@@ -68,16 +68,22 @@ export const CREATE_ATTENDANCE_SESSION = gql`
       type
       status
       location
-      branchId
+      organisationId
       createdAt
       updatedAt
     }
   }
 `;
 
-export const GET_ATTENDANCE_SESSIONS_BY_BRANCH_WITH_DETAILS = gql`
-  query GetAttendanceSessionsByBranchWithDetails($branchId: ID!) {
-    attendanceSessions(branchId: $branchId) {
+export const GET_FILTERED_ATTENDANCE_SESSIONS = gql`
+  query GetFilteredAttendanceSessions(
+    $organisationId: ID
+    $branchId: ID
+  ) {
+    attendanceSessions(
+      organisationId: $organisationId
+      branchId: $branchId
+    ) {
       id
       name
       description
@@ -90,6 +96,67 @@ export const GET_ATTENDANCE_SESSIONS_BY_BRANCH_WITH_DETAILS = gql`
       latitude
       longitude
       branchId
+      organisationId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_ATTENDANCE_SESSION_DETAILS = gql`
+  query GetAttendanceSessionDetails($id: ID!) {
+    attendanceSession(id: $id) {
+      id
+      name
+      description
+      date
+      startTime
+      endTime
+      type
+      status
+      location
+      latitude
+      longitude
+      organisationId
+      createdAt
+      updatedAt
+      attendanceRecords {
+        id
+        checkInTime
+        checkOutTime
+        checkInMethod
+        notes
+        member {
+          id
+          fullName
+        }
+        visitorName
+        visitorEmail
+        visitorPhone
+        recordedBy {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const RECORD_ATTENDANCE = gql`
+  mutation RecordAttendance($input: RecordAttendanceInput!) {
+    recordAttendance(input: $input) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      sessionId
+      memberId
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy { id }
+      organisation { id }
       createdAt
       updatedAt
     }

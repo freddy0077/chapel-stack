@@ -1,8 +1,7 @@
 "use client";
-import { useSacramentStats } from "@/graphql/hooks/useSacramentStats";
+import { useFilteredSacramentStats, SacramentStats } from "@/graphql/hooks/useFilteredSacramentStats";
+import { useOrganizationBranchFilter } from "@/hooks";
 import { useAuth } from "@/graphql/hooks/useAuth";
-
-import type { SacramentStats } from "@/graphql/hooks/useSacramentStats";
 
 interface SacramentStatsLoaderProps {
   period?: string;
@@ -11,7 +10,31 @@ interface SacramentStatsLoaderProps {
 
 export function SacramentStatsLoader({ period, children }: SacramentStatsLoaderProps) {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { stats, loading, error } = useSacramentStats(period, branchId);
+  const orgBranchFilter = useOrganizationBranchFilter();
+  
+  // Since the backend only supports branchId filtering for sacrament stats,
+  // we need to ensure we always have a branchId to filter by
+  const filter = {
+    period,
+    // For SUPER_ADMIN users, we'll use their branchId if available
+    // For regular users, we'll always use their branchId
+    branchId: orgBranchFilter.branchId || undefined
+  };
+  
+  // If we don't have a branchId, we can't filter the stats
+  // This will happen for SUPER_ADMIN users who have selected an organisation but not a branch
+  const skipQuery = !filter.branchId;
+  
+  const { stats, loading, error } = useFilteredSacramentStats({
+    ...filter,
+    // Pass the skip flag to the hook
+    skip: skipQuery
+  });
+  
+  // If we're skipping the query, return empty stats
+  if (skipQuery) {
+    return children([], false, null);
+  }
+  
   return children(stats, loading, error);
 }

@@ -59,7 +59,7 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
   const handleAdd = async () => {
     if (!sacramentType || !dateOfSacrament || !officiantName || !locationOfSacrament) return;
     try {
-      let input: any = {
+      const input: any = {
         memberId,
         sacramentType,
         dateOfSacrament,

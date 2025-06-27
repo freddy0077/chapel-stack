@@ -114,7 +114,7 @@ export default function ModuleSettingsPage() {
           
           <div className="mt-4 border-t pt-4">
             <Text className="text-sm text-gray-500">
-              To change your church profile information, you'll need to reset your module preferences.
+              To change your church profile information, you&apos;ll need to reset your module preferences.
             </Text>
           </div>
         </Card>

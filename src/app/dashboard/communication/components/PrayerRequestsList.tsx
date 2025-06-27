@@ -1,64 +1,7 @@
 "use client";
 
 import { HandRaisedIcon, CalendarIcon, UserCircleIcon, LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/outline';
-
-// Mock data for prayer requests
-export const mockPrayerRequests = [
-  {
-    id: 1,
-    requestorName: "Sarah Johnson",
-    content: "Please pray for my mother who is undergoing surgery next week.",
-    dateSubmitted: "2025-04-02T14:15:00Z",
-    status: "Active",
-    isPrivate: false,
-    prayerCount: 28
-  },
-  {
-    id: 2,
-    requestorName: "David Williams",
-    content: "I'm struggling with a difficult decision at work. Prayers for wisdom and guidance appreciated.",
-    dateSubmitted: "2025-04-01T09:30:00Z",
-    status: "Active",
-    isPrivate: true,
-    prayerCount: 5
-  },
-  {
-    id: 3,
-    requestorName: "Maria Garcia",
-    content: "Thanking God for healing my son who was sick last week. Praise report!",
-    dateSubmitted: "2025-03-30T16:20:00Z",
-    status: "Answered",
-    isPrivate: false,
-    prayerCount: 42
-  },
-  {
-    id: 4,
-    requestorName: "James Smith",
-    content: "My family is going through financial hardship. Please pray for provision and opportunities.",
-    dateSubmitted: "2025-03-28T11:45:00Z",
-    status: "Active",
-    isPrivate: false,
-    prayerCount: 37
-  },
-  {
-    id: 5,
-    requestorName: "Anonymous",
-    content: "Struggling with anxiety and depression. Need prayers for peace and healing.",
-    dateSubmitted: "2025-03-27T20:10:00Z",
-    status: "Active",
-    isPrivate: true,
-    prayerCount: 18
-  },
-  {
-    id: 6,
-    requestorName: "Emily Wilson",
-    content: "Prayer for our youth group retreat this weekend - that hearts would be touched and lives changed.",
-    dateSubmitted: "2025-03-25T13:55:00Z",
-    status: "Answered",
-    isPrivate: false,
-    prayerCount: 56
-  }
-];
+import { usePrayerRequests } from '../../../../graphql/hooks/usePrayerRequests';
 
 export interface PrayerRequest {
   id: number;
@@ -71,11 +14,26 @@ export interface PrayerRequest {
 }
 
 interface PrayerRequestsListProps {
-  prayerRequests: PrayerRequest[];
   onViewPrayerRequest: (prayerRequest: PrayerRequest) => void;
 }
 
-export default function PrayerRequestsList({ prayerRequests, onViewPrayerRequest }: PrayerRequestsListProps) {
+export default function PrayerRequestsList({ onViewPrayerRequest }: PrayerRequestsListProps) {
+  const { prayerRequests, loading, error, refetch } = usePrayerRequests();
+
+  if (loading) return <div className="p-6 text-center">Loading prayer requests...</div>;
+  if (error) return <div className="p-6 text-center text-red-600">Failed to load prayer requests.</div>;
+
+  // Map backend data to UI shape if needed
+  const requests = prayerRequests.map((req: any) => ({
+    id: req.id,
+    requestorName: req.member?.fullName || req.memberId || 'Anonymous',
+    content: req.requestText,
+    dateSubmitted: req.createdAt,
+    status: req.status,
+    isPrivate: false, // backend does not support privacy yet
+    prayerCount: req.prayerCount || 0,
+  }));
+
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -138,7 +96,7 @@ export default function PrayerRequestsList({ prayerRequests, onViewPrayerRequest
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {prayerRequests.map((request) => (
+                {requests.map((request) => (
                   <tr key={request.id} className="hover:bg-gray-50">
                     <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                       <div className="flex items-center">

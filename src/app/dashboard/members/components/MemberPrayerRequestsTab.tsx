@@ -10,8 +10,12 @@ interface PrayerRequest {
   [key: string]: any;
 }
 
-export default function MemberPrayerRequestsTab({ member }: { member: any }) {
-  const prayerRequests: PrayerRequest[] = Array.isArray(member?.prayerRequests) ? member.prayerRequests : [];
+interface Member {
+  prayerRequests: PrayerRequest[];
+}
+
+export default function MemberPrayerRequestsTab({ member }: { member: Member }) {
+  const prayerRequests: PrayerRequest[] = member.prayerRequests || [];
 
   return (
     <div className="bg-white rounded-2xl shadow p-6">

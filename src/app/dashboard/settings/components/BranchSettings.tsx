@@ -23,7 +23,7 @@ const permissionCategories = [
 
 export default function BranchSettings() {
   // Use branch settings for default branch selection
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateSetting] = useUpdateSetting();
 
   // Sample data for my branches (would come from API)
@@ -113,7 +113,9 @@ export default function BranchSettings() {
       });
       setSaveSuccess(true);
       refetch();
-    } catch (e) {}
+    } catch {
+      toast.error('An unexpected error occurred.');
+    }
     setIsSaving(false);
     setTimeout(() => setSaveSuccess(false), 3000);
   };

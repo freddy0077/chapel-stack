@@ -24,16 +24,15 @@ export default function NewCommunionRecord() {
   });
   const [memberSearch, setMemberSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { createFirstCommunionRecord, loading: mutationLoading, error: mutationError } = useCreateFirstCommunionRecord();
+  const { createFirstCommunionRecord } = useCreateFirstCommunionRecord();
   const { user } = useAuth();
 
   // Member search hook
   const { members, loading: memberLoading, error: memberError } = useSearchMembers(memberSearch, 8);
 
   // When a member is selected from dropdown
-  const handleSelectMember = (member: any) => {
+  const handleSelectMember = (member: unknown) => {
     setFormData(prev => ({
       ...prev,
       memberId: member.id,
@@ -70,16 +69,13 @@ export default function NewCommunionRecord() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     // Basic validation
     if (!formData.memberId) {
-      setErrorMessage("Member is required. Please select a member.");
       setIsSubmitting(false);
       return;
     }
     if (!formData.communionDate || !formData.location || !formData.officiant) {
-      setErrorMessage("Please fill all required fields.");
       setIsSubmitting(false);
       return;
     }
@@ -114,8 +110,7 @@ export default function NewCommunionRecord() {
       setTimeout(() => {
         router.push("/dashboard/sacraments?tab=communion");
       }, 1800);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "Failed to create communion record.");
+    } catch {
       setIsSubmitting(false);
     }
   };
@@ -183,58 +178,58 @@ export default function NewCommunionRecord() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div>
                   <label htmlFor="memberName" className="block text-sm font-medium text-indigo-800 mb-1">Member *</label>
-<div className="relative">
-  <input
-    type="text"
-    name="memberName"
-    id="memberName"
-    autoComplete="off"
-    className={`block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition pr-10 ${formData.memberId ? 'bg-indigo-50' : ''}`}
-    placeholder="Search for a member..."
-    value={memberSearch}
-    onChange={e => {
-      setMemberSearch(e.target.value);
-      setShowDropdown(true);
-      setFormData(prev => ({ ...prev, memberId: "", memberName: "" }));
-    }}
-    onFocus={() => setShowDropdown(true)}
-    required
-  />
-  {formData.memberId && (
-    <button
-      type="button"
-      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400"
-      onClick={handleClearMember}
-      tabIndex={-1}
-      aria-label="Clear member selection"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-    </button>
-  )}
-  {showDropdown && memberSearch && !formData.memberId && (
-    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-      {memberLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
-      {memberError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
-      {!memberLoading && !memberError && members.length === 0 && (
-        <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
-      )}
-      {members.map((member: any) => (
-        <button
-          key={member.id}
-          type="button"
-          className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
-          onClick={() => handleSelectMember(member)}
-        >
-          <UserIcon className="w-4 h-4 text-indigo-400 mr-1" />
-          <span className="font-medium">{member.firstName} {member.lastName}</span>
-          {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
-          <span className="ml-auto text-xs text-gray-400">{member.id}</span>
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-<p className="mt-1 text-xs text-gray-500">Choose an existing member or add a new one</p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="memberName"
+                      id="memberName"
+                      autoComplete="off"
+                      className={`block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition pr-10 ${formData.memberId ? 'bg-indigo-50' : ''}`}
+                      placeholder="Search for a member..."
+                      value={memberSearch}
+                      onChange={e => {
+                        setMemberSearch(e.target.value);
+                        setShowDropdown(true);
+                        setFormData(prev => ({ ...prev, memberId: "", memberName: "" }));
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      required
+                    />
+                    {formData.memberId && (
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400"
+                        onClick={handleClearMember}
+                        tabIndex={-1}
+                        aria-label="Clear member selection"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                    {showDropdown && memberSearch && !formData.memberId && (
+                      <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {memberLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
+                        {memberError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
+                        {!memberLoading && !memberError && members.length === 0 && (
+                          <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
+                        )}
+                        {members.map((member: unknown) => (
+                          <button
+                            key={member.id}
+                            type="button"
+                            className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
+                            onClick={() => handleSelectMember(member)}
+                          >
+                            <UserIcon className="w-4 h-4 text-indigo-400 mr-1" />
+                            <span className="font-medium">{member.firstName} {member.lastName}</span>
+                            {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
+                            <span className="ml-auto text-xs text-gray-400">{member.id}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Choose an existing member or add a new one</p>
                 </div>
                 <div>
                   <label htmlFor="communionDate" className="block text-sm font-medium text-indigo-800 mb-1">First Communion Date *</label>

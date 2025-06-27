@@ -1,6 +1,6 @@
 // Utility for onboarding data tracking
 
-export function saveOnboardingStepData(step: string, data: any) {
+export function saveOnboardingStepData(step: string, data: unknown) {
   try {
     localStorage.setItem(`onboardingStepData_${step}`, JSON.stringify(data));
   } catch {}
@@ -16,7 +16,7 @@ export function loadOnboardingStepData(step: string) {
 }
 
 export function loadAllOnboardingStepData(steps: string[]) {
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   steps.forEach(step => {
     result[step] = loadOnboardingStepData(step);
   });

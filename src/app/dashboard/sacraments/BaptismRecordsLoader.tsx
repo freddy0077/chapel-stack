@@ -1,11 +1,13 @@
 "use client";
-import { useBaptismRecords, BaptismRecord } from "@/graphql/hooks/useBaptismRecords";
+import { useFilteredBaptismRecords, SacramentalRecord } from "@/graphql/hooks/useFilteredSacramentalRecords";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 interface BaptismRecordsLoaderProps {
-  children: (records: BaptismRecord[], loading: boolean, error: unknown) => React.ReactNode;
+  children: (records: SacramentalRecord[], loading: boolean, error: unknown) => React.ReactNode;
 }
 
 export function BaptismRecordsLoader({ children }: BaptismRecordsLoaderProps) {
-  const { records, loading, error } = useBaptismRecords();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { records, loading, error } = useFilteredBaptismRecords(orgBranchFilter);
   return children(records, loading, error);
 }

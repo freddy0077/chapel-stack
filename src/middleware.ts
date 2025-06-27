@@ -51,7 +51,7 @@ export function middleware(request: NextRequest) {
   const onboardingDeferred = request.cookies.get('onboardingDeferred')?.value === 'true';
   console.log(`[Middleware] Onboarding deferred cookie value: ${request.cookies.get('onboardingDeferred')?.value}, Parsed as: ${onboardingDeferred}`);
 
-  const isSuperAdmin = user?.roles?.some((role: any) => {
+  const isSuperAdmin = user?.roles?.some((role: unknown) => {
     if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
     if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
     return false;

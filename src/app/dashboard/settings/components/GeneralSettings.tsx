@@ -7,7 +7,7 @@ import { useSettings, useUpdateSetting, useCreateBranchSetting } from '@/graphql
 
 export default function GeneralSettings() {
   // Get global settings (no branchId)
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateSetting] = useUpdateSetting();
   const [createSetting] = useCreateBranchSetting();
 
@@ -76,7 +76,7 @@ export default function GeneralSettings() {
       );
       setSaveSuccess(true);
       refetch();
-    } catch (e) {
+    } catch {
       // Optionally show error
     }
     setIsSaving(false);

@@ -6,7 +6,7 @@ import LoginForm from "../components/LoginForm";
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { login, isAuthenticated, authLoading } = useAuth();
+  const { login, authLoading } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);

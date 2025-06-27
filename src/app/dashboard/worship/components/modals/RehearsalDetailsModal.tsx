@@ -15,12 +15,10 @@ import {
   PencilSquareIcon
 } from '@heroicons/react/24/outline';
 import { Rehearsal, RehearsalAttendee } from '../features/RehearsalTracker';
-import { TeamMemberProfile } from '../TeamScheduling';
 import { ServicePlan } from '../ServicesList';
 
 interface RehearsalDetailsModalProps {
   rehearsal: Rehearsal;
-  teamMembers: TeamMemberProfile[];
   services: ServicePlan[];
   isOpen: boolean;
   onClose: () => void;
@@ -31,7 +29,6 @@ interface RehearsalDetailsModalProps {
 
 export default function RehearsalDetailsModal({ 
   rehearsal, 
-  teamMembers,
   services,
   isOpen, 
   onClose,
@@ -332,7 +329,7 @@ export default function RehearsalDetailsModal({
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {attendanceData.map((member, memberIdx) => (
+                                      {attendanceData.map((member) => (
                                         <tr key={member.teamMemberId}>
                                           <td
                                             className={`border-b border-gray-200 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8`}

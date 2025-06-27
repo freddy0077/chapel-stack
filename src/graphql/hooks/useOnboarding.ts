@@ -16,7 +16,6 @@ import {
   GENERATE_FUNDS_IMPORT_TEMPLATE
 } from '../queries/onboardingQueries';
 import {
-  OnboardingStep,
   OnboardingProgress,
   CompleteOnboardingStepInput,
   InitialBranchSetupInput,

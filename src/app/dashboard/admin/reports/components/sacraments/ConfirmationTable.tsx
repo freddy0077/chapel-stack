@@ -46,22 +46,20 @@ const popularNames = [
 
 type ConfirmationTableProps = {
   branchesToDisplay: string[];
-  dateRange: { start: string; end: string };
 };
 
 export default function ConfirmationTable({
-  branchesToDisplay,
-  dateRange
+  branchesToDisplay
 }: ConfirmationTableProps) {
   
   // Helper functions to calculate totals
-  const calculateMonthTotal = (month: any) => {
+  const calculateMonthTotal = (month: unknown) => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.total || 0);
     }, 0);
   };
 
-  const calculateMonthGroupTotal = (month: any, group: 'youth' | 'adults') => {
+  const calculateMonthGroupTotal = (month: unknown, group: 'youth' | 'adults') => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.[group] || 0);
     }, 0);
@@ -204,7 +202,7 @@ export default function ConfirmationTable({
             <ul className="list-disc pl-5 space-y-1">
               <li>Youth confirmations account for {Math.round((branchesToDisplay.reduce((total, branch) => total + calculateBranchGroupTotal(branch, 'youth'), 0) / branchesToDisplay.reduce((total, branch) => total + calculateBranchTotal(branch), 0)) * 100)}% of all confirmations</li>
               <li>March shows the highest number of confirmations</li>
-              <li>St. Mary's Cathedral has conducted the most confirmation ceremonies</li>
+              <li>St. Mary\'s Cathedral has conducted the most confirmation ceremonies</li>
             </ul>
           </div>
         </div>

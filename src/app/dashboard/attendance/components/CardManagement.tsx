@@ -14,10 +14,11 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import { useMembersWithCardsAllFields } from '../../../../graphql/hooks/useMember';
+import { useMembersWithCardsAllFields, useAssignRfidCardToMember } from '@/graphql/hooks/useMember';
+import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import Image from 'next/image';
-import { useAssignRfidCardToMember } from '../../../../graphql/hooks/useMember';
 import MemberSearchCombobox from './MemberSearchCombobox';
+import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 
 export default function CardManagement() {
   // ...existing state
@@ -27,9 +28,13 @@ export default function CardManagement() {
   // Pagination state
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const orgBranchFilter = useOrganizationBranchFilter();
 
   // Fetch members with RFID cards (live data)
-  const { members: cards, loading: isLoading, error, refetch } = useMembersWithCardsAllFields({ take: pageSize, skip: (page - 1) * pageSize });
+  const { members: cards, loading: isLoading, error, refetch } = useMembersWithCardsAllFields(
+    orgBranchFilter,
+    { take: pageSize, skip: (page - 1) * pageSize }
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<CardStatus | 'all'>('all');
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
@@ -42,16 +47,21 @@ export default function CardManagement() {
   const [issueMessage, setIssueMessage] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-
+  // For member search in modal
+  const [searchQuery, setSearchQuery] = useState('');
+  const { data: searchedMembers, loading: searching } = useSearchMembers(
+    searchQuery,
+    orgBranchFilter.organisationId
+  );
 
   // For modal combobox: fallback to card fields if member not found
   const getMemberName = (memberId: string): string => {
-    const card = cards.find(c => c.id === memberId || c.memberId === memberId);
+    const card = cards.find(c => c.id === memberId);
     return card ? `${card.firstName} ${card.lastName}` : 'Unknown Member';
   };
 
   const getMemberPhoto = (memberId: string): string | undefined => {
-    const card = cards.find(c => c.id === memberId || c.memberId === memberId);
+    const card = cards.find(c => c.id === memberId);
     return card?.profileImageUrl;
   };
 
@@ -210,10 +220,10 @@ export default function CardManagement() {
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="flex items-center">
             <div className="h-10 w-10 flex-shrink-0 relative rounded-full overflow-hidden">
-              {getMemberPhoto(card.memberId) ? (
+              {getMemberPhoto(card.id) ? (
                 <Image
-                  src={getMemberPhoto(card.memberId) || ''}
-                  alt={getMemberName(card.memberId)}
+                  src={getMemberPhoto(card.id) || ''}
+                  alt={getMemberName(card.id)}
                   fill
                   sizes="40px"
                   className="object-cover"
@@ -226,7 +236,7 @@ export default function CardManagement() {
             </div>
             <div className="ml-4">
               <div className="text-sm font-medium text-gray-900">{card.firstName + ' ' + card.lastName}</div>
-              <div className="text-sm text-gray-500">{card.memberId}</div>
+              <div className="text-sm text-gray-500">{card.id}</div>
             </div>
           </div>
         </td>
@@ -271,7 +281,7 @@ export default function CardManagement() {
                   <li><span className="font-medium">Gender:</span> {card.gender || '—'}</li>
                   <li><span className="font-medium">Date of Birth:</span> {card.dateOfBirth ? new Date(card.dateOfBirth).toLocaleDateString() : '—'}</li>
                   <li><span className="font-medium">Marital Status:</span> {card.maritalStatus || '—'}</li>
-                  <li><span className="font-medium">Card Number:</span> {card.rfidCardId || card.cardNumber || '—'}</li>
+                  <li><span className="font-medium">Card Number:</span> {card.rfidCardId || '—'}</li>
                   <li><span className="font-medium">Membership Date:</span> {card.membershipDate ? new Date(card.membershipDate).toLocaleDateString() : '—'}</li>
                 </ul>
               </div>
@@ -408,47 +418,29 @@ export default function CardManagement() {
 
       {/* Issue Card Modal */}
       {isIssueModalOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Issue New Card</h3>
             {issueMessage && (
               <div className={`mb-4 p-2 rounded bg-red-100 text-red-700`}>{issueMessage}</div>
             )}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="member-search" className="block text-sm font-medium text-gray-700 mb-1">
                 Select Member
               </label>
               <MemberSearchCombobox
-                members={cards}
+                members={searchedMembers || []}
                 value={selectedMemberId}
                 onChange={setSelectedMemberId}
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
+                loading={searching}
                 disabled={issuing}
               />
             </div>
             
-            {/*
-            <div className="mb-4">
-              <label htmlFor="card-type" className="block text-sm font-medium text-gray-700 mb-1">
-                Card Type
-              </label>
-              <select
-                id="card-type"
-                className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                value={cardType}
-                onChange={(e) => setCardType(e.target.value as 'rfid' | 'nfc' | 'qr')}
-                disabled={issuing}
-              >
-                <option value="rfid">RFID Card</option>
-                <option value="nfc">NFC Card</option>
-                <option value="qr">QR Code</option>
-              </select>
-            </div>
-            */}
-            
             <div className="mb-6">
-              <label htmlFor="card-number" className="block text-sm font-medium text-gray-700 mb-1">
-                Card Number
-              </label>
+              <label htmlFor="card-number" className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
               <div className="flex gap-2">
                 <input
                   type="text"

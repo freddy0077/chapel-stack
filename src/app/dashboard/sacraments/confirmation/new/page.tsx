@@ -27,12 +27,12 @@ export default function NewConfirmationRecord() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { createConfirmationRecord, loading: mutationLoading, error: mutationError } = useCreateConfirmationRecord();
+  const { createConfirmationRecord } = useCreateConfirmationRecord();
   const { user } = useAuth();
   const { members, loading: memberLoading, error: memberError } = useSearchMembers(memberSearch, 8);
 
   // When a member is selected from dropdown
-  const handleSelectMember = (member: any) => {
+  const handleSelectMember = (member: unknown) => {
     setFormData(prev => ({
       ...prev,
       memberId: member.id,
@@ -114,7 +114,7 @@ export default function NewConfirmationRecord() {
       setTimeout(() => {
         router.push("/dashboard/sacraments?tab=confirmation");
       }, 1800);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setErrorMessage(err?.message || "Failed to create confirmation record.");
       setIsSubmitting(false);
     }
@@ -217,7 +217,7 @@ export default function NewConfirmationRecord() {
                         {!memberLoading && !memberError && members.length === 0 && (
                           <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
                         )}
-                        {members.map((member: any) => (
+                        {members.map((member: unknown) => (
                           <button
                             key={member.id}
                             type="button"

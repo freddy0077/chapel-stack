@@ -17,6 +17,7 @@ export const LOGIN_MUTATION = gql`
         lastLoginAt
         createdAt
         updatedAt
+        organisationId
         roles {
           id
           name
@@ -30,6 +31,13 @@ export const LOGIN_MUTATION = gql`
             id
             name
           }
+        }
+        member {
+          id
+          firstName
+          lastName
+          profileImageUrl
+          status
         }
       }
     }

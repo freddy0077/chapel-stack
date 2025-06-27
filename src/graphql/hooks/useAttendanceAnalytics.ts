@@ -2,10 +2,11 @@ import { useQuery } from '@apollo/client';
 import { GET_ATTENDANCE_ANALYTICS } from '../queries/attendanceAnalyticsQueries';
 
 export interface AttendanceAnalyticsInput {
-  branchId: string;
+  branchId?: string;
+  organisationId?: string;
   startDate: string;
   endDate: string;
-  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
   statsTypes: string[];
 }
 

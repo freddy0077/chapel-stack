@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ModernOnboardingFlow from '@/components/onboarding/ModernOnboardingFlow';
 import { saveModulePreferences, loadModulePreferences, ChurchProfile } from '@/components/onboarding/ModulePreferences';
 import { useAuth, type AuthUser } from '@/graphql/hooks/useAuth'; // Added useAuth import and AuthUser type
+import { setCookie } from 'cookies-next';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -26,10 +27,8 @@ export default function OnboardingPage() {
 
   // Handle onboarding completion with selected modules and church profile
   const handleOnboardingComplete = (selectedModules: string[], churchProfile: ChurchProfile) => {
-    // Save module preferences
     saveModulePreferences(selectedModules, churchProfile);
-    
-    // Navigate to dashboard
+    setCookie('onboardingDeferred', 'true', { path: '/' });
     router.push('/dashboard');
   };
   
@@ -49,7 +48,7 @@ export default function OnboardingPage() {
   
   // Only allow onboarding for SUPER_ADMIN
   const isSuperAdmin = user && typeof user === 'object' && user.roles && Array.isArray(user.roles)
-    ? user.roles.some((role: any) => {
+    ? user.roles.some((role: unknown) => {
         if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
         if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
         return false;

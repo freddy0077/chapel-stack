@@ -139,7 +139,7 @@ export const useApolloAuth = () => {
       
       setIsLoading(false);
       return { success: true, user: userData.me };
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = err.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       setIsLoading(false);
@@ -163,7 +163,7 @@ export const useApolloAuth = () => {
       
       setIsLoading(false);
       return { success: true, user: data.register };
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = err.message || 'Registration failed. Please try again.';
       setError(errorMessage);
       setIsLoading(false);
@@ -191,7 +191,7 @@ export const useApolloAuth = () => {
       
       setIsLoading(false);
       return { success: true };
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage = err.message || 'Logout failed. Please try again.';
       setError(errorMessage);
       setIsLoading(false);

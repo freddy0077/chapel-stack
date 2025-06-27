@@ -88,7 +88,7 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
 
 export function ConfirmationRecords() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [records, setRecords] = useState<ConfirmationRecord[]>(mockConfirmationRecords);
+  const records = mockConfirmationRecords;
 
   // Filter records based on search query
   const filteredRecords = records.filter(record => {

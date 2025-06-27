@@ -22,7 +22,7 @@ export async function logAuditEvent({
   resource: string;
   resourceId: string;
   branchId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }): Promise<UserAuditEvent> {
   // Create audit event object
   const event: UserAuditEvent = {

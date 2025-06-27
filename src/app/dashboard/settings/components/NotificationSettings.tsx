@@ -26,7 +26,7 @@ type NotificationCategory = {
 
 export default function NotificationSettings() {
   // Use global settings for notification preferences
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateSetting] = useUpdateSetting();
   const [createSetting] = useCreateBranchSetting();
 
@@ -163,9 +163,10 @@ export default function NotificationSettings() {
       );
       setSaveSuccess(true);
       refetch();
-    } catch (e) {}
-    setIsSaving(false);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
   };
 
   return (

@@ -1,13 +1,12 @@
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_MEMBERS_LIST, GET_MEMBER, GET_MEMBERS_WITH_CARDS_ALL_FIELDS } from "../queries/memberQueries";
 import { ASSIGN_RFID_CARD_TO_MEMBER } from "../mutations/memberMutations";
+import { OrganizationBranchFilterInput } from '../types/filters';
 
 // Types for GraphQL responses
 interface MembersListQueryResponse {
   members: Member[];
 }
-
-
 
 // Removed unused pagination interfaces
 
@@ -268,10 +267,9 @@ export type DateRangeInput = {
   endDate?: string;
 };
 
-export interface UserFilterInput {
+export interface UserFilterInput extends OrganizationBranchFilterInput {
   search?: string;
   status?: MemberStatus;
-  branchId?: string;
   gender?: Gender;
 };
 
@@ -284,14 +282,18 @@ export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInp
     variables: {
       skip: pagination?.skip ?? 0,
       take: pagination?.take ?? 10,
-      branchId: filters?.branchId
+      branchId: filters?.branchId,
+      organisationId: filters?.organisationId
     },
     notifyOnNetworkStatusChange: true,
   });
 
   // Fetch total count for accurate pagination
   const { data: countData, loading: countLoading } = useQuery<{ membersCount: number }>(GET_MEMBERS_COUNT, {
-    variables: {},
+    variables: {
+      branchId: filters?.branchId,
+      organisationId: filters?.organisationId,
+    },
     fetchPolicy: "cache-and-network"
   });
 
@@ -308,12 +310,15 @@ export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInp
 };
 
 // Hook to fetch members with RFID cards and all fields for Card Management List
-export const useMembersWithCardsAllFields = (pagination?: { take?: number; skip?: number }) => {
+export const useMembersWithCardsAllFields = (filters: UserFilterInput, pagination?: { take?: number; skip?: number }) => {
   const { data, loading, error, refetch } = useQuery<{ members: Member[] }>(GET_MEMBERS_WITH_CARDS_ALL_FIELDS, {
     variables: {
       take: pagination?.take ?? 10,
       skip: pagination?.skip ?? 0,
+      organisationId: filters.organisationId,
+      branchId: filters.branchId,
     },
+    skip: !filters.organisationId, // Skip if no organisationId is provided
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "cache-and-network",
   });
@@ -335,7 +340,7 @@ export function useAssignRfidCardToMember() {
   );
 
   // Usage: assignRfidCardToMember({ assignRfidCardInput: { memberId, rfidCardId } })
-  const assignRfidCardToMember = async (assignRfidCardInput: any) => {
+  const assignRfidCardToMember = async (assignRfidCardInput: unknown) => {
     return assignRfidCardToMemberMutation({ variables: { assignRfidCardInput } });
   };
 

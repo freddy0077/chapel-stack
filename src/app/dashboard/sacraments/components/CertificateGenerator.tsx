@@ -6,12 +6,10 @@ import {
   PrinterIcon, 
   ArrowDownTrayIcon,
   CheckIcon,
-  PencilIcon,
   BuildingOfficeIcon
 } from "@heroicons/react/24/outline";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import Image from "next/image";
 
 // Types
 interface Branch {
@@ -117,7 +115,6 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<CertificateTemplate | null>(null);
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isGenerated, setIsGenerated] = useState(false);
   
   // Get the relevant templates for this certificate type
   const relevantTemplates = mockTemplates.filter(
@@ -141,7 +138,6 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
     // Reset steps when modal opens
     if (isOpen) {
       setStep(1);
-      setIsGenerated(false);
     }
   }, [isOpen, certificateData, branches, relevantTemplates]);
   
@@ -151,7 +147,6 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
     // Simulate certificate generation
     setTimeout(() => {
       setIsGenerating(false);
-      setIsGenerated(true);
       setStep(3);
     }, 2000);
   };
@@ -365,7 +360,7 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
                             <p className="text-xl font-semibold mb-2">{certificateData.recipientName}</p>
                             
                             {certificateData.type === "baptism" && certificateData.parents && (
-                              <p className="text-sm mb-4">Child of {certificateData.parents.join(" & ")}</p>
+                              <p className="text-sm mb-4">Child of {certificateData.parents.join(" &amp; ")}</p>
                             )}
                             
                             <p className="text-lg mb-6">
@@ -375,18 +370,13 @@ const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
                               {certificateData.type === "marriage" && "was united in Holy Matrimony on"}
                             </p>
                             
-                            <p className="text-xl mb-2">{new Date(certificateData.date).toLocaleDateString()}</p>
-                            
-                            <p className="text-lg mb-6">
-                              {certificateData.type === "marriage" 
-                                ? "At " + certificateData.location 
-                                : "In " + selectedBranch?.name}
-                            </p>
+                            <p className="text-lg mt-4">on this day, {new Date(certificateData.date).toLocaleDateString()}</p>
+                            <p className="text-lg mt-8">May God&apos;s grace be with you always.</p>
                             
                             <div className="flex justify-between items-center mt-8 px-8">
                               <div className="text-center">
                                 <div className="border-t border-gray-300 w-32 mx-auto mb-1"></div>
-                                <p className="text-sm">Minister's Signature</p>
+                                <p className="text-sm">Minister&apos;s Signature</p>
                                 <p className="text-xs">{certificateData.ministerName}</p>
                               </div>
                               

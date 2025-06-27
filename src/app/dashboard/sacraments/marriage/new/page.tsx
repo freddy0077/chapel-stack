@@ -8,14 +8,14 @@ import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useCreateMatrimonyRecord } from "@/graphql/hooks/useCreateMatrimonyRecord";
 
-function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: any) => void }) {
+function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: unknown) => void }) {
   const { members, loading, error } = useSearchMembers(query, 8);
   return (
     <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
       {loading && <div className="p-2 text-gray-500">Searching...</div>}
       {error && <div className="p-2 text-red-500">Error loading members</div>}
       {!loading && !error && members.length === 0 && <div className="p-2 text-gray-500">No members found</div>}
-      {members.map((member: any) => (
+      {members.map((member: unknown) => (
         <button
           key={member.id}
           type="button"
@@ -67,7 +67,7 @@ export default function NewMarriageRecord() {
     setMemberSearch1(e.target.value);
     setShowDropdown1(true);
   };
-  const handleSelectSpouse1 = (member: any) => {
+  const handleSelectSpouse1 = (member: unknown) => {
     setFormData(prev => ({ ...prev, spouse1Name: `${member.firstName} ${member.lastName}`, spouse1Id: member.id }));
     setMemberSearch1(`${member.firstName} ${member.lastName}`);
     setShowDropdown1(false);
@@ -84,7 +84,7 @@ export default function NewMarriageRecord() {
     setMemberSearch2(e.target.value);
     setShowDropdown2(true);
   };
-  const handleSelectSpouse2 = (member: any) => {
+  const handleSelectSpouse2 = (member: unknown) => {
     setFormData(prev => ({ ...prev, spouse2Name: `${member.firstName} ${member.lastName}`, spouse2Id: member.id }));
     setMemberSearch2(`${member.firstName} ${member.lastName}`);
     setShowDropdown2(false);
@@ -164,7 +164,7 @@ export default function NewMarriageRecord() {
       setShowSuccess(true);
       // Optionally redirect after a delay
       // setTimeout(() => router.push("/dashboard/sacraments?tab=marriage"), 1800);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsSubmitting(false);
       setErrorMessage(err.message || "Failed to create marriage record.");
     }

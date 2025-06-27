@@ -7,7 +7,6 @@ import {
   REGISTER_MUTATION,
   LOGOUT_MUTATION,
   LOGOUT_ALL_MUTATION,
-  REFRESH_TOKEN_MUTATION,
   VERIFY_MFA_MUTATION,
   SETUP_MFA_MUTATION,
   VERIFY_MFA_SETUP_MUTATION,
@@ -27,7 +26,6 @@ import {
 } from '../queries/user';
 
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
 
 // Helper function for safe localStorage access in SSR environments
 const safeLocalStorage = {
@@ -79,6 +77,15 @@ interface UserBranch {
   role: UserRole;
 }
 
+// Member data interface
+interface Member {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl?: string;
+  status?: string;
+}
+
 // User data interface
 interface AuthUser {
   id: string;
@@ -93,6 +100,7 @@ interface AuthUser {
   updatedAt?: string;
   roles?: UserRole[];
   userBranches?: UserBranch[];
+  member?: Member;
   // Additional fields for application state
   name?: string;
   accessibleBranches?: Array<{ branchId: string; branchName: string; role: string }>;
@@ -178,14 +186,12 @@ function useAuth() {
   
   // Hooks
   const client = useApolloClient();
-  const router = useRouter(); // Used in the token refresh effect
   
   // Auth mutations
   const [loginMutation] = useMutation(LOGIN_MUTATION);
   const [registerMutation] = useMutation(REGISTER_MUTATION);
   const [logoutMutation] = useMutation(LOGOUT_MUTATION);
   const [logoutAllMutation] = useMutation(LOGOUT_ALL_MUTATION);
-  const [refreshTokenMutation] = useMutation(REFRESH_TOKEN_MUTATION);
   const [verifyMfaMutation] = useMutation(VERIFY_MFA_MUTATION);
   const [setupMfaMutation] = useMutation(SETUP_MFA_MUTATION);
   const [verifyMfaSetupMutation] = useMutation(VERIFY_MFA_SETUP_MUTATION);
@@ -925,4 +931,4 @@ function useAuth() {
 
 export default useAuth;
 export { useAuth, MFAType };
-export type { AuthUser, UserRole, Branch, UserBranch, AuthResponse, StatusResponse, VerificationResponse, MFASetupResponse, MFAStatusResponse, Session, RegisterInput, UpdateProfileInput };
+export type { AuthUser, UserRole, Branch, UserBranch, AuthResponse, StatusResponse, VerificationResponse, MFASetupResponse, MFAStatusResponse, Session, RegisterInput, UpdateProfileInput, Member };

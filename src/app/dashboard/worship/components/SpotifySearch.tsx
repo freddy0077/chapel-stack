@@ -5,6 +5,7 @@ import { useSpotify } from '@/lib/spotify/spotifyContext';
 import { searchSpotify } from '@/lib/spotify/spotifyApi';
 import { MagnifyingGlassIcon, PlusIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { PlayIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
 
 interface SpotifyTrack {
   id: string;
@@ -21,15 +22,13 @@ interface SpotifyTrack {
 interface SpotifySearchProps {
   onSelectTrack?: (track: SpotifyTrack) => void;
   onAddToLibrary?: (track: SpotifyTrack) => void;
-  onAddToPlaylist?: (track: SpotifyTrack) => void;
 }
 
 export default function SpotifySearch({ 
   onSelectTrack, 
-  onAddToLibrary, 
-  onAddToPlaylist 
+  onAddToLibrary 
 }: SpotifySearchProps) {
-  const { isAuthenticated, getToken, login } = useSpotify();
+  const { isAuthenticated, getToken, login, spotifyApi } = useSpotify();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,14 +37,12 @@ export default function SpotifySearch({
 
   // Search when the search term changes (with debounce)
   useEffect(() => {
-    if (!searchTerm || !isAuthenticated) return;
-
-    const timer = setTimeout(() => {
+    const debounceTimer = setTimeout(() => {
       performSearch();
     }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, isAuthenticated]);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
 
   const performSearch = async () => {
     if (!searchTerm.trim()) {
@@ -145,7 +142,7 @@ export default function SpotifySearch({
 
       {!isLoading && !error && searchResults.length === 0 && searchTerm && (
         <div className="p-4 text-center">
-          <p className="text-sm text-gray-500">No songs found for "{searchTerm}"</p>
+          <p className="text-sm text-gray-500">No songs found for &quot;{searchTerm}&quot;</p>
         </div>
       )}
 
@@ -160,10 +157,12 @@ export default function SpotifySearch({
               >
                 <div className="flex items-center space-x-4">
                   {track.album.images[0] && (
-                    <img 
-                      src={track.album.images[0].url} 
+                    <Image 
+                      src={track.album.images[0]?.url} 
                       alt={track.album.name} 
-                      className="w-12 h-12 object-cover rounded"
+                      width={64} 
+                      height={64} 
+                      className="rounded" 
                     />
                   )}
                   <div className="flex-1 min-w-0">

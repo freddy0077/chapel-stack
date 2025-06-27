@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSpotify } from '@/lib/spotify/spotifyContext';
 import { PauseIcon, PlayIcon, ForwardIcon, BackwardIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
 
 interface SpotifyPlayerProps {
   trackUri?: string;
@@ -44,7 +45,7 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
   }, [isAuthenticated]);
 
   // Initialize the Spotify Web Playback SDK player
-  const initializePlayer = async () => {
+  const initializePlayer = useCallback(async () => {
     try {
       const token = await getToken();
       if (!token) {
@@ -108,7 +109,7 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
       console.error('Error initializing Spotify player:', error);
       setError('Failed to initialize Spotify player');
     }
-  };
+  }, [getToken]);
 
   // Play a specific track
   useEffect(() => {
@@ -135,7 +136,7 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
     };
 
     playTrack();
-  }, [deviceId, trackUri, playerReady]);
+  }, [deviceId, trackUri, playerReady, getToken]);
 
   // Handle play/pause
   const togglePlayback = async () => {
@@ -189,6 +190,18 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
     }
   };
 
+  useEffect(() => {
+    if (window.Spotify) {
+      initializePlayer();
+    } else {
+      window.onSpotifyWebPlaybackSDKReady = initializePlayer;
+    }
+
+    return () => {
+      player?.disconnect();
+    };
+  }, [initializePlayer, player, isAuthenticated]);
+
   if (!isAuthenticated) {
     return (
       <div className="bg-white rounded-lg shadow p-4 text-center">
@@ -209,10 +222,12 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex items-center space-x-4">
         {currentTrack?.album.images[0]?.url && (
-          <img 
+          <Image 
             src={currentTrack.album.images[0].url} 
             alt={currentTrack.album.name} 
-            className="w-16 h-16 rounded shadow"
+            width={64} 
+            height={64} 
+            className="rounded"
           />
         )}
         <div className="flex-1 min-w-0">

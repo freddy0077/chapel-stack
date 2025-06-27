@@ -14,29 +14,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
-
-// Mock data for a single branch
-const branchName = "Main Branch";
-const summary = {
-  collections: 2450,
-  tithes: 1100,
-  pledges: 800,
-  other: 210,
-  totalTransactions: 47,
-  thisMonth: 3560,
-  lastMonth: 3100,
-};
-
-// Tab options for financial categories
-const tabOptions = ["All", "Collections", "Tithes", "Pledges", "Other"];
-
-// Mock transactions with more detail
-const transactions = [
-  { id: 1, type: "Collection", amount: 450, date: "2025-06-14", note: "Sunday Service", status: "completed", category: "Weekly Offering" },
-  { id: 2, type: "Tithe", amount: 120, date: "2025-06-13", note: "John Doe", status: "completed", category: "Member Tithes" },
-  { id: 3, type: "Pledge", amount: 300, date: "2025-06-12", note: "Building Fund", status: "pending", category: "Capital Campaign" },
-  { id: 4, type: "Other", amount: 75, date: "2025-06-11", note: "Youth Event", status: "completed", category: "Youth Ministry" },
-];
+import { useBranchFinances } from '@/hooks/useBranchFinances';
+import { useAuth } from '@/graphql/hooks/useAuth';
 
 // Recent activity for notification feed
 const recentActivity = [
@@ -67,67 +46,115 @@ import DashboardHeader from "@/components/DashboardHeader";
 import Link from "next/link";
 
 export default function BranchFinancesPage() {
+  const { user } = useAuth();
+  const {
+    summary,
+    transactions,
+    funds,
+    contributionTypes,
+    paymentMethods,
+    loading,
+    error,
+    createContribution,
+    creationLoading,
+  } = useBranchFinances();
+
   const [activeTab, setActiveTab] = useState("All");
   const [dateFilter, setDateFilter] = useState("This Month");
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Modal state: null | 'collection' | 'tithe' | 'pledge' | 'other'
-  const [openModal, setOpenModal] = useState<null | 'collection' | 'tithe' | 'pledge' | 'other'>(null);
+  const [openModal, setOpenModal] = useState<string | null>(null);
 
-  // Form state for modals (could be expanded per modal)
   const [modalForm, setModalForm] = useState({
     amount: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     note: '',
-    category: '',
+    contributionTypeId: '',
+    fundId: '',
+    paymentMethodId: '',
   });
 
-  const handleOpenModal = (type: 'collection' | 'tithe' | 'pledge' | 'other') => {
-    setOpenModal(type);
-    setModalForm({ amount: '', date: '', note: '', category: '' });
+  const tabOptions = useMemo(() => {
+    if (!contributionTypes) return ["All"];
+    return ["All", ...contributionTypes.map(ct => ct.name)];
+  }, [contributionTypes]);
+
+  const handleOpenModal = (typeName: string) => {
+    const contributionType = contributionTypes.find(ct => ct.name === typeName);
+    setOpenModal(typeName);
+    setModalForm({
+      amount: '',
+      date: new Date().toISOString().split('T')[0],
+      note: '',
+      contributionTypeId: contributionType?.id || '',
+      fundId: funds.length > 0 ? funds[0].id : '',
+      paymentMethodId: paymentMethods.length > 0 ? paymentMethods[0].id : '',
+    });
   };
   const handleCloseModal = () => setOpenModal(null);
 
-  // Example submit handler
-  const handleModalSubmit = (e: React.FormEvent) => {
+  const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with backend
-    handleCloseModal();
+    if (!user?.organisationId || !user.userBranches?.[0]?.branch?.id) {
+      console.error("User organisation or branch not found");
+      return;
+    }
+
+    try {
+      await createContribution({
+        variables: {
+          createContributionInput: {
+            amount: parseFloat(modalForm.amount),
+            date: modalForm.date,
+            notes: modalForm.note,
+            contributionTypeId: modalForm.contributionTypeId,
+            fundId: modalForm.fundId,
+            paymentMethodId: modalForm.paymentMethodId,
+            organisationId: user.organisationId,
+            branchId: user?.userBranches[0].branch.id,
+          },
+        },
+      });
+      handleCloseModal();
+    } catch (err) {
+      console.error("Failed to create contribution", err);
+    }
   };
   
-  // Calculate % change from last month
-  const monthlyChangePercent = Math.round((summary.thisMonth - summary.lastMonth) / summary.lastMonth * 100);
+  const monthlyChangePercent = 0; // Placeholder for now
   const isPositiveChange = monthlyChangePercent >= 0;
   
-  // Filter transactions based on active tab and other filters
   const filteredTransactions = useMemo(() => {
+    if (!transactions) return [];
     let result = [...transactions];
     
-    // Filter by tab/category
     if (activeTab !== "All") {
-      result = result.filter(tx => tx.type === activeTab);
+      result = result.filter(tx => tx.contributionType.name === activeTab);
     }
     
-    // Filter by search query if present
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(tx => 
-        tx.note.toLowerCase().includes(query) || 
-        tx.category.toLowerCase().includes(query) ||
-        tx.type.toLowerCase().includes(query)
+        tx.notes?.toLowerCase().includes(query) || 
+        tx.fund.name.toLowerCase().includes(query) ||
+        tx.contributionType.name.toLowerCase().includes(query) ||
+        (tx.member && `${tx.member.firstName} ${tx.member.lastName}`.toLowerCase().includes(query))
       );
     }
     
     return result;
-  }, [activeTab, searchQuery]); // Remove transactions from dependency array
+  }, [activeTab, searchQuery, transactions]);
   
+  if (loading) return <div className="p-8">Loading financial data...</div>;
+  if (error) return <div className="p-8 text-red-500">Error loading data: {error.message}</div>;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white pb-16">
       {/* Dashboard Header */}
       <DashboardHeader
         title="Branch Finances"
-        subtitle={`Financial overview for ${branchName}`}
+        subtitle={`Financial overview for ${user?.userBranches?.[0]?.branch?.name}`}
         icon={
           <span className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-tr from-green-400 to-emerald-500 shadow-md">
             <CurrencyDollarIcon className="h-7 w-7 text-white" />
@@ -152,7 +179,7 @@ export default function BranchFinancesPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Branch Finances</h1>
               <div className="text-sm text-gray-500 mt-1">
-                {branchName} &mdash; 
+                {user?.userBranches?.[0]?.branch?.name} &mdash;
                 <span className="inline-flex items-center">
                   {isPositiveChange ? (
                     <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 ml-1 mr-1" />
@@ -206,59 +233,44 @@ export default function BranchFinancesPage() {
           <SummaryCard
             icon={<ArrowTrendingUpIcon className="h-7 w-7 text-green-600" />}
             label="Collections"
-            value={summary.collections}
+            value={summary?.collections || 0}
             gradient="from-green-50 to-emerald-100"
           />
           <SummaryCard
             icon={<BanknotesIcon className="h-7 w-7 text-blue-600" />}
             label="Tithes"
-            value={summary.tithes}
+            value={summary?.tithes || 0}
             gradient="from-blue-50 to-indigo-100"
           />
           <SummaryCard
             icon={<UserGroupIcon className="h-7 w-7 text-yellow-500" />}
             label="Pledges"
-            value={summary.pledges}
+            value={summary?.pledges || 0}
             gradient="from-yellow-50 to-amber-100"
           />
           <SummaryCard
             icon={<ArrowTrendingDownIcon className="h-7 w-7 text-gray-500" />}
             label="Other Income"
-            value={summary.other}
+            value={summary?.other || 0}
             gradient="from-gray-50 to-gray-100"
           />
         </div>
 
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-3 mb-10">
-          <button
-            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-green-600 hover:to-emerald-700 transition"
-            onClick={() => handleOpenModal('collection')}
-          >
-            Record Collection
-          </button>
-          <button
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-blue-600 hover:to-indigo-700 transition"
-            onClick={() => handleOpenModal('tithe')}
-          >
-            Record Tithe
-          </button>
-          <button
-            className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-yellow-500 hover:to-yellow-600 transition"
-            onClick={() => handleOpenModal('pledge')}
-          >
-            Record Pledge
-          </button>
-          <button
-            className="bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-gray-500 hover:to-gray-600 transition"
-            onClick={() => handleOpenModal('other')}
-          >
-            Record Other
-          </button>
+          {(contributionTypes || []).map(type => (
+            <button
+              key={type.id}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-blue-600 hover:to-indigo-700 transition"
+              onClick={() => handleOpenModal(type.name)}
+            >
+              Record {type.name}
+            </button>
+          ))}
         </div>
 
         {/* Modals for each action */}
-        <Modal open={openModal === 'collection'} title="Record Collection" onClose={handleCloseModal}>
+        <Modal open={!!openModal} title={`Record ${openModal}`} onClose={handleCloseModal}>
           <form onSubmit={handleModalSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
@@ -269,68 +281,23 @@ export default function BranchFinancesPage() {
               <input type="date" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.date} onChange={e => setModalForm(f => ({ ...f, date: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Note</label>
-              <input type="text" className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.note} onChange={e => setModalForm(f => ({ ...f, note: e.target.value }))} placeholder="Optional note" />
-            </div>
-            <div className="pt-2">
-              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition">Save Collection</button>
-            </div>
-          </form>
-        </Modal>
-        <Modal open={openModal === 'tithe'} title="Record Tithe" onClose={handleCloseModal}>
-          <form onSubmit={handleModalSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
-              <input type="number" min="0" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.amount} onChange={e => setModalForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Fund <span className="text-red-500">*</span></label>
+              <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.fundId} onChange={e => setModalForm(f => ({ ...f, fundId: e.target.value }))}>
+                {funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)}
+              </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Date <span className="text-red-500">*</span></label>
-              <input type="date" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.date} onChange={e => setModalForm(f => ({ ...f, date: e.target.value }))} />
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Payment Method <span className="text-red-500">*</span></label>
+              <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.paymentMethodId} onChange={e => setModalForm(f => ({ ...f, paymentMethodId: e.target.value }))}>
+                {paymentMethods.map(pm => <option key={pm.id} value={pm.id}>{pm.name}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Note</label>
               <input type="text" className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.note} onChange={e => setModalForm(f => ({ ...f, note: e.target.value }))} placeholder="Optional note" />
             </div>
             <div className="pt-2">
-              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition">Save Tithe</button>
-            </div>
-          </form>
-        </Modal>
-        <Modal open={openModal === 'pledge'} title="Record Pledge" onClose={handleCloseModal}>
-          <form onSubmit={handleModalSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
-              <input type="number" min="0" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.amount} onChange={e => setModalForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Date <span className="text-red-500">*</span></label>
-              <input type="date" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.date} onChange={e => setModalForm(f => ({ ...f, date: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Note</label>
-              <input type="text" className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.note} onChange={e => setModalForm(f => ({ ...f, note: e.target.value }))} placeholder="Optional note" />
-            </div>
-            <div className="pt-2">
-              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition">Save Pledge</button>
-            </div>
-          </form>
-        </Modal>
-        <Modal open={openModal === 'other'} title="Record Other Income" onClose={handleCloseModal}>
-          <form onSubmit={handleModalSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
-              <input type="number" min="0" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.amount} onChange={e => setModalForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Date <span className="text-red-500">*</span></label>
-              <input type="date" required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.date} onChange={e => setModalForm(f => ({ ...f, date: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-indigo-800 mb-1">Note</label>
-              <input type="text" className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.note} onChange={e => setModalForm(f => ({ ...f, note: e.target.value }))} placeholder="Optional note" />
-            </div>
-            <div className="pt-2">
-              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition">Save Other Income</button>
+              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition" disabled={creationLoading}>{creationLoading ? 'Saving...' : `Save ${openModal}`}</button>
             </div>
           </form>
         </Modal>
@@ -434,16 +401,16 @@ export default function BranchFinancesPage() {
                       <td className="py-3 px-3 whitespace-nowrap">{tx.date}</td>
                       <td className="py-3 px-3 whitespace-nowrap">
                         <span className="inline-flex items-center">
-                          {tx.type === "Collection" && <BanknotesIcon className="h-4 w-4 text-green-500 mr-1" />}
-                          {tx.type === "Tithe" && <ArrowTrendingUpIcon className="h-4 w-4 text-blue-500 mr-1" />}
-                          {tx.type === "Pledge" && <UserGroupIcon className="h-4 w-4 text-yellow-500 mr-1" />}
-                          {tx.type === "Other" && <ArrowTrendingDownIcon className="h-4 w-4 text-gray-500 mr-1" />}
-                          {tx.type}
+                          {tx.contributionType.name === "Collection" && <BanknotesIcon className="h-4 w-4 text-green-500 mr-1" />}
+                          {tx.contributionType.name === "Tithe" && <ArrowTrendingUpIcon className="h-4 w-4 text-blue-500 mr-1" />}
+                          {tx.contributionType.name === "Pledge" && <UserGroupIcon className="h-4 w-4 text-yellow-500 mr-1" />}
+                          {tx.contributionType.name === "Other" && <ArrowTrendingDownIcon className="h-4 w-4 text-gray-500 mr-1" />}
+                          {tx.contributionType.name}
                         </span>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.category}</td>
-                      <td className="py-3 px-3 whitespace-nowrap font-medium text-gray-900">${tx.amount.toLocaleString()}</td>
-                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.note}</td>
+                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.fund.name}</td>
+                      <td className="py-3 px-3 whitespace-nowrap font-medium text-gray-900">${tx.amount.toFixed(2)}</td>
+                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.notes || 'No note'}</td>
                       <td className="py-3 px-3 whitespace-nowrap">
                         {tx.status === "completed" ? (
                           <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">

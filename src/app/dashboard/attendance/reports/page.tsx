@@ -45,164 +45,20 @@ interface VisitorFlow {
 }
 
 // Mock data for branches
-const mockBranches: Branch[] = [
-  { id: "b1", name: "Main Campus", location: "123 Main St, Cityville", region: "North" },
-  { id: "b2", name: "East Side", location: "456 East Blvd, Cityville", region: "East" },
-  { id: "b3", name: "West End", location: "789 West Ave, Cityville", region: "West" },
-  { id: "b4", name: "South Chapel", location: "321 South Rd, Cityville", region: "South" },
-  { id: "b5", name: "Downtown", location: "555 Center St, Cityville", region: "Central" }
-];
+const mockBranches: Branch[] = [];
 
 // Mock attendance data with branch information
-const mockAttendanceRecords: AttendanceRecord[] = [
-  {
-    id: "a1",
-    date: "2023-04-02",
-    branchId: "b1",
-    branchName: "Main Campus",
-    attendeeCount: 345,
-    visitorCount: 28,
-    childrenCount: 67,
-    youthCount: 53,
-    adultsCount: 225,
-    eventType: "SundayService"
-  },
-  {
-    id: "a2",
-    date: "2023-04-02",
-    branchId: "b2",
-    branchName: "East Side",
-    attendeeCount: 176,
-    visitorCount: 15,
-    childrenCount: 34,
-    youthCount: 28,
-    adultsCount: 114,
-    eventType: "SundayService"
-  },
-  {
-    id: "a3",
-    date: "2023-04-02",
-    branchId: "b3",
-    branchName: "West End",
-    attendeeCount: 213,
-    visitorCount: 19,
-    childrenCount: 42,
-    youthCount: 35,
-    adultsCount: 136,
-    eventType: "SundayService"
-  },
-  {
-    id: "a4",
-    date: "2023-04-09",
-    branchId: "b1",
-    branchName: "Main Campus",
-    attendeeCount: 456,
-    visitorCount: 45,
-    childrenCount: 92,
-    youthCount: 68,
-    adultsCount: 296,
-    eventType: "SundayService",
-    eventName: "Easter Sunday"
-  },
-  {
-    id: "a5",
-    date: "2023-04-09",
-    branchId: "b2",
-    branchName: "East Side",
-    attendeeCount: 231,
-    visitorCount: 27,
-    childrenCount: 47,
-    youthCount: 36,
-    adultsCount: 148,
-    eventType: "SundayService",
-    eventName: "Easter Sunday"
-  },
-  {
-    id: "a6",
-    date: "2023-04-16",
-    branchId: "b1",
-    branchName: "Main Campus",
-    attendeeCount: 327,
-    visitorCount: 18,
-    childrenCount: 64,
-    youthCount: 51,
-    adultsCount: 212,
-    eventType: "SundayService"
-  },
-  {
-    id: "a7",
-    date: "2023-04-16",
-    branchId: "b4",
-    branchName: "South Chapel",
-    attendeeCount: 165,
-    visitorCount: 12,
-    childrenCount: 31,
-    youthCount: 27,
-    adultsCount: 107,
-    eventType: "SundayService"
-  }
-];
+const mockAttendanceRecords: AttendanceRecord[] = [];
 
 // Mock visitor flow data
-const mockVisitorFlows: VisitorFlow[] = [
-  {
-    visitorId: "v1",
-    visitorName: "John Smith",
-    fromBranchId: "b1",
-    fromBranchName: "Main Campus",
-    toBranchId: "b2",
-    toBranchName: "East Side",
-    date: "2023-04-09",
-    status: "Transferred"
-  },
-  {
-    visitorId: "v2",
-    visitorName: "Alice Johnson",
-    fromBranchId: "b3",
-    fromBranchName: "West End",
-    toBranchId: "b1",
-    toBranchName: "Main Campus",
-    date: "2023-04-16",
-    status: "Occasional"
-  },
-  {
-    visitorId: "v3",
-    visitorName: "Robert Brown",
-    fromBranchId: "b2",
-    fromBranchName: "East Side",
-    toBranchId: "b4",
-    toBranchName: "South Chapel",
-    date: "2023-04-02",
-    status: "Return Visit"
-  },
-  {
-    visitorId: "v4",
-    visitorName: "Emily Davis",
-    fromBranchId: "",
-    fromBranchName: "",
-    toBranchId: "b1",
-    toBranchName: "Main Campus",
-    date: "2023-04-09",
-    status: "First Visit"
-  },
-  {
-    visitorId: "v5",
-    visitorName: "Michael Wilson",
-    fromBranchId: "b4",
-    fromBranchName: "South Chapel",
-    toBranchId: "b5",
-    toBranchName: "Downtown",
-    date: "2023-04-16",
-    status: "Transferred"
-  }
-];
+const mockVisitorFlows: VisitorFlow[] = [];
 
 export default function AttendanceReportsDashboard() {
   const [activeTab, setActiveTab] = useState<"consolidated" | "branch-comparison" | "visitor-flow">("consolidated");
   const [selectedBranch, setSelectedBranch] = useState<string>("");
   const [dateRange, setDateRange] = useState({
-    start: "2023-04-01",
-    end: "2023-04-30",
+    start: "",
+    end: "",
   });
 
   // Filter attendance data based on selected branch and date range

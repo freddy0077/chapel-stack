@@ -34,6 +34,7 @@ export interface User {
   primaryRole: UserRole;
   isMultiBranchAdmin: boolean;
   lastLogin?: Date;
+  organisationId?: string;
   preferences: {
     theme: "light" | "dark" | "system";
     notifications: boolean;
@@ -94,14 +95,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         firstName
         lastName
         isActive
+        isEmailVerified
+        lastLoginAt
+        createdAt
+        updatedAt
         roles {
           id
           name
-          description
         }
         userBranches {
-          branchId
-          roleId
           branch {
             id
             name
@@ -111,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name
           }
         }
+        organisationId
       }
     }
   `;
@@ -144,7 +147,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 email: apiUser.email,
                 firstName: apiUser.firstName,
                 lastName: apiUser.lastName,
-                primaryRole: apiUser.role.toLowerCase() as UserRole,
+                primaryRole: apiUser.roles && apiUser.roles.length > 0 ? 
+                  apiUser.roles[0].name.toLowerCase() as UserRole : 'member' as UserRole,
               };
             } else {
               // Create new user object from API data
@@ -173,6 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 isMultiBranchAdmin: apiUser.roles ? 
                   apiUser.roles.some((role: { name: string }) => role.name.toLowerCase() === 'admin') : false,
                 lastLogin: new Date(),
+                organisationId: apiUser.organisationId || null,
                 preferences: {
                   theme: 'system',
                   notifications: true,
@@ -313,7 +318,7 @@ const login = async (credentials: LoginCredentials) => {
           {
             id: 'default_branch',
             name: 'Main Branch',
-            role: 'member' as UserRole,
+            role: 'member',
             permissions: []
           }
         ],
@@ -322,6 +327,7 @@ const login = async (credentials: LoginCredentials) => {
         isMultiBranchAdmin: apiUser.roles ? 
           apiUser.roles.some((role: { name: string }) => role.name.toLowerCase().includes('admin')) : false,
         lastLogin: new Date(),
+        organisationId: apiUser.organisationId || null,
         preferences: {
           theme: 'system',
           notifications: true,
@@ -366,9 +372,16 @@ const login = async (credentials: LoginCredentials) => {
       }
     } catch (error: unknown) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? 
-        error.message : 
-        'Login failed. Please check your credentials and try again.';
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors) && (error as any).graphQLErrors.length > 0) {
+        const gqlError = (error as any).graphQLErrors[0];
+        errorMessage =
+          gqlError?.extensions?.originalError?.message ||
+          gqlError?.message ||
+          errorMessage;
+      } else if (error instanceof Error && error.message) {
+        errorMessage = error.message;
+      }
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -434,6 +447,7 @@ const login = async (credentials: LoginCredentials) => {
         ],
         primaryRole: 'member',
         isMultiBranchAdmin: false,
+        organisationId: null,
         preferences: {
           theme: 'system',
           notifications: true,

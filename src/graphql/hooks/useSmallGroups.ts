@@ -12,6 +12,7 @@ import {
   REMOVE_MEMBER_FROM_GROUP,
   UPDATE_GROUP_MEMBER
 } from '../mutations/groupMutations';
+import { OrganizationBranchFilterInput } from '../types/filters';
 
 // Define TypeScript interfaces for our data structures
 export enum SmallGroupStatus {
@@ -70,11 +71,13 @@ export interface SmallGroup {
   id: string;
   name: string;
   description?: string;
-  type?: string;
+  type: string;
   meetingSchedule?: string;
   location?: string;
   maximumCapacity?: number;
-  status: SmallGroupStatus;
+  status: string;
+  branchId?: string;
+  organisationId?: string;
   ministryId?: string;
   ministry?: Ministry;
   members?: SmallGroupMember[];
@@ -82,11 +85,10 @@ export interface SmallGroup {
   updatedAt: string;
 }
 
-export interface SmallGroupFilterInput {
+export interface SmallGroupFilterInput extends OrganizationBranchFilterInput {
   type?: string;
   status?: SmallGroupStatus;
   ministryId?: string;
-  branchId?: string;
   search?: string;
 }
 

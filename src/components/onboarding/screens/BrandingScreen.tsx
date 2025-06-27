@@ -19,7 +19,6 @@ const BrandingScreen: React.FC<BrandingScreenProps> = ({ onNext, onBack, onSkip,
   const [slogan, setSlogan] = useState('');
   const [brandFont, setBrandFont] = useState('');
   const [social, setSocial] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -140,7 +139,6 @@ const BrandingScreen: React.FC<BrandingScreenProps> = ({ onNext, onBack, onSkip,
               className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
             />
           </div>
-          {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
           <div className="flex justify-between items-center mt-6 gap-2">
             {onBack && (
               <button type="button" onClick={onBack} className="px-4 py-2 rounded-lg border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50 transition">

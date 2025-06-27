@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Switch } from '@headlessui/react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');

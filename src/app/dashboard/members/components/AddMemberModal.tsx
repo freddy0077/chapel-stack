@@ -24,7 +24,9 @@ interface AddMemberModalProps {
 export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
+  const organisationId = user?.organisationId;
+  console.log("Organisation ID:", organisationId);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: "",
@@ -125,7 +127,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             branchId: branchId,
             userId: formData.userId || undefined,
             spouseId: formData.spouseId || undefined,
-            parentId: formData.parentId || undefined
+            parentId: formData.parentId || undefined,
+            organisationId: organisationId
           }
         }
       });
@@ -221,7 +224,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Gender</label>
-                      <select name="gender" value={formData.gender} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
+                      <select required name="gender" value={formData.gender} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
                         <option value="">Select Gender</option>
                         <option value="MALE">Male</option>
                         <option value="FEMALE">Female</option>
@@ -231,7 +234,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Date of Birth</label>
-                      <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <input required type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Marital Status</label>
@@ -253,7 +256,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
-                      <input name="email" value={formData.email} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <input required name="email" value={formData.email} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                       {renderError("email")}
                     </div>
                     <div>

@@ -107,7 +107,7 @@ const mockMarriageRecords: MarriageRecord[] = [
 
 export function MarriageRecords() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [records, setRecords] = useState<MarriageRecord[]>(mockMarriageRecords);
+  const records = mockMarriageRecords;
 
   // Filter records based on search query
   const filteredRecords = records.filter(record => {

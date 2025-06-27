@@ -71,31 +71,31 @@ export default function NewMember() {
     {
       id: "personal",
       label: "Personal Information",
-      icon: <UserCircleIcon className="h-5 w-5" />, 
+      icon: <UserCircleIcon className="h-5 w-5" />,
       description: "Basic personal details",
     },
     {
       id: "contact",
       label: "Contact Details",
-      icon: <EnvelopeIcon className="h-5 w-5" />, 
+      icon: <EnvelopeIcon className="h-5 w-5" />,
       description: "Contact information",
     },
     {
       id: "membership",
       label: "Membership",
-      icon: <IdentificationIcon className="h-5 w-5" />, 
+      icon: <IdentificationIcon className="h-5 w-5" />,
       description: "Church membership details",
     },
     {
       id: "family",
       label: "Family",
-      icon: <UserGroupIcon className="h-5 w-5" />, 
+      icon: <UserGroupIcon className="h-5 w-5" />,
       description: "Family relationships",
     },
     {
       id: "introduction",
       label: "Introduction",
-      icon: <BuildingOfficeIcon className="h-5 w-5" />, 
+      icon: <BuildingOfficeIcon className="h-5 w-5" />,
       description: "How they found the church",
     },
   ];
@@ -129,9 +129,6 @@ export default function NewMember() {
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
-
-  // For animations
-  const [isChangingTab, setIsChangingTab] = useState(false);
 
   // Show component when loaded (for animation)
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -169,11 +166,7 @@ export default function NewMember() {
     if (newTabIndex > currentTabIndex) {
       if (!validateForm()) return;
     }
-    setIsChangingTab(true);
-    setTimeout(() => {
-      setActiveTab(tabId);
-      setIsChangingTab(false);
-    }, 200);
+    setActiveTab(tabId);
   };
 
   // Handle form field changes
@@ -359,21 +352,18 @@ export default function NewMember() {
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
                     <input
                       type="text"
-                      placeholder="First Name"
                       value={member.firstName}
                       onChange={e => updateFamilyMember(member.id, "firstName", e.target.value)}
                       className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                     <input
                       type="text"
-                      placeholder="Last Name"
                       value={member.lastName}
                       onChange={e => updateFamilyMember(member.id, "lastName", e.target.value)}
                       className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                     <input
                       type="text"
-                      placeholder="Relationship"
                       value={member.relationship}
                       onChange={e => updateFamilyMember(member.id, "relationship", e.target.value)}
                       className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
@@ -550,13 +540,10 @@ export default function NewMember() {
                       className="inline-flex items-center px-6 py-2 border border-transparent text-base font-semibold rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                       {isSubmitting ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Saving...
-                        </>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                       ) : (
                         "Save Member"
                       )}

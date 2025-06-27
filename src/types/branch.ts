@@ -19,7 +19,7 @@ export interface Branch {
   regionId?: string; // For regional grouping
   settings: BranchSettings;
   statistics: BranchStatistics;
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
 }
 
 export interface BranchSettings {

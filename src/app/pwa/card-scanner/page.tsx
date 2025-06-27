@@ -1,11 +1,22 @@
 "use client";
 
+import { Suspense } from "react";
+import CardScannerApp from "./page";
+
+export default function CardScannerPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CardScannerApp />
+    </Suspense>
+  );
+}
+
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import ScannerInterface from "./components/ScannerInterface";
-import EventSelector from "./components/EventSelector";
-import MemberInfo from "./components/MemberInfo";
-import OfflineIndicator from "./components/OfflineIndicator";
+import ScannerInterface from "@/app/pwa/card-scanner/components/ScannerInterface";
+import EventSelector from "@/app/pwa/card-scanner/components/EventSelector";
+import MemberInfo from "@/app/pwa/card-scanner/components/MemberInfo";
+import OfflineIndicator from "@/app/pwa/card-scanner/components/OfflineIndicator";
 import { 
   ArrowLeftIcon, 
   QrCodeIcon, 
@@ -16,12 +27,12 @@ import {
   ClockIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
-import { AttendanceEvent, AttendanceRecord, Member } from "../../dashboard/attendance/types";
-import { useProcessCardScan } from "../../../graphql/hooks/useAttendance";
-import { useAttendanceSessionsByBranch, getCurrentBranchFromAuthUser } from "../../../graphql/hooks/useAttendance";
-import { useAuth } from "../../../graphql/hooks/useAuth";
+import { AttendanceEvent, AttendanceRecord, Member } from "@/app/dashboard/attendance/types";
+import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
+import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
+import { useAuth } from "@/graphql/hooks/useAuth";
 
-export default function CardScannerApp() {
+function CardScannerApp() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [pendingScans, setPendingScans] = useState<AttendanceRecord[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<AttendanceEvent | null>(null);
@@ -30,13 +41,15 @@ export default function CardScannerApp() {
   const [scannedMember, setScannedMember] = useState<Member | null>(null);
   const [activeEvents, setActiveEvents] = useState<AttendanceEvent[]>([]);
 
-  // Auth and branch context
+  // Organization and branch context
+  const { organisationId, branchId } = useOrganizationBranchFilter();
   const { user } = useAuth();
-  const branch = user ? getCurrentBranchFromAuthUser(user) : undefined;
-  const branchId = branch?.id;
 
-  // Fetch attendance sessions for this branch
-  const { sessions = [] } = useAttendanceSessionsByBranch(branchId || "");
+  // Fetch attendance sessions
+  const { sessions = [] } = useFilteredAttendanceSessions({
+    organisationId,
+    branchId,
+  });
   const [showMemberInfo, setShowMemberInfo] = useState<boolean>(false);
 
   // Define syncPendingScans with useCallback to avoid dependency issues
@@ -74,7 +87,7 @@ export default function CardScannerApp() {
     const soon = new Date(now.getTime() + 60 * 60 * 1000);
     // Accept SCHEDULED, ONGOING, PLANNED (case-insensitive)
     const activeStatuses = ["SCHEDULED", "ONGOING", "PLANNED"];
-    const events = sessions.filter((event: import('../../../graphql/hooks/useAttendance').AttendanceSession) => {
+    const events = sessions.filter((event: import('@/graphql/hooks/useAttendance').AttendanceSession) => {
       if (!event.startTime) return false;
       return (
         activeStatuses.includes((event.status || "").toUpperCase()) &&

@@ -18,7 +18,7 @@ interface OnboardingCompletionScreenProps {
 }
 
 const OnboardingCompletionScreen: React.FC<OnboardingCompletionScreenProps> = ({ onFinish }) => {
-  const [summary, setSummary] = useState<Record<string, any>>({});
+  const [summary, setSummary] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     setSummary(loadAllOnboardingStepData(TRACKED_STEPS));
@@ -92,7 +92,7 @@ const OnboardingCompletionScreen: React.FC<OnboardingCompletionScreenProps> = ({
               <div className="mb-4">
                 <div className="font-bold text-indigo-600 mb-1">Branch Details</div>
                 <ul className="ml-5">
-                  {summary.BranchDetails.branches.map((b: any, i: number) => (
+                  {summary.BranchDetails.branches.map((b: unknown, i: number) => (
                     <li key={i}><span className="font-medium">{b.name}</span>{b.location ? ` (${b.location})` : ''}</li>
                   ))}
                 </ul>
@@ -103,7 +103,7 @@ const OnboardingCompletionScreen: React.FC<OnboardingCompletionScreenProps> = ({
               <div className="mb-4">
                 <div className="font-bold text-indigo-600 mb-1">Invited Users</div>
                 <ul className="ml-5">
-                  {summary.UserInvitations.map((user: any, i: number) => (
+                  {summary.UserInvitations.map((user: unknown, i: number) => (
                     <li key={i}>{user.email}</li>
                   ))}
                 </ul>
@@ -114,7 +114,7 @@ const OnboardingCompletionScreen: React.FC<OnboardingCompletionScreenProps> = ({
               <div className="mb-4">
                 <div className="font-bold text-indigo-600 mb-1">Roles</div>
                 <ul className="ml-5">
-                  {summary.RoleConfiguration.roles.map((role: any, i: number) => (
+                  {summary.RoleConfiguration.roles.map((role: unknown, i: number) => (
                     <li key={i}>
                       <span className="font-medium">{role.name}:</span> {Array.isArray(role.permissions) ? role.permissions.join(', ') : ''}
                     </li>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { 
-  BookOpenIcon,
   ChevronUpIcon, 
   ChevronDownIcon
 } from '@heroicons/react/24/outline';

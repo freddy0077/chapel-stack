@@ -89,6 +89,7 @@ export const GET_FILTERED_SMALL_GROUPS = gql`
       createdAt
       updatedAt
       branchId
+      organisationId
       ministryId
 
       ministry {

@@ -78,12 +78,12 @@ const MOCK_MINISTRIES: Record<string, Ministry> = {
   },
   '2': {
     id: '2',
-    name: 'Children&apos;s Ministry',
+    name: 'Children\'s Ministry',
     description: 'Nurtures the spiritual growth of children through age-appropriate teaching and activities.',
     category: 'Education',
     meetingDay: 'Sunday',
     meetingTime: '9:30 AM',
-    location: 'Children&apos;s Wing',
+    location: 'Children\'s Wing',
     memberCount: 45,
     establishedDate: new Date('2015-06-10'),
     leaders: [
@@ -169,7 +169,7 @@ export default function MinistryDetailsPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Error: {error || 'Unknown error'}</h1>
-        <p className="text-gray-600 mb-6">We couldn't find the ministry you're looking for.</p>
+        <p className="text-gray-600 mb-6">We couldn&apos;t find the ministry you&apos;re looking for.</p>
         <Link 
           href="/dashboard/ministries"
           className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"

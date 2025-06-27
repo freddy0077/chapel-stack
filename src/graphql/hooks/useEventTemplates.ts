@@ -96,7 +96,7 @@ export interface CreateEventTemplateInput {
   volunteerRoles?: VolunteerRoleRequirement[];
   applicableBranches: string[];
   requiredSetup?: string;
-  customFields?: any;
+  customFields?: unknown;
   isActive?: boolean;
 }
 
@@ -112,7 +112,7 @@ export interface UpdateEventTemplateInput {
   volunteerRoles?: VolunteerRoleRequirement[];
   applicableBranches?: string[];
   requiredSetup?: string;
-  customFields?: any;
+  customFields?: unknown;
   isActive?: boolean;
 }
 
@@ -142,7 +142,7 @@ export interface CreateEventFromTemplateInput {
   featuredImage?: string;
   calendarId: string;
   ministryId?: string;
-  customFields?: any;
+  customFields?: unknown;
 }
 
 export interface TemplateFilters {

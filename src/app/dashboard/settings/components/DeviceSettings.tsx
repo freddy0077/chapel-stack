@@ -17,7 +17,7 @@ type Device = {
 };
 
 export default function DeviceSettings() {
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateSetting] = useUpdateSetting();
   const [createSetting] = useCreateBranchSetting();
 
@@ -68,7 +68,6 @@ export default function DeviceSettings() {
     }
   ]);
 
-  const [nfcCardRegistered, setNfcCardRegistered] = useState(true);
   const [nfcCardStatus, setNfcCardStatus] = useState<'active' | 'inactive'>('active');
   const [autoCheckIn, setAutoCheckIn] = useState(true);
   const [checkInNotifications, setCheckInNotifications] = useState(true);
@@ -136,9 +135,10 @@ export default function DeviceSettings() {
       }));
       setSaveSuccess(true);
       refetch();
-    } catch (e) {}
-    setIsSaving(false);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
   };
 
   const handleDeviceNameChange = (deviceId: string, name: string) => {
@@ -222,7 +222,7 @@ export default function DeviceSettings() {
             ))}
           </ul>
           <p className="mt-2 text-xs text-gray-500">
-            If you remove a device, you'll be signed out on that device and will need to sign in again.
+            If you remove a device, you&#39;ll be signed out on that device and will need to sign in again.
           </p>
         </div>
 
@@ -243,16 +243,10 @@ export default function DeviceSettings() {
                 </div>
               </div>
               <div className="flex items-center">
-                {nfcCardRegistered ? (
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                    <CheckIcon className="mr-1 h-3 w-3" />
-                    Registered
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                    Not Registered
-                  </span>
-                )}
+                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                  <CheckIcon className="mr-1 h-3 w-3" />
+                  Registered
+                </span>
                 <div className="ml-4">
                   <select
                     id="nfc-status"
@@ -260,7 +254,6 @@ export default function DeviceSettings() {
                     value={nfcCardStatus}
                     onChange={(e) => setNfcCardStatus(e.target.value as 'active' | 'inactive')}
                     className="rounded-md border-gray-300 text-xs shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    disabled={!nfcCardRegistered}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -269,75 +262,60 @@ export default function DeviceSettings() {
               </div>
             </div>
             
-            {!nfcCardRegistered && (
-              <div className="mt-4">
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md border border-transparent bg-primary-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                  Register New Card
-                </button>
-              </div>
-            )}
-            
-            {nfcCardRegistered && (
-              <div className="mt-4 grid grid-cols-1 gap-y-4 border-t border-gray-200 pt-4 sm:grid-cols-2 sm:gap-x-6">
-                <div className="flex items-start">
-                  <div className="flex h-5 items-center">
-                    <input
-                      id="auto-check-in"
-                      name="auto-check-in"
-                      type="checkbox"
-                      checked={autoCheckIn}
-                      onChange={() => setAutoCheckIn(!autoCheckIn)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="auto-check-in" className="font-medium text-gray-700">
-                      Automatic check-in
-                    </label>
-                    <p className="text-gray-500">Automatically check in when card is scanned</p>
-                  </div>
+            <div className="mt-4 grid grid-cols-1 gap-y-4 border-t border-gray-200 pt-4 sm:grid-cols-2 sm:gap-x-6">
+              <div className="flex items-start">
+                <div className="flex h-5 items-center">
+                  <input
+                    id="auto-check-in"
+                    name="auto-check-in"
+                    type="checkbox"
+                    checked={autoCheckIn}
+                    onChange={() => setAutoCheckIn(!autoCheckIn)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
                 </div>
-                
-                <div className="flex items-start">
-                  <div className="flex h-5 items-center">
-                    <input
-                      id="check-in-notifications"
-                      name="check-in-notifications"
-                      type="checkbox"
-                      checked={checkInNotifications}
-                      onChange={() => setCheckInNotifications(!checkInNotifications)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="check-in-notifications" className="font-medium text-gray-700">
-                      Check-in notifications
-                    </label>
-                    <p className="text-gray-500">Receive notifications when checked in or out</p>
-                  </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="auto-check-in" className="font-medium text-gray-700">
+                    Automatic check-in
+                  </label>
+                  <p className="text-gray-500">Automatically check in when card is scanned</p>
                 </div>
               </div>
-            )}
-            
-            {nfcCardRegistered && (
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md border border-transparent bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                >
-                  Deactivate Card
-                </button>
-                <button
-                  type="button"
-                  className="ml-3 inline-flex items-center rounded-md border border-transparent bg-primary-100 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                  Replace Card
-                </button>
+              
+              <div className="flex items-start">
+                <div className="flex h-5 items-center">
+                  <input
+                    id="check-in-notifications"
+                    name="check-in-notifications"
+                    type="checkbox"
+                    checked={checkInNotifications}
+                    onChange={() => setCheckInNotifications(!checkInNotifications)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="check-in-notifications" className="font-medium text-gray-700">
+                    Check-in notifications
+                  </label>
+                  <p className="text-gray-500">Receive notifications when checked in or out</p>
+                </div>
               </div>
-            )}
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                className="inline-flex items-center rounded-md border border-transparent bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                Deactivate Card
+              </button>
+              <button
+                type="button"
+                className="ml-3 inline-flex items-center rounded-md border border-transparent bg-primary-100 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              >
+                Replace Card
+              </button>
+            </div>
           </div>
           
           <div className="mt-6 rounded-md border border-gray-200 bg-gray-50 p-4">

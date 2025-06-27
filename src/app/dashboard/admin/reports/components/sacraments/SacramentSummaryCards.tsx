@@ -50,22 +50,10 @@ const mockSacramentData = {
 };
 
 type SacramentSummaryCardsProps = {
-  selectedBranches: string[];
   branchesToDisplay: string[];
 };
 
-// Map branch IDs to names
-const branchIdToName = {
-  'branch-001': 'St. Mary\'s Cathedral',
-  'branch-002': 'Sacred Heart Parish',
-  'branch-003': 'St. Joseph\'s Church',
-  'branch-004': 'Holy Trinity Church',
-  'branch-005': 'St. Peter\'s Parish',
-  'branch-006': 'Good Shepherd Church'
-};
-
 export default function SacramentSummaryCards({
-  selectedBranches,
   branchesToDisplay
 }: SacramentSummaryCardsProps) {
   

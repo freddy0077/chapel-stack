@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from '@/graphql/hooks/useAuth';
+import { useOrganizationBranchFilter } from '@/hooks';
 import {
   useFilteredSmallGroups,
   SmallGroupStatus,
@@ -24,14 +25,10 @@ import DashboardHeader from '@/components/DashboardHeader';
 
 export default function Groups() {
   const { user } = useAuth();
-  // Safely extract branchId from user context per latest memory
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  // For component props that expect string | null
-  // const branchId = userBranchId || null;
-
-  console.log("User data:", user);
-  console.log("Branch ID (should be string or undefined, not null):", branchId);
-    
+  
+  // Get organization/branch filter based on user role
+  const orgBranchFilter = useOrganizationBranchFilter();
+  
   // State for filtering and view mode
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string | 'ALL'>('ALL');
@@ -44,22 +41,28 @@ export default function Groups() {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  
-  // Prepare filters object - using userBranchId which can be undefined (but not null)
-  const filters: SmallGroupFilterInput = {
-    branchId: branchId, // undefined will be ignored by GraphQL
-  };
-  
-  // Add additional filters if provided
-  if (searchTerm) filters.search = searchTerm;
-  if (selectedType !== 'ALL') filters.type = selectedType;
-  if (selectedStatus !== 'ALL') filters.status = selectedStatus;
+  const [groupRefetch, setGroupRefetch] = useState<(() => void) | null>(null);
+
+  // Prepare filters object
+  const filters = useMemo(() => ({
+    branchId: orgBranchFilter.branchId,
+    organisationId: orgBranchFilter.organisationId,
+    name: searchTerm,
+    type: selectedType !== 'ALL' ? selectedType : undefined,
+    status: selectedStatus !== 'ALL' ? selectedStatus : undefined,
+  }), [orgBranchFilter.branchId, orgBranchFilter.organisationId, searchTerm, selectedType, selectedStatus]);
 
   console.log('Applying group filters:', filters);
 
-  // Fetch filtered groups - skip the query when no valid branchId is available
-  const { smallGroups, loading, error } = useFilteredSmallGroups(filters, !branchId);
+  // Fetch filtered groups - skip the query when no valid filter is available
+  const { smallGroups, loading, error, refetch } = useFilteredSmallGroups(
+    filters, 
+    !orgBranchFilter.branchId && !orgBranchFilter.organisationId
+  );
   
+  // Save refetch for after create
+  if (groupRefetch !== refetch) setGroupRefetch(() => refetch);
+
   // Log query results for debugging
   console.log('Query results:', { smallGroups, loading, error });
 
@@ -119,7 +122,12 @@ export default function Groups() {
       </div>
 
       {/* Modals */}
-      <CreateGroupModal isOpen={isAddModalOpen} setIsOpen={setIsAddModalOpen} branchId={branchId} />
+      <CreateGroupModal
+        isOpen={isAddModalOpen}
+        setIsOpen={setIsAddModalOpen}
+        branchId={orgBranchFilter.branchId}
+        afterCreate={() => groupRefetch && groupRefetch()}
+      />
       <GroupDetailsModal isOpen={!!selectedGroupId} onClose={handleCloseDetails} group={selectedGroup} />
 
       {/* Content area */}
@@ -139,20 +147,6 @@ export default function Groups() {
         </div>
       </div>
       
-      {/* Add group modal */}
-      <CreateGroupModal 
-        isOpen={isAddModalOpen} 
-        setIsOpen={setIsAddModalOpen} 
-        branchId={branchId} 
-      />
-      
-      {/* Group details modal */}
-      <GroupDetailsModal 
-        isOpen={selectedGroupId !== null} 
-        onClose={handleCloseDetails}
-        group={selectedGroup}
-      />
-
       {/* Pagination */}
       {!loading && smallGroups.length > 0 && (
         <Pagination

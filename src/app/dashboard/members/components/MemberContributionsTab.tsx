@@ -2,16 +2,20 @@ import React from "react";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 
 interface Contribution {
-  id?: string;
-  date?: string;
-  amount?: number;
-  type?: string;
-  fund?: string;
-  paymentMethod?: string;
-  [key: string]: any;
+  id: string;
+  amount: number;
+  date: string;
+  type: string;
+  fund: string;
+  paymentMethod: string;
 }
 
-export default function MemberContributionsTab({ member }: { member: any }) {
+interface Member {
+  id: string;
+  contributions: Contribution[];
+}
+
+export default function MemberContributionsTab({ member }: { member: Member }) {
   const contributions: Contribution[] = Array.isArray(member?.contributions) ? member.contributions : [];
 
   return (
@@ -32,12 +36,12 @@ export default function MemberContributionsTab({ member }: { member: any }) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-50">
             {contributions.map((c, i) => (
-              <tr key={c.id || i}>
-                <td className="px-4 py-2 whitespace-nowrap">{c.date ? new Date(c.date).toLocaleDateString() : ''}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{c.type || <span className='text-gray-400'>—</span>}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{c.fund || <span className='text-gray-400'>—</span>}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{c.paymentMethod || <span className='text-gray-400'>—</span>}</td>
-                <td className="px-4 py-2 whitespace-nowrap font-bold text-indigo-700">{typeof c.amount === 'number' ? `$${c.amount.toLocaleString()}` : <span className='text-gray-400'>—</span>}</td>
+              <tr key={c.id}>
+                <td className="px-4 py-2 whitespace-nowrap">{new Date(c.date).toLocaleDateString()}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{c.type}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{c.fund}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{c.paymentMethod}</td>
+                <td className="px-4 py-2 whitespace-nowrap font-bold text-indigo-700">$${c.amount.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

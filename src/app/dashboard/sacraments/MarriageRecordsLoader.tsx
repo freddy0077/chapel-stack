@@ -1,11 +1,14 @@
+"use client";
 import React from "react";
-import { useMarriageRecords, MarriageRecord } from "@/graphql/hooks/useMarriageRecords";
+import { useFilteredMarriageRecords, SacramentalRecord } from "@/graphql/hooks/useFilteredSacramentalRecords";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 interface MarriageRecordsLoaderProps {
-  children: (records: MarriageRecord[], loading: boolean, error: unknown) => React.ReactNode;
+  children: (records: SacramentalRecord[], loading: boolean, error: unknown) => React.ReactNode;
 }
 
 export function MarriageRecordsLoader({ children }: MarriageRecordsLoaderProps) {
-  const { records, loading, error } = useMarriageRecords();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { records, loading, error } = useFilteredMarriageRecords(orgBranchFilter);
   return <>{children(records, loading, error)}</>;
 }

@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 
 interface MemberImportScreenProps {
-  onNext: (members: any[]) => void;
+  onNext: (members: unknown[]) => void;
   onBack?: () => void;
   onSkip?: () => void;
   isLoading?: boolean;
@@ -17,7 +17,7 @@ const SAMPLE_DATA = [
 const MemberImportScreen: React.FC<MemberImportScreenProps> = ({ onNext, onBack, onSkip, isLoading }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [previewRows, setPreviewRows] = useState<any[][] | null>(null);
+  const [previewRows, setPreviewRows] = useState<unknown[][] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

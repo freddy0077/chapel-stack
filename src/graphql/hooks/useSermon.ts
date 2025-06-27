@@ -1,14 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import {
   GET_SERMONS,
   GET_SERMON
 } from '../queries/sermonQueries';
-import {
-  Sermon,
-  Speaker,
-  Series
-} from '../types/sermon';
 import {
   CREATE_SERMON,
   UPDATE_SERMON,
@@ -39,7 +34,7 @@ export const useSermons = (customOptions = {}) => {
     setPagination(prev => ({ ...prev, page: newPage }));
   };
 
-  const handleFilterChange = (newFilters: any) => {
+  const handleFilterChange = (newFilters: unknown) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
     setPagination(prev => ({ ...prev, page: 1 }));
   };
@@ -106,7 +101,7 @@ export const useSermonMutations = () => {
  */
 export const useSeries = (customOptions = {}) => {
   const [filters, setFilters] = useState<{ search?: string; isActive?: boolean }>({});
-  const [pagination, setPagination] = useState<PaginationInput>({
+  const [pagination, setPagination] = useState<{ page: number; pageSize: number }>({
     page: 1,
     pageSize: 10
   });
@@ -137,7 +132,7 @@ export const useSeries = (customOptions = {}) => {
  */
 export const useSpeakers = (customOptions = {}) => {
   const [filters, setFilters] = useState<{ search?: string; isActive?: boolean }>({});
-  const [pagination, setPagination] = useState<PaginationInput>({
+  const [pagination, setPagination] = useState<{ page: number; pageSize: number }>({
     page: 1,
     pageSize: 10
   });

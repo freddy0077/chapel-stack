@@ -2,16 +2,16 @@
 
 import React from 'react';
 import { useSermons } from '@/graphql/hooks/useSermon';
+import { usePermissions } from '@/hooks/usePermissions';
 import { SparklesIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
-import { Transition } from '@headlessui/react';
 
 export default function SermonsPage() {
   const { data: sermons = [], loading, error } = useSermons();
   const [search, setSearch] = React.useState('');
-  const [showForm, setShowForm] = React.useState(false);
+  const { isSuperAdmin, isBranchAdmin } = usePermissions();
 
   // Filter sermons by search
-  const filtered = sermons.filter((s: any) =>
+  const filtered = sermons.filter((s: unknown) =>
     s.title?.toLowerCase().includes(search.toLowerCase()) ||
     s.speaker?.name?.toLowerCase().includes(search.toLowerCase())
   );
@@ -23,13 +23,14 @@ export default function SermonsPage() {
           <SparklesIcon className="h-9 w-9 text-yellow-400 animate-pulse" />
           Sermons
         </h1>
-        <button
-          className="bg-gradient-to-br from-indigo-600 to-purple-500 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 hover:bg-indigo-700 transition-transform duration-200 flex items-center gap-2"
-          onClick={() => setShowForm(true)}
-        >
-          <PlusIcon className="h-6 w-6" />
-          Add Sermon
-        </button>
+        {(isSuperAdmin || isBranchAdmin) && (
+          <button
+            className="bg-gradient-to-br from-indigo-600 to-purple-500 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 hover:bg-indigo-700 transition-transform duration-200 flex items-center gap-2"
+          >
+            <PlusIcon className="h-6 w-6" />
+            Add Sermon
+          </button>
+        )}
       </div>
       <div className="mb-8 flex items-center gap-3">
         <div className="relative w-full max-w-md">
@@ -46,7 +47,7 @@ export default function SermonsPage() {
       {loading && <div className="text-center text-gray-400 py-10">Loading sermons...</div>}
       {error && <div className="text-center text-red-500 py-10">Failed to load sermons.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filtered.map((sermon: any) => (
+        {filtered.map((sermon: unknown) => (
           <div
             key={sermon.id}
             className="rounded-3xl bg-white/80 backdrop-blur-md shadow-xl border border-indigo-100 hover:shadow-2xl transition-all duration-200 flex flex-col overflow-hidden group"

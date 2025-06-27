@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   ArrowLeftIcon,
@@ -29,9 +27,9 @@ import MessageModal from "./MessageModal";
 import { useMember } from "@/graphql/hooks/useMember";
 import { useAllSmallGroups, useSmallGroupMutations, SmallGroupMemberRole, SmallGroupMemberStatus } from "@/graphql/hooks/useSmallGroups";
 import { useMutation, gql } from "@apollo/client";
-import { useProcessCardScan } from "@/graphql/hooks/useAttendance";
-import { useAttendanceSessionsByBranch } from "@/graphql/hooks/useAttendance";
+import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/graphql/hooks/useAuth";
+import { useOrganizationBranchFilter } from '@/hooks';
 import AddToSacraments from './AddToSacraments';
 import MemberPrayerRequestsTab from './MemberPrayerRequestsTab';
 import MemberContributionsTab from './MemberContributionsTab';
@@ -62,10 +60,16 @@ const ADD_FAMILY_MEMBER = gql`
   }
 `;
 
-function AddToAttendance({ memberId, rfidCardId, onSuccess }: { memberId: string; rfidCardId?: string; onSuccess?: () => void }) {
+interface AddToAttendanceProps {
+  memberId: string;
+  rfidCardId?: string;
+  onSuccess?: () => void;
+}
+
+function AddToAttendance({ memberId, rfidCardId, onSuccess }: AddToAttendanceProps) {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { sessions, loading: sessionsLoading } = useAttendanceSessionsByBranch(branchId);
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { sessions, loading: sessionsLoading } = useFilteredAttendanceSessions(orgBranchFilter);
   const { processCardScan, loading: adding, error } = useProcessCardScan();
   const [selectedSession, setSelectedSession] = useState<string>("");
   const [successMsg, setSuccessMsg] = useState<string>("");
@@ -78,7 +82,7 @@ function AddToAttendance({ memberId, rfidCardId, onSuccess }: { memberId: string
         cardId: rfidCardId,
         scanMethod: "MANUAL", // must be uppercase for backend
         recordedById: user?.id,
-        branchId,
+        branchId: orgBranchFilter.branchId,
       });
       setSuccessMsg("Member added to attendance session!");
       if (onSuccess) onSuccess();
@@ -122,7 +126,12 @@ function AddToAttendance({ memberId, rfidCardId, onSuccess }: { memberId: string
   );
 }
 
-export default function MemberDetailsModal({ memberId, onClose }: { memberId: string; onClose: () => void }) {
+interface MemberDetailsModalProps {
+  memberId: string;
+  onClose: () => void;
+}
+
+export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProps) {
   const { member, loading, error } = useMember(memberId);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
@@ -561,19 +570,22 @@ export default function MemberDetailsModal({ memberId, onClose }: { memberId: st
   );
 }
 
-function AddToGroup({ memberId }: { memberId: string }) {
+interface AddToGroupProps {
+  memberId: string;
+}
+
+function AddToGroup({ memberId }: AddToGroupProps) {
   const { smallGroups, loading } = useAllSmallGroups();
   const [addMemberToGroupMutation] = useMutation(ADD_MEMBER_TO_GROUP);
 
-  const [showInput, setShowInput] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
   const [role, setRole] = useState("MEMBER");
   const [adding, setAdding] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const filteredGroups = smallGroups.filter((g: any) => g.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredGroups = smallGroups.filter((g: { name: string }) => g.name.toLowerCase().includes(search.toLowerCase()));
 
   const handleAdd = async () => {
     if (!selectedGroup) return;
@@ -588,56 +600,45 @@ function AddToGroup({ memberId }: { memberId: string }) {
         }
       });
       setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-        setShowInput(false);
-        setSelectedGroup(null);
-        setSearch("");
-      }, 1200);
-    } catch (e: any) {
-      setError(e.message || "Failed to add to group");
-    } finally {
-      setAdding(false);
+    } catch {
+      setError("Failed to add member to group.");
     }
+    setAdding(false);
   };
 
   return (
     <div className="mb-4">
-      {!showInput && (
-        <button
-          className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
-          onClick={() => setShowInput(true)}
-        >
-          <PlusIcon className="h-4 w-4 mr-1" /> Add to Group
-        </button>
-      )}
-      {showInput && (
+      <button
+        className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
+        onClick={() => setSelectedGroup(null)}
+      >
+        <PlusIcon className="h-4 w-4 mr-1" /> Add to Group
+      </button>
+      {selectedGroup && (
         <div className="flex flex-col gap-2 bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              className="flex-1 rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-              placeholder="Search group..."
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setSelectedGroup(null);
-              }}
-            />
-            <select
-              className="rounded border-gray-300 text-xs px-2 py-1"
-              value={role}
-              onChange={e => setRole(e.target.value)}
-            >
-              <option value="MEMBER">Member</option>
-              <option value="LEADER">Leader</option>
-              <option value="CO_LEADER">Co-Leader</option>
-              <option value="VISITOR">Visitor</option>
-            </select>
-          </div>
+          <input
+            type="text"
+            className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            placeholder="Search group..."
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setSelectedGroup(null);
+            }}
+          />
+          <select
+            className="rounded border-gray-300 text-xs px-2 py-1"
+            value={role}
+            onChange={e => setRole(e.target.value)}
+          >
+            <option value="MEMBER">Member</option>
+            <option value="LEADER">Leader</option>
+            <option value="CO_LEADER">Co-Leader</option>
+            <option value="VISITOR">Visitor</option>
+          </select>
           <div className="max-h-32 overflow-auto border border-gray-100 rounded mt-1 bg-white">
             {filteredGroups.length === 0 && <div className="p-2 text-xs text-gray-400">No groups found</div>}
-            {filteredGroups.map((g: any) => (
+            {filteredGroups.map((g: { name: string; id: string }) => (
               <button
                 key={g.id}
                 className={`block w-full text-left px-3 py-1 text-sm hover:bg-indigo-100 ${selectedGroup?.id === g.id ? 'bg-indigo-200 font-semibold' : ''}`}
@@ -657,12 +658,12 @@ function AddToGroup({ memberId }: { memberId: string }) {
             </button>
             <button
               className="inline-flex items-center px-2 py-1 rounded text-xs border border-gray-300 text-gray-600 hover:bg-gray-100"
-              onClick={() => setShowInput(false)}
+              onClick={() => setSelectedGroup(null)}
             >
               Cancel
             </button>
-            {success && <span className="text-green-600 text-xs ml-2">Added!</span>}
-            {error && <span className="text-red-600 text-xs ml-2">{error}</span>}
+            {success && <div className="text-green-600 text-sm mt-2">Successfully added to group!</div>}
+            {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
           </div>
         </div>
       )}
@@ -670,7 +671,12 @@ function AddToGroup({ memberId }: { memberId: string }) {
   );
 }
 
-function AddFamilyConnection({ memberId, onSuccess }: { memberId: string, onSuccess?: () => void }) {
+interface AddFamilyConnectionProps {
+  memberId: string;
+  onSuccess?: () => void;
+}
+
+function AddFamilyConnection({ memberId, onSuccess }: AddFamilyConnectionProps) {
   const [showInput, setShowInput] = useState(false);
   const [cardId, setCardId] = useState("");
   const [relationship, setRelationship] = useState("Sibling");
@@ -687,16 +693,10 @@ function AddFamilyConnection({ memberId, onSuccess }: { memberId: string, onSucc
       await addFamilyConnection({ variables: { memberId, relativeId: cardId, relationship } });
       setSuccess(true);
       if (onSuccess) onSuccess();
-      setTimeout(() => {
-        setSuccess(false);
-        setShowInput(false);
-        setCardId("");
-      }, 1200);
-    } catch (e: any) {
-      setError(e.message || "Failed to add family connection");
-    } finally {
-      setAdding(false);
+    } catch {
+      setError("Failed to add family connection.");
     }
+    setAdding(false);
   };
 
   return (
@@ -745,8 +745,8 @@ function AddFamilyConnection({ memberId, onSuccess }: { memberId: string, onSucc
             >
               Cancel
             </button>
-            {success && <span className="text-green-600 text-xs ml-2">Added!</span>}
-            {error && <span className="text-red-600 text-xs ml-2">{error}</span>}
+            {success && <div className="text-green-600 text-sm mt-2">Added!</div>}
+            {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
           </div>
         </div>
       )}

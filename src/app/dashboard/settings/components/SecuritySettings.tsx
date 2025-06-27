@@ -45,7 +45,7 @@ const DISABLE_TWO_FACTOR = gql`
 
 export default function SecuritySettings() {
   // Use global settings for security preferences
-  const { data, loading, refetch } = useSettings();
+  const { data, refetch } = useSettings();
   const [updateLoginAlerts] = useMutation(UPDATE_LOGIN_ALERTS);
   const [updateSessionTimeout] = useMutation(UPDATE_SESSION_TIMEOUT);
   const [enableTwoFactor] = useMutation(ENABLE_TWO_FACTOR);
@@ -144,19 +144,18 @@ export default function SecuritySettings() {
       // Two-factor handled separately via enable/disable actions
       setSaveSuccess(true);
       refetch();
-    } catch (e) {
-      // Optionally log error
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
     }
-    setIsSaving(false);
-    setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   const handleEnableTwoFactor = async () => {
     try {
       await enableTwoFactor({ variables: { input: {} } });
       setTwoFactorEnabled(true);
-    } catch (e) {
-      // Optionally log error
+    } catch {
+      // Removed unused error variable
     }
   };
 
@@ -164,8 +163,8 @@ export default function SecuritySettings() {
     try {
       await disableTwoFactor({ variables: { password: currentPassword } });
       setTwoFactorEnabled(false);
-    } catch (e) {
-      // Optionally log error
+    } catch {
+      // Removed unused error variable
     }
   };
 

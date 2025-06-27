@@ -1,19 +1,9 @@
 "use client";
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  UserGroupIcon, 
-  MagnifyingGlassIcon, 
-  BuildingOfficeIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+import { UserGroupIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function VolunteerManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('all');
-  const [selectedTeam, setSelectedTeam] = useState('all');
-
   return (
     <div className="p-6">
       <div className="sm:flex sm:items-center sm:justify-between">

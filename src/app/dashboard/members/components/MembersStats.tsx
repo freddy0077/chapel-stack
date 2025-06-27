@@ -129,7 +129,7 @@ export default function MembersStats({
       />
       <StatsCard
         title="Inactive Members"
-        metric={inactiveMembers.toString()}
+        metric={inactiveMembers?.toString()}
         icon={<UserMinusIcon className="h-6 w-6 text-rose-600" />}
         color="rose"
         percentage={inactiveMembersChange}

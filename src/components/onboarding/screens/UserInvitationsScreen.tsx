@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { useCreateUsersWithRole } from '@/graphql/hooks/useUserInvitations';
 
@@ -34,26 +34,26 @@ const UserInvitationsScreen: React.FC<UserInvitationsScreenProps> = ({ onNext, o
   const [invitees, setInvitees] = useState<Invitee[]>([{ ...defaultInvitee }]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { createUsersWithRole, result, loading, error: mutationError } = useCreateUsersWithRole();
+  const { createUsersWithRole, loading, error: mutationError } = useCreateUsersWithRole();
 
   const organisationId = typeof window !== 'undefined' ? localStorage.getItem('organisation_id') || '' : '';
 
   // Utility for localStorage tracking (shared with other screens)
   const COMPLETED_SCREENS_KEY = 'onboarding_completed_screens';
-  function getCompletedScreens(): string[] {
+  const getCompletedScreens = useCallback(() => {
     try {
       return JSON.parse(localStorage.getItem(COMPLETED_SCREENS_KEY) || '[]');
     } catch {
       return [];
     }
-  }
-  function markScreenCompleted(screen: string) {
+  }, []);
+  const markScreenCompleted = useCallback((screen: string) => {
     const screens = getCompletedScreens();
     if (!screens.includes(screen)) {
       screens.push(screen);
       localStorage.setItem(COMPLETED_SCREENS_KEY, JSON.stringify(screens));
     }
-  }
+  }, [getCompletedScreens]);
 
   const handleChange = (idx: number, field: keyof Invitee, value: string) => {
     const updated = invitees.map((inv, i) => i === idx ? { ...inv, [field]: value } : inv);
@@ -108,8 +108,8 @@ const UserInvitationsScreen: React.FC<UserInvitationsScreenProps> = ({ onNext, o
         setSuccess(null);
         onNext(invitees);
       }, 1200);
-    } catch (err: any) {
-      setError(err.message || 'Failed to send invitations.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send invitations.');
       console.error('Mutation error:', err);
     }
   };
@@ -119,7 +119,7 @@ const UserInvitationsScreen: React.FC<UserInvitationsScreenProps> = ({ onNext, o
     if (success) {
       markScreenCompleted('UserInvitations');
     }
-  }, [success]);
+  }, [success, markScreenCompleted]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">

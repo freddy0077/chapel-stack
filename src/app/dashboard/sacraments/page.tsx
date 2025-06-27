@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/tabs";
 import {
   PlusIcon,
-  ArrowDownTrayIcon,
   CalendarIcon,
   DocumentTextIcon,
   ClockIcon,
@@ -475,9 +474,8 @@ export default function SacramentsPage() {
           <Menu as="div" className="relative inline-block text-left">
             <div>
               <Menu.Button className="inline-flex w-full justify-center rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-indigo-700 shadow hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200">
-                <ArrowDownTrayIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
-                Export
-                <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5 text-indigo-300" aria-hidden="true" />
+                <CalendarIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
+                Anniversaries
               </Menu.Button>
             </div>
             <Transition
@@ -493,45 +491,18 @@ export default function SacramentsPage() {
                 <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <a
-                        href="#"
+                      <Link
+                        href="/dashboard/sacraments/anniversaries"
                         className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
                       >
-                        Export to Excel
-                      </a>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        Export to PDF
-                      </a>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        Export to CSV
-                      </a>
+                        Anniversary Tracker
+                      </Link>
                     )}
                   </Menu.Item>
                 </div>
               </Menu.Items>
             </Transition>
           </Menu>
-          <Link
-            href="/dashboard/sacraments/anniversaries"
-            className="inline-flex items-center rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-indigo-700 shadow hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200"
-          >
-            <CalendarIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
-            Anniversaries
-          </Link>
         </div>
       </div> */}
     
@@ -634,7 +605,7 @@ export default function SacramentsPage() {
                         </div>
                         <div className="ml-4">
                           <p className="text-sm font-medium text-gray-900">New baptism record added</p>
-                          <p className="text-sm text-gray-500">Emma Wilson's baptism recorded by Pastor Thomas</p>
+                          <p className="text-sm text-gray-500">Emma Wilson&apos;s baptism recorded by Pastor Thomas</p>
                           <p className="mt-1 text-xs text-gray-500">Today at 9:42 AM</p>
                         </div>
                       </div>
@@ -658,7 +629,7 @@ export default function SacramentsPage() {
                         </div>
                         <div className="ml-4">
                           <p className="text-sm font-medium text-gray-900">Marriage certificate uploaded</p>
-                          <p className="text-sm text-gray-500">Michael &amp; Sarah Johnson's marriage certificate</p>
+                          <p className="text-sm text-gray-500">Michael &amp; Sarah Johnson&apos;s marriage certificate</p>
                           <p className="mt-1 text-xs text-gray-500">2 days ago</p>
                         </div>
                       </div>

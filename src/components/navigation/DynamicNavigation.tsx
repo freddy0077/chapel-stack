@@ -6,6 +6,7 @@ import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/authContext";
+import { usePermissions } from '@/hooks/usePermissions';
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
@@ -21,10 +22,8 @@ import {
   DocumentTextIcon,
   ShieldCheckIcon,
   PhotoIcon,
-  NewspaperIcon,
   DevicePhoneMobileIcon,
   GlobeAltIcon,
-  ChatBubbleLeftEllipsisIcon
 } from "@heroicons/react/24/outline";
 
 import { isModuleEnabled } from '../onboarding/ModulePreferences';
@@ -161,13 +160,6 @@ const fullNavigation = [
         // badge: { count: 5, color: "bg-rose-500" },
         moduleId: "communication" 
       },
-      // { 
-      //   name: "CMS", 
-      //   href: "/dashboard/cms", 
-      //   icon: NewspaperIcon, 
-      //   badge: null,
-      //   moduleId: "media-library" 
-      // },
       { 
         name: "Media Assets", 
         href: "/dashboard/cms/assets", 
@@ -272,6 +264,7 @@ const fullNavigation = [
 export default function DynamicNavigation({ children }: { children: React.ReactNode }) {
   // Get user data from authentication context
   const { user, logout } = useAuth();
+  const { canCustomizeModules } = usePermissions();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -281,28 +274,65 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   useEffect(() => {
     const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
 
+    // --- Refactored navigation filtering for clarity ---
+    const getMemberNavigation = () =>
+      fullNavigation
+        .filter(section => ["Main", "Community", "Activities"].includes(section.category))
+        .map(section => ({
+          ...section,
+          items: section.items.filter(item =>
+            ["Dashboard", "Members", "Groups", "Children", "Prayer Requests", "Calendar", "Attendance", "Sacraments", "Ministries", "Sermons"].includes(item.name)
+          )
+        }))
+        .filter(section => section.items.length > 0);
+
+    const getBranchAdminNavigation = () =>
+      fullNavigation
+        .map(section => {
+          if (section.category === "Main") {
+            // Add Branch Admin Dashboard if not present
+            let items = [...section.items];
+            if (!items.find(i => i.href === "/dashboard/branch-admin")) {
+              items.push({
+                name: "Branch Admin Dashboard",
+                href: "/dashboard/branch-admin",
+                icon: HomeIcon,
+                badge: null,
+                moduleId: "dashboard"
+              });
+            }
+            return { ...section, items };
+          }
+          if (["Community", "Activities"].includes(section.category)) {
+            return section;
+          }
+          if (section.category === "Operations") {
+            return {
+              ...section,
+              items: section.items.filter(item =>
+                !["Branches", "Finances"].includes(item.name)
+              )
+            };
+          }
+          if (section.category === "System") {
+            return {
+              ...section,
+              items: section.items.filter(item =>
+                !["Admin", "Security"].includes(item.name)
+              )
+            };
+          }
+          // Hide Volunteers and any unhandled categories
+          return { ...section, items: [] };
+        })
+        .filter(section => section.items.length > 0);
+
     if (userRole === 'MEMBER') {
-      setFilteredNavigation([
-        {
-          category: 'Main',
-          items: [
-            { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, badge: null, moduleId: 'dashboard' },
-          ],
-        },
-        {
-          category: 'Community',
-          items: [
-            { name: 'Prayer Requests', href: '/dashboard/prayer-requests', icon: ChatBubbleLeftRightIcon, badge: null, moduleId: 'members' },
-          ],
-        },
-        {
-          category: 'Activities',
-          items: [
-            { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarIcon, badge: null, moduleId: 'events' },
-            { name: 'Sermons', href: '/dashboard/sermons', icon: MusicalNoteIcon, badge: null, moduleId: 'sermons' },
-          ],
-        },
-      ]);
+      setFilteredNavigation(getMemberNavigation());
+      return;
+    }
+    if (userRole === 'BRANCH_ADMIN') {
+      setFilteredNavigation(getBranchAdminNavigation());
       return;
     }
 
@@ -510,6 +540,17 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           </ul>
                         </div>
                       ))}
+                      {canCustomizeModules && (
+                        <li className="mt-auto">
+                          <Link
+                            href="/dashboard/settings/modules"
+                            className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                          >
+                            <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                            Customize Modules
+                          </Link>
+                        </li>
+                      )}
                     </div>
                   </nav>
                 </div>
@@ -586,14 +627,25 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   </ul>
                 </li>
               ))}
+              {canCustomizeModules && (
+                <li className="mt-auto">
+                  <Link
+                    href="/dashboard/settings/modules"
+                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  >
+                    <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                    Customize Modules
+                  </Link>
+                </li>
+              )}
             </ul>
             
             <div className="mt-auto pb-3 text-xs text-indigo-200 text-center">
-              <p>
-                <Link href="/dashboard/settings/modules" className="hover:text-white underline">
-                  Customize Modules
-                </Link>
-              </p>
+              {/*<p>*/}
+              {/*  <Link href="/dashboard/settings/modules" className="hover:text-white underline">*/}
+              {/*    Customize Modules*/}
+              {/*  </Link>*/}
+              {/*</p>*/}
             </div>
           </nav>
         </div>
@@ -666,11 +718,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           e.preventDefault(); // Prevent document mousedown from closing dropdown
                           setProfileDropdownOpen(false);
                           try {
-                            const result = await logout();
+                            await logout();
                             if (typeof window !== 'undefined') {
                               window.location.href = '/auth/login';
                             }
-                          } catch (err) {
+                          } catch {
                             if (typeof window !== 'undefined') {
                               window.location.href = '/auth/login';
                             }

@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from '@/graphql/hooks/useAuth';
 import { 
   useMembers, 
   MemberStatus, 
   Gender, 
   UserFilterInput, 
   PaginationInput,
-  Member // This is the backend Member type
+  Member, // This is the backend Member type
 } from "@/graphql/hooks/useMember";
-import { useBranchStatistics } from "@/graphql/hooks/useBranchStatistics";
+import { useMemberStatistics } from "@/graphql/hooks/useMemberStatistics";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useOrganizationBranchFilter } from '@/hooks';
 
 // Import our custom components
 import PageHeader from "./components/PageHeader";
@@ -30,43 +31,6 @@ import {
   FunnelIcon,
   XMarkIcon
 } from "@heroicons/react/24/outline";
-
-// Interface for the UI display format
-
-// Helper function to convert MemberStatus enum to display string
-const formatMemberStatus = (status: MemberStatus): string => {
-  switch (status) {
-    case MemberStatus.ACTIVE: return "Active";
-    case MemberStatus.INACTIVE: return "Inactive";
-    case MemberStatus.PENDING: return "Pending";
-    case MemberStatus.VISITOR: return "Visitor";
-    case MemberStatus.FIRST_TIME_VISITOR: return "First Time Visitor";
-    case MemberStatus.RETURNING_VISITOR: return "Returning Visitor";
-    case MemberStatus.DECEASED: return "Deceased";
-    case MemberStatus.TRANSFERRED_OUT: return "Transferred Out";
-    case MemberStatus.EXCOMMUNICATED: return "Excommunicated";
-    case MemberStatus.PROSPECTIVE: return "Prospective";
-    default:
-      return status; // Fallback, or consider 'Unknown'
-  }
-};
-interface DisplayMember {
-  id: string | number;
-  name: string;
-  email?: string;
-  phone?: string;
-  status: string;
-  memberSince: string;
-  branch?: string;
-  branchId?: string;
-  profileImage?: string | null;
-  role?: string;
-  gender?: string;
-  occupation?: string;
-  dateOfBirth?: string;
-  isActive: boolean;
-  isVisitor?: boolean;
-}
 
 import DashboardHeader from '@/components/DashboardHeader';
 
@@ -91,7 +55,10 @@ export default function MembersRedesigned() {
 
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  console.log("User from Members page:", user?.organisationId);
+  
+  // Get organization/branch filter based on user role
+  const orgBranchFilter = useOrganizationBranchFilter();
   
   // UI state
   const [searchTerm, setSearchTerm] = useState("");
@@ -102,11 +69,20 @@ export default function MembersRedesigned() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Convert UI filters to GraphQL filter format
-  const getGraphQLFilters = useCallback((): UserFilterInput => { // Corrected type
-    const filters: UserFilterInput = { // Corrected type
-      branchId,
-      search: searchTerm || undefined
-    };
+  const getGraphQLFilters = useCallback((): UserFilterInput => { 
+    const filters: UserFilterInput = {}; 
+
+    // Apply organization or branch filter based on user role
+    if (orgBranchFilter.organisationId) {
+      filters.organisationId = orgBranchFilter.organisationId;
+    } else if (orgBranchFilter.branchId) {
+      filters.branchId = orgBranchFilter.branchId;
+    }
+    
+    // Add search term if provided
+    if (searchTerm) {
+      filters.search = searchTerm;
+    }
     
     // Map status filters
     if (activeFilters.status && activeFilters.status.length > 0) {
@@ -143,8 +119,8 @@ export default function MembersRedesigned() {
     }
     
     return filters;
-  }, [activeFilters, branchId, searchTerm]);
-  
+  }, [activeFilters, orgBranchFilter, searchTerm]);
+
   // Create pagination input
   const paginationInput: PaginationInput = useMemo(() => ({
     skip: (currentPage - 1) * itemsPerPage,
@@ -230,24 +206,13 @@ export default function MembersRedesigned() {
     });
   }, [refetch]);
 
-  // Fetch branch statistics from the API using our custom hook
-  // If branchId is provided, it will return stats for that specific branch
-  // Otherwise, it returns aggregated stats across all branches
+  // Fetch member statistics from the API using our custom hook
   const { 
-    selectedBranch, 
-    totalStatistics: memberStats, 
+    stats: memberStats, 
     loading: statsLoading,
     error: statsError
-  } = useBranchStatistics(branchId);
+  } = useMemberStatistics(orgBranchFilter.branchId, orgBranchFilter.organisationId);
   
-  // Use branch-specific stats if available, otherwise use aggregated stats
-  const branchStats = useMemo(() => {
-    if (selectedBranch) {
-      return selectedBranch.statistics;
-    }
-    return memberStats;
-  }, [selectedBranch, memberStats]);
-
   return (
     <>
       <DashboardHeader
@@ -272,15 +237,15 @@ export default function MembersRedesigned() {
         <div className="mt-6 text-center">
           <p className="text-red-500">Error loading statistics</p>
         </div>
-      ) : (
+      ) : memberStats ? (
         <MembersStats 
-          totalMembers={branchStats.totalMembers}
-          activeMembers={branchStats.activeMembers}
-          newMembersInPeriod={branchStats.newMembersInPeriod}
-          inactiveMembers={branchStats.inactiveMembers}
-          percentageChanges={branchStats.percentageChanges}
+          totalMembers={memberStats.totalMembers}
+          activeMembers={memberStats.activeMembers}
+          inactiveMembers={memberStats.inactiveMembers}
+          newMembersInPeriod={memberStats.newMembersInPeriod}
+          visitorsInPeriod={memberStats.visitorsInPeriod}
         />
-      )}
+      ) : null}
 
       {/* Search and filters section */}
       <div className="mt-6 bg-white shadow-sm rounded-lg p-4 border border-gray-200">
@@ -390,7 +355,7 @@ export default function MembersRedesigned() {
       {!loading && displayMembers.length > 0 && (
         <div className="mt-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
-            {displayMembers.map((member, idx) => (
+            {displayMembers.map((member) => (
               <div key={member.id} className="">
                 {/* Card UI for each member */}
                 <div className="bg-white rounded-2xl shadow-lg border border-indigo-50 p-6 flex flex-col items-center hover:shadow-xl transition group">
@@ -447,7 +412,6 @@ export default function MembersRedesigned() {
               await refetch({
                 skip: (page - 1) * itemsPerPage,
                 take: itemsPerPage,
-                branchId: branchId,
                 ...(getGraphQLFilters() || {})
               });
               setIsPageChanging(false);
@@ -463,3 +427,39 @@ export default function MembersRedesigned() {
     </>
   );
 }
+
+interface DisplayMember {
+  id: string | number;
+  name: string;
+  email?: string;
+  phone?: string;
+  status: string;
+  memberSince: string;
+  branch?: string;
+  branchId?: string;
+  profileImage?: string | null;
+  role?: string;
+  gender?: string;
+  occupation?: string;
+  dateOfBirth?: string;
+  isActive: boolean;
+  isVisitor?: boolean;
+}
+
+// Helper function to convert MemberStatus enum to display string
+const formatMemberStatus = (status: MemberStatus): string => {
+  switch (status) {
+    case MemberStatus.ACTIVE: return "Active";
+    case MemberStatus.INACTIVE: return "Inactive";
+    case MemberStatus.PENDING: return "Pending";
+    case MemberStatus.VISITOR: return "Visitor";
+    case MemberStatus.FIRST_TIME_VISITOR: return "First Time Visitor";
+    case MemberStatus.RETURNING_VISITOR: return "Returning Visitor";
+    case MemberStatus.DECEASED: return "Deceased";
+    case MemberStatus.TRANSFERRED_OUT: return "Transferred Out";
+    case MemberStatus.EXCOMMUNICATED: return "Excommunicated";
+    case MemberStatus.PROSPECTIVE: return "Prospective";
+    default:
+      return status; // Fallback, or consider 'Unknown'
+  }
+};

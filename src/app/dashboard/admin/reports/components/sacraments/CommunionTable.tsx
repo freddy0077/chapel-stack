@@ -37,22 +37,20 @@ const mockCommunionData = [
 
 type CommunionTableProps = {
   branchesToDisplay: string[];
-  dateRange: { start: string; end: string };
 };
 
 export default function CommunionTable({
-  branchesToDisplay,
-  dateRange
+  branchesToDisplay
 }: CommunionTableProps) {
   
   // Helper functions to calculate totals
-  const calculateMonthTotal = (month: any) => {
+  const calculateMonthTotal = (month: unknown) => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.total || 0);
     }, 0);
   };
 
-  const calculateMonthAgeGroupTotal = (month: any, ageGroup: 'ages7to10' | 'ages11to14' | 'adults') => {
+  const calculateMonthAgeGroupTotal = (month: unknown, ageGroup: 'ages7to10' | 'ages11to14' | 'adults') => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.[ageGroup] || 0);
     }, 0);

@@ -55,7 +55,7 @@ const authLink = new ApolloLink((operation, forward) => {
 // Flag to prevent multiple token refresh requests
 let isRefreshing = false;
 // Array to hold requests that are waiting for a new token
-let pendingRequests: any[] = [];
+let pendingRequests: unknown[] = [];
 
 const resolvePendingRequests = () => {
   pendingRequests.forEach(p => p.resolve());
@@ -101,7 +101,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
         if (!refreshToken) {
           console.error('No refresh token available. Logging out.');
           isRefreshing = false;
-          observer.error(new Error('No refresh token'));
+          observer.error(new Error('Invalid credentials!'));
           return;
         }
 

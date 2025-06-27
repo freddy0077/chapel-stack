@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   ChartBarIcon,
   ChevronUpIcon, 
@@ -28,19 +28,8 @@ const mockAttendanceData = {
   ]
 };
 
-// Branch colors for consistent chart styling
-const branchColors = {
-  'St. Mary\'s Cathedral': '#4F46E5', // indigo-600
-  'Sacred Heart Parish': '#0891B2', // cyan-600
-  'St. Joseph\'s Church': '#059669', // emerald-600
-  'Holy Trinity Church': '#D97706', // amber-600
-  'St. Peter\'s Parish': '#DC2626', // red-600
-  'Good Shepherd Church': '#7C3AED' // violet-600
-};
-
 type AttendanceReportSectionProps = {
   selectedBranches: string[];
-  dateRange: { start: string; end: string };
 };
 
 // Map of branch IDs to names
@@ -54,8 +43,7 @@ const branchIdToName = {
 };
 
 export default function AttendanceReportSection({ 
-  selectedBranches, 
-  dateRange 
+  selectedBranches 
 }: AttendanceReportSectionProps) {
   const [showWeekly, setShowWeekly] = useState(true);
   const [showMonthly, setShowMonthly] = useState(true);

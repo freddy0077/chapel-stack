@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSpotify } from '@/lib/spotify/spotifyContext';
 import { getUserPlaylists, createPlaylist, addTracksToPlaylist } from '@/lib/spotify/spotifyApi';
 import { DocumentTextIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
@@ -43,16 +43,27 @@ export default function SpotifyPlaylistManager({
   const [newPlaylistDescription, setNewPlaylistDescription] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Fetch user playlists on component mount
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchUserPlaylists();
-      fetchUserId();
-    }
-  }, [isAuthenticated]);
+  const fetchUserId = useCallback(async () => {
+    if (!isAuthenticated) return;
 
-  // Fetch user playlists
-  const fetchUserPlaylists = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch('https://api.spotify.com/v1/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      setUserId(data.id);
+    } catch (error) {
+      console.error('Error fetching user ID:', error);
+    }
+  }, [isAuthenticated, getToken]);
+
+  const fetchUserPlaylists = useCallback(async () => {
     if (!isAuthenticated) return;
 
     setIsLoading(true);
@@ -74,28 +85,14 @@ export default function SpotifyPlaylistManager({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isAuthenticated, getToken]);
 
-  // Fetch user ID
-  const fetchUserId = async () => {
-    if (!isAuthenticated) return;
-
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await fetch('https://api.spotify.com/v1/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
-      setUserId(data.id);
-    } catch (error) {
-      console.error('Error fetching user ID:', error);
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserId();
+      fetchUserPlaylists();
     }
-  };
+  }, [isAuthenticated, fetchUserId, fetchUserPlaylists]);
 
   // Handle playlist selection
   const handlePlaylistSelect = (playlist: SpotifyPlaylist) => {

@@ -442,7 +442,7 @@ export default function VolunteerTeamsPage() {
             </div>
             <div className="bg-white shadow rounded p-4">
               <h4 className="text-sm font-medium text-gray-900 mb-2">Step 3: Schedule Volunteers</h4>
-              <p className="text-xs text-gray-500">Volunteers from other branches can now be scheduled for this team's roles.</p>
+              <p className="text-xs text-gray-500">Volunteers from other branches can now be scheduled for this team&apos;s roles.</p>
             </div>
           </div>
           <div className="mt-5">

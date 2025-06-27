@@ -5,7 +5,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import SpotifySearch from '../SpotifySearch';
 import SpotifyPlayer from '../SpotifyPlayer';
-import SpotifyPlaylistManager from '../SpotifyPlaylistManager';
+import Image from 'next/image';
 
 interface SpotifyTrack {
   id: string;
@@ -19,29 +19,15 @@ interface SpotifyTrack {
   duration_ms: number;
 }
 
-interface SpotifyPlaylist {
-  id: string;
-  name: string;
-  description: string;
-  images: { url: string }[];
-  tracks: {
-    total: number;
-  };
-  external_urls: {
-    spotify: string;
-  };
-}
-
 interface SpotifySongModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddToLibrary?: (song: any) => void;
+  onAddToLibrary?: (song: unknown) => void;
 }
 
 export default function SpotifySongModal({ isOpen, onClose, onAddToLibrary }: SpotifySongModalProps) {
   const [currentTrack, setCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [selectedTracks, setSelectedTracks] = useState<SpotifyTrack[]>([]);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyPlaylist | null>(null);
   const [activeTab, setActiveTab] = useState<'search' | 'playlist'>('search');
 
   const handleSelectTrack = (track: SpotifyTrack) => {
@@ -60,10 +46,6 @@ export default function SpotifySongModal({ isOpen, onClose, onAddToLibrary }: Sp
     if (currentTrack?.id === trackId) {
       setCurrentTrack(null);
     }
-  };
-
-  const handleSelectPlaylist = (playlist: SpotifyPlaylist) => {
-    setSelectedPlaylist(playlist);
   };
 
   const handleAddSongToLibrary = (track: SpotifyTrack) => {
@@ -174,10 +156,9 @@ export default function SpotifySongModal({ isOpen, onClose, onAddToLibrary }: Sp
                         )}
 
                         {activeTab === 'playlist' && (
-                          <SpotifyPlaylistManager 
-                            onSelectPlaylist={handleSelectPlaylist}
-                            selectedTracks={selectedTracks}
-                          />
+                          <div>
+                            Selected Tracks: {selectedTracks.length}
+                          </div>
                         )}
                       </div>
 
@@ -190,10 +171,12 @@ export default function SpotifySongModal({ isOpen, onClose, onAddToLibrary }: Sp
                               <li key={track.id} className="py-2 flex justify-between items-center">
                                 <div className="flex items-center">
                                   {track.album.images[0] && (
-                                    <img 
+                                    <Image 
                                       src={track.album.images[0].url} 
                                       alt={track.album.name} 
-                                      className="w-8 h-8 object-cover rounded mr-2"
+                                      width={64} 
+                                      height={64} 
+                                      className="rounded mr-2"
                                     />
                                   )}
                                   <div>

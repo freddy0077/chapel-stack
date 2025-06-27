@@ -120,11 +120,13 @@ export const GET_MEMBERS = gql`
 // Query to fetch members with pagination info
 export const GET_MEMBERS_LIST = gql`
   query GetMembersList(
+    $organisationId: String
     $skip: Int
     $take: Int
     $branchId: String
   ) {
     members(
+      organisationId: $organisationId
       skip: $skip
       take: $take
       branchId: $branchId
@@ -254,11 +256,10 @@ export const GET_MEMBER = gql`
   }
 `;
 
-// Query to search members with a simplified response
-// Correct search query for members
+// Query to search for members by name, email, or phone number
 export const SEARCH_MEMBERS = gql`
-  query SearchMembers($search: String!) {
-    members(search: $search) {
+  query SearchMembers($search: String, $organisationId: String!) {
+    members(search: $search, organisationId: $organisationId) {
       id
       firstName
       lastName
@@ -281,8 +282,28 @@ export const GET_SKILLS = gql`
 
 // Query to get members count
 export const GET_MEMBERS_COUNT = gql`
-  query GetMembersCount {
-    membersCount
+  query GetMembersCount($branchId: String, $organisationId: String) {
+    membersCount(branchId: $branchId, organisationId: $organisationId)
+  }
+`;
+
+// Query to fetch member statistics directly
+export const GET_MEMBER_STATISTICS = gql`
+  query GetMemberStatistics($branchId: String, $organisationId: String) {
+    memberStatistics(branchId: $branchId, organisationId: $organisationId) {
+      totalMembers
+      activeMembers
+      inactiveMembers
+      newMembersInPeriod
+      visitorsInPeriod
+      lastMonth {
+        totalMembers
+        activeMembers
+        inactiveMembers
+        newMembersInPeriod
+        visitorsInPeriod
+      }
+    }
   }
 `;
 
@@ -299,8 +320,19 @@ export const GET_INTERESTS = gql`
 
 // Query to fetch members with RFID cards and all fields for Card Management List
 export const GET_MEMBERS_WITH_CARDS_ALL_FIELDS = gql`
-  query GetMembersWithCardsAllFields($take: Int = 10, $skip: Int = 0) {
-    members(hasRfidCard: true, take: $take, skip: $skip) {
+  query GetMembersWithCardsAllFields(
+    $organisationId: String!
+    $branchId: String
+    $take: Int = 10
+    $skip: Int = 0
+  ) {
+    members(
+      hasRfidCard: true
+      take: $take
+      skip: $skip
+      organisationId: $organisationId
+      branchId: $branchId
+    ) {
       id
       firstName
       middleName
@@ -352,6 +384,39 @@ export const GET_MEMBERS_WITH_CARDS_ALL_FIELDS = gql`
       parentId
       createdAt
       updatedAt
+    }
+  }
+`;
+
+export const GET_MEMBER_DASHBOARD = gql`
+  query GetMemberDashboard($memberId: String!) {
+    memberDashboard(memberId: $memberId) {
+      id
+      firstName
+      lastName
+      profileImageUrl
+      membershipStatus
+      membershipDate
+      stats {
+        groups
+        attendance
+        giving
+      }
+      upcomingEvents {
+        id
+        name
+        date
+        location
+      }
+      groups {
+        id
+        name
+        role
+      }
+      milestones {
+        baptismDate
+        confirmationDate
+      }
     }
   }
 `;

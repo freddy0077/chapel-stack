@@ -14,8 +14,8 @@ export interface ServiceFormData {
   serviceType: string;
   leadPastor: string;
   worshipLeader: string;
-  songs: any[];
-  team: any[];
+  songs: unknown[];
+  team: unknown[];
   completed: boolean;
 }
 

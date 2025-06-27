@@ -1,5 +1,9 @@
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_ATTENDANCE_RECORDS, GET_ATTENDANCE_RECORDS_FOR_SESSION } from "../queries/attendanceQueries";
+import { 
+  GET_ATTENDANCE_RECORDS, 
+  GET_ATTENDANCE_RECORDS_FOR_SESSION,
+  GET_FILTERED_ATTENDANCE_SESSIONS 
+} from "../queries/attendanceQueries";
 import { PROCESS_CARD_SCAN } from "../mutations/attendanceMutations";
 
 
@@ -55,7 +59,10 @@ export interface AttendanceBranch {
   name?: string;
 }
 
-export interface AttendanceFilterInput extends Record<string, unknown> {}
+export interface AttendanceFilterInput {
+  // Add a member to fix @typescript-eslint/no-empty-object-type
+  dummy?: string;
+}
 
 export interface UseAttendanceRecordsOptions {
   sessionId: string;
@@ -92,9 +99,6 @@ export const useAttendanceRecordsForSession = (options: UseAttendanceRecordsOpti
     refetch
   };
 };
-
-// Hook to fetch attendance sessions by branch with details
-import { GET_ATTENDANCE_SESSIONS_BY_BRANCH_WITH_DETAILS } from "../queries/attendanceQueries";
 
 // Types for processCardScan input and output
 export interface CardScanInput {
@@ -153,11 +157,24 @@ export function getCurrentBranchFromAuthUser(user?: AuthUser): Branch | undefine
   return undefined;
 }
 
-export const useAttendanceSessionsByBranch = (branchId: string) => {
+// New hook that supports organization-based filtering
+export interface AttendanceFilterParams {
+  organisationId: string;
+  branchId?: string;
+}
+
+export const useFilteredAttendanceSessions = (filter: AttendanceFilterParams) => {
   const { data, loading, error, refetch } = useQuery(
-    GET_ATTENDANCE_SESSIONS_BY_BRANCH_WITH_DETAILS,
-    { variables: { branchId }, skip: !branchId }
+    GET_FILTERED_ATTENDANCE_SESSIONS,
+    {
+      variables: {
+        organisationId: filter.organisationId,
+        branchId: filter.branchId,
+      },
+      skip: !filter.organisationId && !filter.branchId,
+    },
   );
+
   return {
     sessions: data?.attendanceSessions ?? [],
     loading,

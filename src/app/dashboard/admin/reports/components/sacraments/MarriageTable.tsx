@@ -47,22 +47,20 @@ const upcomingAnniversaries = [
 
 type MarriageTableProps = {
   branchesToDisplay: string[];
-  dateRange: { start: string; end: string };
 };
 
 export default function MarriageTable({
-  branchesToDisplay,
-  dateRange
+  branchesToDisplay
 }: MarriageTableProps) {
   
   // Helper functions to calculate totals
-  const calculateMonthTotal = (month: any) => {
+  const calculateMonthTotal = (month: unknown) => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.total || 0);
     }, 0);
   };
 
-  const calculateMonthTypeTotal = (month: any, type: 'firstTime' | 'convalidation' | 'withMass' | 'withoutMass') => {
+  const calculateMonthTypeTotal = (month: unknown, type: 'firstTime' | 'convalidation' | 'withMass' | 'withoutMass') => {
     return branchesToDisplay.reduce((total, branch) => {
       return total + (month[branch]?.[type] || 0);
     }, 0);

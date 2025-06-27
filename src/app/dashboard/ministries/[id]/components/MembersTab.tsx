@@ -112,13 +112,13 @@ interface MembersTabProps {
 
 export default function MembersTab({ ministryId }: MembersTabProps) {
   const { hasPermission } = useAuth();
-  const [members, setMembers] = useState<MinistryMember[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<MinistryMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   // Modal states
-  const [showAddMemberModal, setShowAddMemberModal] = useState(false); // For future implementation
+  const [showAddMemberModal,] = useState(false); 
   const [selectedMember, setSelectedMember] = useState<MinistryMember | null>(null);
   
   // Check if user has permission to manage members
@@ -245,7 +245,6 @@ export default function MembersTab({ ministryId }: MembersTabProps) {
                 type="button"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 onClick={() => {
-                  setShowAddMemberModal(true);
                   // Log this action in the audit system
                   console.log(`[AUDIT] User initiated add member action for ministry ${ministryId}`);
                   // In a real implementation, this would open a modal form

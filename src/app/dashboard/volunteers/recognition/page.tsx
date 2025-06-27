@@ -323,7 +323,6 @@ const BRANCHES = [
 export default function VolunteerRecognitionPage() {
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [upcomingMilestones, setUpcomingMilestones] = useState<any[]>([]);
   
   // Filter recognitions based on branch and search
   const filteredRecognitions = VOLUNTEER_RECOGNITIONS.filter(recognition => {
@@ -653,14 +652,14 @@ export default function VolunteerRecognitionPage() {
           <h3 className="text-lg leading-6 font-medium text-gray-900">Volunteer Appreciation Events</h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>
-              Plan and schedule recognition events to celebrate your volunteers' contributions.
+              Plan and schedule recognition events to celebrate your volunteers&apos; contributions.
               These events can be branch-specific or organization-wide.
             </p>
           </div>
           <div className="mt-5">
             <Link
               href="/dashboard/volunteers/recognition/events"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               View Recognition Events
             </Link>

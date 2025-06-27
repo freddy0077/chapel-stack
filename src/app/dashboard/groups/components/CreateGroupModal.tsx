@@ -8,9 +8,10 @@ interface CreateGroupModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   branchId: string | undefined;
+  afterCreate?: () => void;
 }
 
-export default function CreateGroupModal({ isOpen, setIsOpen, branchId }: CreateGroupModalProps) {
+export default function CreateGroupModal({ isOpen, setIsOpen, branchId, afterCreate }: CreateGroupModalProps) {
   const { createSmallGroup } = useSmallGroupMutations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,7 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId }: Create
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    type: 'CELL',
+    type: 'BIBLE_STUDY',
     meetingSchedule: '',
     meetingLocation: '',
     status: SmallGroupStatus.ACTIVE
@@ -49,11 +50,12 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId }: Create
       setFormData({
         name: '',
         description: '',
-        type: 'CELL',
+        type: 'BIBLE_STUDY',
         meetingSchedule: '',
         meetingLocation: '',
         status: SmallGroupStatus.ACTIVE
       });
+      if (afterCreate) afterCreate();
       toast.success('Group created successfully!');
       setIsOpen(false);
     } catch (err: any) {
@@ -109,19 +111,21 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId }: Create
                   />
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="type" className="block text-sm font-medium text-gray-900 mb-1">Group Type *</label>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
                   <select
                     id="type"
                     name="type"
-                    className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
                     value={formData.type}
                     onChange={handleChange}
                     required
+                    className="mt-1 block w-full border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/70 shadow-sm"
                   >
-                    <option value="CELL">Cell Group</option>
                     <option value="BIBLE_STUDY">Bible Study</option>
-                    <option value="MINISTRY">Ministry</option>
-                    <option value="COMMITTEE">Committee</option>
+                    <option value="PRAYER">Prayer</option>
+                    <option value="INTEREST_BASED">Interest-based</option>
+                    <option value="DISCIPLESHIP">Discipleship</option>
+                    <option value="SUPPORT">Support</option>
+                    <option value="FELLOWSHIP">Fellowship</option>
                     <option value="OTHER">Other</option>
                   </select>
                 </div>

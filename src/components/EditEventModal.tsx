@@ -5,7 +5,6 @@ import { Dialog } from "@headlessui/react";
 import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { useEventMutations } from "@/graphql/hooks/useEvents";
-import type { UpdateEventInput } from "@/graphql/types/event";
 
 interface EditEventModalProps {
   open: boolean;

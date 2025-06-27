@@ -1,20 +1,29 @@
 "use client";
 
-import { ArrowTrendingUpIcon, UserGroupIcon, InboxArrowDownIcon, DocumentTextIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { UserGroupIcon, InboxArrowDownIcon, DocumentTextIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useDashboardData } from "../../graphql/hooks/useDashboardData";
 import { useAuth } from "../../graphql/hooks/useAuth";
 import ChartContainer from "./components/ChartContainer";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
-  // Get current user and branchId
   const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.roles?.[0]?.name?.toUpperCase() === 'MEMBER') {
+      router.push('/dashboard/member');
+    }
+  }, [user, router]);
+
+  // Get current user and branchId
   const branchId = user?.userBranches?.[0]?.branch?.id;
   const role = user?.roles?.[0]?.name;
   // Use dashboardType 'ADMIN' for admin dashboard
   const dashboardType = role;
   
-  const { data, loading, error } = useDashboardData(branchId, dashboardType);
+  const { data, loading } = useDashboardData(branchId, dashboardType);
   const dashboardData = data?.dashboardData;
 
   // Type for KPI cards
@@ -29,8 +38,8 @@ export default function DashboardPage() {
   interface ChartData {
     title: string;
     chartType: string;
-    data: any;
-    config?: Record<string, any>;
+    data: unknown[];
+    config?: Record<string, unknown>;
     description?: string;
   }
 
@@ -51,10 +60,10 @@ export default function DashboardPage() {
       return {
         ...chart,
         data: {
-          labels: dataArr.map((item: any) => item.status || item.name || item.label || ''),
+          labels: dataArr.map((item: unknown) => item.status || item.name || item.label || ''),
           datasets: [
             {
-              data: dataArr.map((item: any) => item.count || item.value || 0),
+              data: dataArr.map((item: unknown) => item.count || item.value || 0),
               backgroundColor: [
                 '#6366F1', '#F59E42', '#10B981', '#F472B6', '#60A5FA', '#FBBF24', '#34D399', '#F87171', '#A78BFA', '#FCD34D'
               ],
@@ -74,8 +83,8 @@ export default function DashboardPage() {
       }
       const labelField = 'name';
       // Find all numeric keys except for the label field
-      const numericKeys = Object.keys(dataArr[0] || {}).filter(
-        k => k !== labelField && typeof dataArr[0][k] === 'number'
+      const numericKeys = Object.keys(dataArr[0] as Record<string, unknown>).filter(
+        k => k !== labelField && typeof (dataArr[0] as Record<string, unknown>)[k] === 'number'
       );
       // If only one numeric key (e.g., count), use single dataset
       if (numericKeys.length === 1) {
@@ -83,11 +92,11 @@ export default function DashboardPage() {
         return {
           ...chart,
           data: {
-            labels: dataArr.map((item: any) => item[labelField] || item.label || ''),
+            labels: dataArr.map((item: unknown) => item.name || item.label || ''),
             datasets: [
               {
                 label: chart.title,
-                data: dataArr.map((item: any) => item[key] || 0),
+                data: dataArr.map((item: unknown) => item[key] || 0),
                 backgroundColor: '#6366F1',
               },
             ],
@@ -98,10 +107,10 @@ export default function DashboardPage() {
         return {
           ...chart,
           data: {
-            labels: dataArr.map((item: any) => item[labelField] || item.label || ''),
+            labels: dataArr.map((item: unknown) => item.name || item.label || ''),
             datasets: numericKeys.map((key, i) => ({
               label: key.charAt(0).toUpperCase() + key.slice(1),
-              data: dataArr.map((item: any) => item[key] || 0),
+              data: dataArr.map((item: unknown) => item[key] || 0),
               backgroundColor: i === 0 ? '#6366F1' : '#F59E42',
             })),
           },
@@ -121,15 +130,15 @@ export default function DashboardPage() {
       const labelField = 'name';
       const valueField = 'value';
       // If all items have valueField, use as single dataset
-      if (dataArr.every((item: any) => valueField in item)) {
+      if (dataArr.every((item: unknown) => valueField in item)) {
         return {
           ...chart,
           data: {
-            labels: dataArr.map((item: any) => item[labelField] || item.label || ''),
+            labels: dataArr.map((item: unknown) => item.name || item.label || ''),
             datasets: [
               {
                 label: chart.title,
-                data: dataArr.map((item: any) => item[valueField] || 0),
+                data: dataArr.map((item: unknown) => item[valueField] || 0),
                 fill: false,
                 borderColor: '#6366F1',
                 backgroundColor: '#6366F1',
@@ -139,17 +148,17 @@ export default function DashboardPage() {
         };
       }
       // If multi-dataset, similar logic as bar
-      const numericKeys = Object.keys(dataArr[0] || {}).filter(
-        k => k !== labelField && typeof dataArr[0][k] === 'number'
+      const numericKeys = Object.keys(dataArr[0] as Record<string, unknown>).filter(
+        k => k !== labelField && typeof (dataArr[0] as Record<string, unknown>)[k] === 'number'
       );
       if (numericKeys.length > 0) {
         return {
           ...chart,
           data: {
-            labels: dataArr.map((item: any) => item[labelField] || item.label || ''),
+            labels: dataArr.map((item: unknown) => item.name || item.label || ''),
             datasets: numericKeys.map((key, i) => ({
               label: key.charAt(0).toUpperCase() + key.slice(1),
-              data: dataArr.map((item: any) => item[key] || 0),
+              data: dataArr.map((item: unknown) => item[key] || 0),
               fill: false,
               borderColor: i === 0 ? '#6366F1' : '#F59E42',
               backgroundColor: i === 0 ? '#6366F1' : '#F59E42',

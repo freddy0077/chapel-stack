@@ -4,8 +4,8 @@ import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 
 interface LineChartProps {
-  data: any;
-  config?: Record<string, any>;
+  data: unknown;
+  config?: Record<string, unknown>;
 }
 
 const LineChart: React.FC<LineChartProps> = ({ data, config = {} }) => {

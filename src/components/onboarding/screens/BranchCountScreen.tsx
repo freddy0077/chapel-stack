@@ -34,7 +34,7 @@ const BranchCountScreen: React.FC<BranchCountScreenProps> = ({ initialCount = 1,
           </span>
           <h2 className="text-2xl font-bold mb-2 text-indigo-700">Branch Setup</h2>
           <p className="text-gray-600 text-center max-w-xs">
-            Let's start by setting up your church branches. You can always add more later!
+            Let&apos;s start by setting up your church branches. You can always add more later!
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">

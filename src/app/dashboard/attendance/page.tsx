@@ -14,12 +14,12 @@ import AttendanceReportModal from "./components/AttendanceReportModal";
 import NewEventModal, { NewEventInput } from "./components/NewEventModal";
 import AttendanceSessionDetailsModal from "./components/AttendanceSessionDetailsModal";
 import { AttendanceRecord } from "./types";
-import { useAttendanceSessionsByBranch } from "@/graphql/hooks/useAttendance";
+import { useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useMutation } from "@apollo/client";
 import { CREATE_ATTENDANCE_SESSION } from "@/graphql/queries/attendanceQueries";
 import DashboardHeader from "@/components/DashboardHeader";
-
+import { useOrganizationBranchFilter } from '@/hooks';
 
 export default function AttendanceDashboard() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -39,7 +39,7 @@ export default function AttendanceDashboard() {
 
   // Get current branch from auth context
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const orgBranchFilter = useOrganizationBranchFilter();
 
   // Apollo mutation for creating attendance session
   const [createAttendanceSession] = useMutation(CREATE_ATTENDANCE_SESSION);
@@ -48,20 +48,43 @@ export default function AttendanceDashboard() {
   const handleCreateNewEvent = async (event: NewEventInput) => {
     setCreatingEvent(true);
     setCreateError(null);
-    if (!branchId) {
+
+    // For SUPER_ADMIN users, we need to ensure we have either branchId or organisationId
+    if (!orgBranchFilter.branchId && !orgBranchFilter.organisationId) {
       setCreatingEvent(false);
-      setCreateError("No branch selected. Cannot create attendance event.");
+      setCreateError("No branch or organization selected. Cannot create attendance event.");
       return;
     }
+
     try {
+      // Prepare input object, combining date and time fields into valid Date objects
+      const { date, startTime, endTime, ...rest } = event;
+      const startDateTime = new Date(`${date}T${startTime}`);
+      const endDateTime = new Date(`${date}T${endTime}`);
+
+      const input: any = {
+        ...rest,
+        date: startDateTime,
+        startTime: startDateTime,
+        endTime: endDateTime,
+      };
+
+      // Only add branchId if it exists
+      if (orgBranchFilter.branchId) {
+        input.branchId = orgBranchFilter.branchId;
+      }
+
+      // The organisationId is passed from the modal, but we ensure it's correctly set
+      if (orgBranchFilter.organisationId) {
+        input.organisationId = orgBranchFilter.organisationId;
+      } else {
+        delete input.organisationId;
+      }
+
       await createAttendanceSession({
-        variables: {
-          input: {
-            ...event,
-            branchId,
-          },
-        },
+        variables: { input },
       });
+
       setCreatingEvent(false);
       setIsNewEventModalOpen(false);
       // Refetch attendance sessions for latest data
@@ -72,8 +95,8 @@ export default function AttendanceDashboard() {
     }
   };
 
-  // Fetch attendance sessions for the current branch
-  const { sessions, loading, error, refetch } = useAttendanceSessionsByBranch(branchId ?? "");
+  // Fetch attendance sessions using the organization-branch filter
+  const { sessions, loading, error, refetch } = useFilteredAttendanceSessions(orgBranchFilter);
 
   // Map attendance sessions for UI (each row is a session, not a record)
   type AttendanceSessionUIItem = {
@@ -481,12 +504,12 @@ export default function AttendanceDashboard() {
               <CalendarIcon className="w-5 h-5 mr-2 -ml-1" />
               Add New Event
             </button>
-            <Link
-              href="/dashboard/attendance/check-in"
-              className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
-            >
-              Check-in System
-            </Link>
+            {/*<Link*/}
+            {/*  href="/dashboard/attendance/check-in"*/}
+            {/*  className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"*/}
+            {/*>*/}
+            {/*  Check-in System*/}
+            {/*</Link>*/}
             <Link
               href="/dashboard/attendance/reports"
               className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"

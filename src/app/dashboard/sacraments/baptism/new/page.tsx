@@ -8,7 +8,7 @@ import { useCreateBaptismRecord } from "@/graphql/hooks/useCreateBaptismRecord";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 
-function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: any) => void }) {
+function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: unknown) => void }) {
   const { members, loading, error } = useSearchMembers(query, 8);
   return (
     <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
@@ -103,7 +103,7 @@ export default function NewBaptismRecord() {
     const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
 
     try {
-      const { data } = await createBaptismRecord({
+      await createBaptismRecord({
         variables: {
           input: {
             memberId: formData.memberId,
@@ -121,7 +121,7 @@ export default function NewBaptismRecord() {
       });
       setIsSubmitting(false);
       router.push("/dashboard/sacraments?tab=baptism");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setErrorMessage(err?.message || "Failed to create baptism record.");
       setIsSubmitting(false);
     }

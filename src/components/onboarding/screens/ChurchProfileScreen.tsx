@@ -5,7 +5,6 @@ import { Button } from '@tremor/react';
 import { ArrowRightIcon, ArrowLeftIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 import { ChurchProfile } from '../ModulePreferences';
 import { useCreateOrganisation } from '@/graphql/hooks/useOrganisation';
-import { useAuth } from '@/graphql/hooks/useAuth';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { DateTime } from 'luxon';
 import { markScreenCompleted } from '../utils/completedScreens';
@@ -33,26 +32,26 @@ const ChurchProfileScreen = ({
 }: ChurchProfileScreenProps) => {
   // Use all Organisation model fields for the form
   const [localOrganisation, setLocalOrganisation] = useState(() => ({
-    name: churchProfile.name || '',
-    email: churchProfile.email || '',
-    phoneNumber: churchProfile.phoneNumber || '',
-    website: churchProfile.website || '',
-    address: churchProfile.address || '',
-    city: churchProfile.city || '',
-    state: churchProfile.state || '',
-    country: churchProfile.country || '',
-    zipCode: churchProfile.zipCode || '',
-    denomination: churchProfile.denomination || '',
-    foundingYear: churchProfile.foundingYear || '',
-    size: churchProfile.size || '',
-    vision: churchProfile.vision || '',
-    missionStatement: churchProfile.missionStatement || '',
-    description: churchProfile.description || '',
-    timezone: churchProfile.timezone || '',
-    currency: churchProfile.currency || '',
-    primaryColor: churchProfile.primaryColor || '',
-    secondaryColor: churchProfile.secondaryColor || '',
-    // tertiaryColor: churchProfile.tertiaryColor || ''
+    name: churchProfile?.name || '',
+    email: churchProfile?.email || '',
+    phoneNumber: churchProfile?.phoneNumber || '',
+    website: churchProfile?.website || '',
+    address: churchProfile?.address || '',
+    city: churchProfile?.city || '',
+    state: churchProfile?.state || '',
+    country: churchProfile?.country || '',
+    zipCode: churchProfile?.zipCode || '',
+    denomination: churchProfile?.denomination || '',
+    foundingYear: churchProfile?.foundingYear || '',
+    size: churchProfile?.size || '',
+    vision: churchProfile?.vision || '',
+    missionStatement: churchProfile?.missionStatement || '',
+    description: churchProfile?.description || '',
+    timezone: churchProfile?.timezone || '',
+    currency: churchProfile?.currency || '',
+    primaryColor: churchProfile?.primaryColor || '',
+    secondaryColor: churchProfile?.secondaryColor || '',
+    tertiaryColor: churchProfile?.tertiaryColor || ''
   }));
   
   // Log the initial state for debugging
@@ -86,11 +85,10 @@ const ChurchProfileScreen = ({
   const [isSaving, setIsSaving] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const { user: authUser } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // Change: Accept event and prevent default to stop form GET submission
+  const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
+    if (event) event.preventDefault();
     // Validate required fields
     if (!localOrganisation.name) {
       alert('Please fill all required fields (Church Name)');
@@ -125,12 +123,18 @@ const ChurchProfileScreen = ({
     setIsSaving(true);
     setBackendError(null);
     try {
+      // Prepare input: convert foundingYear to number, remove tertiaryColor, leave size as string
+      const orgInput = { ...localOrganisation };
+      if (orgInput.foundingYear) orgInput.foundingYear = Number(orgInput.foundingYear);
+      delete orgInput.tertiaryColor;
+      // Set default colors if empty
+      if (!orgInput.primaryColor) orgInput.primaryColor = '#000000';
+      if (!orgInput.secondaryColor) orgInput.secondaryColor = '#000000';
+
       // Call mutation
       const response = await createOrganisation({
         variables: {
-          input: {
-            ...localOrganisation // Spread all fields directly
-          }
+          input: orgInput // Use cleaned input
         }
       });
       const orgId = response?.data?.createOrganisation?.id;
@@ -143,16 +147,18 @@ const ChurchProfileScreen = ({
         phone: localOrganisation.phoneNumber,
         email: localOrganisation.email
       });
+      // FIX: Mark screen completed before calling onNext to ensure onboarding state is up to date
+      markScreenCompleted('ChurchProfile');
       setTimeout(() => {
         setIsSaving(false);
         setSuccess(true);
         if (onNext) onNext();
       }, 100);
-    } catch (error: unknown) {
+    } catch {
       // Show backend error if available
       let gqlError = 'An error occurred';
-      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors)) {
-        gqlError = (error as any).graphQLErrors[0]?.message || (error as any).message || 'An error occurred';
+      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as unknown).graphQLErrors)) {
+        gqlError = (error as unknown).graphQLErrors[0]?.message || (error as unknown).message || 'An error occurred';
       } else if (error instanceof Error) {
         gqlError = error.message;
       }
@@ -397,7 +403,7 @@ const ChurchProfileScreen = ({
                       let currentTime = '';
                       try {
                         currentTime = DateTime.now().setZone(tz).toFormat('HH:mm, MMM dd');
-                      } catch (e) {
+                      } catch (_e) {
                         currentTime = '';
                       }
                       return (
@@ -442,16 +448,6 @@ const ChurchProfileScreen = ({
                     className="w-16 h-10 border-2 border-indigo-200 rounded-lg p-0 cursor-pointer"
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold mb-1">Tertiary Color</label>
-                  <input
-                    type="color"
-                    name="tertiaryColor"
-                    value={localOrganisation.tertiaryColor || '#000000'}
-                    onChange={handleChange}
-                    className="w-16 h-10 border-2 border-indigo-200 rounded-lg p-0 cursor-pointer"
-                  />
-                </div>
               </div>
               {/* Action Buttons */}
               <div className="flex justify-between items-center mt-8 gap-2">
@@ -473,12 +469,12 @@ const ChurchProfileScreen = ({
                   </Button>
                 )}
                 <Button
-                  color="indigo"
-                  icon={ArrowRightIcon}
-                  iconPosition="right"
                   type="submit"
-                  loading={isLoading || mutationLoading || isSaving}
-                  disabled={isLoading || mutationLoading || isSaving}
+                  color="indigo"
+                  className="w-full"
+                  loading={isSaving || mutationLoading}
+                  disabled={isSaving || mutationLoading}
+                  icon={ArrowRightIcon}
                 >
                   Save & Continue
                 </Button>

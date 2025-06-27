@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   CalendarDaysIcon, 
   ClockIcon, 
   MusicalNoteIcon, 
   UserGroupIcon, 
-  CheckIcon, 
-  XMarkIcon, 
   PlusCircleIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
-import { TeamMemberProfile } from '../TeamScheduling';
 import { ServicePlan } from '../ServicesList';
 
 // Data model for rehearsal
@@ -105,24 +102,21 @@ export const mockRehearsals: Rehearsal[] = [
 ];
 
 interface RehearsalTrackerProps {
-  teamMembers: TeamMemberProfile[];
   services: ServicePlan[];
   onViewRehearsal: (rehearsal: Rehearsal) => void;
   onCreateRehearsal: () => void;
 }
 
 export default function RehearsalTracker({ 
-  teamMembers, 
   services, 
   onViewRehearsal, 
   onCreateRehearsal 
 }: RehearsalTrackerProps) {
-  const [rehearsals, setRehearsals] = useState<Rehearsal[]>(mockRehearsals);
   const [filter, setFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming');
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter rehearsals based on search query and filter setting
-  const filteredRehearsals = rehearsals.filter(rehearsal => {
+  const filteredRehearsals = mockRehearsals.filter(rehearsal => {
     const matchesSearch = 
       rehearsal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       rehearsal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -294,7 +288,7 @@ export default function RehearsalTracker({
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                           Status
                         </th>
-                        <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                        <th scope="col" className="relative py-3.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                           <span className="sr-only">Actions</span>
                         </th>
                       </tr>

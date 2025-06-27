@@ -28,6 +28,7 @@ export interface Branch {
   email?: string;
   phoneNumber?: string;
   website?: string;
+  organisationId?: string;
   isActive: boolean;
   establishedAt?: string;
   createdAt: string;
@@ -37,11 +38,11 @@ export interface Branch {
 }
 
 export interface BranchFilterInput {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 export interface PaginationInput {
-  page?: number;
-  pageSize?: number;
+  take?: number;
+  skip?: number;
 }
 
 interface UseBranchesResult {
@@ -51,7 +52,7 @@ interface UseBranchesResult {
   loading: boolean;
   error?: Error;
   refetch: () => void;
-  fetchMore: any;
+  fetchMore: unknown;
 }
 
 export const useBranches = (

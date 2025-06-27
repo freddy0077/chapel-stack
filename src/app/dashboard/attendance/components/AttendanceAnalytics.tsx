@@ -15,9 +15,9 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import { useAttendanceAnalytics } from '../../../../graphql/hooks/useAttendanceAnalytics';
-import { useAuth } from '../../../../graphql/hooks/useAuth';
-import { getCurrentBranchFromAuthUser } from '../../../../graphql/hooks/useAttendance';
+import { useAttendanceAnalytics } from '@/graphql/hooks/useAttendanceAnalytics';
+import { useAuth } from '@/graphql/hooks/useAuth';
+import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 
 // Register ChartJS components
 ChartJS.register(
@@ -35,8 +35,7 @@ ChartJS.register(
 export default function AttendanceAnalytics() {
   const [timeFrame, setTimeFrame] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
   const { user } = useAuth();
-  const branch = getCurrentBranchFromAuthUser(user ?? undefined);
-  const branchId = branch?.id ?? '';
+  const { organisationId, branchId } = useOrganizationBranchFilter();
 
   // Compute date range based on timeFrame
   // Use the current local time as the source of truth for 'now' (2025-06-08T16:35:08Z)
@@ -98,16 +97,17 @@ export default function AttendanceAnalytics() {
 
   const analyticsInput = useMemo(() => ({
     branchId,
+    organisationId,
     startDate: startDateStr,
     endDate: endDateStr,
-    period: period as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY',
+    period: period as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY',
     statsTypes,
-  }), [branchId, startDateStr, endDateStr, period, statsTypes]);
+  }), [branchId, organisationId, startDateStr, endDateStr, period, statsTypes]);
 
   // Debug: Log the computed date strings to verify ISO format
   console.log('attendance analytics input', { startDateStr, endDateStr, analyticsInput });
 
-  const { analytics, loading, error } = useAttendanceAnalytics(analyticsInput, !branchId);
+  const { analytics, loading, error } = useAttendanceAnalytics(analyticsInput, !branchId && !organisationId);
 
   // Helper: get chart data from analytics
 

@@ -41,9 +41,6 @@ function AddFamilyConnection({ memberId }: { memberId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [addFamilyConnection] = useMutation(ADD_FAMILY_MEMBER);
 
-  // TODO: Replace with actual members list for search/autocomplete
-  const relatives = [];
-
   const handleAdd = async () => {
     if (!relativeId) return;
     setAdding(true);
@@ -56,7 +53,7 @@ function AddFamilyConnection({ memberId }: { memberId: string }) {
         setShowInput(false);
         setRelativeId("");
       }, 1200);
-    } catch (e: any) {
+    } catch (e: Error) {
       setError(e.message || "Failed to add family connection");
     } finally {
       setAdding(false);

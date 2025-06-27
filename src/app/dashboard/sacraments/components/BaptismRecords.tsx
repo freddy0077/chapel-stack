@@ -7,7 +7,6 @@ import {
   DocumentArrowDownIcon,
   DocumentIcon
 } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import Link from "next/link";
 
 interface BaptismRecord {
@@ -83,7 +82,7 @@ const mockBaptismRecords: BaptismRecord[] = [
 
 export function BaptismRecords() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [records, setRecords] = useState<BaptismRecord[]>(mockBaptismRecords);
+  const [records] = useState(mockBaptismRecords);
 
   // Filter records based on search query
   const filteredRecords = records.filter(record => {

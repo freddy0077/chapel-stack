@@ -30,7 +30,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, options = {} }) => {
       ...data,
       labels: Array.isArray(data.labels) ? [...data.labels] : data.labels,
       datasets: Array.isArray(data.datasets)
-        ? data.datasets.map((ds: any) => ({ ...ds }))
+        ? data.datasets.map((ds: unknown) => ({ ...ds }))
         : data.datasets,
     };
     chartInstance.current = new Chart(ctx, {

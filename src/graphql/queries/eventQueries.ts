@@ -204,3 +204,24 @@ export const GET_VOLUNTEER_ROLES = gql`
     }
   }
 `;
+
+/**
+ * Query to fetch events filtered by branchId and organisationId
+ */
+export const GET_EVENTS_FILTERED = gql`
+  query EventsFiltered($branchId: String, $organisationId: String) {
+    events(branchId: $branchId, organisationId: $organisationId) {
+      id
+      title
+      description
+      startDate
+      endDate
+      location
+      category
+      branchId
+      organisationId
+      createdBy
+      updatedBy
+    }
+  }
+`;

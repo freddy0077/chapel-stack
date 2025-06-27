@@ -37,12 +37,10 @@ const mockBaptismData = [
 
 type BaptismTableProps = {
   branchesToDisplay: string[];
-  dateRange: { start: string; end: string };
 };
 
 export default function BaptismTable({
-  branchesToDisplay,
-  dateRange
+  branchesToDisplay
 }: BaptismTableProps) {
   // Calculate totals for the table footer
   const calculateTotalBaptisms = (branch: string) => {
@@ -205,7 +203,7 @@ export default function BaptismTable({
           <ul className="list-disc pl-5 space-y-1">
             <li>Child baptisms account for {Math.round((branchesToDisplay.reduce((total, branch) => total + calculateTotalChildBaptisms(branch), 0) / branchesToDisplay.reduce((total, branch) => total + calculateTotalBaptisms(branch), 0)) * 100)}% of all baptisms</li>
             <li>March has the highest number of baptisms across all branches</li>
-            <li>St. Mary's Cathedral has conducted the most baptisms this quarter</li>
+            <li>St. Mary\'s Cathedral has conducted the most baptisms this quarter</li>
           </ul>
         </div>
       </div>

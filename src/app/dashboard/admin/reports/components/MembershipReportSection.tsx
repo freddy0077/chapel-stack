@@ -35,7 +35,6 @@ const mockMembershipData = {
 
 type MembershipReportSectionProps = {
   selectedBranches: string[];
-  dateRange: { start: string; end: string };
 };
 
 // Map of branch IDs to names
@@ -49,8 +48,7 @@ const branchIdToName = {
 };
 
 export default function MembershipReportSection({ 
-  selectedBranches, 
-  dateRange 
+  selectedBranches 
 }: MembershipReportSectionProps) {
   const [showTotals, setShowTotals] = useState(true);
   const [showDemographics, setShowDemographics] = useState(true);

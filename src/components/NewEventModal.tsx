@@ -25,7 +25,7 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    const { createEvent } = useEventMutations();
+  const { createEvent } = useEventMutations();
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +48,7 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
       setSubmitting(false);
       onClose();
       if (onEventCreated) onEventCreated();
-    } catch (err) {
+    } catch {
       setError("Failed to create event. Please try again.");
       setSubmitting(false);
     }

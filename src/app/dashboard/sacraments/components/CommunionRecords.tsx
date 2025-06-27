@@ -82,7 +82,7 @@ const mockCommunionRecords: CommunionRecord[] = [
 
 export function CommunionRecords() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [records, setRecords] = useState<CommunionRecord[]>(mockCommunionRecords);
+  const records: CommunionRecord[] = mockCommunionRecords;
 
   // Filter records based on search query
   const filteredRecords = records.filter(record => {

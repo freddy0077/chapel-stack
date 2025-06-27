@@ -5,7 +5,7 @@ import { useAuth } from './useAuth';
 
 export interface MinistryFilters {
   branchId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function useMinistries(filters?: MinistryFilters) {

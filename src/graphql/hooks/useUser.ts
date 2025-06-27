@@ -1,18 +1,14 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { ME_QUERY, USERS_QUERY, USER_QUERY, MY_SESSIONS_QUERY, MY_PERMISSIONS_QUERY } from '../queries/user';
+import { useCallback } from 'react';
+import { useQuery } from '@apollo/client';
+import { ME_QUERY, USERS_QUERY, MY_SESSIONS_QUERY, MY_PERMISSIONS_QUERY } from '../queries/user';
 
 export function useUser() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
   // Get current user (me) query
   const { 
     data: meData, 
     loading: meLoading, 
-    error: meError,
     refetch: refetchMe 
   } = useQuery(ME_QUERY, {
     fetchPolicy: 'network-only', // Don't use cache for this query
@@ -22,7 +18,6 @@ export function useUser() {
   const { 
     data: usersData, 
     loading: usersLoading, 
-    error: usersError,
     refetch: refetchUsers
   } = useQuery(USERS_QUERY, {
     skip: !isAdmin(), // Only run this query for admin users
@@ -32,7 +27,6 @@ export function useUser() {
   const {
     data: sessionsData,
     loading: sessionsLoading,
-    error: sessionsError,
     refetch: refetchSessions
   } = useQuery(MY_SESSIONS_QUERY);
   
@@ -40,7 +34,6 @@ export function useUser() {
   const {
     data: permissionsData,
     loading: permissionsLoading,
-    error: permissionsError,
     refetch: refetchPermissions
   } = useQuery(MY_PERMISSIONS_QUERY);
   
@@ -68,7 +61,7 @@ export function useUser() {
     try {
       const { data } = await refetchMe({ id });
       return { success: true, user: data.user };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return { success: false, error: err.message };
     }
   }, [refetchMe]);

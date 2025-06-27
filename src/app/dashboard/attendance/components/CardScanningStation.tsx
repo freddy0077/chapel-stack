@@ -3,9 +3,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { AttendanceEvent } from '../types';
-import { useAttendanceSessionsByBranch } from '../../../../graphql/hooks/useAttendance';
+import { useFilteredAttendanceSessions } from '../../../../graphql/hooks/useAttendance';
 import { useProcessCardScan, getCurrentBranchFromAuthUser } from '../../../../graphql/hooks/useAttendance';
 import { useAuth } from '../../../../graphql/hooks/useAuth';
+import { useOrganizationBranchFilter } from '@/hooks';
 
 interface CardScanningStationProps {
   deviceId: string;
@@ -16,11 +17,10 @@ interface CardScanningStationProps {
 export default function CardScanningStation({ deviceId, onAttendanceRecorded }: CardScanningStationProps) {
   // Auth and branch context
   const { user } = useAuth();
-  const branch = getCurrentBranchFromAuthUser(user ?? undefined);
-  const branchId = branch?.id ?? '';
+  const orgBranchFilter = useOrganizationBranchFilter();
 
   // Attendance event sessions for branch
-  const { sessions: events } = useAttendanceSessionsByBranch(branchId);
+  const { sessions: events } = useFilteredAttendanceSessions(orgBranchFilter);
 
   // State for event selection, scan status, message, card number
   const [selectedEvent, setSelectedEvent] = useState<AttendanceEvent | null>(null);
@@ -63,7 +63,7 @@ export default function CardScanningStation({ deviceId, onAttendanceRecorded }: 
       const response = await processCardScan({
         sessionId: selectedEvent.id,
         cardId: cardNumber,
-        branchId: branchId,
+        branchId: orgBranchFilter.branchId,
       });
       if (response.data) {
         setMessage('Attendance recorded successfully!');
@@ -169,7 +169,7 @@ export default function CardScanningStation({ deviceId, onAttendanceRecorded }: 
           </div>
           <div>
             <span className="text-gray-500">Branch:</span> 
-            <span className="ml-1 text-gray-800">{branchId}</span>
+            <span className="ml-1 text-gray-800">{orgBranchFilter.branchId}</span>
           </div>
           <div>
             <span className="text-gray-500">Status:</span> 
