@@ -21,17 +21,33 @@ export default function LoginPage() {
 
       if (result.success && result.redirectTo) {
         setSuccessMessage("Login successful! Redirecting...");
-        // Don't use router.push since AuthContext is already handling navigation
-        // The direct window.location navigation in AuthContext will take over
-        console.log("Login successful, waiting for redirect from AuthContext...");
+        console.log("Login successful, taking control of navigation");
         
-        // As a fallback, if we're still here after 2 seconds, try navigating
-        setTimeout(() => {
-          if (window && window.location.pathname.includes('/auth/login')) {
-            console.log("Fallback navigation from login page");
-            window.location.href = result.redirectTo;
-          }
-        }, 2000);
+        // Force navigation from the login page component
+        try {
+          // Store success info in localStorage
+          localStorage.setItem('login_success', 'true');
+          localStorage.setItem('redirect_to', result.redirectTo);
+          console.log('🔵 Stored navigation data in localStorage');
+          
+          // Force navigation with multiple methods
+          console.log('🔶 Direct navigation attempt from login page');
+          
+          // Method 1: Direct assignment
+          window.location.href = result.redirectTo;
+          
+          // Method 2: Timeout as backup (will only run if Method 1 fails)
+          setTimeout(() => {
+            if (window.location.pathname.includes('/auth/login')) {
+              console.log('⏱️ Fallback navigation from login page');
+              window.location.replace(result.redirectTo);
+            }
+          }, 1000);
+        } catch (e) {
+          console.error('Navigation error:', e);
+          // Last resort
+          router.push(result.redirectTo);
+        }
       } else if (result.requiresMFA) {
         setSuccessMessage("MFA verification required.");
         // Redirect to MFA page, passing email in query params
