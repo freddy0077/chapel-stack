@@ -21,8 +21,17 @@ export default function LoginPage() {
 
       if (result.success && result.redirectTo) {
         setSuccessMessage("Login successful! Redirecting...");
-        // Use router.push for clean, client-side navigation.
-        router.push(result.redirectTo);
+        // Don't use router.push since AuthContext is already handling navigation
+        // The direct window.location navigation in AuthContext will take over
+        console.log("Login successful, waiting for redirect from AuthContext...");
+        
+        // As a fallback, if we're still here after 2 seconds, try navigating
+        setTimeout(() => {
+          if (window && window.location.pathname.includes('/auth/login')) {
+            console.log("Fallback navigation from login page");
+            window.location.href = result.redirectTo;
+          }
+        }, 2000);
       } else if (result.requiresMFA) {
         setSuccessMessage("MFA verification required.");
         // Redirect to MFA page, passing email in query params
