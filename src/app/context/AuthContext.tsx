@@ -346,6 +346,11 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
         dashboardRoute = getDashboardRouteForRole(appUser.primaryRole);
       }
       console.log('🚀 Redirecting to dashboard route:', dashboardRoute);
+
+      // Force a full-page redirect to ensure navigation happens
+      if (typeof window !== 'undefined') {
+        window.location.replace(dashboardRoute);
+      }
       
       return { success: true, redirectTo: dashboardRoute };
 
