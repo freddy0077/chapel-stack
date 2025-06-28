@@ -21,32 +21,34 @@ export default function LoginPage() {
 
       if (result.success && result.redirectTo) {
         setSuccessMessage("Login successful! Redirecting...");
-        console.log("Login successful, taking control of navigation");
+        console.log(`Login successful, redirecting to: ${result.redirectTo}`);
         
-        // Force navigation from the login page component
+        // Let's use a consistent approach for navigation with detailed logging
         try {
-          // Store success info in localStorage
-          localStorage.setItem('login_success', 'true');
-          localStorage.setItem('redirect_to', result.redirectTo);
-          console.log('🔵 Stored navigation data in localStorage');
+          // Store success info in sessionStorage (more reliable across redirects than state)
+          sessionStorage.setItem('login_success', 'true');
+          sessionStorage.setItem('login_timestamp', Date.now().toString());
+          sessionStorage.setItem('redirect_to', result.redirectTo);
+          console.log('Navigation data stored in sessionStorage');
           
-          // Force navigation with multiple methods
-          console.log('🔶 Direct navigation attempt from login page');
+          // Use a single navigation method instead of multiple competing ones
+          console.log(`Navigating to ${result.redirectTo} using router.push`);
+          router.push(result.redirectTo);
           
-          // Method 1: Direct assignment
-          window.location.href = result.redirectTo;
-          
-          // Method 2: Timeout as backup (will only run if Method 1 fails)
+          // Add a fallback with timeout in case router.push silently fails
           setTimeout(() => {
-            if (window.location.pathname.includes('/auth/login')) {
-              console.log('⏱️ Fallback navigation from login page');
-              window.location.replace(result.redirectTo);
+            const currentPath = window.location.pathname;
+            console.log(`Current path after navigation attempt: ${currentPath}`);
+            
+            if (currentPath.includes('/auth/login')) {
+              console.log('Still on login page after navigation attempt, using direct location change');
+              window.location.href = result.redirectTo;
             }
-          }, 1000);
+          }, 1500);
         } catch (e) {
           console.error('Navigation error:', e);
-          // Last resort
-          router.push(result.redirectTo);
+          // Last resort - direct location change
+          window.location.href = result.redirectTo;
         }
       } else if (result.requiresMFA) {
         setSuccessMessage("MFA verification required.");
