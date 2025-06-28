@@ -281,7 +281,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
         .map(section => ({
           ...section,
           items: section.items.filter(item =>
-            ["Dashboard", "Members", "Groups", "Children", "Prayer Requests", "Calendar", "Attendance", "Sacraments", "Ministries", "Sermons"].includes(item.name)
+            ["Dashboard", "Prayer Requests", "Calendar", "Sermons"].includes(item.name)
           )
         }))
         .filter(section => section.items.length > 0);
