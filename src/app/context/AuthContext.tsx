@@ -50,6 +50,13 @@ interface LoginCredentials {
   branchId?: string;
 }
 
+interface LoginResult {
+  success: boolean;
+  redirectTo?: string;
+  requiresMFA?: boolean;
+  error?: string;
+}
+
 interface RegistrationData {
   email: string;
   password: string;
@@ -63,7 +70,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<LoginResult>;
   register: (data: RegistrationData) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -249,7 +256,7 @@ const getDashboardRouteForRole = (role: string): string => {
   }
 };
 
-const login = async (credentials: LoginCredentials) => {
+const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
     setIsLoading(true);
     setError(null);
     
@@ -265,21 +272,13 @@ const login = async (credentials: LoginCredentials) => {
       });
       
       if (!data || !data.login) {
-        throw new Error('Login failed. Invalid response from server.');
+        return { success: false, error: 'Login failed. Invalid response from server.' };
       }
       
-      // The response is just a token string now, not an object with subfields
       const token = data.login;
       console.log('✅ Login successful, received token:', token ? 'Token received' : 'No token');
-      console.log('📦 Full login response data:', data);
       
-      // Store token
       localStorage.setItem('authToken', token);
-      
-      // Redirect to the login-success page instead of trying to redirect directly to dashboard
-      console.log('🚀 Redirecting to login-success page for handling redirection');
-      window.location.href = '/login-success';
-      return; // Stop execution here since we're redirecting
       
       // Fetch user data with token
       const meResponse = await client.query({
@@ -293,13 +292,11 @@ const login = async (credentials: LoginCredentials) => {
       });
       
       if (!meResponse.data || !meResponse.data.me) {
-        throw new Error('Failed to fetch user data after login');
+        return { success: false, error: 'Failed to fetch user data after login' };
       }
       
       const apiUser = meResponse.data.me;
       console.log('✅ User data retrieved:', apiUser);
-      console.log('👉 Roles from API:', apiUser.roles);
-      console.log('👉 Branch access from API:', apiUser.userBranches);
       
       // Map API user model to our application's User model
       const appUser: User = {
@@ -308,7 +305,7 @@ const login = async (credentials: LoginCredentials) => {
         firstName: apiUser.firstName,
         lastName: apiUser.lastName,
         photoUrl: '/images/avatars/default.jpg', // Default photo
-        primaryBranchId: credentials.branchId || 'default_branch',
+        primaryBranchId: credentials.branchId || (apiUser.userBranches && apiUser.userBranches.length > 0 ? apiUser.userBranches[0].branch.id : 'default_branch'),
         branches: apiUser.userBranches ? apiUser.userBranches.map((branchAccess: { branch: { id: string; name: string }; role: { name: string } }) => ({
           id: branchAccess.branch.id,
           name: branchAccess.branch.name,
@@ -333,18 +330,16 @@ const login = async (credentials: LoginCredentials) => {
           notifications: true,
           language: 'en'
         },
-        mfaEnabled: false
+        mfaEnabled: false // This should be from the API
       };
       
       setUser(appUser);
       setActiveBranchId(appUser.primaryBranchId);
       
-      // Store user in localStorage for persistence
       if (credentials.rememberMe) {
         localStorage.setItem('church_mgmt_user', JSON.stringify(appUser));
       }
       
-      // Get the dashboard route based on user's highest role
       let dashboardRoute = '/dashboard';
       if (appUser.primaryRole) {
         console.log('👉 Primary role detected:', appUser.primaryRole);
@@ -352,24 +347,8 @@ const login = async (credentials: LoginCredentials) => {
       }
       console.log('🚀 Redirecting to dashboard route:', dashboardRoute);
       
-      // Use setTimeout to ensure state is fully updated before redirecting
-      console.log('🚨 FORCING IMMEDIATE REDIRECTION to:', dashboardRoute);
-      
-      // Use multiple redirection methods to ensure it works
-      try {
-        // Method 1: Direct window location change (most reliable)
-        window.location.href = dashboardRoute;
-        
-        // Method 2: Backup with timeout in case Method 1 doesn't trigger immediately
-        setTimeout(() => {
-          console.log('⏱️ Backup redirection executing now');
-          window.location.replace(dashboardRoute);
-        }, 500);
-      } catch (redirectError) {
-        console.error('Redirection error:', redirectError);
-        // Method 3: Last resort
-        document.location.href = dashboardRoute;
-      }
+      return { success: true, redirectTo: dashboardRoute };
+
     } catch (error: unknown) {
       console.error('Login error:', error);
       let errorMessage = 'Login failed. Please check your credentials and try again.';
@@ -383,6 +362,7 @@ const login = async (credentials: LoginCredentials) => {
         errorMessage = error.message;
       }
       setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
