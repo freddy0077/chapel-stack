@@ -345,11 +345,31 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
         console.log('👉 Primary role detected:', appUser.primaryRole);
         dashboardRoute = getDashboardRouteForRole(appUser.primaryRole);
       }
-      console.log('🚀 Dashboard route determined:', dashboardRoute);
+      console.log('🚀 Redirecting to dashboard route:', dashboardRoute);
 
-      // Let the login page component handle navigation
-      // This avoids competing navigation attempts between components
-      console.log('✅ Authentication successful, returning dashboard route to caller');
+      // CRITICAL: Force navigation to dashboard - this must execute
+      console.log('🔴 NAVIGATION ATTEMPT STARTING');
+      
+      // Store success info in localStorage (more reliable than sessionStorage)
+      try {
+        localStorage.setItem('login_success', 'true');
+        localStorage.setItem('redirect_to', dashboardRoute);
+        console.log('🔵 Stored navigation data in localStorage');
+      } catch (e) {
+        console.error('Storage error:', e);
+      }
+      
+      // Immediate navigation attempt
+      try {
+        console.log('🔶 Direct navigation attempt');
+        window.location.replace(dashboardRoute);
+        console.log('🔷 Navigation instruction executed');
+      } catch (e) {
+        console.error('Navigation error:', e);
+      }
+      
+      // Return success regardless - the page should navigate away
+      console.log('✅ Login function completed successfully');
       return { success: true, redirectTo: dashboardRoute };
 
     } catch (error: unknown) {
