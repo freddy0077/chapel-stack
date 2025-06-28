@@ -347,40 +347,29 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
       }
       console.log('🚀 Redirecting to dashboard route:', dashboardRoute);
 
-      // Force a full-page redirect to ensure navigation happens
-      if (typeof window !== 'undefined') {
-        console.log('🔄 Attempting navigation with window.location.href');
-        
-        // Store a flag that login was successful
-        sessionStorage.setItem('login_success', 'true');
-        sessionStorage.setItem('redirect_to', dashboardRoute);
-        
-        try {
-          // Method 1: Direct assignment
-          window.location.href = dashboardRoute;
-          
-          // Method 2: Timeout as backup
-          setTimeout(() => {
-            console.log('⏱️ Executing delayed redirect via replace');
-            if (window.location.pathname.includes('/auth/login')) {
-              window.location.replace(dashboardRoute);
-            }
-          }, 500);
-          
-          // Method 3: Another timeout with different method
-          setTimeout(() => {
-            console.log('⏱️ Final fallback redirect attempt');
-            if (window.location.pathname.includes('/auth/login')) {
-              document.location.href = dashboardRoute;
-            }
-          }, 1000);
-        } catch (e) {
-          console.error('Navigation error:', e);
-          // Method 4: Last resort
-          window.open(dashboardRoute, '_self');
-        }
+      // CRITICAL: Force navigation to dashboard - this must execute
+      console.log('🔴 NAVIGATION ATTEMPT STARTING');
+      
+      // Store success info in localStorage (more reliable than sessionStorage)
+      try {
+        localStorage.setItem('login_success', 'true');
+        localStorage.setItem('redirect_to', dashboardRoute);
+        console.log('🔵 Stored navigation data in localStorage');
+      } catch (e) {
+        console.error('Storage error:', e);
       }
       
+      // Immediate navigation attempt
+      try {
+        console.log('🔶 Direct navigation attempt');
+        window.location.href = dashboardRoute;
+        console.log('🔷 Navigation instruction executed');
+      } catch (e) {
+        console.error('Navigation error:', e);
+      }
+      
+      // Return success regardless - the page should navigate away
+      console.log('✅ Login function completed successfully');
       return { success: true, redirectTo: dashboardRoute };
 
     } catch (error: unknown) {
