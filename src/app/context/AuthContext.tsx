@@ -349,7 +349,7 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
 
       // Force a full-page redirect to ensure navigation happens
       if (typeof window !== 'undefined') {
-        window.location.replace(dashboardRoute);
+        window.location.href = dashboardRoute;
       }
       
       return { success: true, redirectTo: dashboardRoute };
