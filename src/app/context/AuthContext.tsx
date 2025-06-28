@@ -349,7 +349,36 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
 
       // Force a full-page redirect to ensure navigation happens
       if (typeof window !== 'undefined') {
-        window.location.href = dashboardRoute;
+        console.log('🔄 Attempting navigation with window.location.href');
+        
+        // Store a flag that login was successful
+        sessionStorage.setItem('login_success', 'true');
+        sessionStorage.setItem('redirect_to', dashboardRoute);
+        
+        try {
+          // Method 1: Direct assignment
+          window.location.href = dashboardRoute;
+          
+          // Method 2: Timeout as backup
+          setTimeout(() => {
+            console.log('⏱️ Executing delayed redirect via replace');
+            if (window.location.pathname.includes('/auth/login')) {
+              window.location.replace(dashboardRoute);
+            }
+          }, 500);
+          
+          // Method 3: Another timeout with different method
+          setTimeout(() => {
+            console.log('⏱️ Final fallback redirect attempt');
+            if (window.location.pathname.includes('/auth/login')) {
+              document.location.href = dashboardRoute;
+            }
+          }, 1000);
+        } catch (e) {
+          console.error('Navigation error:', e);
+          // Method 4: Last resort
+          window.open(dashboardRoute, '_self');
+        }
       }
       
       return { success: true, redirectTo: dashboardRoute };
