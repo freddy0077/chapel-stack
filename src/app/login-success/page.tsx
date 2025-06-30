@@ -122,9 +122,9 @@ export default function LoginSuccessPage() {
     const getDashboardRouteForRole = (role: string): string => {
       switch(role) {
         case 'super_admin':
-          return '/dashboard/admin';
+          return '/dashboard';
         case 'branch_admin':
-          return '/dashboard/branch-admin';
+          return '/dashboard/branch';
         case 'pastor':
           return '/dashboard/pastor';
         case 'ministry_leader':

@@ -197,3 +197,91 @@ export const SAVE_USER_DASHBOARD_PREFERENCE = gql`
     }
   }
 `;
+
+// Query for fetching super admin dashboard data
+export const GET_SUPER_ADMIN_DASHBOARD = gql`
+  query SuperAdminDashboard($organisationId: ID) {
+    superAdminDashboardData(organisationId: $organisationId) {
+      organisationOverview {
+        total
+        organisations {
+          id
+          name
+          branchCount
+          adminCount
+        }
+      }
+      branchesSummary {
+        total
+        branches {
+          id
+          name
+          organisation
+          status
+        }
+      }
+      memberSummary {
+        total
+      }
+      financialOverview {
+        totalContributions
+        tithes
+        expenses
+        pledge
+        offering
+        donation
+        specialContribution
+      }
+      attendanceOverview {
+        totalAttendance
+      }
+      sacramentsOverview {
+        totalSacraments
+      }
+      activityEngagement {
+        recentEvents {
+          id
+          title
+          startDate
+        }
+        upcomingEvents {
+          id
+          title
+          startDate
+        }
+      }
+      systemHealth {
+        timestamp
+        database {
+          status
+          latency
+        }
+        system {
+          totalMemory
+          freeMemory
+          memoryUsage {
+            rss
+            heapTotal
+            heapUsed
+            external
+          }
+          cpuUsage {
+            user
+            system
+          }
+          systemUptime
+          processUptime
+          platform
+          nodeVersion
+        }
+      }
+      announcements {
+        announcements {
+          id
+          title
+          startDate
+        }
+      }
+    }
+  }
+`;

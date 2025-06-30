@@ -278,6 +278,31 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
     const getMemberNavigation = () =>
       fullNavigation
         .filter(section => ["Main", "Community", "Activities"].includes(section.category))
+        .map(section => {
+          // For member, make dashboard link point to /dashboard/member
+          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "member") {
+            return {
+              ...section,
+              items: section.items.map(item =>
+                item.name === "Dashboard"
+                  ? { ...item, href: "/dashboard/member" }
+                  : item
+              )
+            };
+          }
+          // For branch_admin, make dashboard link point to /dashboard/branch
+          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "branch_admin") {
+            return {
+              ...section,
+              items: section.items.map(item =>
+                item.name === "Dashboard"
+                  ? { ...item, href: "/dashboard/branch" }
+                  : item
+              )
+            };
+          }
+          return section;
+        })
         .map(section => ({
           ...section,
           items: section.items.filter(item =>
@@ -290,17 +315,14 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
       fullNavigation
         .map(section => {
           if (section.category === "Main") {
-            // Add Branch Admin Dashboard if not present
-            let items = [...section.items];
-            if (!items.find(i => i.href === "/dashboard/branch-admin")) {
-              items.push({
-                name: "Branch Admin Dashboard",
-                href: "/dashboard/branch-admin",
-                icon: HomeIcon,
-                badge: null,
-                moduleId: "dashboard"
-              });
-            }
+            // Remove Branch Admin Dashboard link and make Dashboard point to /dashboard/branch
+            let items = section.items
+              .filter(i => i.name !== "Branch Admin Dashboard")
+              .map(item =>
+                item.name === "Dashboard"
+                  ? { ...item, href: "/dashboard/branch" }
+                  : item
+              );
             return { ...section, items };
           }
           if (["Community", "Activities"].includes(section.category)) {
