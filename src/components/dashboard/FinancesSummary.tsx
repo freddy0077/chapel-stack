@@ -71,7 +71,7 @@ export function FinancesSummary({
   return (
     <section className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="flex flex-col"><span className="text-gray-500 text-sm">Tithes & Offerings (This Month)</span><span className="font-extrabold text-2xl text-blue-800">₵{totalContributions?.toLocaleString() ?? "52,300"}</span></div>
+        <div className="flex flex-col"><span className="text-gray-500 text-sm">Tithes & Offerings (This Month)</span><span className="font-extrabold text-2xl text-blue-800">₵{totalContributions?.toLocaleString() ?? "0"}</span></div>
         <div className="flex flex-col"><span className="text-gray-500 text-sm">Top 5 Giving Branches</span><span className="font-semibold text-blue-700">(Bar Chart)</span></div>
         <div className="flex flex-col"><span className="text-gray-500 text-sm">Expenses vs Income</span><span className="font-semibold text-blue-700">(Line/Area Chart)</span></div>
         <div className="flex flex-col"><span className="text-gray-500 text-sm">Pending Approvals</span><span className="font-bold text-xl text-yellow-600">{pendingApprovals ?? 7}</span></div>

@@ -101,6 +101,8 @@ export interface CreateSmallGroupInput {
   maximumCapacity?: number;
   status?: SmallGroupStatus;
   ministryId?: string;
+  branchId?: string;
+  organisationId?: string;
 }
 
 export interface UpdateSmallGroupInput {
@@ -179,7 +181,6 @@ export const useFilteredSmallGroups = (filters: SmallGroupFilterInput, skip: boo
 export const useSmallGroupMutations = () => {
   // Create small group mutation
   const [createSmallGroupMutation] = useMutation(CREATE_SMALL_GROUP);
-  // Accept all relevant fields as arguments, not as a nested input object
   const createSmallGroup = async (input: {
     name: string;
     description?: string;
@@ -190,6 +191,7 @@ export const useSmallGroupMutations = () => {
     status: string;
     branchId?: string;
     ministryId?: string;
+    organisationId?: string;
   }) => {
     try {
       const { data } = await createSmallGroupMutation({
@@ -202,7 +204,8 @@ export const useSmallGroupMutations = () => {
           maximumCapacity: input.maximumCapacity,
           status: input.status,
           branchId: input.branchId,
-          ministryId: input.ministryId
+          ministryId: input.ministryId,
+          organisationId: input.organisationId
         }
       });
       return data.createSmallGroup;
@@ -211,7 +214,6 @@ export const useSmallGroupMutations = () => {
       throw error;
     }
   };
-
 
   // Update small group mutation
   const [updateSmallGroupMutation] = useMutation(UPDATE_SMALL_GROUP);

@@ -44,6 +44,16 @@ export default function BranchesPage() {
         </Link>
       </DashboardHeader>
 
+      <div className="px-4 md:px-8 py-4 flex justify-end">
+        <Link
+          href="/dashboard/branches/new"
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none"
+        >
+          <PlusIcon className="h-5 w-5 mr-2" />
+          Add Branch
+        </Link>
+      </div>
+
       <BranchLoader pagination={pagination}>
         {(branches, loading, error, refetch, totalCount, hasNextPage) => {
           // Defensive: fallback to [] if undefined

@@ -3,6 +3,9 @@ import { toast } from 'react-hot-toast';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useSmallGroupMutations, SmallGroupStatus } from '../../../../graphql/hooks/useSmallGroups';
+import { useQuery } from '@apollo/client';
+import { GET_BRANCHES } from '@/graphql/queries/branchQueries';
+import { useAuth } from '@/graphql/hooks/useAuth';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -11,7 +14,18 @@ interface CreateGroupModalProps {
   afterCreate?: () => void;
 }
 
-export default function CreateGroupModal({ isOpen, setIsOpen, branchId, afterCreate }: CreateGroupModalProps) {
+export default function CreateGroupModal({ isOpen, setIsOpen, branchId: propBranchId, afterCreate }: CreateGroupModalProps) {
+  const { user } = useAuth();
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const branchId = user?.primaryRole === "super_admin" ? selectedBranchId : (propBranchId || (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined));
+
+  // Fetch branches for super admin
+  const organisationId = user?.organisationId;
+  const { data: branchesData } = useQuery(GET_BRANCHES, {
+    variables: { filter: organisationId ? { organisationId } : undefined },
+    skip: user?.primaryRole !== "super_admin"
+  });
+
   const { createSmallGroup } = useSmallGroupMutations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,14 +52,15 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId, afterCre
     setLoading(true);
     setError(null);
     if (!branchId) {
-      setError("Cannot create group: No branch ID available");
+      setError("Cannot create group: No branch selected");
       setLoading(false);
       return;
     }
     try {
       await createSmallGroup({
         ...formData,
-        branchId
+        branchId,
+        organisationId,
       });
       setFormData({
         name: '',
@@ -70,7 +85,7 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId, afterCre
       <div className="fixed inset-0 z-50 bg-gray-700 bg-opacity-70 transition-opacity" />
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center">
-          <Dialog.Panel className="relative w-full max-w-xl mx-auto rounded-3xl bg-white px-0 pb-0 pt-0 text-left shadow-2xl transition-all">
+          <Dialog.Panel className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl p-6">
             {/* Close button */}
             <button
               type="button"
@@ -94,6 +109,24 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId, afterCre
                   <div className="text-sm text-red-700">
                     Error creating group: {error}
                   </div>
+                </div>
+              )}
+              {/* Branch Selector for Super Admin */}
+              {user?.primaryRole === "super_admin" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Branch<span className="text-red-500">*</span></label>
+                  <select
+                    name="branchId"
+                    value={selectedBranchId}
+                    onChange={e => setSelectedBranchId(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
+                    required
+                  >
+                    <option value="">Select Branch</option>
+                    {branchesData?.branches?.items?.map((branch: any) => (
+                      <option key={branch.id} value={branch.id}>{branch.name}</option>
+                    ))}
+                  </select>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

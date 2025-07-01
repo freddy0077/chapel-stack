@@ -4,9 +4,10 @@ interface OverviewWidgetsProps {
   branches?: number;
   members?: number;
   attendance?: number;
+  newMembers?: number;
 }
 
-export function OverviewWidgets({ branches, members, attendance }: OverviewWidgetsProps) {
+export function OverviewWidgets({ branches, members, attendance, newMembers }: OverviewWidgetsProps) {
   const widgets = [
     { label: "Branches", value: branches ?? 0, icon: (
       <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><rect x="4" y="4" width="8" height="8" rx="2" fill="#2563eb"/><rect x="16" y="4" width="8" height="8" rx="2" fill="#eab308"/><rect x="4" y="16" width="8" height="8" rx="2" fill="#38bdf8"/><rect x="16" y="16" width="8" height="8" rx="2" fill="#a3a3a3"/></svg>
@@ -17,10 +18,10 @@ export function OverviewWidgets({ branches, members, attendance }: OverviewWidge
     { label: "Attendance (Sunday)", value: attendance ?? 0, icon: (
       <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><rect width="28" height="28" rx="14" fill="#38bdf8"/><text x="14" y="18" textAnchor="middle" fontSize="12" fill="#fff">⛪</text></svg>
     ) },
-    { label: "New Members This Month", value: 42, icon: (
+    { label: "New Members This Month", value: newMembers, icon: (
       <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="12" fill="#eab308"/><text x="14" y="18" textAnchor="middle" fontSize="12" fill="#fff">+</text></svg>
     ) },
-    { label: "Volunteers", value: 210, icon: (
+    { label: "Volunteers", value: 0, icon: (
       <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><circle cx="14" cy="14" r="12" fill="#a3a3a3"/><text x="14" y="18" textAnchor="middle" fontSize="12" fill="#fff">🤝</text></svg>
     ) },
   ];

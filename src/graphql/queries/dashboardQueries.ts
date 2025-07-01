@@ -222,6 +222,7 @@ export const GET_SUPER_ADMIN_DASHBOARD = gql`
       }
       memberSummary {
         total
+        newMembersThisMonth
       }
       financialOverview {
         totalContributions
@@ -231,6 +232,11 @@ export const GET_SUPER_ADMIN_DASHBOARD = gql`
         offering
         donation
         specialContribution
+        topGivingBranches {
+          branchId
+          branchName
+          totalGiven
+        }
       }
       attendanceOverview {
         totalAttendance

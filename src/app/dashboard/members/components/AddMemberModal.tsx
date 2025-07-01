@@ -2,8 +2,9 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_MEMBER } from "@/graphql/queries/memberQueries";
+import { GET_BRANCHES } from "@/graphql/queries/branchQueries";
 import { CheckCircleIcon, XMarkIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/graphql/hooks/useAuth";
@@ -24,7 +25,9 @@ interface AddMemberModalProps {
 export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
+  console.log("User from AddMemberModal:", user);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const branchId = user?.primaryRole === "super_admin" ? selectedBranchId : (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined);
   const organisationId = user?.organisationId;
   console.log("Organisation ID:", organisationId);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -59,11 +62,32 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
+  // Fetch branches for super admin
+  const { data: branchesData, loading: branchesLoading } = useQuery(GET_BRANCHES, {
+    variables: { filter: organisationId ? { organisationId } : undefined },
+    skip: user?.primaryRole !== "super_admin"
+  });
+
   // Validation
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
+    // Required fields
     if (!formData.firstName.trim()) errors.firstName = "First name is required";
     if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    if (!formData.email.trim()) errors.email = "Email is required";
+    if (!formData.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
+    if (!formData.address.trim()) errors.address = "Address is required";
+    if (!formData.city.trim()) errors.city = "City is required";
+    if (!formData.state.trim()) errors.state = "Region is required";
+    if (!formData.country.trim()) errors.country = "Country is required";
+    if (!formData.dateOfBirth) errors.dateOfBirth = "Date of birth is required";
+    if (!formData.gender) errors.gender = "Gender is required";
+    if (!formData.maritalStatus) errors.maritalStatus = "Marital status is required";
+    if (!formData.status) errors.status = "Status is required";
+    if (!formData.membershipDate) errors.membershipDate = "Membership date is required";
+    // For super admin, branch must be selected
+    if (user?.primaryRole === "super_admin" && !branchId) errors.branchId = "Branch is required";
+    // Format checks
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = "Please enter a valid email address";
     }
@@ -124,10 +148,10 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             customFields: formData.customFields || undefined,
             privacySettings: formData.privacySettings || undefined,
             notes: formData.notes || undefined,
-            branchId: branchId,
             userId: formData.userId || undefined,
             spouseId: formData.spouseId || undefined,
             parentId: formData.parentId || undefined,
+            branchId: branchId,
             organisationId: organisationId
           }
         }
@@ -168,7 +192,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                 </div>
                 <button
                   type="button"
-                  className="absolute right-6 top-6 z-30 rounded-full bg-white text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="absolute right-6 top-6 z-30 rounded-full bg-white text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-2"
                   onClick={onClose}
                   aria-label="Close"
                   style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
@@ -179,7 +203,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
               {/* Close button */}
               <button
                 type="button"
-                className="absolute right-6 top-6 z-10 rounded-full bg-white text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="absolute right-6 top-6 z-10 rounded-full bg-white text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:ring-offset-2"
                 onClick={onClose}
                 aria-label="Close"
               >
@@ -200,6 +224,25 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                 <div className="flex items-center p-3 bg-green-100 text-green-700 rounded-lg shadow mx-8 mt-6">
                   <CheckCircleIcon className="h-5 w-5 mr-2" />
                   <span>Member added successfully!</span>
+                </div>
+              )}
+              {/* Branch Selector for Super Admin */}
+              {user?.primaryRole === "super_admin" && (
+                <div className="px-8 py-8">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Branch<span className="text-red-500">*</span></label>
+                  <select
+                    name="branchId"
+                    value={selectedBranchId}
+                    onChange={e => setSelectedBranchId(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
+                    required
+                  >
+                    <option value="">Select Branch</option>
+                    {branchesData?.branches?.items?.map((branch: any) => (
+                      <option key={branch.id} value={branch.id}>{branch.name}</option>
+                    ))}
+                  </select>
+                  {renderError("branchId")}
                 </div>
               )}
               {/* Form */}
@@ -223,7 +266,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                       <input name="middleName" value={formData.middleName} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Gender</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Gender<span className="text-red-500">*</span></label>
                       <select required name="gender" value={formData.gender} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
                         <option value="">Select Gender</option>
                         <option value="MALE">Male</option>
@@ -231,14 +274,16 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                         <option value="OTHER">Other</option>
                         <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                       </select>
+                      {renderError("gender")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Date of Birth</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Date of Birth<span className="text-red-500">*</span></label>
                       <input required type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      {renderError("dateOfBirth")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Marital Status</label>
-                      <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Marital Status<span className="text-red-500">*</span></label>
+                      <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required>
                         <option value="">Select Status</option>
                         <option value="SINGLE">Single</option>
                         <option value="MARRIED">Married</option>
@@ -247,6 +292,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                         <option value="SEPARATED">Separated</option>
                         <option value="OTHER">Other</option>
                       </select>
+                      {renderError("maritalStatus")}
                     </div>
                   </div>
                 </section>
@@ -255,18 +301,39 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                   <h3 className="font-semibold text-gray-900 mb-2">Contact Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Email<span className="text-red-500">*</span></label>
                       <input required name="email" value={formData.email} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                       {renderError("email")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Phone Number</label>
-                      <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Phone Number<span className="text-red-500">*</span></label>
+                      <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required />
                       {renderError("phoneNumber")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Address</label>
-                      <input name="address" value={formData.address} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Address<span className="text-red-500">*</span></label>
+                      <input name="address" value={formData.address} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required />
+                      {renderError("address")}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">City<span className="text-red-500">*</span></label>
+                      <input name="city" value={formData.city} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required />
+                      {renderError("city")}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Region<span className="text-red-500">*</span></label>
+                      <input name="state" value={formData.state} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required />
+                      {renderError("state")}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Postal Code</label>
+                      <input name="postalCode" value={formData.postalCode} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      {renderError("postalCode")}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Country<span className="text-red-500">*</span></label>
+                      <input name="country" value={formData.country} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required />
+                      {renderError("country")}
                     </div>
                   </div>
                 </section>
@@ -275,17 +342,19 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                   <h3 className="font-semibold text-gray-900 mb-2">Membership</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Status</label>
-                      <select name="status" value={formData.status} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Status<span className="text-red-500">*</span></label>
+                      <select name="status" value={formData.status} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" required>
                         <option value="ACTIVE">Active</option>
                         <option value="INACTIVE">Inactive</option>
                         <option value="VISITOR">Visitor</option>
                         <option value="TRANSFERRED">Transferred</option>
                       </select>
+                      {renderError("status")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Membership Date</label>
-                      <input type="date" name="membershipDate" value={formData.membershipDate} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Membership Date<span className="text-red-500">*</span></label>
+                      <input required type="date" name="membershipDate" value={formData.membershipDate} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      {renderError("membershipDate")}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Baptism Date</label>

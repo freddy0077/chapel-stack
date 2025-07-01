@@ -4,6 +4,8 @@ import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOrganizationBranchFilter } from "@/hooks";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useAuth } from "@/graphql/hooks/useAuth";
 
 interface NewEventModalProps {
   isOpen: boolean;
@@ -22,6 +24,7 @@ export interface NewEventInput {
   type: string;
   location?: string;
   organisationId?: string;
+  branchId?: string;
 }
 
 const EVENT_TYPES = [
@@ -33,8 +36,9 @@ const EVENT_TYPES = [
 ];
 
 export default function NewEventModal({ isOpen, onClose, onCreate, loading, error }: NewEventModalProps) {
-  const { organisationId } = useOrganizationBranchFilter();
-  const [form, setForm] = useState<Omit<NewEventInput, 'organisationId'>>({
+  const { user } = useAuth();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const [form, setForm] = useState<Omit<NewEventInput, 'organisationId' | 'branchId'>>({
     name: "",
     description: "",
     date: "",
@@ -44,6 +48,22 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
     location: "",
   });
   const [localError, setLocalError] = useState<string | null>(null);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+
+  // Branch selection logic
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = orgIdFromFilter;
+
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(
+    isSuperAdmin ? { organisationId } : undefined
+  );
+
+  // Determine branchId for event creation
+  const branchId = isSuperAdmin
+    ? selectedBranchId
+    : user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -57,7 +77,15 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
       setLocalError("Please fill in all required fields.");
       return;
     }
-    onCreate({ ...form, organisationId });
+    if (!branchId) {
+      setLocalError("No branch selected or available for this user.");
+      return;
+    }
+    if (!organisationId) {
+      setLocalError("No organisation found for this user or branch.");
+      return;
+    }
+    onCreate({ ...form, branchId, organisationId });
   };
 
   return (
@@ -101,6 +129,35 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                   </button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Branch Selection Logic */}
+                  {isSuperAdmin ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+                      <select
+                        name="branchId"
+                        value={selectedBranchId}
+                        onChange={e => setSelectedBranchId(e.target.value)}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        required
+                        disabled={branchesLoading}
+                      >
+                        <option value="">Select Branch</option>
+                        {branches.map(branch => (
+                          <option key={branch.id} value={branch.id}>{branch.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                      <input
+                        type="text"
+                        value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                        className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+                        disabled
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Event Name <span className="text-red-500">*</span>

@@ -12,6 +12,8 @@ import {
 import { useEventMutations, useBranches, useRooms, useVolunteerRoles } from "@/graphql/hooks/useEvents";
 import { EventType, CreateEventInput } from "@/graphql/types/event";
 import { useEventTemplates, useEventTemplate } from "@/graphql/hooks/useEventTemplates";
+import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
+import { useAuth } from '@/graphql/hooks/useAuth';
 // No date-fns imports needed for now
 
 // Types mapped from backend schema
@@ -75,6 +77,12 @@ export default function CreateEvent() {
   const { rooms, loading: roomsLoading, error: roomsError } = useRooms(selectedBranchId);
   const { volunteerRoles: fetchedVolunteerRoles, loading: rolesLoading, error: rolesError } = useVolunteerRoles();
   
+  // Get org/branch filter for event creation
+  const orgBranchFilter = useOrganizationBranchFilter();
+
+  // Get user role
+  const { user } = useAuth();
+
   // Form state - aligned with GraphQL schema
   const [eventData, setEventData] = useState<ExtendedEventInput>({
     title: "",
@@ -390,24 +398,20 @@ export default function CreateEvent() {
     }));
   };
   
-  // Prepare event data for API submission
+  // Update branch/organisation logic for event creation
+  // If SUPER_ADMIN, use organisationId, else use branchId
   const prepareEventData = (): CreateEventInput => {
-    // Combine date and time into ISO strings for startDateTime and endDateTime
     const startDateTime = formFields.date && formFields.startTime
       ? new Date(`${formFields.date}T${formFields.startTime}`).toISOString()
       : new Date().toISOString();
-    
     const endDateTime = formFields.date && formFields.endTime
       ? new Date(`${formFields.date}T${formFields.endTime}`).toISOString()
-      : new Date(new Date(startDateTime).getTime() + 3600000).toISOString(); // Default to 1 hour later
-    
-    // Create recurrence pattern string if event is recurring
+      : new Date(new Date(startDateTime).getTime() + 3600000).toISOString();
     let recurrencePattern = "";
     if (eventData.isRecurring) {
       recurrencePattern = `${formFields.recurringFrequency}:${formFields.recurringInterval}:${formFields.recurringDays.join(',')}`;
     }
-    
-    return {
+    const base = {
       title: eventData.title || "",
       description: eventData.description || "",
       type: eventData.type || EventType.OTHER,
@@ -419,8 +423,14 @@ export default function CreateEvent() {
       capacity: eventData.capacity || 0,
       registrationRequired: eventData.registrationRequired || false,
       registrationDeadline: eventData.registrationDeadline,
-      branchId: eventData.branchId
     };
+    // Prefer branchId if present, else organisationId for super_admin
+    if (orgBranchFilter.branchId) {
+      return { ...base, branchId: orgBranchFilter.branchId };
+    } else if (orgBranchFilter.organisationId) {
+      return { ...base, organisationId: orgBranchFilter.organisationId } as any;
+    }
+    return base;
   };
   
   // Form submission handler
@@ -646,28 +656,39 @@ export default function CreateEvent() {
                 Branch *
               </label>
               <div className="mt-1">
-                <select
-                  id="branchId"
-                  name="branchId"
-                  required
-                  value={eventData.branchId || ""}
-                  onChange={handleBranchChange}
-                  disabled={branchesLoading}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select Branch</option>
-                  {branchesLoading ? (
-                    <option value="" disabled>Loading branches...</option>
-                  ) : branches && branches.length > 0 ? (
-                    branches.map((branch: { id: string; name: string }) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>No branches available</option>
-                  )}
-                </select>
+                {user?.primaryRole === 'super_admin' ? (
+                  <select
+                    id="branchId"
+                    name="branchId"
+                    required
+                    value={eventData.branchId || ''}
+                    onChange={handleBranchChange}
+                    disabled={branchesLoading}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select Branch</option>
+                    {branchesLoading ? (
+                      <option value="" disabled>Loading branches...</option>
+                    ) : branches && branches.length > 0 ? (
+                      branches.map((branch: { id: string; name: string }) => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>No branches available</option>
+                    )}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    id="branchId"
+                    name="branchId"
+                    value={branches.find((b: { id: string }) => b.id === eventData.branchId)?.name || ''}
+                    className="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm"
+                    disabled
+                  />
+                )}
                 {branchesError && (
                   <p className="mt-1 text-sm text-red-600">
                     Error loading branches. Please try again.

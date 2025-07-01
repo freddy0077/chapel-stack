@@ -7,6 +7,8 @@ import { ArrowLeftIcon, DocumentArrowUpIcon, PhotoIcon, CheckCircleIcon, UserIco
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useCreateMatrimonyRecord } from "@/graphql/hooks/useCreateMatrimonyRecord";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
 function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: unknown) => void }) {
   const { members, loading, error } = useSearchMembers(query, 8);
@@ -59,6 +61,12 @@ export default function NewMarriageRecord() {
   const [showDropdown2, setShowDropdown2] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { user } = useAuth();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = orgIdFromFilter;
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const { createMatrimonyRecord } = useCreateMatrimonyRecord();
 
   // Handlers for spouse 1
@@ -123,8 +131,13 @@ export default function NewMarriageRecord() {
       setIsSubmitting(false);
       return;
     }
-    if (!user || !user.userBranches?.[0].branch.id) {
-      setErrorMessage("Your user/branch context is missing. Please log in again or contact admin.");
+    if (!branchId) {
+      setErrorMessage("No branch selected or available for this user.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!organisationId) {
+      setErrorMessage("No organisation found for this user or branch.");
       setIsSubmitting(false);
       return;
     }
@@ -156,7 +169,8 @@ export default function NewMarriageRecord() {
             certificateNumber: formData.certificate ? formData.certificate.name : "",
             certificateUrl,
             notes: formData.notes,
-            branchId: user?.userBranches?.[0].branch.id
+            branchId,
+            organisationId
           }
         }
       });
@@ -186,7 +200,36 @@ export default function NewMarriageRecord() {
         {/* Card: Marriage Details */}
         <div className="bg-white/90 rounded-2xl shadow-lg border border-indigo-100 mb-8 p-6 md:p-8">
           <h2 className="text-lg font-semibold text-indigo-900 mb-4">Marriage Details</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Branch Selection Logic */}
+            {isSuperAdmin ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+                <select
+                  name="branchId"
+                  value={selectedBranchId}
+                  onChange={e => setSelectedBranchId(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  required
+                  disabled={branchesLoading}
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map(branch => (
+                    <option key={branch.id} value={branch.id}>{branch.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                <input
+                  type="text"
+                  value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                  className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+                  disabled
+                />
+              </div>
+            )}
             {/* Spouse 1 Search */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>

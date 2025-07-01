@@ -11,7 +11,8 @@ export const CREATE_SMALL_GROUP = gql`
     $maximumCapacity: Int,
     $status: String!,
     $branchId: String,
-    $ministryId: String
+    $ministryId: String,
+    $organisationId: String
   ) {
     createSmallGroup(input: {
       name: $name
@@ -23,6 +24,7 @@ export const CREATE_SMALL_GROUP = gql`
       status: $status
       branchId: $branchId
       ministryId: $ministryId
+      organisationId: $organisationId
     }) {
       id
       name
@@ -34,6 +36,7 @@ export const CREATE_SMALL_GROUP = gql`
       status
       branchId
       ministryId
+      organisationId
       createdAt
       updatedAt
       members {

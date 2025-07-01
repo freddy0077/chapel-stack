@@ -7,9 +7,12 @@ import { CREATE_BRANCH } from "../../../../graphql/mutations/branchMutations";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
 export default function NewBranchPage() {
   const router = useRouter();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const organisationId = orgBranchFilter.organisationId;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -50,6 +53,7 @@ export default function NewBranchPage() {
         website: formData.website,
         establishedAt: formData.establishedDate ? new Date(formData.establishedDate).toISOString() : undefined,
         isActive: formData.status === 'active',
+        organisationId: String(organisationId || ""),
       };
       const { data } = await createBranch({ variables: { input } });
       if (data?.createBranch) {
@@ -125,7 +129,7 @@ export default function NewBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">State/Province <span className="text-red-500">*</span></label>
+                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">Region <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="state"

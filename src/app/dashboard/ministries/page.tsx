@@ -13,6 +13,7 @@ import EmptyState from "../members/components/EmptyState";
 import Pagination from "../members/components/Pagination";
 import { MinistryLoader } from "./MinistryLoader";
 import { useOrganizationBranchFilter } from "@/hooks";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 
 function MinistryDetailsModal({ ministryId, onClose }: { ministryId: string; onClose: () => void }) {
   const { ministry, loading, error } = useMinistry(ministryId);
@@ -55,7 +56,13 @@ function MinistryDetailsModal({ ministryId, onClose }: { ministryId: string; onC
   );
 }
 
-function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClose: () => void; onSuccess: () => void; branchId: string; afterCreate?: () => void }) {
+function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCreate }: { onClose: () => void; onSuccess: () => void; branchId: string; afterCreate?: () => void }) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = user?.organisationId;
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(propBranchId || "");
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const branchId = isSuperAdmin ? selectedBranchId : propBranchId;
   const { createMinistry, loading, error } = useCreateMinistry();
   const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ name: string; type: MinistryType | ""; status: string }>({ name: "", type: "", status: "ACTIVE" });
@@ -72,6 +79,10 @@ function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClo
       setFormError("Name and type are required.");
       return;
     }
+    if (!branchId) {
+      setFormError("Branch is required.");
+      return;
+    }
     try {
       await createMinistry({
         variables: {
@@ -79,6 +90,7 @@ function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClo
             name: formData.name,
             type: formData.type,
             branchId,
+            organisationId: String(organisationId || user?.organisationId || ""),
             status: formData.status,
           },
         },
@@ -112,6 +124,35 @@ function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClo
           <p className="text-gray-500 text-sm">Create a new ministry or group for your church.</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Branch Selection Logic */}
+          {isSuperAdmin ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+              <select
+                name="branchId"
+                value={selectedBranchId}
+                onChange={e => setSelectedBranchId(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                required
+                disabled={branchesLoading}
+              >
+                <option value="">Select Branch</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>{branch.name}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+              <input
+                type="text"
+                value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+                disabled
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
@@ -161,7 +202,7 @@ function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClo
           <div className="flex justify-end mt-6">
             <button
               type="submit"
-              className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white text-base font-semibold rounded-full shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+              className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white text-base font-semibold rounded-full shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               disabled={loading}
             >
               {loading ? (
@@ -189,6 +230,11 @@ function AddMinistryModal({ onClose, onSuccess, branchId, afterCreate }: { onClo
 export default function Ministries() {
   const { user } = useAuth();
   const orgBranchFilter = useOrganizationBranchFilter();
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const organisationId = orgBranchFilter.organisationId;
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const branchId = isSuperAdmin ? selectedBranchId : orgBranchFilter.branchId;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12); 
@@ -222,6 +268,35 @@ export default function Ministries() {
 
       {/* Search & Filter Bar */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur px-4 md:px-8 py-4 flex flex-col md:flex-row md:items-center gap-3 shadow-sm rounded-xl mx-4 md:mx-8 -mt-8 mb-8">
+        {/* Branch Selection Logic */}
+        {isSuperAdmin ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+            <select
+              name="branchId"
+              value={selectedBranchId}
+              onChange={e => { setSelectedBranchId(e.target.value); setCurrentPage(1); }}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              disabled={branchesLoading}
+            >
+              <option value="">Select Branch</option>
+              {branches.map(branch => (
+                <option key={branch.id} value={branch.id}>{branch.name}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+            <input
+              type="text"
+              value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+              className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+              disabled
+            />
+          </div>
+        )}
         <div className="relative flex-1">
           <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           <input
@@ -261,7 +336,7 @@ export default function Ministries() {
         </select>
       </div>
 
-      <MinistryLoader>
+      <MinistryLoader branchId={branchId} organisationId={organisationId}>
         {(ministries, loading, error, refetch) => {
           if (ministryRefetch !== refetch) setMinistryRefetch(() => refetch);
           if (loading) {
@@ -379,7 +454,7 @@ export default function Ministries() {
           onSuccess={() => {
             setAddModalOpen(false);
           }}
-          branchId={orgBranchFilter.branchId || ""}
+          branchId={branchId || ""}
           afterCreate={() => ministryRefetch && ministryRefetch()}
         />
       )}

@@ -7,9 +7,18 @@ import { useRouter } from "next/navigation";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useCreateFirstCommunionRecord } from "@/graphql/hooks/useCreateFirstCommunionRecord";
 import { useAuth } from "@/graphql/hooks/useAuth";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
 export default function NewCommunionRecord() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = orgIdFromFilter;
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,7 +35,6 @@ export default function NewCommunionRecord() {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const { createFirstCommunionRecord } = useCreateFirstCommunionRecord();
-  const { user } = useAuth();
 
   // Member search hook
   const { members, loading: memberLoading, error: memberError } = useSearchMembers(memberSearch, 8);
@@ -79,6 +87,14 @@ export default function NewCommunionRecord() {
       setIsSubmitting(false);
       return;
     }
+    if (!branchId) {
+      setIsSubmitting(false);
+      return;
+    }
+    if (!organisationId) {
+      setIsSubmitting(false);
+      return;
+    }
 
     // Mock file upload: In real scenario, upload file and get URL
     let certificateUrl: string | undefined = undefined;
@@ -86,15 +102,13 @@ export default function NewCommunionRecord() {
       certificateUrl = `/mock-uploads/${formData.certificate.name}`;
     }
 
-    // Get branchId from user context
-    const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-
     try {
       await createFirstCommunionRecord({
         variables: {
           input: {
             memberId: formData.memberId,
             branchId,
+            organisationId,
             sacramentType: "EUCHARIST_FIRST_COMMUNION",
             dateOfSacrament: formData.communionDate,
             locationOfSacrament: formData.location,
@@ -170,165 +184,192 @@ export default function NewCommunionRecord() {
         <h1 className="text-2xl font-bold text-gray-900">New First Communion Record</h1>
       </div>
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
-            {/* Member & Date Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2">Member & Communion Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label htmlFor="memberName" className="block text-sm font-medium text-indigo-800 mb-1">Member *</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="memberName"
-                      id="memberName"
-                      autoComplete="off"
-                      className={`block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition pr-10 ${formData.memberId ? 'bg-indigo-50' : ''}`}
-                      placeholder="Search for a member..."
-                      value={memberSearch}
-                      onChange={e => {
-                        setMemberSearch(e.target.value);
-                        setShowDropdown(true);
-                        setFormData(prev => ({ ...prev, memberId: "", memberName: "" }));
-                      }}
-                      onFocus={() => setShowDropdown(true)}
-                      required
-                    />
-                    {formData.memberId && (
-                      <button
-                        type="button"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400"
-                        onClick={handleClearMember}
-                        tabIndex={-1}
-                        aria-label="Clear member selection"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                    )}
-                    {showDropdown && memberSearch && !formData.memberId && (
-                      <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                        {memberLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
-                        {memberError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
-                        {!memberLoading && !memberError && members.length === 0 && (
-                          <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
-                        )}
-                        {members.map((member: unknown) => (
-                          <button
-                            key={member.id}
-                            type="button"
-                            className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
-                            onClick={() => handleSelectMember(member)}
-                          >
-                            <UserIcon className="w-4 h-4 text-indigo-400 mr-1" />
-                            <span className="font-medium">{member.firstName} {member.lastName}</span>
-                            {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
-                            <span className="ml-auto text-xs text-gray-400">{member.id}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">Choose an existing member or add a new one</p>
-                </div>
-                <div>
-                  <label htmlFor="communionDate" className="block text-sm font-medium text-indigo-800 mb-1">First Communion Date *</label>
-                  <input
-                    type="date"
-                    name="communionDate"
-                    id="communionDate"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={formData.communionDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-indigo-800 mb-1">Location *</label>
-                  <input
-                    type="text"
-                    name="location"
-                    id="location"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="Parish, church, or chapel name"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="officiant" className="block text-sm font-medium text-indigo-800 mb-1">Officiant *</label>
-                  <input
-                    type="text"
-                    name="officiant"
-                    id="officiant"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="Name of priest or officiant"
-                    value={formData.officiant}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="catechist" className="block text-sm font-medium text-indigo-800 mb-1">Catechist</label>
-                  <input
-                    type="text"
-                    name="catechist"
-                    id="catechist"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="Name of catechist or religious education instructor"
-                    value={formData.catechist}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Branch Selection Logic */}
+          {isSuperAdmin ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+              <select
+                name="branchId"
+                value={selectedBranchId}
+                onChange={e => setSelectedBranchId(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                required
+                disabled={branchesLoading}
+              >
+                <option value="">Select Branch</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>{branch.name}</option>
+                ))}
+              </select>
             </div>
-            {/* Certificate Upload Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2">Certificate Upload</h3>
-              <div className="flex flex-col items-center">
-                <label htmlFor="certificate" className="block text-sm font-medium text-indigo-800 mb-1">Certificate (Optional)</label>
-                <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-indigo-300 px-6 pt-5 pb-6 w-full">
-                  <div className="space-y-1 text-center w-full">
-                    <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-indigo-400" aria-hidden="true" />
-                    <div className="flex text-sm text-gray-600 justify-center">
-                      <label
-                        htmlFor="certificate"
-                        className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
-                      >
-                        <span>Upload a file</span>
-                        <input
-                          id="certificate"
-                          name="certificate"
-                          type="file"
-                          className="sr-only"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
-                    {formData.certificate && (
-                      <p className="text-sm text-indigo-600">{formData.certificate.name}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Notes Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2">Notes</h3>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={3}
-                className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                placeholder="Any additional information about the first communion"
-                value={formData.notes}
-                onChange={handleChange}
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+              <input
+                type="text"
+                value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+                disabled
               />
             </div>
+          )}
+          {/* Member & Date Card */}
+          <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
+            <h3 className="text-xl font-semibold text-indigo-900 mb-2">Member & Communion Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div>
+                <label htmlFor="memberName" className="block text-sm font-medium text-indigo-800 mb-1">Member *</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="memberName"
+                    id="memberName"
+                    autoComplete="off"
+                    className={`block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition pr-10 ${formData.memberId ? 'bg-indigo-50' : ''}`}
+                    placeholder="Search for a member..."
+                    value={memberSearch}
+                    onChange={e => {
+                      setMemberSearch(e.target.value);
+                      setShowDropdown(true);
+                      setFormData(prev => ({ ...prev, memberId: "", memberName: "" }));
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    required
+                  />
+                  {formData.memberId && (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400"
+                      onClick={handleClearMember}
+                      tabIndex={-1}
+                      aria-label="Clear member selection"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                  {showDropdown && memberSearch && !formData.memberId && (
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {memberLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
+                      {memberError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
+                      {!memberLoading && !memberError && members.length === 0 && (
+                        <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
+                      )}
+                      {members.map((member: unknown) => (
+                        <button
+                          key={member.id}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
+                          onClick={() => handleSelectMember(member)}
+                        >
+                          <UserIcon className="w-4 h-4 text-indigo-400 mr-1" />
+                          <span className="font-medium">{member.firstName} {member.lastName}</span>
+                          {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
+                          <span className="ml-auto text-xs text-gray-400">{member.id}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">Choose an existing member or add a new one</p>
+              </div>
+              <div>
+                <label htmlFor="communionDate" className="block text-sm font-medium text-indigo-800 mb-1">First Communion Date *</label>
+                <input
+                  type="date"
+                  name="communionDate"
+                  id="communionDate"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={formData.communionDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-indigo-800 mb-1">Location *</label>
+                <input
+                  type="text"
+                  name="location"
+                  id="location"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  placeholder="Parish, church, or chapel name"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="officiant" className="block text-sm font-medium text-indigo-800 mb-1">Officiant *</label>
+                <input
+                  type="text"
+                  name="officiant"
+                  id="officiant"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  placeholder="Name of priest or officiant"
+                  value={formData.officiant}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="catechist" className="block text-sm font-medium text-indigo-800 mb-1">Catechist</label>
+                <input
+                  type="text"
+                  name="catechist"
+                  id="catechist"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  placeholder="Name of catechist or religious education instructor"
+                  value={formData.catechist}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+          {/* Certificate Upload Card */}
+          <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
+            <h3 className="text-xl font-semibold text-indigo-900 mb-2">Certificate Upload</h3>
+            <div className="flex flex-col items-center">
+              <label htmlFor="certificate" className="block text-sm font-medium text-indigo-800 mb-1">Certificate (Optional)</label>
+              <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-indigo-300 px-6 pt-5 pb-6 w-full">
+                <div className="space-y-1 text-center w-full">
+                  <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-indigo-400" aria-hidden="true" />
+                  <div className="flex text-sm text-gray-600 justify-center">
+                    <label
+                      htmlFor="certificate"
+                      className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
+                    >
+                      <span>Upload a file</span>
+                      <input
+                        id="certificate"
+                        name="certificate"
+                        type="file"
+                        className="sr-only"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
+                  {formData.certificate && (
+                    <p className="text-sm text-indigo-600">{formData.certificate.name}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Notes Card */}
+          <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100">
+            <h3 className="text-xl font-semibold text-indigo-900 mb-2">Notes</h3>
+            <textarea
+              id="notes"
+              name="notes"
+              rows={3}
+              className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+              placeholder="Any additional information about the first communion"
+              value={formData.notes}
+              onChange={handleChange}
+            />
           </div>
           <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-end space-x-3">
             <Link

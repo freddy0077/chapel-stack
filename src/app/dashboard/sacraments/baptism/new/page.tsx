@@ -7,9 +7,15 @@ import { useRouter } from "next/navigation";
 import { useCreateBaptismRecord } from "@/graphql/hooks/useCreateBaptismRecord";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
-function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: unknown) => void }) {
-  const { members, loading, error } = useSearchMembers(query, 8);
+function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: any) => void }) {
+  const { user } = useAuth();
+  const { organisationId: orgIdFromFilter } = useOrganizationBranchFilter();
+  const organisationId = orgIdFromFilter ? String(orgIdFromFilter) : "";
+  const { data, loading, error } = useSearchMembers(query, organisationId);
+  const members = Array.isArray(data) ? data : Array.isArray(data?.members) ? data.members : [];
   return (
     <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
       {loading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
@@ -17,7 +23,7 @@ function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (m
       {!loading && !error && members.length === 0 && (
         <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
       )}
-      {members.map(member => (
+      {members.map((member: any) => (
         <button
           key={member.id}
           type="button"
@@ -35,6 +41,13 @@ function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (m
 
 export default function NewBaptismRecord() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = orgIdFromFilter;
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     memberId: "", // will be set from search/autocomplete
@@ -68,7 +81,6 @@ export default function NewBaptismRecord() {
   };
   
   const { createBaptismRecord, loading: mutationLoading, error: mutationError } = useCreateBaptismRecord();
-  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +98,16 @@ export default function NewBaptismRecord() {
       setIsSubmitting(false);
       return;
     }
+    if (!branchId) {
+      setErrorMessage("No branch selected or available for this user.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!organisationId) {
+      setErrorMessage("No organisation found for this user or branch.");
+      setIsSubmitting(false);
+      return;
+    }
 
     // Mock file upload: In real scenario, upload file and get URL
     let certificateUrl: string | undefined = undefined;
@@ -99,15 +121,13 @@ export default function NewBaptismRecord() {
     const godparent1Name = sponsorsArr[0] || "";
     const godparent2Name = sponsorsArr[1] || "";
 
-    // Get branchId from user context
-    const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-
     try {
       await createBaptismRecord({
         variables: {
           input: {
             memberId: formData.memberId,
             branchId,
+            organisationId,
             sacramentType: "BAPTISM",
             dateOfSacrament: formData.baptismDate,
             locationOfSacrament: formData.location,
@@ -143,12 +163,41 @@ export default function NewBaptismRecord() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Branch Selection Logic */}
+        {isSuperAdmin ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+            <select
+              name="branchId"
+              value={selectedBranchId}
+              onChange={e => setSelectedBranchId(e.target.value)}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              disabled={branchesLoading}
+            >
+              <option value="">Select Branch</option>
+              {branches.map(branch => (
+                <option key={branch.id} value={branch.id}>{branch.name}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+            <input
+              type="text"
+              value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+              className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
+              disabled
+            />
+          </div>
+        )}
         {/* Member Selection Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-  <UserIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
-  Member
-</h2>
+            <UserIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+            Member
+          </h2>
           <label htmlFor="memberSearch" className="block text-sm font-medium text-gray-700 mb-1">
             Search or select a member <span className="text-red-500">*</span>
           </label>
@@ -244,9 +293,9 @@ export default function NewBaptismRecord() {
         {/* Certificate Upload Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-  <DocumentArrowUpIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
-  Certificate Upload
-</h2>
+            <DocumentArrowUpIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+            Certificate Upload
+          </h2>
           <label htmlFor="certificate" className="block text-sm font-medium text-gray-700 mb-2">
             Certificate (Optional)
           </label>

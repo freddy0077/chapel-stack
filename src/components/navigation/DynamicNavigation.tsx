@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/authContext";
 import { usePermissions } from '@/hooks/usePermissions';
+import { useModulePreferences } from '@/hooks/useModulePreferences';
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
@@ -59,13 +60,14 @@ const fullNavigation = [
         badge: null,
         moduleId: "groups" 
       },
-      { 
-        name: "Children", 
-        href: "/dashboard/children", 
-        icon: UserCircleIcon, 
-        badge: null,
-        moduleId: "members" 
-      },
+      // HIDE Children menu item
+      // { 
+      //   name: "Children", 
+      //   href: "/dashboard/children", 
+      //   icon: UserCircleIcon, 
+      //   badge: null,
+      //   moduleId: "members" 
+      // },
       {
         name: "Prayer Requests",
         href: "/dashboard/prayer-requests",
@@ -120,13 +122,14 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "sermons" 
       // },
-      { 
-        name: "Sermons", 
-        href: "/dashboard/sermons", 
-        icon: MusicalNoteIcon, 
-        badge: null,
-        moduleId: "sermons" 
-      },
+      // HIDE Sermons menu item
+      // { 
+      //   name: "Sermons", 
+      //   href: "/dashboard/sermons", 
+      //   icon: MusicalNoteIcon, 
+      //   badge: null,
+      //   moduleId: "sermons" 
+      // },
     ]
   },
   {
@@ -159,13 +162,6 @@ const fullNavigation = [
         icon: ChatBubbleLeftRightIcon, 
         // badge: { count: 5, color: "bg-rose-500" },
         moduleId: "communication" 
-      },
-      { 
-        name: "Media Assets", 
-        href: "/dashboard/cms/assets", 
-        icon: PhotoIcon, 
-        badge: { count: "New", color: "bg-green-500" },
-        moduleId: "media-library" 
       },
       { 
         name: "Reports", 
@@ -239,13 +235,6 @@ const fullNavigation = [
         icon: Cog6ToothIcon, 
         badge: null,
         moduleId: "dashboard" 
-      },
-      { 
-        name: "Mobile App", 
-        href: "/dashboard/mobile-integration", 
-        icon: DevicePhoneMobileIcon, 
-        badge: null,
-        moduleId: "mobile" 
       },
       { 
         name: "Website", 
@@ -331,9 +320,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
           if (section.category === "Operations") {
             return {
               ...section,
-              items: section.items.filter(item =>
-                !["Branches", "Finances"].includes(item.name)
-              )
+              items: section.items.filter(item => item.name === "Branch Finances")
             };
           }
           if (section.category === "System") {
@@ -364,6 +351,21 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
     const newFilteredNavigation = fullNavigation.map(category => ({
       ...category,
       items: category.items.filter(item => {
+        if (category.category === "Operations" && ["Branch Finances", "Reports"].includes(item.name)) {
+          // Only show Branch Finances to branch_admin, always hide Reports
+          if (item.name === "Branch Finances") {
+            return user?.primaryRole?.toLowerCase() === "branch_admin";
+          }
+          return false; // Hide Reports for all
+        }
+        if (category.category === "System" && item.name === "Admin") {
+          // Hide Admin menu item for all users
+          return false;
+        }
+        if (item.name === "Mobile App") {
+          // Hide Mobile App menu item for all users
+          return false;
+        }
         // Super Admins see everything, always.
         if (isSuperAdmin) {
           return true;

@@ -17,6 +17,8 @@ export default function DashboardPage() {
     variables: { organisationId }, // Pass organisationId if you want to filter, or omit if not needed
   });
   const dashboard = data?.superAdminDashboardData;
+
+  console.log("dashboard data:", dashboard?.financialOverview?.topGivingBranches);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex">
       {/* Sidebar */}
@@ -40,10 +42,11 @@ export default function DashboardPage() {
             branches={dashboard?.branchesSummary?.total}
             members={dashboard?.memberSummary?.total}
             attendance={dashboard?.attendanceOverview?.totalAttendance}
+            newMembers={dashboard?.memberSummary?.newMembersThisMonth}
         />
         <FinancesSummary
           totalContributions={dashboard?.financialOverview?.totalContributions}
-          topBranches={dashboard?.financialOverview?.topBranches?.map(b => ({ name: b.name, amount: b.totalContributions }))}
+          topBranches={dashboard?.financialOverview?.topGivingBranches?.map(b => ({branchId: b?.branchId, branchName: b?.branchName, amount: b?.totalGiven })) ?? []}
           expensesVsIncome={dashboard?.financialOverview ? {
             labels: dashboard.financialOverview.expensesVsIncome?.map(e => e.label) ?? [],
             income: dashboard.financialOverview.expensesVsIncome?.map(e => e.income) ?? [],

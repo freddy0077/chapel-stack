@@ -6,6 +6,8 @@ import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { useEventMutations } from "@/graphql/hooks/useEvents";
 import { useAuth } from "@/graphql/hooks/useAuth";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
 interface NewEventModalProps {
   open: boolean;
@@ -24,25 +26,46 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 
   const { createEvent } = useEventMutations();
   const { user } = useAuth();
+  const filter = useOrganizationBranchFilter();
+
+  // For SUPER_ADMIN, fetch branches for dropdown
+  const { branches, loading: branchesLoading } = useFilteredBranches(
+    user?.primaryRole === "super_admin" ? { organisationId: filter.organisationId } : undefined
+  );
+
+  // Determine branchId for event creation
+  const branchId = user?.primaryRole === "super_admin"
+    ? selectedBranchId
+    : user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
+
+  // Always get organisationId
+  const organisationId = user?.organisationId || (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.organisationId : undefined);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      // Ensure branchId is present
-      const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
       if (!branchId) {
         setError("No branch selected or available for this user.");
         setSubmitting(false);
         return;
       }
+      if (!organisationId) {
+        setError("No organisation found for this user or branch.");
+        setSubmitting(false);
+        return;
+      }
       const input = {
         ...form,
-        branchId
+        branchId,
+        organisationId
       };
       await createEvent(input);
       setSubmitting(false);
@@ -53,7 +76,6 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
       setSubmitting(false);
     }
   };
-
 
   return (
     <Dialog open={open} onClose={onClose} className="fixed z-50 inset-0 overflow-y-auto">
@@ -160,6 +182,34 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
                 />
               </div>
             </div>
+            {user?.primaryRole === "super_admin" ? (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Branch<span className="text-red-500">*</span></label>
+                <select
+                  name="branchId"
+                  value={selectedBranchId}
+                  onChange={e => setSelectedBranchId(e.target.value)}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  required
+                  disabled={branchesLoading}
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map(branch => (
+                    <option key={branch.id} value={branch.id}>{branch.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Branch</label>
+                <input
+                  type="text"
+                  value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                  className="block w-full rounded-lg border border-indigo-200 bg-gray-100 px-4 py-3 text-lg shadow-sm cursor-not-allowed"
+                  disabled
+                />
+              </div>
+            )}
             {error && <div className="text-red-600 text-sm font-medium mt-2">{error}</div>}
             <div className="flex justify-end gap-3 mt-6">
               <Button type="button" variant="outline" onClick={onClose} className="min-w-[100px]">Cancel</Button>
