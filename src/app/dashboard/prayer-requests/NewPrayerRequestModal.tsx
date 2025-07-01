@@ -6,6 +6,7 @@ import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@apollo/client";
 import { CREATE_PRAYER_REQUEST } from "@/graphql/mutations/prayer-requests";
 import { useAuth } from "@/graphql/hooks/useAuth";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 
 interface NewPrayerRequestModalProps {
   open: boolean;
@@ -18,6 +19,12 @@ export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewP
   console.log("user from modal", user);
   const [requestText, setRequestText] = useState("");
   const [touched, setTouched] = useState(false);
+
+  const isSuperAdmin = user?.primaryRole === 'super_admin';
+  const [selectedBranchId, setSelectedBranchId] = useState(user?.userBranches?.[0]?.branch?.id || '');
+  const organisationId = user?.organisationId;
+  // Fetch branches for super_admins only
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
 
   const [createPrayerRequest, { loading: submitting, error }] = useMutation(CREATE_PRAYER_REQUEST, {
     onCompleted: () => {
@@ -41,7 +48,7 @@ export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewP
         data: {
           memberId: user?.member?.id,
           requestText: requestText.trim(),
-          branchId: user?.userBranches?.[0]?.branch?.id,
+          branchId: isSuperAdmin ? selectedBranchId : user?.userBranches?.[0]?.branch?.id,
           organisationId: user?.organisationId,
         },
       },
@@ -91,6 +98,26 @@ export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewP
                       <div className="text-red-500 text-xs mt-1">Prayer request is required.</div>
                     )}
                   </div>
+                  {isSuperAdmin && (
+                    <div className="mb-4">
+                      <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        Branch
+                      </label>
+                      <select
+                        id="branch-select"
+                        className="w-full border border-gray-300 rounded-md p-2"
+                        value={selectedBranchId}
+                        onChange={e => setSelectedBranchId(e.target.value)}
+                        required
+                        disabled={branchesLoading}
+                      >
+                        <option value="">{branchesLoading ? "Loading branches..." : "Select branch"}</option>
+                        {branches.map((b: any) => (
+                          <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   {error && (
                     <div className="text-red-600 text-sm mb-2">Error: {error.message}</div>
                   )}

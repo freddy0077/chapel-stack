@@ -18,14 +18,14 @@ interface UserInvitationsScreenProps {
 
 const ROLE_OPTIONS = [
   // 'SUPER_ADMIN',
-  'ADMIN',
+  // 'ADMIN',
   'BRANCH_ADMIN',
-  'MODERATOR',
-  'USER',
+  // 'MODERATOR',
+  // 'USER',
   'MEMBER',
   'PASTOR',
-  'FINANCE_MANAGER',
-  'CONTENT_MANAGER',
+  // 'FINANCE_MANAGER',
+  // 'CONTENT_MANAGER',
 ];
 
 const defaultInvitee = { email: '', firstName: '', lastName: '', role: '' };

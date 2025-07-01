@@ -27,8 +27,8 @@ export default function EditEventModal({ open, onClose, event, onEventUpdated }:
     title: event.title || "",
     description: event.description || "",
     category: event.category || "SERVICE",
-    startDate: event.startDate || "",
-    endDate: event.endDate || "",
+    startDate: "",
+    endDate: "",
     location: event.location || "",
     branchId: event.branchId || ""
   });
@@ -36,13 +36,16 @@ export default function EditEventModal({ open, onClose, event, onEventUpdated }:
   const [error, setError] = useState<string | null>(null);
   const { updateEvent } = useEventMutations();
 
+  console.log("Event to edit:", event);
   useEffect(() => {
+    // Helper to format ISO string to YYYY-MM-DD
+    const formatDate = (iso: string) => iso ? iso.split('T')[0] : "";
     setForm({
       title: event.title || "",
       description: event.description || "",
       category: event.category || "SERVICE",
-      startDate: event.startDate || "",
-      endDate: event.endDate || "",
+      startDate: formatDate(event.startDate),
+      endDate: formatDate(event.endDate),
       location: event.location || "",
       branchId: event.branchId || ""
     });
@@ -53,9 +56,16 @@ export default function EditEventModal({ open, onClose, event, onEventUpdated }:
     setSubmitting(true);
     setError(null);
     try {
+      // Only include fields allowed by UpdateEventInput
       const input = {
         id: event.id,
-        ...form
+        title: form.title,
+        description: form.description,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        location: form.location,
+        category: form.category,
+        branchId: form.branchId
       };
       await updateEvent(input);
       setSubmitting(false);

@@ -33,12 +33,6 @@ export const UPDATE_EVENT = gql`
       branchId
       createdBy
       updatedBy
-      isRecurring
-      recurrencePattern
-      capacity
-      registrationRequired
-      registrationDeadline
-      updatedAt
     }
   }
 `;

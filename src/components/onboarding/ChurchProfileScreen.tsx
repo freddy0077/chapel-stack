@@ -357,11 +357,12 @@ const ChurchProfileScreen = ({
       </Card>
       
       {/* Navigation Controls */}
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-4 mt-8 w-full max-w-2xl mx-auto">
         <Button 
           color="gray"
           icon={ArrowLeftIcon}
           onClick={onBack}
+          className="w-36"
         >
           Back
         </Button>
@@ -372,6 +373,7 @@ const ChurchProfileScreen = ({
           onClick={handleSubmit}
           loading={isLoading}
           disabled={isLoading || !isFormValid}
+          className="w-48 max-w-full"
         >
           Next
         </Button>

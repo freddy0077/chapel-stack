@@ -54,6 +54,10 @@ export const GET_EVENT = gql`
       branchId
       createdBy
       updatedBy
+      branch {
+        id
+        name
+      }
     }
   }
 `;

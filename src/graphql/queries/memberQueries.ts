@@ -124,12 +124,14 @@ export const GET_MEMBERS_LIST = gql`
     $skip: Int
     $take: Int
     $branchId: String
+    $search: String
   ) {
     members(
       organisationId: $organisationId
       skip: $skip
       take: $take
       branchId: $branchId
+      search: $search
     ) {
       id
       firstName
@@ -151,7 +153,6 @@ export const GET_MEMBERS_LIST = gql`
         id
         name
       }
-      # --- Add these for full detail ---
       spouse {
         id
         firstName
@@ -177,9 +178,9 @@ export const GET_MEMBERS_LIST = gql`
           id
           firstName
           lastName
-          }
-        createdAt
-        updatedAt
+          createdAt
+          updatedAt
+        }
       }
       prayerRequests
       contributions
@@ -258,7 +259,7 @@ export const GET_MEMBER = gql`
 
 // Query to search for members by name, email, or phone number
 export const SEARCH_MEMBERS = gql`
-  query SearchMembers($search: String, $organisationId: String!) {
+  query SearchMembers($search: String, $organisationId: String) {
     members(search: $search, organisationId: $organisationId) {
       id
       firstName

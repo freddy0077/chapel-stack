@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import countries from "@/data/countries";
 
 export default function NewBranchPage() {
   const router = useRouter();
@@ -163,14 +164,9 @@ export default function NewBranchPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="USA">United States</option>
-                    <option value="CAN">Canada</option>
-                    <option value="MEX">Mexico</option>
-                    <option value="GBR">United Kingdom</option>
-                    <option value="FRA">France</option>
-                    <option value="DEU">Germany</option>
-                    <option value="ITA">Italy</option>
-                    <option value="ESP">Spain</option>
+                    {countries.map(c => (
+                      <option key={c["alpha-3"]} value={c["alpha-3"]}>{c.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>

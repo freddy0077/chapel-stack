@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@tremor/react';
 import { BuildingOffice2Icon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
@@ -8,6 +8,7 @@ import { CREATE_BRANCH_ADMIN } from '../../../graphql/mutations/branchAdminMutat
 import { CREATE_BRANCH_SETTING } from '../../../graphql/mutations/branchSettingsMutations';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { markScreenCompleted } from '../utils/completedScreens';
+import { humanizeError } from '@/utils/humanizeError';
 
 // Static IANA time zones (shortened for brevity, can be expanded as needed)
 const timezones: string[] = [
@@ -110,7 +111,8 @@ const countryOptions = [
 ];
 
 export interface BranchAdminInput {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -294,11 +296,13 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
     } catch (error: unknown) {
       setPrimaryError(prev => {
         const updated = [...prev];
-        if (error instanceof Error) {
-          updated[idx] = error.message;
-        } else {
-          updated[idx] = 'An unknown error occurred';
+        let msg = 'An error occurred';
+        if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors)) {
+          msg = (error as any).graphQLErrors[0]?.message || (error as any).message || 'An error occurred';
+        } else if (error instanceof Error) {
+          msg = error.message;
         }
+        updated[idx] = humanizeError(msg);
         return updated;
       });
     } finally {
@@ -328,11 +332,14 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
         throw new Error('Please save branch details first.');
       }
       const admin = branches[idx].admin;
+      const organisationId = typeof window !== 'undefined' ? localStorage.getItem('organisation_id') || '' : '';
       const input = {
-        name: admin.name,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
         email: admin.email,
         password: admin.password,
         branchId,
+        organisationId,
         // Optionally, role or other fields if required by backend
       };
       const { data } = await createBranchAdmin({ variables: { input } });
@@ -418,11 +425,13 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
     } catch (error: unknown) {
       setSettingsError(prev => {
         const updated = [...prev];
-        if (error instanceof Error) {
-          updated[idx] = error.message;
-        } else {
-          updated[idx] = 'An unknown error occurred';
+        let msg = 'An error occurred';
+        if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors)) {
+          msg = (error as any).graphQLErrors[0]?.message || (error as any).message || 'An error occurred';
+        } else if (error instanceof Error) {
+          msg = error.message;
         }
+        updated[idx] = humanizeError(msg);
         return updated;
       });
     } finally {
@@ -482,6 +491,38 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
     onNext();
   };
 
+  // Validation helpers
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+  function isValidPhone(phone: string) {
+    return /^\+?\d{7,15}$/.test(phone.replace(/\s+/g, ''));
+  }
+
+  // --- Validation logic for Primary Details ---
+  const primaryValid = useMemo(() => branches.map(branch => {
+    return !!branch.branchName &&
+      !!branch.address &&
+      !!branch.status &&
+      !!branch.establishedDate &&
+      !!branch.city &&
+      !!branch.country &&
+      isValidPhone(branch.phone) &&
+      isValidEmail(branch.email) &&
+      !!branch.website;
+  }), [branches]);
+
+  // Add validation for settings section
+  const isValidSettings = (branch: BranchDetailsInput) => {
+    // Currency must be selected (non-empty)
+    if (!branch.currency) return false;
+    // Timezone must be selected (non-empty)
+    if (!branch.settings?.timezone) return false;
+    // Optionally, require at least one module (uncomment if needed)
+    // if (!branch.modules || branch.modules.length === 0) return false;
+    return true;
+  };
+
   return (
     <div className="space-y-8 flex flex-col items-center w-full">
       <div className="mb-8 text-center w-full max-w-screen-md">
@@ -530,6 +571,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         required
                         placeholder="e.g. Downtown Assembly"
                       />
+                      {!branch.branchName && <div className="text-red-500 text-xs mt-1">Branch name is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Address</label>
@@ -540,6 +582,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         onChange={e => handleBranchChange(idx, 'address', e.target.value)}
                         placeholder="e.g. 123 Main St, Accra"
                       />
+                      {!branch.address && <div className="text-red-500 text-xs mt-1">Address is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Status</label>
@@ -548,9 +591,11 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         value={branch.status || ''}
                         onChange={e => handleBranchChange(idx, 'status', e.target.value)}
                       >
+                        <option value="" disabled hidden>Select status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>
+                      {!branch.status && <div className="text-red-500 text-xs mt-1">Status is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Established Date</label>
@@ -560,6 +605,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         value={branch.establishedDate || ''}
                         onChange={e => handleBranchChange(idx, 'establishedDate', e.target.value)}
                       />
+                      {!branch.establishedDate && <div className="text-red-500 text-xs mt-1">Established date is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">City</label>
@@ -570,6 +616,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         onChange={e => handleBranchChange(idx, 'city', e.target.value)}
                         placeholder="e.g. Accra"
                       />
+                      {!branch.city && <div className="text-red-500 text-xs mt-1">City is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Country</label>
@@ -584,6 +631,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                           <option key={country} value={country}>{country || 'Select country'}</option>
                         ))}
                       </select>
+                      {!branch.country && <div className="text-red-500 text-xs mt-1">Country is required.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Phone</label>
@@ -594,6 +642,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         onChange={e => handleBranchChange(idx, 'phone', e.target.value)}
                         placeholder="e.g. +233 123 456 789"
                       />
+                      {branch.phone && !isValidPhone(branch.phone) && <div className="text-red-500 text-xs mt-1">Enter a valid phone number.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Email</label>
@@ -604,6 +653,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         onChange={e => handleBranchChange(idx, 'email', e.target.value)}
                         placeholder="e.g. info@example.com"
                       />
+                      {branch.email && !isValidEmail(branch.email) && <div className="text-red-500 text-xs mt-1">Enter a valid email address.</div>}
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Website</label>
@@ -614,16 +664,17 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         onChange={e => handleBranchChange(idx, 'website', e.target.value)}
                         placeholder="e.g. https://example.com"
                       />
+                      {!branch.website && <div className="text-red-500 text-xs mt-1">Website is required.</div>}
                     </div>
                   </div>
-                  <Button type="button" color="indigo" onClick={() => handleSavePrimary(idx)} className="w-full md:w-auto mt-4">
+                  <Button type="button" color="indigo" onClick={() => handleSavePrimary(idx)} className="w-full md:w-auto mt-4" disabled={!primaryValid[idx] || primaryLoading[idx]}>
                     {primaryLoading[idx] ? 'Saving...' : 'Save Primary Details'}
                   </Button>
                   {primarySaved[idx] && (
                     <div className="text-green-600 mt-2">Primary details saved successfully!</div>
                   )}
                   {primaryError[idx] && (
-                    <div className="text-red-600 mt-2">{primaryError[idx]}</div>
+                    <div className="text-red-500 text-xs mt-2">{primaryError[idx]}</div>
                   )}
                   </>
                   ) : primarySaved[idx] ? (
@@ -646,10 +697,18 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input
                       type="text"
-                      placeholder="Admin Name"
+                      placeholder="First Name"
                       className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                      value={branch.admin.name}
-                      onChange={e => handleAdminChange(idx, 'name', e.target.value)}
+                      value={branch.admin.firstName}
+                      onChange={e => handleAdminChange(idx, 'firstName', e.target.value)}
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+                      value={branch.admin.lastName}
+                      onChange={e => handleAdminChange(idx, 'lastName', e.target.value)}
                       required
                     />
                     <input
@@ -716,6 +775,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                           <option key={option} value={option}>{option}</option>
                         ))}
                       </select>
+                      {!branch.currency && <div className="text-red-500 text-xs mt-1">Currency is required.</div>}
                     </label>
                     <label className="block w-full">
                       <span className="block font-semibold mb-1">Timezone</span>
@@ -729,6 +789,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                           <option key={tz} value={tz}>{tz}</option>
                         ))}
                       </select>
+                      {!branch.settings?.timezone && <div className="text-red-500 text-xs mt-1">Timezone is required.</div>}
                     </label>
                     <div>
                       <label className="block font-semibold mb-1">Modules</label>
@@ -752,7 +813,7 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                     color="indigo"
                     onClick={() => handleSaveSettings(idx)}
                     className="w-full md:w-auto mt-4"
-                    disabled={!branchIds[idx] || settingsLoading[idx]}
+                    disabled={!branchIds[idx] || settingsLoading[idx] || !isValidSettings(branch)}
                   >
                     {settingsLoading[idx]
                       ? 'Saving settings...'

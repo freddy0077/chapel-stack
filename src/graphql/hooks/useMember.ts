@@ -283,7 +283,8 @@ export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInp
       skip: pagination?.skip ?? 0,
       take: pagination?.take ?? 10,
       branchId: filters?.branchId,
-      organisationId: filters?.organisationId
+      organisationId: filters?.organisationId,
+      search: filters?.search || undefined, // <-- ensure search is sent
     },
     notifyOnNetworkStatusChange: true,
   });

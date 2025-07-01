@@ -137,7 +137,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         <div className="fixed inset-0 bg-black bg-opacity-30 transition-opacity" />
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-            <Dialog.Panel className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-0">
+            {/* Redesigned Modal Panel for better alignment and professionalism */}
+            <Dialog.Panel className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-0 relative flex flex-col">
               {/* Close button */}
               <button
                 type="button"
@@ -185,42 +186,16 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                       <input name="middleName" value={formData.middleName} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Gender</label>
-                      <select name="gender" value={formData.gender} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
-                        <option value="">Select Gender</option>
-                        <option value="MALE">Male</option>
-                        <option value="FEMALE">Female</option>
-                        <option value="OTHER">Other</option>
-                        <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Date of Birth</label>
-                      <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Marital Status</label>
-                      <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
-                        <option value="">Select Status</option>
-                        <option value="SINGLE">Single</option>
-                        <option value="MARRIED">Married</option>
-                        <option value="DIVORCED">Divorced</option>
-                        <option value="WIDOWED">Widowed</option>
-                        <option value="SEPARATED">Separated</option>
-                        <option value="OTHER">Other</option>
-                      </select>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
+                      <input name="email" type="email" value={formData.email} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      {renderError("email")}
                     </div>
                   </div>
                 </section>
-                {/* Contact Info */}
-                <section>
-                  <h3 className="font-semibold text-gray-900 mb-2">Contact Information</h3>
+                {/* Contact & Address Info */}
+                <section className="mt-8">
+                  <h3 className="font-semibold text-gray-900 mb-2">Contact & Address</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
-                      <input name="email" value={formData.email} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
-                      {renderError("email")}
-                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Phone</label>
                       <input name="phone" value={formData.phone} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
@@ -235,18 +210,18 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                       <input name="city" value={formData.city} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">State</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">State/Region</label>
                       <input name="state" value={formData.state} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Zip</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">ZIP/Postal Code</label>
                       <input name="zip" value={formData.zip} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                   </div>
                 </section>
-                {/* Membership Section */}
-                <section>
-                  <h3 className="font-semibold text-gray-900 mb-2">Membership</h3>
+                {/* Status & Dates */}
+                <section className="mt-8">
+                  <h3 className="font-semibold text-gray-900 mb-2">Status & Dates</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Status</label>
@@ -254,12 +229,52 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                         <option value="ACTIVE">Active</option>
                         <option value="INACTIVE">Inactive</option>
                         <option value="VISITOR">Visitor</option>
-                        <option value="TRANSFERRED">Transferred</option>
+                        <option value="FIRST_TIME_VISITOR">First Time Visitor</option>
+                        <option value="RETURNING_VISITOR">Returning Visitor</option>
+                        <option value="DECEASED">Deceased</option>
                       </select>
                     </div>
                     <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Date of Birth</label>
+                      <input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Join Date</label>
-                      <input type="date" name="joinDate" value={formData.joinDate} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                      <input name="joinDate" type="date" value={formData.joinDate} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
+                    </div>
+                  </div>
+                </section>
+                {/* Gender & Marital Status */}
+                <section className="mt-8">
+                  <h3 className="font-semibold text-gray-900 mb-2">Other Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Gender</label>
+                      <select name="gender" value={formData.gender} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
+                        <option value="">Select</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Marital Status</label>
+                      <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm">
+                        <option value="">Select</option>
+                        <option value="SINGLE">Single</option>
+                        <option value="MARRIED">Married</option>
+                        <option value="DIVORCED">Divorced</option>
+                        <option value="WIDOWED">Widowed</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+                {/* Reason for Visiting & Previous Church */}
+                <section className="mt-8">
+                  <h3 className="font-semibold text-gray-900 mb-2">Background & Invitation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Reason for Visiting</label>
+                      <input name="reasonForVisiting" value={formData.reasonForVisiting} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">Previous Church</label>
@@ -267,48 +282,25 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                     </div>
                   </div>
                 </section>
-                {/* Family Members Section */}
-                <section>
-                  <h3 className="font-semibold text-gray-900 mb-2">Family Members</h3>
-                  <div className="space-y-2">
-                    {familyMembers.map((member) => (
-                      <div key={member.id} className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 rounded-md p-3">
-                        <input type="text" placeholder="First Name" value={member.firstName} onChange={e => updateFamilyMember(member.id, "firstName", e.target.value)} className="rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" />
-                        <input type="text" placeholder="Last Name" value={member.lastName} onChange={e => updateFamilyMember(member.id, "lastName", e.target.value)} className="rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" />
-                        <div className="flex gap-2">
-                          <input type="text" placeholder="Relationship" value={member.relationship} onChange={e => updateFamilyMember(member.id, "relationship", e.target.value)} className="rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 flex-1" />
-                          <button type="button" onClick={() => removeFamilyMember(member.id)} className="text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
-                        </div>
-                      </div>
-                    ))}
-                    <button type="button" onClick={addFamilyMember} className="mt-2 inline-flex items-center px-3 py-1.5 border border-indigo-300 rounded-md text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">Add Family Member</button>
-                  </div>
-                </section>
-                {/* Introduction */}
-                <section>
-                  <h3 className="font-semibold text-gray-900 mb-2">Introduction</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Invited By</label>
-                      <input name="invitedBy" value={formData.invitedBy} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Relationship to Inviter</label>
-                      <input name="invitedByRelationship" value={formData.invitedByRelationship} onChange={handleChange} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Reason for Visiting</label>
-                      <textarea name="reasonForVisiting" value={formData.reasonForVisiting} onChange={handleChange} rows={2} className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm" />
-                    </div>
-                  </div>
-                </section>
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-8 border-t border-gray-100 mt-10">
-                  <button type="button" className="inline-flex items-center rounded-lg bg-white px-5 py-2 text-base font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" onClick={onClose}>Cancel</button>
-                  <button type="submit" className="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2 text-base font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition" disabled={isSubmitting || mutationLoading}>
+                {/* Submission Button */}
+                <div className="mt-10 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? "Saving..." : "Save Member"}
                   </button>
                 </div>
+                {formErrors.general && <div className="mt-4 text-center text-sm text-red-600">{formErrors.general}</div>}
               </form>
             </Dialog.Panel>
           </Transition.Child>

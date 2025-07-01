@@ -72,8 +72,8 @@ export default function ModernMembersList({
   isLoading = false,
   onSort,
 }: ModernMembersListProps) {
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortField, setSortField] = useState<SortField>('memberSince');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   
   
 

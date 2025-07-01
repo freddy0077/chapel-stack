@@ -8,6 +8,7 @@ import { useCreateOrganisation } from '@/graphql/hooks/useOrganisation';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { DateTime } from 'luxon';
 import { markScreenCompleted } from '../utils/completedScreens';
+import { humanizeError } from '@/utils/humanizeError';
 
 interface ChurchProfileScreenProps {
   onNext: () => void;
@@ -154,15 +155,15 @@ const ChurchProfileScreen = ({
         setSuccess(true);
         if (onNext) onNext();
       }, 100);
-    } catch {
+    } catch (error) {
       // Show backend error if available
       let gqlError = 'An error occurred';
-      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as unknown).graphQLErrors)) {
-        gqlError = (error as unknown).graphQLErrors[0]?.message || (error as unknown).message || 'An error occurred';
+      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors)) {
+        gqlError = (error as any).graphQLErrors[0]?.message || (error as any).message || 'An error occurred';
       } else if (error instanceof Error) {
         gqlError = error.message;
       }
-      setBackendError(gqlError);
+      setBackendError(humanizeError(gqlError));
       setIsSaving(false);
     }
   };
@@ -298,14 +299,14 @@ const ChurchProfileScreen = ({
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">State/Province</label>
+                  <label className="block font-semibold mb-1">Region</label>
                   <input
                     type="text"
                     name="state"
                     value={localOrganisation.state || ''}
                     onChange={handleChange}
                     className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="State/Province"
+                    placeholder="Region"
                   />
                 </div>
                 <div>
@@ -471,7 +472,7 @@ const ChurchProfileScreen = ({
                 <Button
                   type="submit"
                   color="indigo"
-                  className="w-full"
+
                   loading={isSaving || mutationLoading}
                   disabled={isSaving || mutationLoading}
                   icon={ArrowRightIcon}

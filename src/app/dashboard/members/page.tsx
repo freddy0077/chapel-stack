@@ -107,8 +107,6 @@ export default function MembersRedesigned() {
       const genderMap: Record<string, Gender> = {
         'male': Gender.MALE,
         'female': Gender.FEMALE,
-        'other': Gender.OTHER,
-        'prefer not to say': Gender.PREFER_NOT_TO_SAY
       };
       
       // Use the first gender filter (API doesn't support multiple gender filters)
@@ -148,29 +146,34 @@ export default function MembersRedesigned() {
   const displayMembers: DisplayMember[] = useMemo(() => {
     if (!filteredMembers || filteredMembers.length === 0) return [];
     
-    return filteredMembers.map((member: Member) => {
-      const isActive = member.status === MemberStatus.ACTIVE;
-      const isVisitor = member.status === MemberStatus.VISITOR || 
-                        member.status === MemberStatus.FIRST_TIME_VISITOR || 
-                        member.status === MemberStatus.RETURNING_VISITOR;
-      
-      return {
-        id: member.id,
-        name: `${member.firstName} ${member.lastName || ''}`.trim(),
-        email: member.email || undefined,
-        phone: member.phoneNumber || undefined,
-        status: formatMemberStatus(member.status),
-        memberSince: member.membershipDate || 'Unknown', // Corrected: use membershipDate
-        branch: member.branch?.name || undefined, // Updated: use branch directly
-        branchId: member.branchId || undefined, // Updated: use branchId directly
-        profileImage: member.profileImageUrl || null,
-        gender: member.gender,
-        dateOfBirth: member.dateOfBirth,
-        occupation: member.occupation,
-        isActive,
-        isVisitor,
-      };
-    });
+    return filteredMembers
+      .map((member: Member) => {
+        const isActive = member.status === MemberStatus.ACTIVE;
+        const isVisitor = member.status === MemberStatus.VISITOR || 
+                          member.status === MemberStatus.FIRST_TIME_VISITOR || 
+                          member.status === MemberStatus.RETURNING_VISITOR;
+        return {
+          id: member.id,
+          name: `${member.firstName} ${member.lastName || ''}`.trim(),
+          email: member.email || undefined,
+          phone: member.phoneNumber || undefined,
+          status: formatMemberStatus(member.status),
+          memberSince: member.membershipDate || 'Unknown',
+          branch: member.branch?.name || undefined,
+          branchId: member.branchId || undefined,
+          profileImage: member.profileImageUrl || null,
+          gender: member.gender,
+          dateOfBirth: member.dateOfBirth,
+          occupation: member.occupation,
+          isActive,
+          isVisitor,
+        };
+      })
+      .sort((a, b) => {
+        const dateA = a.memberSince && a.memberSince !== 'Unknown' ? new Date(a.memberSince).getTime() : 0;
+        const dateB = b.memberSince && b.memberSince !== 'Unknown' ? new Date(b.memberSince).getTime() : 0;
+        return dateB - dateA; // Descending: newest first
+      });
   }, [filteredMembers]);
 
   // Handle search
@@ -224,8 +227,7 @@ export default function MembersRedesigned() {
       <PageHeader 
         title="Church Members" 
         description="Manage your church membership with comprehensive tools and insights"
-        actionLink="/dashboard/members/new"
-        actionLabel="Add member"
+
       />
 
       {/* Statistics Cards */}

@@ -5,6 +5,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePrayerRequestMutations } from "../../../../graphql/hooks/usePrayerRequestMutations";
 import { useOrganizationBranchFilter } from "../../../../graphql/hooks/useOrganizationBranchFilter";
+import { useAuth } from "../../../../graphql/hooks/useAuth";
+import { humanizeError } from '../../../../utils/humanizeError';
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 
 interface NewPrayerRequestModalProps {
   open: boolean;
@@ -18,6 +21,14 @@ export default function NewPrayerRequestModal({ open, onClose, afterCreate }: Ne
   const [error, setError] = useState<string | null>(null);
   const { createPrayerRequest } = usePrayerRequestMutations();
   const { organisationId, branchId } = useOrganizationBranchFilter();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.primaryRole === 'super_admin';
+  const [selectedBranchId, setSelectedBranchId] = useState(branchId);
+  // Fetch branches for super_admins only
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+
+  // If user is super_admin, allow branch selection
+  const showBranchSelect = isSuperAdmin;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +40,7 @@ export default function NewPrayerRequestModal({ open, onClose, afterCreate }: Ne
           data: {
             requestText: content,
             organisationId,
-            branchId,
+            branchId: showBranchSelect ? selectedBranchId : branchId,
             status: "Active",
           },
         },
@@ -38,7 +49,7 @@ export default function NewPrayerRequestModal({ open, onClose, afterCreate }: Ne
       if (afterCreate) afterCreate();
       onClose();
     } catch (err: any) {
-      setError("Failed to create prayer request. Try again.");
+      setError(humanizeError(err?.message || err?.toString() || "Failed to create prayer request. Try again."));
     } finally {
       setSubmitting(false);
     }
@@ -69,22 +80,42 @@ export default function NewPrayerRequestModal({ open, onClose, afterCreate }: Ne
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:p-6">
+              <Dialog.Panel className="relative bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div>
                   <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                    New Prayer Request
+                    New Prayer Request hh
                   </Dialog.Title>
-                  <form className="mt-4" onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit}>
                     <textarea
-                      className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm min-h-[120px]"
-                      placeholder="Type your prayer request here..."
                       value={content}
                       onChange={e => setContent(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md p-2 mb-4"
+                      rows={4}
+                      placeholder="Enter your prayer request..."
                       required
-                      disabled={submitting}
                     />
+                    {showBranchSelect && (
+                      <div className="mb-4">
+                        <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700 mb-1">
+                          Branch
+                        </label>
+                        <select
+                          id="branch-select"
+                          className="w-full border border-gray-300 rounded-md p-2"
+                          value={selectedBranchId}
+                          onChange={e => setSelectedBranchId(e.target.value)}
+                          required
+                          disabled={branchesLoading}
+                        >
+                          <option value="">{branchesLoading ? "Loading branches..." : "Select branch"}</option>
+                          {branches.map((b: any) => (
+                            <option key={b.id} value={b.id}>{b.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
-                    <div className="mt-4 flex justify-end gap-2">
+                    <div className="flex justify-end gap-2">
                       <button
                         type="button"
                         className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"

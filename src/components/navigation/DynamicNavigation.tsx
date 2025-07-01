@@ -366,7 +366,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
           // Hide Mobile App menu item for all users
           return false;
         }
-        // Super Admins see everything, always.
+        // Hide Prayer Requests for super_admin in navigation
+        if (isSuperAdmin && item.name === "Prayer Requests") {
+          return false;
+        }
+        // Super Admins see everything, always (except hidden above).
         if (isSuperAdmin) {
           return true;
         }

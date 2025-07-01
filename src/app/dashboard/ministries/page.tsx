@@ -8,9 +8,7 @@ import type { Ministry, MinistryMember } from "@/types/ministry";
 import { MinistryType } from "@/types/ministry";
 import { useMinistry } from "@/graphql/hooks/useMinistry";
 import { useCreateMinistry } from "@/graphql/hooks/useCreateMinistry";
-import LoadingState from "../members/components/LoadingState";
-import EmptyState from "../members/components/EmptyState";
-import Pagination from "../members/components/Pagination";
+
 import { MinistryLoader } from "./MinistryLoader";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { saveOnboardingStepData } from '../utils/onboardingStorage';
 import { useCreateSuperAdminUser } from '@/graphql/hooks/useOnboarding';
 import { markScreenCompleted } from '../utils/completedScreens';
+import { humanizeError } from '@/utils/humanizeError';
 
 interface AdminSetupScreenProps {
   onNext: () => void;
@@ -80,7 +81,13 @@ const AdminSetupScreen: React.FC<AdminSetupScreenProps> = ({ onNext, onBack, isL
         email: form.email
       });
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      let msg = 'An error occurred';
+      if (error && typeof error === 'object' && 'graphQLErrors' in error && Array.isArray((error as any).graphQLErrors)) {
+        msg = (error as any).graphQLErrors[0]?.message || (error as any).message || 'An error occurred';
+      } else if (error instanceof Error) {
+        msg = error.message;
+      }
+      setError(humanizeError(msg));
     }
   };
 
@@ -137,7 +144,7 @@ const AdminSetupScreen: React.FC<AdminSetupScreenProps> = ({ onNext, onBack, isL
             className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
             required
           />
-          {(error || mutationError) && <div className="text-red-500 text-sm mt-2">{error || mutationError?.message}</div>}
+          {(error || mutationError) && <div className="text-red-500 text-sm mt-2">{humanizeError(error || mutationError?.message)}</div>}
           {success && <div className="text-green-600 text-sm mt-2">Super admin created successfully!</div>}
           <div className="flex justify-between mt-6">
             {onBack && (
