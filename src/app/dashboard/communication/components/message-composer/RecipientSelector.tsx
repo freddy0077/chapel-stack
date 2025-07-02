@@ -7,9 +7,13 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import { useAllSmallGroups } from '@/graphql/hooks/useSmallGroups';
+import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
+import { useFilteredBranches } from '@/graphql/hooks/useFilteredBranches';
+
+export type RecipientType = 'member' | 'group';
 
 export type Recipient = {
-  id: number;
+  id: number | string;
   name: string;
   email?: string;
   phone?: string;
@@ -22,11 +26,13 @@ interface RecipientSelectorProps {
 }
 
 export default function RecipientSelector({ selectedRecipients, onSelectRecipient }: RecipientSelectorProps) {
+  const { organisationId, branchId } = useOrganizationBranchFilter();
   const [query, setQuery] = useState("");
-  const { searchMembers, members, loading, error } = useSearchMembers();
+  const [recipientType, setRecipientType] = useState<RecipientType>('member');
+  const { data: members, loading, error } = useSearchMembers(query, organisationId);
   const { smallGroups } = useAllSmallGroups();
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [groupResults, setGroupResults] = useState<any[]>([]);
+  const { branches: filteredBranches, loading: branchesLoading } = useFilteredBranches({ organisationId });
 
   // Helper to get group member count by group id
   const getGroupMemberCount = (groupId: string) => {
@@ -38,37 +44,42 @@ export default function RecipientSelector({ selectedRecipients, onSelectRecipien
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setQuery(value);
-    if (value.length > 1) {
-      searchMembers({ variables: { search: value } }).then(res => {
-        setSearchResults(res.data?.members || []);
-      });
-      // Filter groups by query
+    if (recipientType === 'group' && value.length > 1) {
       setGroupResults(
         smallGroups.filter((group: any) =>
           group.name.toLowerCase().includes(value.toLowerCase())
         )
       );
-    } else {
-      setSearchResults([]);
+    } else if (recipientType === 'group') {
       setGroupResults([]);
     }
   };
 
   // Combine member and group results for selection
-  const combinedResults = [
-    ...groupResults.map((group: any) => ({
+  let combinedResults: Recipient[] = [];
+  if (recipientType === 'group') {
+    combinedResults = groupResults.map((group: any) => ({
       id: group.id,
       name: group.name,
       isGroup: true,
-    })),
-    ...searchResults.map((member: any) => ({
+    }));
+  } else {
+    combinedResults = (members || []).map((member: any) => ({
       id: member.id,
       name: `${member.firstName} ${member.lastName}`,
       email: member.email,
       phone: member.phoneNumber,
       isGroup: false,
-    })),
-  ];
+    }));
+  }
+
+  // Handler for branch select
+  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newBranchId = e.target.value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('branchId', newBranchId);
+    window.history.replaceState({}, '', url.toString());
+  };
 
   const handleRemoveRecipient = (id: number) => {
     onSelectRecipient(selectedRecipients.filter(recipient => recipient.id !== id));
@@ -82,19 +93,51 @@ export default function RecipientSelector({ selectedRecipients, onSelectRecipien
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Recipients
-      </label>
-      
+      {/* Branch select for super_admin */}
+      {organisationId && !branchId && (
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Select a branch to search recipients</label>
+          <select
+            className="block w-full rounded border border-gray-300 py-2 px-3 text-sm"
+            onChange={handleBranchChange}
+            defaultValue=""
+            disabled={branchesLoading}
+          >
+            <option value="" disabled>
+              {branchesLoading ? 'Loading branches...' : 'Select branch'}
+            </option>
+            {filteredBranches.map(branch => (
+              <option key={branch.id} value={branch.id}>{branch.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      {/* Recipient type select */}
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Type</label>
+        <select
+          className="block w-full rounded border border-gray-300 py-2 px-3 text-sm"
+          value={recipientType}
+          onChange={e => {
+            setRecipientType(e.target.value as RecipientType);
+            setQuery("");
+            setGroupResults([]);
+          }}
+        >
+          <option value="member">Member</option>
+          <option value="group">Group</option>
+        </select>
+      </div>
+      <label className="block text-sm font-medium text-gray-700">Recipients</label>
       {/* Selected recipients */}
       <div className="flex flex-wrap gap-2 mt-2">
-        {selectedRecipients.map((recipient) => (
+        {selectedRecipients.filter(Boolean).map((recipient) => (
           <span
-            key={recipient.id}
+            key={recipient?.id ?? Math.random()}
             className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700 mr-2 mb-2"
           >
-            {recipient.name}
-            {recipient.isGroup && (
+            {recipient?.name || recipient?.email || recipient?.phone || 'Unknown'}
+            {recipient?.isGroup && (
               <span className="ml-2 text-xs text-gray-500">(
                 {getGroupMemberCount(recipient.id) !== null
                   ? `${getGroupMemberCount(recipient.id)} members`
@@ -111,16 +154,16 @@ export default function RecipientSelector({ selectedRecipients, onSelectRecipien
           </span>
         ))}
       </div>
-      
       {/* Recipient search */}
       <Combobox value={null} onChange={handleSelectRecipient}>
         <div className="relative">
           <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
             <Combobox.Input
               className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-              placeholder="Search for members, groups, or enter an email/phone..."
-              displayValue={() => ""}
               onChange={handleInputChange}
+              value={query}
+              placeholder={recipientType === 'group' ? 'Search groups...' : 'Search members...'}
+              disabled={recipientType === 'member' && (!branchId || !organisationId)}
             />
             <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
               <ChevronUpDownIcon
@@ -191,7 +234,6 @@ export default function RecipientSelector({ selectedRecipients, onSelectRecipien
           </Transition>
         </div>
       </Combobox>
-      
       <div className="mt-1 text-xs text-gray-500">
         {selectedRecipients.length === 0 
           ? "Select recipients from the dropdown or enter email addresses/phone numbers" 

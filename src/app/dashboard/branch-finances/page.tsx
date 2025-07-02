@@ -14,8 +14,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
-import { useBranchFinances } from '@/hooks/useBranchFinances';
-import { useAuth } from '@/graphql/hooks/useAuth';
+// import { useBranchFinances } from '@/hooks/useBranchFinances';
+// import { useAuth } from '@/graphql/hooks/useAuth';
 
 // Recent activity for notification feed
 const recentActivity = [
@@ -46,18 +46,18 @@ import DashboardHeader from "@/components/DashboardHeader";
 import Link from "next/link";
 
 export default function BranchFinancesPage() {
-  const { user } = useAuth();
-  const {
-    summary,
-    transactions,
-    funds,
-    contributionTypes,
-    paymentMethods,
-    loading,
-    error,
-    createContribution,
-    creationLoading,
-  } = useBranchFinances();
+  // const { user } = useAuth();
+  // const {
+  //   summary,
+  //   transactions,
+  //   funds,
+  //   contributionTypes,
+  //   paymentMethods,
+  //   loading,
+  //   error,
+  //   createContribution,
+  //   creationLoading,
+  // } = useBranchFinances();
 
   const [activeTab, setActiveTab] = useState("All");
   const [dateFilter, setDateFilter] = useState("This Month");
@@ -76,46 +76,46 @@ export default function BranchFinancesPage() {
   });
 
   const tabOptions = useMemo(() => {
-    if (!contributionTypes) return ["All"];
-    return ["All", ...contributionTypes.map(ct => ct.name)];
-  }, [contributionTypes]);
+    // if (!contributionTypes) return ["All"];
+    return ["All"];
+  }, []);
 
   const handleOpenModal = (typeName: string) => {
-    const contributionType = contributionTypes.find(ct => ct.name === typeName);
+    // const contributionType = contributionTypes.find(ct => ct.name === typeName);
     setOpenModal(typeName);
     setModalForm({
       amount: '',
       date: new Date().toISOString().split('T')[0],
       note: '',
-      contributionTypeId: contributionType?.id || '',
-      fundId: funds.length > 0 ? funds[0].id : '',
-      paymentMethodId: paymentMethods.length > 0 ? paymentMethods[0].id : '',
+      contributionTypeId: '',
+      fundId: '',
+      paymentMethodId: '',
     });
   };
   const handleCloseModal = () => setOpenModal(null);
 
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.organisationId || !user.userBranches?.[0]?.branch?.id) {
-      console.error("User organisation or branch not found");
-      return;
-    }
+    // if (!user?.organisationId || !user.userBranches?.[0]?.branch?.id) {
+    //   console.error("User organisation or branch not found");
+    //   return;
+    // }
 
     try {
-      await createContribution({
-        variables: {
-          createContributionInput: {
-            amount: parseFloat(modalForm.amount),
-            date: modalForm.date,
-            notes: modalForm.note,
-            contributionTypeId: modalForm.contributionTypeId,
-            fundId: modalForm.fundId,
-            paymentMethodId: modalForm.paymentMethodId,
-            organisationId: user.organisationId,
-            branchId: user?.userBranches[0].branch.id,
-          },
-        },
-      });
+      // await createContribution({
+      //   variables: {
+      //     createContributionInput: {
+      //       amount: parseFloat(modalForm.amount),
+      //       date: modalForm.date,
+      //       notes: modalForm.note,
+      //       contributionTypeId: modalForm.contributionTypeId,
+      //       fundId: modalForm.fundId,
+      //       paymentMethodId: modalForm.paymentMethodId,
+      //       organisationId: user.organisationId,
+      //       branchId: user?.userBranches[0].branch.id,
+      //     },
+      //   },
+      // });
       handleCloseModal();
     } catch (err) {
       console.error("Failed to create contribution", err);
@@ -126,35 +126,35 @@ export default function BranchFinancesPage() {
   const isPositiveChange = monthlyChangePercent >= 0;
   
   const filteredTransactions = useMemo(() => {
-    if (!transactions) return [];
-    let result = [...transactions];
+    // if (!transactions) return [];
+    let result = [];
     
-    if (activeTab !== "All") {
-      result = result.filter(tx => tx.contributionType.name === activeTab);
-    }
+    // if (activeTab !== "All") {
+    //   result = result.filter(tx => tx.contributionType.name === activeTab);
+    // }
     
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(tx => 
-        tx.notes?.toLowerCase().includes(query) || 
-        tx.fund.name.toLowerCase().includes(query) ||
-        tx.contributionType.name.toLowerCase().includes(query) ||
-        (tx.member && `${tx.member.firstName} ${tx.member.lastName}`.toLowerCase().includes(query))
-      );
-    }
+    // if (searchQuery) {
+    //   const query = searchQuery.toLowerCase();
+    //   result = result.filter(tx => 
+    //     tx.notes?.toLowerCase().includes(query) || 
+    //     tx.fund.name.toLowerCase().includes(query) ||
+    //     tx.contributionType.name.toLowerCase().includes(query) ||
+    //     (tx.member && `${tx.member.firstName} ${tx.member.lastName}`.toLowerCase().includes(query))
+    //   );
+    // }
     
     return result;
-  }, [activeTab, searchQuery, transactions]);
-  
-  if (loading) return <div className="p-8">Loading financial data...</div>;
-  if (error) return <div className="p-8 text-red-500">Error loading data: {error.message}</div>;
+  }, [activeTab, searchQuery]);
+
+  // if (loading) return <div className="p-8">Loading financial data...</div>;
+  // if (error) return <div className="p-8 text-red-500">Error loading data: {error.message}</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white pb-16">
       {/* Dashboard Header */}
       <DashboardHeader
         title="Branch Finances"
-        subtitle={`Financial overview for ${user?.userBranches?.[0]?.branch?.name}`}
+        subtitle={`Financial overview`}
         icon={
           <span className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-tr from-green-400 to-emerald-500 shadow-md">
             <CurrencyDollarIcon className="h-7 w-7 text-white" />
@@ -179,7 +179,7 @@ export default function BranchFinancesPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Branch Finances</h1>
               <div className="text-sm text-gray-500 mt-1">
-                {user?.userBranches?.[0]?.branch?.name} &mdash;
+                {/* {user?.userBranches?.[0]?.branch?.name} &mdash; */}
                 <span className="inline-flex items-center">
                   {isPositiveChange ? (
                     <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 ml-1 mr-1" />
@@ -233,32 +233,32 @@ export default function BranchFinancesPage() {
           <SummaryCard
             icon={<ArrowTrendingUpIcon className="h-7 w-7 text-green-600" />}
             label="Collections"
-            value={summary?.collections || 0}
+            value={0}
             gradient="from-green-50 to-emerald-100"
           />
           <SummaryCard
             icon={<BanknotesIcon className="h-7 w-7 text-blue-600" />}
             label="Tithes"
-            value={summary?.tithes || 0}
+            value={0}
             gradient="from-blue-50 to-indigo-100"
           />
           <SummaryCard
             icon={<UserGroupIcon className="h-7 w-7 text-yellow-500" />}
             label="Pledges"
-            value={summary?.pledges || 0}
+            value={0}
             gradient="from-yellow-50 to-amber-100"
           />
           <SummaryCard
             icon={<ArrowTrendingDownIcon className="h-7 w-7 text-gray-500" />}
             label="Other Income"
-            value={summary?.other || 0}
+            value={0}
             gradient="from-gray-50 to-gray-100"
           />
         </div>
 
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-3 mb-10">
-          {(contributionTypes || []).map(type => (
+          {/* {(contributionTypes || []).map(type => (
             <button
               key={type.id}
               className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg px-5 py-2 font-semibold shadow hover:from-blue-600 hover:to-indigo-700 transition"
@@ -266,7 +266,7 @@ export default function BranchFinancesPage() {
             >
               Record {type.name}
             </button>
-          ))}
+          ))} */}
         </div>
 
         {/* Modals for each action */}
@@ -283,13 +283,13 @@ export default function BranchFinancesPage() {
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Fund <span className="text-red-500">*</span></label>
               <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.fundId} onChange={e => setModalForm(f => ({ ...f, fundId: e.target.value }))}>
-                {funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)}
+                {/* {funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)} */}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Payment Method <span className="text-red-500">*</span></label>
               <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.paymentMethodId} onChange={e => setModalForm(f => ({ ...f, paymentMethodId: e.target.value }))}>
-                {paymentMethods.map(pm => <option key={pm.id} value={pm.id}>{pm.name}</option>)}
+                {/* {paymentMethods.map(pm => <option key={pm.id} value={pm.id}>{pm.name}</option>)} */}
               </select>
             </div>
             <div>
@@ -297,7 +297,7 @@ export default function BranchFinancesPage() {
               <input type="text" className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.note} onChange={e => setModalForm(f => ({ ...f, note: e.target.value }))} placeholder="Optional note" />
             </div>
             <div className="pt-2">
-              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition" disabled={creationLoading}>{creationLoading ? 'Saving...' : `Save ${openModal}`}</button>
+              <button type="submit" className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition" disabled={false}>{false ? 'Saving...' : `Save ${openModal}`}</button>
             </div>
           </form>
         </Modal>
@@ -401,18 +401,18 @@ export default function BranchFinancesPage() {
                       <td className="py-3 px-3 whitespace-nowrap">{tx.date}</td>
                       <td className="py-3 px-3 whitespace-nowrap">
                         <span className="inline-flex items-center">
-                          {tx.contributionType.name === "Collection" && <BanknotesIcon className="h-4 w-4 text-green-500 mr-1" />}
-                          {tx.contributionType.name === "Tithe" && <ArrowTrendingUpIcon className="h-4 w-4 text-blue-500 mr-1" />}
-                          {tx.contributionType.name === "Pledge" && <UserGroupIcon className="h-4 w-4 text-yellow-500 mr-1" />}
-                          {tx.contributionType.name === "Other" && <ArrowTrendingDownIcon className="h-4 w-4 text-gray-500 mr-1" />}
-                          {tx.contributionType.name}
+                          {/* {tx.contributionType.name === "Collection" && <BanknotesIcon className="h-4 w-4 text-green-500 mr-1" />} */}
+                          {/* {tx.contributionType.name === "Tithe" && <ArrowTrendingUpIcon className="h-4 w-4 text-blue-500 mr-1" />} */}
+                          {/* {tx.contributionType.name === "Pledge" && <UserGroupIcon className="h-4 w-4 text-yellow-500 mr-1" />} */}
+                          {/* {tx.contributionType.name === "Other" && <ArrowTrendingDownIcon className="h-4 w-4 text-gray-500 mr-1" />} */}
+                          {/* {tx.contributionType.name} */}
                         </span>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.fund.name}</td>
-                      <td className="py-3 px-3 whitespace-nowrap font-medium text-gray-900">${tx.amount.toFixed(2)}</td>
-                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">{tx.notes || 'No note'}</td>
+                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">-</td>
+                      <td className="py-3 px-3 whitespace-nowrap font-medium text-gray-900">$0.00</td>
+                      <td className="py-3 px-3 whitespace-nowrap text-gray-600">-</td>
                       <td className="py-3 px-3 whitespace-nowrap">
-                        {tx.status === "completed" ? (
+                        {/* {tx.status === "completed" ? (
                           <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
                             <CheckBadgeIcon className="h-3 w-3 mr-1" />
                             Completed
@@ -422,7 +422,7 @@ export default function BranchFinancesPage() {
                             <ClockIcon className="h-3 w-3 mr-1" />
                             Pending
                           </span>
-                        ) : null}
+                        ) : null} */}
                       </td>
                     </tr>
                   ))

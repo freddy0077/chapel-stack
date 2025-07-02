@@ -16,8 +16,17 @@ export default function DashboardLayout({
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   
+  // Helper: check if user is super admin
+  const isSuperAdmin = user && Array.isArray(user.roles)
+    ? user.roles.some((role: unknown) => {
+        if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
+        if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
+        return false;
+      })
+    : false;
+
   // Check authentication and onboarding status when component mounts
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -37,14 +46,12 @@ export default function DashboardLayout({
         return;
       }
       
-      // Only check onboarding status for non-settings pages
-      // This ensures the code below never runs for settings pages due to the early return above
+      // Only check onboarding status for SUPER_ADMIN
       const { isOnboardingCompleted } = loadModulePreferences();
       console.log('[DashboardLayout] Onboarding completed?', isOnboardingCompleted);
       
-      // If onboarding is not completed, redirect to onboarding page
-      if (!isOnboardingCompleted) {
-        console.log('[DashboardLayout] Onboarding not completed, redirecting to /onboarding');
+      if (isSuperAdmin && !isOnboardingCompleted) {
+        console.log('[DashboardLayout] SUPER_ADMIN onboarding not completed, redirecting to /onboarding');
         router.push('/onboarding');
       } else {
         setIsOnboardingCompleted(true);
@@ -52,7 +59,7 @@ export default function DashboardLayout({
       
       setIsCheckingAuth(false);
     }
-  }, [router, isAuthenticated, pathname]);
+  }, [router, isAuthenticated, pathname, isSuperAdmin]);
   
   // If authentication or onboarding check is still in progress, show loading state
   if (isCheckingAuth || !isOnboardingCompleted) {

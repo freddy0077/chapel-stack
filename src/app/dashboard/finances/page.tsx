@@ -30,9 +30,7 @@ import GivingStatementModal from "./components/GivingStatementModal";
 import AddAccountModal from "./components/AddAccountModal";
 import AddBudgetModal from "./components/AddBudgetModal";
 
-import { useFinanceDashboardData } from "../../../graphql/hooks/useFinanceDashboardData";
-import { mapKpiCardsToOverview } from "./FinanceKpiMapper";
-import { useContributionsStats } from "../../../graphql/hooks/useContributionsStats";
+import { useTransactions } from "../../../graphql/hooks/useTransactions";
 import { useRouter } from "next/navigation";
 import { useBranches } from "../../../graphql/hooks/useBranches";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -70,28 +68,17 @@ export default function Finances() {
 
   // Get branchId for dashboard query (null/undefined for "all")
   const branchId = selectedBranch !== "all" ? selectedBranch : (branches[0]?.id || "");
-  const { kpiCards, loading: dashboardLoading, error: dashboardError } = useFinanceDashboardData(branchId);
-  const financialOverview = mapKpiCardsToOverview(kpiCards);
+  // Fetch all transactions for the branch
+  const { transactions, loading: transactionsLoading, error: transactionsError } = useTransactions({ branchId });
 
-  // Fetch contributions (donations) stats for the branch
-  const { stats: contributionsStats, loading: contributionsLoading, error: contributionsError } = useContributionsStats(branchId);
-
-  // Handle branch change
-  const handleBranchChange = (branchId: string) => {
-    setSelectedBranch(branchId);
-  };
-
-  if (branchesLoading || dashboardLoading || contributionsLoading) {
+  if (branchesLoading || transactionsLoading) {
     return <div>Loading dashboard...</div>;
   }
   if (branchesError) {
     return <div>Error loading branches.</div>;
   }
-  if (dashboardError) {
-    return <div>Error loading dashboard data.</div>;
-  }
-  if (contributionsError) {
-    return <div>Error loading contributions data.</div>;
+  if (transactionsError) {
+    return <div>Error loading transactions.</div>;
   }
 
   const navLinks = [
@@ -147,27 +134,32 @@ export default function Finances() {
         {activeSection === "dashboard" && (
           <>
             {/* Quick Actions */}
-         
             <div className="mb-8">
               <div className="rounded-2xl bg-gradient-to-tr from-indigo-50/80 to-purple-50/80 shadow-xl p-6">
+                {/* TODO: Replace FinancialOverview with transaction-based stats */}
                 <FinancialOverview 
-                  totalDonations={contributionsStats ? `$${contributionsStats.totalAmount?.toLocaleString()}` : financialOverview.totalDonations}
-                  totalExpenses={financialOverview.totalExpenses}
-                  currentBalance={financialOverview.currentBalance}
-                  budgetProgress={financialOverview.budgetProgress}
-                  monthlyChange={contributionsStats && contributionsStats.percentChangeFromPreviousPeriod !== undefined ? `${contributionsStats.percentChangeFromPreviousPeriod > 0 ? '+' : ''}${contributionsStats.percentChangeFromPreviousPeriod}%` : financialOverview.monthlyChange}
-                  donationTrends={contributionsStats?.trendData?.map(d => d.amount) || []}
+                  totalDonations={transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + (t.amount || 0), 0)}
+                  totalExpenses={transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + (t.amount || 0), 0)}
+                  currentBalance={transactions.reduce((sum, t) => sum + (t.type === 'INCOME' ? t.amount : -t.amount), 0)}
+                  budgetProgress={0} // TODO: compute if budget data exists
+                  monthlyChange={''} // TODO: compute if trend data exists
+                  donationTrends={[]} // TODO: compute if trend data exists
                   selectedBranch={selectedBranch}
-                  onBranchChange={handleBranchChange}
+                  onBranchChange={setSelectedBranch}
                   branches={branches}
                 />
               </div>
             </div>
-
             {/* Active Campaigns */}
             <div className="mb-8">
               <div className="rounded-2xl bg-gradient-to-tr from-purple-50/80 to-indigo-50/80 shadow-xl p-6">
                 <CampaignCards campaigns={activeCampaigns} />
+              </div>
+            </div>
+            {/* Transactions Table (Latest Transactions) */}
+            <div className="mb-8">
+              <div className="rounded-2xl bg-white shadow-xl p-6">
+                <TransactionsTable transactions={transactions} branches={branches} />
               </div>
             </div>
             <ContributionModal open={contributionModalOpen} onClose={() => setContributionModalOpen(false)} />

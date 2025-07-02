@@ -8,6 +8,7 @@ import { BranchFinancesSummary } from "@/components/dashboard/BranchFinancesSumm
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
+import useAuth from "@/graphql/hooks/useAuth";
 
 const BRANCH_DASHBOARD_QUERY = gql`
   query BranchDashboard($branchId: String!) {
@@ -48,39 +49,54 @@ const BRANCH_DASHBOARD_QUERY = gql`
 
 export default function BranchDashboardPage() {
   // Replace with actual branchId from context/auth/router
-  const branchId = "BRANCH_ID_HERE";
-  const userName = "Rev. Mensah";
+  const {user} = useAuth();
+  const branchId = user?.userBranches?.[0]?.branch?.id;
+  const userName = user?.firstName || user?.lastName;
 
   const { data, loading, error } = useQuery(BRANCH_DASHBOARD_QUERY, {
     variables: { branchId },
     skip: !branchId,
   });
 
-  if (loading) return <div className="p-10">Loading branch dashboard...</div>;
-  if (error) return <div className="p-10 text-red-600">Error: {error.message}</div>;
-
-  const dashboard = data?.branchDashboard;
+  if (loading) {
+    return <div className="p-10 text-center text-lg">Loading branch dashboard...</div>;
+  }
+  if (error) {
+    return <div className="p-10 text-center text-red-500">Error loading branch dashboard.</div>;
+  }
+  const branchDashboard = data?.branchDashboard;
+  if (!branchDashboard) {
+    return <div className="p-10 text-center">No data available for this branch.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex">
-      {/* Sidebar (reuse, but could highlight branch context) */}
-      {/* <DashboardSidebar className="hidden lg:flex shadow-xl" /> */}
+      {/* Sidebar */}
+      {/*<DashboardSidebar className="hidden lg:flex shadow-xl" />*/}
+      {/* Main content */}
       <main className="flex-1 flex flex-col p-4 lg:p-10 max-w-full">
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-3">
           <div>
             <h1 className="text-3xl font-extrabold text-blue-900 mb-1 drop-shadow-sm">
-              Welcome back, {userName}
+              Welcome back, {userName} ({branchDashboard.branchInfo.name})
             </h1>
             <p className="text-gray-500 text-base">
-              Branch Overview: {dashboard?.branchInfo?.name || "-"}
+              Here’s an overview of branch operations and stats.
             </p>
           </div>
         </header>
-        <BranchOverviewWidgets branchName={dashboard?.branchInfo?.name || "-"} data={dashboard} />
-        <BranchFinancesSummary branchName={dashboard?.branchInfo?.name || "-"} data={dashboard?.financeStats} />
-        <UpcomingEvents events={dashboard?.activityStats?.upcomingEvents || []} />
-        <BranchPerformance branchName={dashboard?.branchInfo?.name || "-"} data={dashboard} />
-        <BranchAdminTools branchName={dashboard?.branchInfo?.name || "-"} />
+        <BranchOverviewWidgets
+          branchName={branchDashboard.branchInfo.name}
+          memberStats={branchDashboard.memberStats}
+          attendanceStats={branchDashboard.attendanceStats}
+          financeStats={branchDashboard.financeStats}
+          activityStats={branchDashboard.activityStats}
+        />
+        {/* Add more widgets as needed, e.g. finances, events, etc. */}
+        <BranchFinancesSummary financeStats={branchDashboard.financeStats} />
+        <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
+        <BranchPerformance />
+        <BranchAdminTools branchInfo={branchDashboard.branchInfo} />
       </main>
     </div>
   );

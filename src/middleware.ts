@@ -58,10 +58,15 @@ export function middleware(request: NextRequest) {
   });
   // Only enforce onboarding on dashboard/admin paths, not onboarding itself or public paths
   const isOnboardingPath = path.startsWith('/onboarding');
+  // FIX: Only enforce onboarding redirect for SUPER_ADMIN, never for branch_admin or other roles
   if (isSuperAdmin && !onboardingDeferred && !isOnboardingPath && (path.startsWith('/dashboard') || path.startsWith('/admin'))) {
     console.log(`[Middleware] Decision: Redirecting SUPER_ADMIN to /onboarding.`);
-    // Here you can check if onboarding is actually needed (add your own logic if needed)
     return NextResponse.redirect(new URL('/onboarding', request.url));
+  }
+  // FIX: Prevent onboarding redirect loop for non-super-admins (branch_admin, etc.)
+  // If NOT super admin, NEVER redirect to onboarding, allow dashboard/admin access
+  if (!isSuperAdmin && (path.startsWith('/dashboard') || path.startsWith('/admin'))) {
+    console.log(`[Middleware] Decision: Allowing non-SUPER_ADMIN access to dashboard/admin paths.`);
   }
   
   // Redirect logic now re-enabled

@@ -352,9 +352,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
       ...category,
       items: category.items.filter(item => {
         if (category.category === "Operations" && ["Branch Finances", "Reports"].includes(item.name)) {
-          // Only show Branch Finances to branch_admin, always hide Reports
+          // Only show Branch Finances to branch_admin and super_admin, always hide Reports
           if (item.name === "Branch Finances") {
-            return user?.primaryRole?.toLowerCase() === "branch_admin";
+            return ["branch_admin", "super_admin", "SUPER_ADMIN"].includes(user?.primaryRole?.toLowerCase?.());
           }
           return false; // Hide Reports for all
         }
