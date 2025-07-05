@@ -15,7 +15,7 @@ interface Member {
 }
 
 export default function MemberPrayerRequestsTab({ member }: { member: Member }) {
-  const prayerRequests: PrayerRequest[] = member.prayerRequests || [];
+  const prayerRequests: PrayerRequest[] = member?.prayerRequests || [];
 
   return (
     <div className="bg-white rounded-2xl shadow p-6">

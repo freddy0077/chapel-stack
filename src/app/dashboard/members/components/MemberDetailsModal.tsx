@@ -1238,6 +1238,7 @@ function AddToGroup({ memberId }: AddToGroupProps) {
   const { smallGroups, loading } = useFilteredSmallGroups(orgBranchFilter, !orgBranchFilter.branchId && !orgBranchFilter.organisationId);
   const { addMemberToGroup } = useSmallGroupMutations();
 
+  const [showAdd, setShowAdd] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
   const [role, setRole] = useState("MEMBER");
@@ -1272,11 +1273,11 @@ function AddToGroup({ memberId }: AddToGroupProps) {
       setTimeout(() => setSuccess(false), 1200);
       setShowAdd(false);
       setSelectedGroup(null);
-      setSearch("");
+      setSearchQuery("");
     } catch (e: any) {
       setError(e?.message || "Failed to add member to group.");
     }
-    setAdding(false);
+    setIsAdding(false);
   };
 
   return (
@@ -1295,8 +1296,8 @@ function AddToGroup({ memberId }: AddToGroupProps) {
             type="text"
             className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
             placeholder="Search group..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
           />
           <select
             className="rounded border-gray-300 text-xs px-2 py-1"
@@ -1322,15 +1323,15 @@ function AddToGroup({ memberId }: AddToGroupProps) {
           </div>
           <div className="flex gap-2 mt-2">
             <button
-              className="inline-flex items-center px-3 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-semibold shadow-sm disabled:opacity-50"
+              className="inline-flex items-center px-3 py-1 rounded bg-indigo-600 text-white text-xs font-semibold shadow-sm disabled:opacity-50"
+              disabled={!selectedGroup || isAdding}
               onClick={handleAdd}
-              disabled={!selectedGroup || adding}
             >
-              {adding ? "Adding..." : "Add to Group"}
+              {isAdding ? "Adding..." : "Add to Group"}
             </button>
             <button
               className="inline-flex items-center px-2 py-1 rounded text-xs border border-gray-300 text-gray-600 hover:bg-gray-100"
-              onClick={() => { setShowAdd(false); setSelectedGroup(null); setSearch(""); }}
+              onClick={() => { setShowAdd(false); setSelectedGroup(null); setSearchQuery(""); }}
             >
               Cancel
             </button>
@@ -1407,7 +1408,7 @@ function AddFamilyConnection({ memberId, familyId, onSuccess }: AddFamilyConnect
           <button
             onClick={handleAdd}
             disabled={adding}
-            className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-semibold shadow-sm"
+            className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-600 text-white text-xs font-semibold shadow-sm"
           >
             {adding ? "Adding..." : "Add Connection"}
           </button>
