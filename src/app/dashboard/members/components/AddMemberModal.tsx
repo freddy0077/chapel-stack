@@ -124,6 +124,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
     setIsSubmitting(true);
     setShowSuccessNotification(false);
     try {
+      // RFID: Always generate a unique RFID for new member
       await createMember({
         variables: {
           createMemberInput: {
@@ -153,7 +154,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             spouseId: formData.spouseId || undefined,
             parentId: formData.parentId || undefined,
             branchId: branchId,
-            organisationId: organisationId
+            organisationId: organisationId,
           }
         }
       });
