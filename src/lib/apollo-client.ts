@@ -1,11 +1,11 @@
 import { 
   ApolloClient, 
   InMemoryCache, 
-  HttpLink, 
   ApolloLink, 
   from, 
   Observable
 } from '@apollo/client';
+import { createUploadLink } from 'apollo-upload-client';
 import { onError } from '@apollo/client/link/error';
 import { REFRESH_TOKEN_MUTATION } from '../graphql/mutations/auth';
 import Cookies from 'js-cookie';
@@ -15,15 +15,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/graphq
 
 console.log('Apollo Client - Using API URL:', API_URL);
 
-// Create a link for HTTP requests
-const httpLink = new HttpLink({
+// Create a single HTTP link with file upload support
+const uploadLink = createUploadLink({
   uri: API_URL,
-  credentials: 'include', // Important for cookie-based authentication
-  fetchOptions: {
-    mode: 'cors', // Ensure CORS mode is used
-  },
+  credentials: 'include',
   headers: {
-    'Apollo-Require-Preflight': 'true', // Ensures proper preflight requests
+    'Apollo-Require-Preflight': 'true',
   },
 });
 
@@ -178,7 +175,7 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 
 // Create the Apollo Client
 export const client = new ApolloClient({
-  link: from([errorLink, authLink, loggerLink, httpLink]),
+  link: from([errorLink, authLink, loggerLink, uploadLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

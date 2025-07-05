@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { User, UserRole, Branch } from '@/lib/auth/types';
+import { useMutation } from '@apollo/client';
+import { CREATE_USERS_WITH_ROLE } from '@/graphql/mutations/userMutations';
+import { useAuth } from "@/graphql/hooks/useAuth";
+
 
 // Mock data for the user list
 const mockUsers: User[] = [
@@ -101,12 +105,73 @@ const availableRoles: { value: UserRole; label: string }[] = [
   { value: 'member', label: 'Member' }
 ];
 
+function AddUserModal({ open, onClose, onUserAdded, organisationId }: { open: boolean, onClose: () => void, onUserAdded: (user: any) => void, organisationId: string }) {
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', roleName: 'member' });
+  const [createUsersWithRole, { loading, error }] = useMutation(CREATE_USERS_WITH_ROLE);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError(null);
+    try {
+      const { data } = await createUsersWithRole({
+        variables: {
+          input: {
+            users: [{ ...form }],
+            organisationId,
+          },
+        },
+      });
+      if (data.createUsersWithRole && !data.createUsersWithRole[0].error) {
+        onUserAdded(data.createUsersWithRole[0]);
+        onClose();
+      } else {
+        setSubmitError(data.createUsersWithRole[0].error || 'Unknown error');
+      }
+    } catch (err: any) {
+      setSubmitError(err.message);
+    }
+  };
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-4">Add New User</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input name="firstName" placeholder="First Name" className="w-full border rounded px-3 py-2" value={form.firstName} onChange={handleChange} required />
+          <input name="lastName" placeholder="Last Name" className="w-full border rounded px-3 py-2" value={form.lastName} onChange={handleChange} required />
+          <input name="email" placeholder="Email" type="email" className="w-full border rounded px-3 py-2" value={form.email} onChange={handleChange} required />
+          <input name="password" placeholder="Password" type="password" className="w-full border rounded px-3 py-2" value={form.password} onChange={handleChange} required />
+          <select name="roleName" className="w-full border rounded px-3 py-2" value={form.roleName} onChange={handleChange} required>
+            {availableRoles.map(role => (
+              <option key={role.value} value={role.value}>{role.label}</option>
+            ))}
+          </select>
+          {submitError && <div className="text-red-500 text-sm">{submitError}</div>}
+          <div className="flex justify-end gap-2">
+            <button type="button" className="px-4 py-2 rounded bg-gray-200" onClick={onClose}>Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded bg-indigo-600 text-white" disabled={loading}>Add User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const {user} = useAuth();
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const organisationId = user?.organisationId;
+
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -147,6 +212,21 @@ export default function UserManagement() {
     }
     
     setSelectedUser(updatedUser);
+  };
+
+  const handleUserAdded = (user: any) => {
+    setUsers(prev => [...prev, {
+      id: user.id,
+      email: user.email,
+      name: `${user.firstName} ${user.lastName}`,
+      roles: [user.roleName],
+      primaryBranchId: '',
+      accessibleBranches: [],
+      directPermissions: [],
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }]);
   };
 
   return (
@@ -213,6 +293,7 @@ export default function UserManagement() {
             <button
               type="button"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              onClick={() => setAddUserOpen(true)}
             >
               Add New User
             </button>
@@ -440,6 +521,7 @@ export default function UserManagement() {
           )}
         </div>
       </div>
+      <AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} onUserAdded={handleUserAdded} organisationId={organisationId} />
     </div>
   );
 }

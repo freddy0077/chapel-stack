@@ -131,7 +131,6 @@ export interface BranchDetailsInput {
   phone: string;
   email: string;
   website: string;
-  currency: string;
   modules: string[];
   admin: BranchAdminInput;
   settings: BranchSettingsInput;
@@ -260,10 +259,10 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
       city: branch.city,
       state: '', // Optionally map if you add this field
       postalCode: '', // Optionally map if you add this field
-      country: branch.country,
-      email: branch.email,
+      // country: branch.country,
+      // email: branch.email,
       phoneNumber: branch.phone,
-      website: branch.website,
+      // website: branch.website,
       isActive: branch.status === 'active',
       establishedAt: branch.establishedDate,
       organisationId,
@@ -401,8 +400,6 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
       }
       const settings = branches[idx].settings;
       const updates = [
-        { key: 'timezone', value: settings.timezone },
-        { key: 'currency', value: branches[idx].currency },
         { key: 'modules', value: JSON.stringify(branches[idx].modules) },
       ];
       for (const { key, value } of updates) {
@@ -506,18 +503,12 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
       !!branch.status &&
       !!branch.establishedDate &&
       !!branch.city &&
-      !!branch.country &&
-      isValidPhone(branch.phone) &&
-      isValidEmail(branch.email) &&
-      !!branch.website;
+      !!branch.phone &&
+      isValidPhone(branch.phone);
   }), [branches]);
 
   // Add validation for settings section
   const isValidSettings = (branch: BranchDetailsInput) => {
-    // Currency must be selected (non-empty)
-    if (!branch.currency) return false;
-    // Timezone must be selected (non-empty)
-    if (!branch.settings?.timezone) return false;
     // Optionally, require at least one module (uncomment if needed)
     // if (!branch.modules || branch.modules.length === 0) return false;
     return true;
@@ -619,21 +610,6 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                       {!branch.city && <div className="text-red-500 text-xs mt-1">City is required.</div>}
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">Country</label>
-                      <select
-                        name="country"
-                        className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                        value={branch.country || ''}
-                        onChange={e => handleBranchChange(idx, 'country', e.target.value)}
-                        required
-                      >
-                        {countryOptions.map((country) => (
-                          <option key={country} value={country}>{country || 'Select country'}</option>
-                        ))}
-                      </select>
-                      {!branch.country && <div className="text-red-500 text-xs mt-1">Country is required.</div>}
-                    </div>
-                    <div>
                       <label className="block font-semibold mb-1">Phone</label>
                       <input
                         type="text"
@@ -643,28 +619,6 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                         placeholder="e.g. +233 123 456 789"
                       />
                       {branch.phone && !isValidPhone(branch.phone) && <div className="text-red-500 text-xs mt-1">Enter a valid phone number.</div>}
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-1">Email</label>
-                      <input
-                        type="email"
-                        className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                        value={branch.email || ''}
-                        onChange={e => handleBranchChange(idx, 'email', e.target.value)}
-                        placeholder="e.g. info@example.com"
-                      />
-                      {branch.email && !isValidEmail(branch.email) && <div className="text-red-500 text-xs mt-1">Enter a valid email address.</div>}
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-1">Website</label>
-                      <input
-                        type="text"
-                        className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                        value={branch.website || ''}
-                        onChange={e => handleBranchChange(idx, 'website', e.target.value)}
-                        placeholder="e.g. https://example.com"
-                      />
-                      {!branch.website && <div className="text-red-500 text-xs mt-1">Website is required.</div>}
                     </div>
                   </div>
                   <Button type="button" color="indigo" onClick={() => handleSavePrimary(idx)} className="w-full md:w-auto mt-4" disabled={!primaryValid[idx] || primaryLoading[idx]}>
@@ -764,33 +718,6 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
                   {expandedSection[idx] === 'settings' ? (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label className="block w-full">
-                      <span className="block font-semibold mb-1">Currency</span>
-                      <select
-                        className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                        value={branch.currency}
-                        onChange={e => handleBranchChange(idx, 'currency', e.target.value)}
-                      >
-                        {currencyOptions.map(option => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                      {!branch.currency && <div className="text-red-500 text-xs mt-1">Currency is required.</div>}
-                    </label>
-                    <label className="block w-full">
-                      <span className="block font-semibold mb-1">Timezone</span>
-                      <select
-                        className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                        value={branch.settings.timezone}
-                        onChange={e => handleSettingsChange(idx, 'timezone', e.target.value)}
-                      >
-                        <option value="">Select a timezone</option>
-                        {timezones.map(tz => (
-                          <option key={tz} value={tz}>{tz}</option>
-                        ))}
-                      </select>
-                      {!branch.settings?.timezone && <div className="text-red-500 text-xs mt-1">Timezone is required.</div>}
-                    </label>
                     <div>
                       <label className="block font-semibold mb-1">Modules</label>
                       <div className="flex flex-wrap gap-2">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeftIcon,
   EnvelopeIcon,
@@ -22,22 +22,30 @@ import {
   CheckBadgeIcon,
   PlusIcon,
   SparklesIcon,
+  CameraIcon,
+  XMarkIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
+import { useMutation } from "@apollo/client";
+import { UPDATE_MEMBER, GET_PRESIGNED_UPLOAD_URL } from "@/graphql/mutations/memberMutations";
 import MessageModal from "./MessageModal";
 import { useMember } from "@/graphql/hooks/useMember";
 import { useAllSmallGroups, useSmallGroupMutations, SmallGroupMemberRole, SmallGroupMemberStatus } from "@/graphql/hooks/useSmallGroups";
-import { useMutation, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
 import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useOrganizationBranchFilter } from '@/hooks';
+import { useFilteredSmallGroups } from '@/graphql/hooks/useSmallGroups';
 import AddToSacraments from './AddToSacraments';
 import MemberPrayerRequestsTab from './MemberPrayerRequestsTab';
 import MemberContributionsTab from './MemberContributionsTab';
 import MemberActivityTimeline from "./MemberActivityTimeline";
+import { CREATE_FAMILY } from "@/graphql/mutations/familyMutations";
+import UpdateFamilyModal from './UpdateFamilyModal';
 
 const ADD_MEMBER_TO_GROUP = gql`
-  mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleInGroup: String!) {
-    addMemberToGroup(groupId: $groupId, memberId: $memberId, roleInGroup: $roleInGroup) {
+  mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleInGroup: String!, $status: String!, $joinDate: String!) {
+    addMemberToGroup(groupId: $groupId, memberId: $memberId, roleInGroup: $roleInGroup, status: $status, joinDate: $joinDate) {
       id
       member { id firstName lastName }
       smallGroup { id name }
@@ -48,14 +56,12 @@ const ADD_MEMBER_TO_GROUP = gql`
   }
 `;
 
-const ADD_FAMILY_MEMBER = gql`
-  mutation AddFamilyConnection($memberId: ID!, $relativeId: ID!, $relationship: String!) {
-    addFamilyConnection(memberId: $memberId, relativeId: $relativeId, relationship: $relationship) {
+const ADD_FAMILY_CONNECTION = gql`
+  mutation AddFamilyConnection($familyId: String!, $memberId: String!, $relatedMemberId: String!, $relationship: String!) {
+    addFamilyConnection(familyId: $familyId, memberId: $memberId, relatedMemberId: $relatedMemberId, relationship: $relationship) {
       id
-      member { id firstName lastName }
-      relative { id firstName lastName }
-      relationship
-      status
+      name
+      members { id firstName lastName }
     }
   }
 `;
@@ -132,9 +138,198 @@ interface MemberDetailsModalProps {
 }
 
 export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProps) {
-  const { member, loading, error } = useMember(memberId);
+  const [showCreateFamily, setShowCreateFamily] = useState(false);
+  const [showUpdateFamily, setShowUpdateFamily] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    middleName: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+    dateOfBirth: '',
+    baptismDate: '',
+    confirmationDate: '',
+    membershipDate: '',
+    status: '',
+    gender: '',
+    maritalStatus: '',
+    occupation: '',
+    employerName: '',
+    notes: '',
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const { member, loading, error, refetch } = useMember(memberId);
+
+  // Reset upload state when modal closes
+  useEffect(() => {
+    if (!showEditModal) {
+      setUploadError(null);
+      setImageFile(null);
+      setPreviewImage(null);
+    }
+  }, [showEditModal]);
+
+  // Initialize edit form data when member data is available
+  useEffect(() => {
+    if (member) {
+      setEditFormData({
+        firstName: member.firstName || '',
+        lastName: member.lastName || '',
+        middleName: member.middleName || '',
+        email: member.email || '',
+        phoneNumber: member.phoneNumber || '',
+        address: member.address || '',
+        city: member.city || '',
+        state: member.state || '',
+        postalCode: member.postalCode || '',
+        country: member.country || '',
+        dateOfBirth: member.dateOfBirth || '',
+        baptismDate: member.baptismDate || '',
+        confirmationDate: member.confirmationDate || '',
+        membershipDate: member.membershipDate || '',
+        status: member.status || '',
+        gender: member.gender || '',
+        maritalStatus: member.maritalStatus || '',
+        occupation: member.occupation || '',
+        employerName: member.employerName || '',
+        notes: member.notes || '',
+      });
+      setPreviewImage(null);
+      setImageFile(null);
+      setUploadError(null);
+    }
+  }, [member]);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
+
+  const [updateMember] = useMutation(UPDATE_MEMBER, {
+    onCompleted: () => {
+      refetch();
+      setShowEditModal(false);
+    },
+    onError: (error) => {
+      console.error('Error updating member:', error);
+    },
+  });
+
+  const [getPresignedUploadUrl] = useMutation(GET_PRESIGNED_UPLOAD_URL, {
+    onError: (error) => {
+      console.error('Error getting presigned URL:', error);
+      setUploadError('Failed to get upload URL');
+    }
+  });
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let imageId = member?.imageId;
+      let imageUrl = member?.profileImageUrl;
+      
+      if (imageFile) {
+        setIsUploading(true);
+        
+        try {
+          // Step 1: Get a presigned URL for the upload
+          const { data: presignedData } = await getPresignedUploadUrl({
+            variables: {
+              input: {
+                fileName: imageFile.name,
+                contentType: imageFile.type,
+                mediaType: "IMAGE",
+                branchId: member.branchId || "",
+                description: `Profile image for member ${memberId}`
+              }
+            }
+          });
+          
+          if (!presignedData || !presignedData.getPresignedUploadUrl) {
+            throw new Error('Failed to get presigned URL');
+          }
+          
+          // Instead of direct S3 upload which causes CORS issues,
+          // create a FormData object and send it to our backend
+          const formData = new FormData();
+          formData.append('file', imageFile);
+          formData.append('uploadUrl', presignedData.getPresignedUploadUrl.uploadUrl);
+          
+          // Send to our backend API which will proxy the upload to S3
+          const uploadResponse = await fetch('/api/proxy-upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!uploadResponse.ok) {
+            const errorText = await uploadResponse.text();
+            throw new Error(`Failed to upload image: ${errorText}`);
+          }
+          
+          // Store both the ID and the URL
+          imageId = presignedData.getPresignedUploadUrl.mediaItemId;
+          imageUrl = presignedData.getPresignedUploadUrl.fileUrl;
+        } catch (error) {
+          console.error('Image upload error:', error);
+          setUploadError('Failed to upload profile image');
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+
+      // Step 3: Update the member with the new image URL
+      await updateMember({
+        variables: {
+          id: memberId,
+          updateMemberInput: {
+            id: memberId, // Required field in UpdateMemberInput
+            firstName: editFormData.firstName,
+            lastName: editFormData.lastName,
+            middleName: editFormData.middleName,
+            email: editFormData.email,
+            phoneNumber: editFormData.phoneNumber, // Correct field name
+            address: editFormData.address,
+            city: editFormData.city,
+            state: editFormData.state,
+            postalCode: editFormData.postalCode,
+            country: editFormData.country,
+            dateOfBirth: editFormData.dateOfBirth,
+            baptismDate: editFormData.baptismDate,
+            confirmationDate: editFormData.confirmationDate,
+            membershipDate: editFormData.membershipDate,
+            status: editFormData.status,
+            gender: editFormData.gender,
+            maritalStatus: editFormData.maritalStatus,
+            occupation: editFormData.occupation,
+            employerName: editFormData.employerName,
+            notes: editFormData.notes,
+            // Use the complete file URL
+            profileImageUrl: imageUrl,
+          },
+        },
+      });
+      setShowEditModal(false);
+      refetch();
+    } catch (error) {
+      console.error('Error updating member:', error);
+    }
+  };
+
+  const handleFamilyCreated = (family: any) => {
+    setShowCreateFamily(false);
+    refetch();
+  };
+
+  const { user } = useAuth();
+  const orgBranchFilter = useOrganizationBranchFilter();
   const tabs = [
     { key: "activity", label: "Activity" },
     { key: "info", label: "Info" },
@@ -273,7 +468,408 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-0 relative overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-screen-xl h-[90vh] p-12 relative overflow-y-auto flex flex-col justify-start">
+        {/* Edit Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="bg-white rounded-2xl border border-indigo-100 shadow-2xl w-full max-w-5xl mx-2 h-[85vh] p-8 relative animate-fadeIn overflow-y-auto flex flex-col justify-start">
+              <div className="flex items-center justify-between px-6 pt-6 pb-2 border-b border-gray-100 rounded-t-2xl bg-gradient-to-br from-indigo-50 to-white">
+                <h3 className="text-lg font-bold text-indigo-900">Edit Member Details</h3>
+                <button 
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-400 hover:text-indigo-500 transition"
+                >
+                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="px-6 py-6">
+                <form onSubmit={handleEditSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Profile Image
+                        </label>
+                        {isUploading && (
+                          <div className="text-sm text-indigo-600">
+                            Uploading...
+                          </div>
+                        )}
+                        {uploadError && (
+                          <div className="text-sm text-red-500">
+                            {uploadError}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-100">
+                          {previewImage ? (
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : member?.imageId ? (
+                            <img
+                              src={`/api/images/${member.imageId}`}
+                              alt="Profile"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <UserIcon className="h-12 w-12 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById('profileImage')?.click()}
+                          className="inline-flex items-center px-3 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        >
+                          {imageFile ? 'Change Image' : 'Upload Image'}
+                          <PhotoIcon className="ml-2 h-4 w-4" />
+                        </button>
+                        <input
+                          type="file"
+                          id="profileImage"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setImageFile(e.target.files[0]);
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setPreviewImage(event.target?.result as string);
+                              };
+                              reader.readAsDataURL(e.target.files[0]);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        value={editFormData.firstName}
+                        onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        required
+                        placeholder="Enter first name"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        value={editFormData.lastName}
+                        onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        required
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      placeholder="Enter email"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={editFormData.phoneNumber}
+                      onChange={(e) => setEditFormData({ ...editFormData, phoneNumber: e.target.value })}
+                      className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                      Address
+                    </label>
+                    <textarea
+                      id="address"
+                      name="address"
+                      value={editFormData.address}
+                      onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                      rows={3}
+                      className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      placeholder="Enter address"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        value={editFormData.city}
+                        onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter city"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        id="state"
+                        name="state"
+                        value={editFormData.state}
+                        onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter state"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                        Postal Code
+                      </label>
+                      <input
+                        type="text"
+                        id="postalCode"
+                        name="postalCode"
+                        value={editFormData.postalCode}
+                        onChange={(e) => setEditFormData({ ...editFormData, postalCode: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter postal code"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <input
+                        type="text"
+                        id="country"
+                        name="country"
+                        value={editFormData.country}
+                        onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter country"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        value={editFormData.dateOfBirth}
+                        onChange={(e) => setEditFormData({ ...editFormData, dateOfBirth: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="baptismDate" className="block text-sm font-medium text-gray-700 mb-1">
+                        Baptism Date
+                      </label>
+                      <input
+                        type="date"
+                        id="baptismDate"
+                        name="baptismDate"
+                        value={editFormData.baptismDate}
+                        onChange={(e) => setEditFormData({ ...editFormData, baptismDate: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="confirmationDate" className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirmation Date
+                      </label>
+                      <input
+                        type="date"
+                        id="confirmationDate"
+                        name="confirmationDate"
+                        value={editFormData.confirmationDate}
+                        onChange={(e) => setEditFormData({ ...editFormData, confirmationDate: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="membershipDate" className="block text-sm font-medium text-gray-700 mb-1">
+                        Membership Date
+                      </label>
+                      <input
+                        type="date"
+                        id="membershipDate"
+                        name="membershipDate"
+                        value={editFormData.membershipDate}
+                        onChange={(e) => setEditFormData({ ...editFormData, membershipDate: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        id="status"
+                        name="status"
+                        value={editFormData.status}
+                        onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      >
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="VISITOR">Visitor</option>
+                        <option value="PENDING">Pending</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
+                        Gender
+                      </label>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={editFormData.gender}
+                        onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">
+                        Marital Status
+                      </label>
+                      <select
+                        id="maritalStatus"
+                        name="maritalStatus"
+                        value={editFormData.maritalStatus}
+                        onChange={(e) => setEditFormData({ ...editFormData, maritalStatus: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                      >
+                        <option value="">Select Marital Status</option>
+                        <option value="SINGLE">Single</option>
+                        <option value="MARRIED">Married</option>
+                        <option value="DIVORCED">Divorced</option>
+                        <option value="WIDOWED">Widowed</option>
+                        <option value="SEPARATED">Separated</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="occupation" className="block text-sm font-medium text-gray-700 mb-1">
+                        Occupation
+                      </label>
+                      <input
+                        type="text"
+                        id="occupation"
+                        name="occupation"
+                        value={editFormData.occupation}
+                        onChange={(e) => setEditFormData({ ...editFormData, occupation: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter occupation"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="employerName" className="block text-sm font-medium text-gray-700 mb-1">
+                        Employer Name
+                      </label>
+                      <input
+                        type="text"
+                        id="employerName"
+                        name="employerName"
+                        value={editFormData.employerName}
+                        onChange={(e) => setEditFormData({ ...editFormData, employerName: e.target.value })}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter employer name"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                        Notes
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        value={editFormData.notes}
+                        onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                        rows={3}
+                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
+                        placeholder="Enter notes"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditModal(false)}
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold"
           onClick={onClose}
@@ -283,8 +879,34 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
         </button>
         {/* Modal Header */}
         <div className="flex flex-col items-center pt-8 pb-4 px-6 border-b border-gray-100">
-          <div className="h-16 w-16 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-extrabold shadow-lg mb-2">
-            {getInitials()}
+          <div className="relative">
+            {member.profileImageUrl ? (
+              <img
+                src={member.profileImageUrl}
+                alt={`${member.firstName} ${member.lastName}`}
+                className="h-16 w-16 rounded-full object-cover shadow-lg mb-2"
+              />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-extrabold shadow-lg mb-2">
+                {getInitials()}
+              </div>
+            )}
+            <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-lg">
+              <label className="cursor-pointer">
+                <CameraIcon className="h-6 w-6 text-indigo-600" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                      handleImageUpload();
+                    }
+                  }}
+                />
+              </label>
+            </div>
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1 text-center">{member.firstName} {member.lastName}</h1>
           <div className="flex flex-wrap items-center gap-2 mb-1 justify-center">
@@ -292,6 +914,15 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             <span className="inline-flex items-center text-xs text-gray-600 bg-white rounded-full px-2 py-0.5">
               Member since {formatMemberSince()}
             </span>
+          </div>
+          <div className="mt-4 flex justify-center gap-4">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <PencilIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              Edit Details
+            </button>
           </div>
         </div>
         {/* Redesigned Tabs */}
@@ -381,35 +1012,50 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           )}
           {activeTab === "family" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AddFamilyConnection memberId={member.id} onSuccess={() => {/* TODO: refetch member data */}} />
-              <div className="flex items-center gap-2 text-gray-700">
-                <HeartIcon className="h-5 w-5 text-indigo-400" />
-                <span className="font-semibold">Spouse:</span> {member.spouse ? `${member.spouse.firstName} ${member.spouse.lastName}` : <span className='text-gray-400'>None</span>}
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <UserIcon className="h-5 w-5 text-indigo-400" />
-                <span className="font-semibold">Parent:</span> {member.parent ? `${member.parent.firstName} ${member.parent.lastName}` : <span className='text-gray-400'>None</span>}
-              </div>
-              <div className="flex items-center gap-2 text-gray-700 col-span-2">
-                <UsersIcon className="h-5 w-5 text-indigo-400" />
-                <span className="font-semibold">Children:</span> {member.children && member.children.length > 0 ? member.children.map(child => `${child.firstName} ${child.lastName}`).join(", ") : <span className='text-gray-400'>None</span>}
-              </div>
+              {member.families && member.families.length > 0 ? (
+                <AddFamilyConnection
+                  key={member.families[0].id}
+                  memberId={member.id}
+                  familyId={member.families[0].id}
+                  onSuccess={refetch}
+                />
+              ) : (
+                <div className="col-span-2 flex flex-col items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                  <span className="text-gray-700 mb-2">This member does not belong to any family.</span>
+                  <button
+                    className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+                    onClick={() => setShowCreateFamily(true)}
+                  >
+                    <PlusIcon className="h-5 w-5 inline mr-1" /> Create Family
+                  </button>
+                  <button
+                    className="mt-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
+                    onClick={() => setShowUpdateFamily(true)}
+                  >
+                    Update Family
+                  </button>
+                </div>
+              )}
+              <CreateFamilyModal open={showCreateFamily} onClose={() => setShowCreateFamily(false)} onCreated={handleFamilyCreated} memberId={member.id} />
+              <UpdateFamilyModal open={showUpdateFamily} onClose={() => setShowUpdateFamily(false)} memberId={member.id} onUpdated={refetch} />
               {/* --- Family Relationships --- */}
               {member.familyRelationships && member.familyRelationships.length > 0 && (
                 <div className="mt-4 col-span-2">
                   <div className="font-semibold text-indigo-700 mb-1 flex items-center"><UsersIcon className="h-5 w-5 mr-1" />Family Relationships</div>
                   <ul className="divide-y divide-gray-100">
-                    {member.familyRelationships.map(rel => (
-                      <li key={rel.id} className="py-2 flex items-center gap-3">
-                        <IdentificationIcon className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                        <div>
-                          <div className="text-sm">Relationship: <span className="font-semibold">{rel.relationshipType}</span></div>
-                          <div className="text-xs text-gray-500">Family ID: <span className="font-mono">{rel.familyId}</span></div>
-                          <div className="text-xs text-gray-500">Member ID: <span className="font-mono">{rel.memberId}</span></div>
-                          <div className="text-xs text-gray-400">Created: {rel.createdAt ? new Date(rel.createdAt).toLocaleDateString() : '—'}</div>
-                        </div>
-                      </li>
-                    ))}
+                    {member.familyRelationships.map(rel => {
+                      return (
+                          <li key={rel.id}
+                              className="py-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+                            <div>
+                              <span className="font-semibold mr-2">{rel.relationshipType}:</span>
+                              <span>{rel.relatedMember?.firstName} {rel.relatedMember?.lastName}</span>
+                            </div>
+                            <div
+                                className="text-xs text-gray-400 mt-1 md:mt-0">Added {new Date(rel.createdAt).toLocaleDateString()}</div>
+                          </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -555,7 +1201,8 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             Message
           </button>
           <a
-            href={`/dashboard/members/${member.id}/edit`}
+              onClick={() => setShowEditModal(true)}
+            href="#"
             className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-semibold text-indigo-600 bg-white border border-indigo-200 hover:bg-indigo-50 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <PencilIcon className="h-5 w-5 mr-2 text-indigo-500" />
@@ -575,56 +1222,69 @@ interface AddToGroupProps {
 }
 
 function AddToGroup({ memberId }: AddToGroupProps) {
-  const { smallGroups, loading } = useAllSmallGroups();
-  const [addMemberToGroupMutation] = useMutation(ADD_MEMBER_TO_GROUP);
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { smallGroups, loading } = useFilteredSmallGroups(orgBranchFilter, !orgBranchFilter.branchId && !orgBranchFilter.organisationId);
+  const { addMemberToGroup } = useSmallGroupMutations();
 
-  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
   const [role, setRole] = useState("MEMBER");
-  const [adding, setAdding] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const filteredGroups = smallGroups.filter((g: { name: string }) => g.name.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    if (!showAdd) {
+      setUploadError(null);
+      setImageFile(null);
+      setPreviewImage(null);
+    }
+  }, [showAdd]);
+
+  const filteredGroups = smallGroups.filter((g: { name: string }) => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const handleAdd = async () => {
     if (!selectedGroup) return;
-    setAdding(true);
+    setIsAdding(true);
     setError(null);
     try {
-      await addMemberToGroupMutation({
-        variables: {
-          groupId: selectedGroup.id,
-          memberId,
-          roleInGroup: role
-        }
+      await addMemberToGroup({
+        memberId,
+        smallGroupId: selectedGroup.id,
+        role: role as SmallGroupMemberRole
       });
       setSuccess(true);
-    } catch {
-      setError("Failed to add member to group.");
+      setTimeout(() => setSuccess(false), 1200);
+      setShowAdd(false);
+      setSelectedGroup(null);
+      setSearch("");
+    } catch (e: any) {
+      setError(e?.message || "Failed to add member to group.");
     }
     setAdding(false);
   };
 
   return (
     <div className="mb-4">
-      <button
-        className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
-        onClick={() => setSelectedGroup(null)}
-      >
-        <PlusIcon className="h-4 w-4 mr-1" /> Add to Group
-      </button>
-      {selectedGroup && (
+      {!showAdd && (
+        <button
+          className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
+          onClick={() => setShowAdd(true)}
+        >
+          <PlusIcon className="h-4 w-4 mr-1" /> Add to Group
+        </button>
+      )}
+      {showAdd && (
         <div className="flex flex-col gap-2 bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
           <input
             type="text"
             className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
             placeholder="Search group..."
             value={search}
-            onChange={e => {
-              setSearch(e.target.value);
-              setSelectedGroup(null);
-            }}
+            onChange={e => setSearch(e.target.value)}
           />
           <select
             className="rounded border-gray-300 text-xs px-2 py-1"
@@ -658,7 +1318,7 @@ function AddToGroup({ memberId }: AddToGroupProps) {
             </button>
             <button
               className="inline-flex items-center px-2 py-1 rounded text-xs border border-gray-300 text-gray-600 hover:bg-gray-100"
-              onClick={() => setSelectedGroup(null)}
+              onClick={() => { setShowAdd(false); setSelectedGroup(null); setSearch(""); }}
             >
               Cancel
             </button>
@@ -673,24 +1333,25 @@ function AddToGroup({ memberId }: AddToGroupProps) {
 
 interface AddFamilyConnectionProps {
   memberId: string;
+  familyId: string;
   onSuccess?: () => void;
 }
 
-function AddFamilyConnection({ memberId, onSuccess }: AddFamilyConnectionProps) {
+function AddFamilyConnection({ memberId, familyId, onSuccess }: AddFamilyConnectionProps) {
   const [showInput, setShowInput] = useState(false);
-  const [cardId, setCardId] = useState("");
-  const [relationship, setRelationship] = useState("Sibling");
+  const [relatedMemberId, setRelatedMemberId] = useState("");
+  const [relationship, setRelationship] = useState("SIBLING");
   const [adding, setAdding] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [addFamilyConnection] = useMutation(ADD_FAMILY_MEMBER);
+  const [addFamilyConnection] = useMutation(ADD_FAMILY_CONNECTION);
 
   const handleAdd = async () => {
-    if (!cardId) return;
+    if (!relatedMemberId) return;
     setAdding(true);
     setError(null);
     try {
-      await addFamilyConnection({ variables: { memberId, relativeId: cardId, relationship } });
+      await addFamilyConnection({ variables: { familyId, memberId, relatedMemberId, relationship } });
       setSuccess(true);
       if (onSuccess) onSuccess();
     } catch {
@@ -713,43 +1374,87 @@ function AddFamilyConnection({ memberId, onSuccess }: AddFamilyConnectionProps) 
         <div className="flex flex-col gap-2 bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
           <input
             type="text"
+            placeholder="Related Member ID"
+            value={relatedMemberId}
+            onChange={e => setRelatedMemberId(e.target.value)}
             className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-            placeholder="Relative Card ID (RFID)..."
-            value={cardId}
-            onChange={e => setCardId(e.target.value)}
           />
           <select
-            className="rounded border-gray-300 text-xs px-2 py-1"
             value={relationship}
             onChange={e => setRelationship(e.target.value)}
+            className="rounded border-gray-300 text-sm"
           >
-            <option value="Spouse">Spouse</option>
-            <option value="Child">Child</option>
-            <option value="Parent">Parent</option>
-            <option value="Sibling">Sibling</option>
-            <option value="Grandparent">Grandparent</option>
-            <option value="Grandchild">Grandchild</option>
-            <option value="Other">Other</option>
+            <option value="SPOUSE">Spouse</option>
+            <option value="PARENT">Parent</option>
+            <option value="CHILD">Child</option>
+            <option value="SIBLING">Sibling</option>
+            <option value="GRANDPARENT">Grandparent</option>
+            <option value="GRANDCHILD">Grandchild</option>
+            <option value="OTHER">Other</option>
           </select>
-          <div className="flex gap-2 mt-2">
-            <button
-              className="inline-flex items-center px-3 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-semibold shadow-sm disabled:opacity-50"
-              onClick={handleAdd}
-              disabled={!cardId || adding}
-            >
-              {adding ? "Adding..." : "Add"}
-            </button>
-            <button
-              className="inline-flex items-center px-2 py-1 rounded text-xs border border-gray-300 text-gray-600 hover:bg-gray-100"
-              onClick={() => setShowInput(false)}
-            >
-              Cancel
-            </button>
-            {success && <div className="text-green-600 text-sm mt-2">Added!</div>}
-            {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-          </div>
+          <button
+            onClick={handleAdd}
+            disabled={adding}
+            className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-semibold shadow-sm"
+          >
+            {adding ? "Adding..." : "Add Connection"}
+          </button>
+          {error && <div className="text-red-500 text-xs">{error}</div>}
+          {success && <div className="text-green-600 text-xs">Added!</div>}
         </div>
       )}
+    </div>
+  );
+}
+
+function CreateFamilyModal({ open, onClose, onCreated, memberId }: { open: boolean; onClose: () => void; onCreated: (family: any) => void; memberId: string }) {
+  const [name, setName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [createFamily] = useMutation(CREATE_FAMILY);
+
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const { data } = await createFamily({ variables: { createFamilyInput: { name, memberIds: [memberId] } } });
+      if (data?.createFamily) {
+        onCreated(data.createFamily);
+        onClose();
+      }
+    } catch (e: any) {
+      setError(e.message || "Failed to create family.");
+    }
+    setCreating(false);
+  };
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-8 relative">
+        <h2 className="text-xl font-semibold mb-4">Create New Family</h2>
+        <input
+          className="border border-gray-300 rounded-lg px-3 py-2 w-full mb-4"
+          placeholder="Family Name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          disabled={creating}
+        />
+        {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+            onClick={onClose}
+            disabled={creating}
+          >Cancel</button>
+          <button
+            className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+            onClick={handleCreate}
+            disabled={creating || !name.trim()}
+          >{creating ? "Creating..." : "Create"}</button>
+        </div>
+      </div>
     </div>
   );
 }

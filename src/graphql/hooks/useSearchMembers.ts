@@ -11,10 +11,10 @@ export interface SearchMember {
 }
 
 // Accepts search string and optionally a limit, returns { members, loading, error, searchMembers }
-export function useSearchMembers(searchTerm: string, organisationId: string) {
+export function useSearchMembers(searchTerm: string, organisationId: string, branchId?: string) {
   const { data, loading, error } = useQuery(SEARCH_MEMBERS, {
-    variables: { search: searchTerm, organisationId },
-    skip: !searchTerm || !organisationId,
+    variables: { search: searchTerm, organisationId, branchId },
+    skip: !searchTerm || !organisationId || !branchId,
   });
 
   return { data: data?.members, loading, error };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   CurrencyDollarIcon,
   MagnifyingGlassIcon,
@@ -14,8 +14,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { BanknotesIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
-// import { useBranchFinances } from '@/hooks/useBranchFinances';
-// import { useAuth } from '@/graphql/hooks/useAuth';
+import { useBranchFinances } from '@/hooks/useBranchFinances';
+import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
+import {useAuth} from '@/graphql/hooks/useAuth';
+import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 
 // Recent activity for notification feed
 const recentActivity = [
@@ -46,19 +48,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import Link from "next/link";
 
 export default function BranchFinancesPage() {
-  // const { user } = useAuth();
-  // const {
-  //   summary,
-  //   transactions,
-  //   funds,
-  //   contributionTypes,
-  //   paymentMethods,
-  //   loading,
-  //   error,
-  //   createContribution,
-  //   creationLoading,
-  // } = useBranchFinances();
-
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("All");
   const [dateFilter, setDateFilter] = useState("This Month");
   const [showFilters, setShowFilters] = useState(false);
@@ -75,10 +65,33 @@ export default function BranchFinancesPage() {
     paymentMethodId: '',
   });
 
-  const tabOptions = useMemo(() => {
-    // if (!contributionTypes) return ["All"];
-    return ["All"];
-  }, []);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+
+  const [transactionForm, setTransactionForm] = useState({
+    type: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    fundId: '',
+    paymentMethodId: '',
+    reference: '',
+    contributionTypeId: '', // Only for CONTRIBUTION
+  });
+
+  const [memberSearch, setMemberSearch] = useState('');
+  const branchId = user?.userBranches?.[0]?.branch?.id;
+  const { data: memberResults, loading: memberLoading } = useSearchMembers(memberSearch, user?.organisationId || '', branchId);
+
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (transactionForm.type !== 'CONTRIBUTION' && transactionForm.contributionTypeId) {
+      setTransactionForm(f => ({ ...f, contributionTypeId: '' }));
+    }
+  }, [transactionForm.type]);
+
+  const { contributionTypes, funds, paymentMethods } = useBranchFinances();
+  const { createTransaction, loading: creating, error: createError } = useTransactionMutations();
 
   const handleOpenModal = (typeName: string) => {
     // const contributionType = contributionTypes.find(ct => ct.name === typeName);
@@ -96,32 +109,70 @@ export default function BranchFinancesPage() {
 
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // if (!user?.organisationId || !user.userBranches?.[0]?.branch?.id) {
-    //   console.error("User organisation or branch not found");
-    //   return;
-    // }
-
     try {
-      // await createContribution({
-      //   variables: {
-      //     createContributionInput: {
-      //       amount: parseFloat(modalForm.amount),
-      //       date: modalForm.date,
-      //       notes: modalForm.note,
-      //       contributionTypeId: modalForm.contributionTypeId,
-      //       fundId: modalForm.fundId,
-      //       paymentMethodId: modalForm.paymentMethodId,
-      //       organisationId: user.organisationId,
-      //       branchId: user?.userBranches[0].branch.id,
-      //     },
-      //   },
-      // });
+
       handleCloseModal();
     } catch (err) {
       console.error("Failed to create contribution", err);
     }
   };
-  
+
+  const handleOpenTransactionModal = () => setShowTransactionModal(true);
+  const handleCloseTransactionModal = () => setShowTransactionModal(false);
+
+  const handleTransactionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate type
+    const validTypes = ['CONTRIBUTION', 'EXPENSE', 'TRANSFER', 'FUND_ALLOCATION'];
+    if (!transactionForm.type || !validTypes.includes(transactionForm.type)) {
+      alert('Please select a valid transaction type.');
+      return;
+    }
+    // Compose input for mutation
+    const input: any = {
+      organisationId: user?.organisationId,
+      branchId: user?.userBranches?.[0]?.branch?.id,
+      fundId: transactionForm.fundId || null,
+      userId: user?.id,
+      type: (transactionForm.type as 'CONTRIBUTION' | 'EXPENSE' | 'TRANSFER' | 'FUND_ALLOCATION'),
+      amount: parseFloat(transactionForm.amount),
+      date: transactionForm.date,
+      description: transactionForm.description,
+      reference: transactionForm.reference || null,
+      metadata: {},
+    };
+    if (!input.type) {
+      alert('Transaction type is required.');
+      return;
+    }
+    if (transactionForm.type === 'CONTRIBUTION') {
+      input.metadata = {
+        contributionTypeId: transactionForm.contributionTypeId,
+        paymentMethodId: transactionForm.paymentMethodId || null,
+        memberId: selectedMemberId,
+        // Add more fields as needed (e.g., isAnonymous)
+      };
+    } else {
+      // For other transaction types, include paymentMethodId in metadata if present
+      if (transactionForm.paymentMethodId) {
+        input.metadata.paymentMethodId = transactionForm.paymentMethodId;
+      }
+    }
+    // Debug: log the input before mutation
+    console.log('Submitting transaction input:', input);
+    if (!input.type || input.type === '') {
+      alert('Transaction type is missing. Please select a type.');
+      return;
+    }
+    await createTransaction({ variables: { input } });
+    handleCloseTransactionModal();
+  };
+
+  const tabOptions = useMemo(() => {
+    // if (!contributionTypes) return ["All"];
+    return ["All"];
+  }, []);
+
   const monthlyChangePercent = 0; // Placeholder for now
   const isPositiveChange = monthlyChangePercent >= 0;
   
@@ -161,12 +212,14 @@ export default function BranchFinancesPage() {
           </span>
         }
         action={
-          <Link href="/dashboard/finances/new-transaction" passHref legacyBehavior>
-            <a className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-              <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-              New Transaction
-            </a>
-          </Link>
+          <button
+            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={handleOpenTransactionModal}
+            type="button"
+          >
+            <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+            New Transaction
+          </button>
         }
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-10">
@@ -283,13 +336,19 @@ export default function BranchFinancesPage() {
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Fund <span className="text-red-500">*</span></label>
               <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.fundId} onChange={e => setModalForm(f => ({ ...f, fundId: e.target.value }))}>
-                {/* {funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)} */}
+                <option value="">Select fund</option>
+                {funds?.map((fund: any) => (
+                  <option key={fund.id} value={fund.id}>{fund.name}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-indigo-800 mb-1">Payment Method <span className="text-red-500">*</span></label>
               <select required className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" value={modalForm.paymentMethodId} onChange={e => setModalForm(f => ({ ...f, paymentMethodId: e.target.value }))}>
-                {/* {paymentMethods.map(pm => <option key={pm.id} value={pm.id}>{pm.name}</option>)} */}
+                <option value="">Select payment method</option>
+                {paymentMethods?.map((pm: any) => (
+                  <option key={pm.id} value={pm.id}>{pm.name}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -301,6 +360,160 @@ export default function BranchFinancesPage() {
             </div>
           </form>
         </Modal>
+
+        {/* Transaction Modal */}
+        {showTransactionModal && (
+          <Modal open={showTransactionModal} title="Add Transaction" onClose={handleCloseTransactionModal}>
+            <form onSubmit={handleTransactionSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Type <span className="text-red-500">*</span></label>
+                <select
+                  required
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.type}
+                  onChange={e => setTransactionForm(f => ({ ...f, type: e.target.value }))}
+                >
+                  <option value="">Select type</option>
+                  <option value="CONTRIBUTION">Contribution</option>
+                  <option value="EXPENSE">Expense</option>
+                  <option value="TRANSFER">Transfer</option>
+                  <option value="FUND_ALLOCATION">Fund Allocation</option>
+                </select>
+              </div>
+              {/* Show Contribution Type dropdown if type is CONTRIBUTION */}
+              {transactionForm.type === 'CONTRIBUTION' && (
+                <div>
+                  <label className="block text-sm font-medium text-indigo-800 mb-1">Contribution Type <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                    value={transactionForm.contributionTypeId}
+                    onChange={e => setTransactionForm(f => ({ ...f, contributionTypeId: e.target.value }))}
+                  >
+                    <option value="">Select contribution type</option>
+                    {contributionTypes?.map((ct: any) => (
+                      <option key={ct.id} value={ct.id}>{ct.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {/* Member search for CONTRIBUTION type */}
+              {transactionForm.type === 'CONTRIBUTION' && (
+                <div className="mb-4">
+                  <label htmlFor="memberSearch" className="block text-sm font-medium text-gray-700">Member <span className="text-red-500">*</span></label>
+                  <input
+                    id="memberSearch"
+                    type="text"
+                    value={memberSearch}
+                    onChange={e => setMemberSearch(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Search for member by name, email, or phone"
+                    required
+                  />
+                  {memberLoading && <div className="text-xs text-gray-400">Searching...</div>}
+                  {memberResults && memberSearch && (
+                    <ul className="border rounded bg-white mt-1 max-h-40 overflow-y-auto">
+                      {memberResults.map((m: any) => (
+                        <li
+                          key={m.id}
+                          className={`p-2 cursor-pointer hover:bg-gray-100 ${selectedMemberId === m.id ? 'bg-indigo-100' : ''}`}
+                          onClick={() => {
+                            setSelectedMemberId(m.id);
+                            setMemberSearch(`${m.firstName} ${m.lastName}`);
+                          }}
+                        >
+                          {m.firstName} {m.lastName} {m.email ? `(${m.email})` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {/* Show selected member below the input if set */}
+                  {selectedMemberId && memberResults && (
+                    <div className="mt-1 text-xs text-indigo-700">
+                      Selected: {memberResults.find((m: any) => m.id === selectedMemberId)?.firstName} {memberResults.find((m: any) => m.id === selectedMemberId)?.lastName}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.amount}
+                  onChange={e => setTransactionForm(f => ({ ...f, amount: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Date</label>
+                <input
+                  type="date"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.date}
+                  onChange={e => setTransactionForm(f => ({ ...f, date: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Description</label>
+                <input
+                  type="text"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.description}
+                  onChange={e => setTransactionForm(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Optional description"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Fund</label>
+                <select
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.fundId}
+                  onChange={e => setTransactionForm(f => ({ ...f, fundId: e.target.value }))}
+                >
+                  <option value="">Select fund</option>
+                  {funds?.map((fund: any) => (
+                    <option key={fund.id} value={fund.id}>{fund.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Payment Method</label>
+                <select
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.paymentMethodId}
+                  onChange={e => setTransactionForm(f => ({ ...f, paymentMethodId: e.target.value }))}
+                >
+                  <option value="">Select payment method</option>
+                  {paymentMethods?.map((pm: any) => (
+                    <option key={pm.id} value={pm.id}>{pm.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Reference</label>
+                <input
+                  type="text"
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  value={transactionForm.reference}
+                  onChange={e => setTransactionForm(f => ({ ...f, reference: e.target.value }))}
+                  placeholder="Reference (optional)"
+                />
+              </div>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 text-base shadow transition"
+                >
+                  Save Transaction
+                </button>
+              </div>
+            </form>
+          </Modal>
+        )}
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
@@ -476,7 +689,7 @@ function SummaryCard({ icon, label, value, gradient }: { icon: React.ReactNode; 
     <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-5 shadow flex flex-col gap-2 items-start border border-gray-100`}>
       <div className="bg-white rounded-lg p-2 shadow-sm mb-1">{icon}</div>
       <div className="text-xs text-gray-500 mb-1 font-medium">{label}</div>
-      <div className="text-2xl font-bold text-gray-900">${value.toLocaleString()}</div>
+      <div className="text-2xl font-bold text-gray-900">₵{value.toLocaleString()}</div>
     </div>
   );
 }

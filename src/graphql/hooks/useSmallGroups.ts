@@ -245,12 +245,20 @@ export const useSmallGroupMutations = () => {
 
   // Add member to group mutation
   const [addMemberToGroupMutation] = useMutation(ADD_MEMBER_TO_GROUP);
-  const addMemberToGroup = async (input: AddGroupMemberInput) => {
+  const addMemberToGroup = async ({ memberId, smallGroupId, role }: {
+    memberId: string;
+    smallGroupId: string;
+    role: string;
+  }) => {
     try {
       const { data } = await addMemberToGroupMutation({
-        variables: { input }
+        variables: {
+          groupId: smallGroupId,
+          memberId,
+          roleInGroup: role
+        }
       });
-      return data.addGroupMember;
+      return data.addMemberToGroup;
     } catch (error) {
       console.error('Error adding member to group:', error);
       throw error;

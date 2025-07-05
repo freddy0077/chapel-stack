@@ -354,7 +354,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                   </div>
                   {/* Family Members Section */}
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Family Members</h3>
+                    {familyMembers.length > 0 && (
+                      <h3 className="font-semibold text-gray-900 mb-2">Family Members</h3>)}
                     <div className="space-y-2">
                       {familyMembers.map((member) => (
                         <div key={member.id} className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 rounded-md p-3">
@@ -366,7 +367,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                           </div>
                         </div>
                       ))}
-                      <button type="button" onClick={addFamilyMember} className="mt-2 inline-flex items-center px-3 py-1.5 border border-indigo-300 rounded-full text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">Add Family Member</button>
+                      {/*<button type="button" onClick={addFamilyMember} className="mt-2 inline-flex items-center px-3 py-1.5 border border-indigo-300 rounded-full text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">Add Family Member</button>*/}
                     </div>
                   </div>
                   {/* Action Buttons */}

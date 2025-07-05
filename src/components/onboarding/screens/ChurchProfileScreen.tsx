@@ -42,16 +42,8 @@ const ChurchProfileScreen = ({
     state: churchProfile?.state || '',
     country: churchProfile?.country || '',
     zipCode: churchProfile?.zipCode || '',
-    denomination: churchProfile?.denomination || '',
-    foundingYear: churchProfile?.foundingYear || '',
-    size: churchProfile?.size || '',
-    vision: churchProfile?.vision || '',
     missionStatement: churchProfile?.missionStatement || '',
     description: churchProfile?.description || '',
-    timezone: churchProfile?.timezone || '',
-    currency: churchProfile?.currency || '',
-    primaryColor: churchProfile?.primaryColor || '',
-    secondaryColor: churchProfile?.secondaryColor || '',
     tertiaryColor: churchProfile?.tertiaryColor || ''
   }));
   
@@ -124,14 +116,9 @@ const ChurchProfileScreen = ({
     setIsSaving(true);
     setBackendError(null);
     try {
-      // Prepare input: convert foundingYear to number, remove tertiaryColor, leave size as string
+      // Prepare input: remove tertiaryColor, leave size as string
       const orgInput = { ...localOrganisation };
-      if (orgInput.foundingYear) orgInput.foundingYear = Number(orgInput.foundingYear);
       delete orgInput.tertiaryColor;
-      // Set default colors if empty
-      if (!orgInput.primaryColor) orgInput.primaryColor = '#000000';
-      if (!orgInput.secondaryColor) orgInput.secondaryColor = '#000000';
-
       // Call mutation
       const response = await createOrganisation({
         variables: {
@@ -178,16 +165,6 @@ const ChurchProfileScreen = ({
   // Country select options (can be moved to a separate util or constants file)
   const countryOptions = [
     '', 'United States', 'Canada', 'United Kingdom', 'Australia', 'Ghana', 'Nigeria', 'South Africa', 'Kenya', 'Germany', 'France', 'India', 'China', 'Japan', 'Brazil', 'Mexico', 'Italy', 'Spain', 'Netherlands', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Switzerland', 'New Zealand', 'Ireland', 'Singapore', 'Malaysia', 'Philippines', 'South Korea', 'Indonesia', 'Turkey', 'Egypt', 'Morocco', 'UAE', 'Saudi Arabia', 'Israel', 'Pakistan', 'Bangladesh', 'Poland', 'Russia', 'Ukraine', 'Argentina', 'Chile', 'Colombia', 'Peru', 'Venezuela', 'Thailand', 'Vietnam', 'Other'
-  ];
-
-  // Currency select options (ISO 4217)
-  const currencyOptions = [
-    '', 'USD', 'EUR', 'GBP', 'GHS', 'NGN', 'ZAR', 'KES', 'CAD', 'AUD', 'JPY', 'CNY', 'INR', 'BRL', 'MXN', 'CHF', 'SEK', 'NOK', 'DKK', 'RUB', 'PLN', 'TRY', 'EGP', 'MAD', 'AED', 'SAR', 'ILS', 'PKR', 'BDT', 'SGD', 'MYR', 'PHP', 'KRW', 'IDR', 'THB', 'VND', 'ARS', 'CLP', 'COP', 'PEN', 'VEF', 'NZD', 'HKD', 'CZK', 'HUF', 'RON', 'UAH', 'CZK', 'HRK', 'BGN', 'LKR', 'TZS', 'UGX', 'XOF', 'XAF', 'Other'
-  ];
-
-  // Timezone select options (IANA timezones, common)
-  const timezoneOptions = [
-    '', 'Africa/Accra', 'Africa/Lagos', 'Africa/Johannesburg', 'Europe/London', 'Europe/Berlin', 'Europe/Paris', 'Europe/Rome', 'Europe/Madrid', 'Europe/Amsterdam', 'Europe/Zurich', 'Europe/Stockholm', 'Europe/Oslo', 'Europe/Copenhagen', 'Europe/Helsinki', 'Europe/Dublin', 'Europe/Warsaw', 'Europe/Moscow', 'Europe/Istanbul', 'Europe/Kiev', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto', 'America/Vancouver', 'America/Sao_Paulo', 'America/Mexico_City', 'Asia/Dubai', 'Asia/Jerusalem', 'Asia/Kolkata', 'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Singapore', 'Asia/Bangkok', 'Asia/Hong_Kong', 'Asia/Kuala_Lumpur', 'Asia/Manila', 'Australia/Sydney', 'Australia/Melbourne', 'Pacific/Auckland', 'Pacific/Honolulu', 'UTC', 'Other'
   ];
 
   return (
@@ -300,15 +277,34 @@ const ChurchProfileScreen = ({
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">Region</label>
-                  <input
-                    type="text"
+                  <select
                     name="state"
                     value={localOrganisation.state || ''}
                     onChange={handleChange}
                     className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Region"
-                  />
+                    required
+                  >
+                    <option value="">Select region</option>
+                    <option value="Ahafo">Ahafo</option>
+                    <option value="Ashanti">Ashanti</option>
+                    <option value="Bono">Bono</option>
+                    <option value="Bono East">Bono East</option>
+                    <option value="Central">Central</option>
+                    <option value="Eastern">Eastern</option>
+                    <option value="Greater Accra">Greater Accra</option>
+                    <option value="North East">North East</option>
+                    <option value="Northern">Northern</option>
+                    <option value="Oti">Oti</option>
+                    <option value="Savannah">Savannah</option>
+                    <option value="Upper East">Upper East</option>
+                    <option value="Upper West">Upper West</option>
+                    <option value="Volta">Volta</option>
+                    <option value="Western">Western</option>
+                    <option value="Western North">Western North</option>
+                  </select>
                 </div>
+                {/* Country field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Country</label>
                   <select
@@ -323,6 +319,9 @@ const ChurchProfileScreen = ({
                     ))}
                   </select>
                 </div>
+                */}
+                {/* Zip Code field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Zip Code</label>
                   <input
@@ -334,6 +333,9 @@ const ChurchProfileScreen = ({
                     placeholder="Zip Code"
                   />
                 </div>
+                */}
+                {/* Denomination field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Denomination</label>
                   <input
@@ -345,6 +347,9 @@ const ChurchProfileScreen = ({
                     placeholder="Denomination"
                   />
                 </div>
+                */}
+                {/* Founding Year field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Founding Year</label>
                   <input
@@ -356,6 +361,9 @@ const ChurchProfileScreen = ({
                     placeholder="Founding Year"
                   />
                 </div>
+                */}
+                {/* Size field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Size</label>
                   <input
@@ -367,6 +375,9 @@ const ChurchProfileScreen = ({
                     placeholder="Size"
                   />
                 </div>
+                */}
+                {/* Vision field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Vision</label>
                   <textarea
@@ -378,43 +389,40 @@ const ChurchProfileScreen = ({
                     placeholder="Vision"
                   />
                 </div>
-                <div>
+                */}
+                <div className="col-span-full">
                   <label className="block font-semibold mb-1">Mission Statement</label>
                   <textarea
                     name="missionStatement"
                     value={localOrganisation.missionStatement || ''}
                     onChange={handleChange}
-                    rows={2}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition min-h-[120px]"
                     placeholder="Mission Statement"
                   />
                 </div>
+                {/* Timezone field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Timezone</label>
                   <select
                     id="timezone"
                     name="timezone"
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
                     value={localOrganisation.timezone || ''}
                     onChange={handleChange}
+                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
                     required
                   >
                     <option value="">Select timezone</option>
                     {timezoneOptions.map((tz) => {
-                      let currentTime = '';
-                      try {
-                        currentTime = DateTime.now().setZone(tz).toFormat('HH:mm, MMM dd');
-                      } catch (_e) {
-                        currentTime = '';
-                      }
                       return (
-                        <option key={tz} value={tz}>
-                          {tz} {currentTime && `- ${currentTime}`}
-                        </option>
+                        <option key={tz} value={tz}>{tz}</option>
                       );
                     })}
                   </select>
                 </div>
+                */}
+                {/* Currency field hidden as per user request */}
+                {/*
                 <div>
                   <label className="block font-semibold mb-1">Currency</label>
                   <select
@@ -429,26 +437,7 @@ const ChurchProfileScreen = ({
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block font-semibold mb-1">Primary Color</label>
-                  <input
-                    type="color"
-                    name="primaryColor"
-                    value={localOrganisation.primaryColor || '#000000'}
-                    onChange={handleChange}
-                    className="w-16 h-10 border-2 border-indigo-200 rounded-lg p-0 cursor-pointer"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Secondary Color</label>
-                  <input
-                    type="color"
-                    name="secondaryColor"
-                    value={localOrganisation.secondaryColor || '#000000'}
-                    onChange={handleChange}
-                    className="w-16 h-10 border-2 border-indigo-200 rounded-lg p-0 cursor-pointer"
-                  />
-                </div>
+                */}
               </div>
               {/* Action Buttons */}
               <div className="flex justify-between items-center mt-8 gap-2">

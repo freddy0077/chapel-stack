@@ -358,19 +358,48 @@ function UserRoleEditor({
   );
 }
 
-// New User Modal Component
-function NewUserModal({ open, onClose, onCreate }: { open: boolean; onClose: () => void; onCreate: (user: any) => void }) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('MEMBER');
-  const [isActive, setIsActive] = useState(true);
+// New User Modal Component (with backend mutation)
+import { useMutation } from '@apollo/client';
+import { CREATE_USERS_WITH_ROLE } from '@/graphql/mutations/userMutations';
+import { useAuth } from "@/graphql/hooks/useAuth";
 
-  const handleSubmit = (e: React.FormEvent) => {
+function NewUserModal({ open, onClose, onCreate }: { open: boolean; onClose: () => void; onCreate: (user: any) => void }) {
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', roleName: 'MEMBER' });
+  const [createUsersWithRole, { loading }] = useMutation(CREATE_USERS_WITH_ROLE);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const organisationId = user?.organisationId;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate({ firstName, lastName, email, role, isActive });
-    setFirstName(''); setLastName(''); setEmail(''); setRole('MEMBER'); setIsActive(true);
-    onClose();
+    setSubmitError(null);
+    if (form.password.length < 8) {
+      setSubmitError('Password must be at least 8 characters');
+      return;
+    }
+    try {
+      const { data } = await createUsersWithRole({
+        variables: {
+          input: {
+            users: [{ ...form }],
+            organisationId,
+          },
+        },
+      });
+      if (data.createUsersWithRole && !data.createUsersWithRole[0].error) {
+        onCreate(data.createUsersWithRole[0]);
+        setForm({ firstName: '', lastName: '', email: '', password: '', roleName: 'MEMBER' });
+        onClose();
+      } else {
+        setSubmitError(data.createUsersWithRole[0].error || 'Unknown error');
+      }
+    } catch (err: any) {
+      setSubmitError(err.message);
+    }
   };
 
   return (
@@ -398,34 +427,31 @@ function NewUserModal({ open, onClose, onCreate }: { open: boolean; onClose: () 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-indigo-700">First Name</label>
-                      <input type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                      <input name="firstName" type="text" required value={form.firstName} onChange={handleChange} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-indigo-700">Last Name</label>
-                      <input type="text" required value={lastName} onChange={e => setLastName(e.target.value)} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                      <input name="lastName" type="text" required value={form.lastName} onChange={handleChange} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-indigo-700">Email</label>
-                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                    <input name="email" type="email" required value={form.email} onChange={handleChange} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-indigo-700">Role</label>
-                      <select value={role} onChange={e => setRole(e.target.value)} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                        {availableRoles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                      </select>
-                    </div>
-                    <div className="flex items-end pt-5">
-                      <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                        <input id="isActive" type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="h-4 w-4 text-indigo-600 border-indigo-300 rounded focus:ring-indigo-500" />
-                        <span className="text-xs font-semibold text-indigo-700">Active</span>
-                      </label>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-indigo-700">Password</label>
+                    <input name="password" type="password" required minLength={8} value={form.password} onChange={handleChange} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
                   </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-indigo-700">Role</label>
+                    <select name="roleName" value={form.roleName} onChange={handleChange} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/80 py-2 px-3 text-indigo-900 shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                      {availableRoles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    </select>
+                  </div>
+                  {submitError && <div className="text-red-500 text-sm">{submitError}</div>}
                   <div className="mt-6 flex justify-end gap-3">
                     <button type="button" className="inline-flex justify-center rounded-lg border border-indigo-200 bg-white px-5 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-200" onClick={onClose}>Cancel</button>
-                    <button type="submit" className="inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-blue-500 px-5 py-2 text-sm font-semibold text-white shadow hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-200">Add User</button>
+                    <button type="submit" className="inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-blue-500 px-5 py-2 text-sm font-semibold text-white shadow hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-200" disabled={loading}>Add User</button>
                   </div>
                 </form>
               </Dialog.Panel>

@@ -181,6 +181,15 @@ export const GET_MEMBERS_LIST = gql`
           createdAt
           updatedAt
         }
+        relatedMember {
+          id
+          firstName
+          lastName
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
       }
       prayerRequests
       contributions
@@ -242,6 +251,15 @@ export const GET_MEMBER = gql`
           id
           firstName
           lastName
+          createdAt
+          updatedAt
+        }
+        relatedMember {
+          id
+          firstName
+          lastName
+          createdAt
+          updatedAt
         }
         createdAt
         updatedAt
@@ -259,13 +277,18 @@ export const GET_MEMBER = gql`
 
 // Query to search for members by name, email, or phone number
 export const SEARCH_MEMBERS = gql`
-  query SearchMembers($search: String, $organisationId: String) {
-    members(search: $search, organisationId: $organisationId) {
+  query SearchMembers($search: String, $organisationId: String, $branchId: String) {
+    members(search: $search, organisationId: $organisationId, branchId: $branchId) {
       id
       firstName
       lastName
       email
       phoneNumber
+      rfidCardId
+      branch {
+        id
+        name
+      }
     }
   }
 `;

@@ -89,8 +89,16 @@ export const DELETE_SMALL_GROUP = gql`
 
 // Mutation to add a member to a small group
 export const ADD_MEMBER_TO_GROUP = gql`
-  mutation AddMemberToGroup($input: AddGroupMemberInput!) {
-    addGroupMember(input: $input) {
+  mutation AddMemberToGroup(
+    $groupId: ID!,
+    $memberId: ID!,
+    $roleInGroup: String!
+  ) {
+    addMemberToGroup(
+      groupId: $groupId,
+      memberId: $memberId,
+      roleInGroup: $roleInGroup
+    ) {
       id
       role
       joinDate

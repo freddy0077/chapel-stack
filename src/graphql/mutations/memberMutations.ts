@@ -29,6 +29,7 @@ export const UPDATE_MEMBER = gql`
       lastName
       email
       phoneNumber
+      address
       status
       updatedAt
     }
@@ -127,6 +128,17 @@ export const ASSIGN_RFID_CARD_TO_MEMBER = gql`
       }
       createdAt
       updatedAt
+    }
+  }
+`;
+
+// Mutation to get a presigned URL for file uploads
+export const GET_PRESIGNED_UPLOAD_URL = gql`
+  mutation GetPresignedUploadUrl($input: FileUploadInput!) {
+    getPresignedUploadUrl(input: $input) {
+      uploadUrl
+      fileUrl
+      mediaItemId
     }
   }
 `;

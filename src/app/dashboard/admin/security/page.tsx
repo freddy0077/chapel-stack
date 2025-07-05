@@ -17,13 +17,31 @@ import AuditLogs from './components/AuditLogs';
 import BranchSwitcher from '@/app/dashboard/components/BranchSwitcher';
 import DashboardHeader from '@/components/DashboardHeader';
 
+import { useQuery } from '@apollo/client';
+import { GET_SECURITY_OVERVIEW } from '@/graphql/queries/userQueries';
+import { useAuth } from '@/graphql/hooks/useAuth';
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function SecurityAdministration() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-  
+  const { user } = useAuth();
+  const organisationId = user?.organisationId;
+
+  const { data: securityData, loading: securityLoading } = useQuery(GET_SECURITY_OVERVIEW, {
+    variables: { organisationId },
+    skip: !organisationId,
+  });
+
+  // Extract counts from KPI cards
+  const kpiCards = securityData?.dashboardData?.kpiCards || [];
+  const activeUsersCard = kpiCards.find((card: any) => card.title?.toLowerCase().includes('member') || card.title?.toLowerCase().includes('user'));
+  const rolesCard = kpiCards.find((card: any) => card.title?.toLowerCase().includes('role'));
+  const activeUsersCount = activeUsersCard ? Number(activeUsersCard.value) : 0;
+  const rolesCount = rolesCard ? Number(rolesCard.value) : 0;
+
   // Tab definitions
   const tabs = [
     { name: 'User Access', icon: UsersIcon, component: UserRoleAssignment },
@@ -93,14 +111,16 @@ export default function SecurityAdministration() {
                     Active Users
                   </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">253</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {securityLoading ? '...' : activeUsersCount}
+                    </div>
                   </dd>
                 </dl>
               </div>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">15 pending approvals</div>
+                <div className="text-sm text-gray-500">&nbsp;</div>
                 <div className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                   View all
                 </div>
@@ -121,14 +141,16 @@ export default function SecurityAdministration() {
                     Roles Defined
                   </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">12</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {securityLoading ? '...' : rolesCount}
+                    </div>
                   </dd>
                 </dl>
               </div>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">4 custom roles</div>
+                <div className="text-sm text-gray-500">&nbsp;</div>
                 <div className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                   Manage roles
                 </div>
@@ -156,7 +178,7 @@ export default function SecurityAdministration() {
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">5 active / 3 inactive</div>
+                <div className="text-sm text-gray-500">0 active / 0 inactive</div>
                 <div className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                   View policies
                 </div>
@@ -177,14 +199,14 @@ export default function SecurityAdministration() {
                     Security Events
                   </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">147</div>
+                    <div className="text-lg font-medium text-gray-900">0</div>
                   </dd>
                 </dl>
               </div>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">Today: 24 events</div>
+                <div className="text-sm text-gray-500">Today: 0 events</div>
                 <div className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                   View logs
                 </div>
