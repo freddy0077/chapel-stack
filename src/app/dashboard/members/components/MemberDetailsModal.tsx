@@ -182,6 +182,13 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
   // Initialize edit form data when member data is available
   useEffect(() => {
     if (member) {
+      // Helper to format date as YYYY-MM-DD for input fields
+      const formatDate = (dateValue: any) => {
+        if (!dateValue) return '';
+        const d = new Date(dateValue);
+        if (isNaN(d.getTime())) return '';
+        return d.toISOString().split('T')[0];
+      };
       setEditFormData({
         firstName: member.firstName || '',
         lastName: member.lastName || '',
@@ -193,10 +200,10 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
         state: member.state || '',
         postalCode: member.postalCode || '',
         country: member.country || '',
-        dateOfBirth: member.dateOfBirth || '',
-        baptismDate: member.baptismDate || '',
-        confirmationDate: member.confirmationDate || '',
-        membershipDate: member.membershipDate || '',
+        dateOfBirth: formatDate(member.dateOfBirth),
+        baptismDate: formatDate(member.baptismDate),
+        confirmationDate: formatDate(member.confirmationDate),
+        membershipDate: formatDate(member.membershipDate),
         status: member.status || '',
         gender: member.gender || '',
         maritalStatus: member.maritalStatus || '',
@@ -285,7 +292,12 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
         setIsUploading(false);
       }
 
-      // Step 3: Update the member with the new image URL
+      // Helper to convert date string to Date or null
+      const parseDateOrNull = (val: string) => {
+        if (!val) return null;
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+      };
       await updateMember({
         variables: {
           id: memberId,
@@ -301,10 +313,10 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             state: editFormData.state,
             postalCode: editFormData.postalCode,
             country: editFormData.country,
-            dateOfBirth: editFormData.dateOfBirth,
-            baptismDate: editFormData.baptismDate,
-            confirmationDate: editFormData.confirmationDate,
-            membershipDate: editFormData.membershipDate,
+            dateOfBirth: parseDateOrNull(editFormData.dateOfBirth),
+            baptismDate: parseDateOrNull(editFormData.baptismDate),
+            confirmationDate: parseDateOrNull(editFormData.confirmationDate),
+            membershipDate: parseDateOrNull(editFormData.membershipDate),
             status: editFormData.status,
             gender: editFormData.gender,
             maritalStatus: editFormData.maritalStatus,
