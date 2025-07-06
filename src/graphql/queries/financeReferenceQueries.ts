@@ -15,29 +15,25 @@ export const GET_FUNDS = gql`
 `;
 
 export const GET_CONTRIBUTION_TYPES = gql`
-  query GetContributionTypes($branchId: ID) {
-    contributionTypes(branchId: $branchId) {
+  query GetContributionTypes($organisationId: String!, $branchId: String) {
+    contributionTypes(organisationId: $organisationId, branchId: $branchId) {
       id
       name
       description
       isActive
       branchId
-      createdAt
-      updatedAt
     }
   }
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query GetPaymentMethods($branchId: ID) {
-    paymentMethods(branchId: $branchId) {
+  query GetPaymentMethods($organisationId: String!) {
+    paymentMethods(organisationId: $organisationId) {
       id
       name
       description
       isActive
-      branchId
-      createdAt
-      updatedAt
+      organisationId
     }
   }
 `;

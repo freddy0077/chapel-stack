@@ -36,7 +36,7 @@ export function BranchOverviewWidgets({
     { label: "New Members This Month", value: memberStats.newMembersThisMonth },
     { label: "Total Attendance", value: attendanceStats.totalAttendance },
     { label: "Upcoming Events", value: activityStats.upcomingEvents.length },
-    { label: "Total Contributions", value: financeStats.totalContributions },
+    // { label: "Total Contributions", value: financeStats.totalContributions },
   ];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

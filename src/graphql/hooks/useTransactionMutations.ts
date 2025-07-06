@@ -2,18 +2,18 @@ import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 
 export const CREATE_TRANSACTION = gql`
-  mutation CreateTransaction($input: CreateTransactionInput!) {
-    createTransaction(input: $input) {
+  mutation CreateTransaction($createTransactionInput: CreateTransactionInput!) {
+    createTransaction(createTransactionInput: $createTransactionInput) {
       id
+      organisationId
+      branchId
+      fundId
+      userId
       type
       amount
       date
       description
       reference
-      fundId
-      branchId
-      organisationId
-      userId
       metadata
       createdAt
       updatedAt

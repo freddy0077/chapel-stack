@@ -9,6 +9,8 @@ import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
 import useAuth from "@/graphql/hooks/useAuth";
+import BranchFinanceStats from "@/components/BranchFinanceStats";
+import { useQuery as useApolloQuery } from "@apollo/client";
 
 const BRANCH_DASHBOARD_QUERY = gql`
   query BranchDashboard($branchId: String!) {
@@ -58,6 +60,21 @@ export default function BranchDashboardPage() {
     skip: !branchId,
   });
 
+  // Fetch funds for this branch for the finance stats component
+  const { data: fundsData, loading: fundsLoading, error: fundsError } = useApolloQuery(gql`
+    query GetFunds($organisationId: String!, $branchId: String) {
+      funds(organisationId: $organisationId, branchId: $branchId) {
+        id
+        name
+        description
+        branchId
+      }
+    }
+  `, {
+    variables: { organisationId: user?.organisationId, branchId },
+    skip: !user?.organisationId || !branchId,
+  });
+
   if (loading) {
     return <div className="p-10 text-center text-lg">Loading branch dashboard...</div>;
   }
@@ -93,9 +110,15 @@ export default function BranchDashboardPage() {
           activityStats={branchDashboard.activityStats}
         />
         {/* Add more widgets as needed, e.g. finances, events, etc. */}
-        <BranchFinancesSummary financeStats={branchDashboard.financeStats} />
+        {/*<BranchFinancesSummary financeStats={branchDashboard.financeStats} />*/}
+        {/* BranchFinanceStats: Real-time branch and fund stats */}
+        <BranchFinanceStats
+          organisationId={user?.organisationId}
+          branchId={branchId}
+          funds={fundsData?.funds || []}
+        />
         <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
-        <BranchPerformance />
+        {/*<BranchPerformance />*/}
         <BranchAdminTools branchInfo={branchDashboard.branchInfo} />
       </main>
     </div>
