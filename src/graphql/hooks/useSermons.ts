@@ -9,8 +9,12 @@ interface UseSermonsFilters {
 }
 
 const useSermons = (filters: UseSermonsFilters = {}) => {
+  // Only pass supported arguments: branchId
+  const supportedFilters: { branchId?: string } = {};
+  if (filters.branchId) supportedFilters.branchId = filters.branchId;
+
   const { data, error, loading, refetch } = useQuery(GET_SERMONS, {
-    variables: filters,
+    variables: supportedFilters,
   });
 
   return {

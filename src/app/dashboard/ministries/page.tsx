@@ -8,6 +8,7 @@ import type { Ministry, MinistryMember } from "@/types/ministry";
 import { MinistryType } from "@/types/ministry";
 import { useMinistry } from "@/graphql/hooks/useMinistry";
 import { useCreateMinistry } from "@/graphql/hooks/useCreateMinistry";
+import { usePermissions } from "@/hooks/usePermissions";
 
 import { MinistryLoader } from "./MinistryLoader";
 import { useOrganizationBranchFilter } from "@/hooks";
@@ -56,7 +57,7 @@ function MinistryDetailsModal({ ministryId, onClose }: { ministryId: string; onC
 
 function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCreate }: { onClose: () => void; onSuccess: () => void; branchId: string; afterCreate?: () => void }) {
   const { user } = useAuth();
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const { isSuperAdmin } = usePermissions();
   const organisationId = user?.organisationId;
   const [selectedBranchId, setSelectedBranchId] = useState<string>(propBranchId || "");
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
@@ -123,32 +124,22 @@ function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCre
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Branch Selection Logic */}
-          {isSuperAdmin ? (
-            <div>
+          {isSuperAdmin && (
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
               <select
                 name="branchId"
                 value={selectedBranchId}
                 onChange={e => setSelectedBranchId(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
                 disabled={branchesLoading}
+                className="w-full border rounded px-3 py-2"
+                required
               >
                 <option value="">Select Branch</option>
                 {branches.map(branch => (
                   <option key={branch.id} value={branch.id}>{branch.name}</option>
                 ))}
               </select>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-              <input
-                type="text"
-                value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
-                className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
-                disabled
-              />
             </div>
           )}
           <div>

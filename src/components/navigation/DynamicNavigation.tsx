@@ -16,8 +16,6 @@ import {
   UserGroupIcon,
   ChatBubbleLeftRightIcon,
   CalendarIcon,
-  UserCircleIcon,
-  MusicalNoteIcon,
   ChartBarIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
@@ -101,13 +99,13 @@ const fullNavigation = [
       //   badge: { count: 12, color: "bg-green-500" },
       //   moduleId: "attendance" 
       // },
-      { 
-        name: "Sacraments", 
-        href: "/dashboard/sacraments", 
-        icon: DocumentTextIcon, 
-        // badge: { count: 3, color: "bg-purple-500" },
-        moduleId: "members" 
-      },
+      // {
+      //   name: "Sacraments",
+      //   href: "/dashboard/sacraments",
+      //   icon: DocumentTextIcon,
+      //   // badge: { count: 3, color: "bg-purple-500" },
+      //   moduleId: "members"
+      // },
       { 
         name: "Ministries", 
         href: "/dashboard/ministries", 
@@ -122,14 +120,13 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "sermons" 
       // },
-      // HIDE Sermons menu item
-      // { 
-      //   name: "Sermons", 
-      //   href: "/dashboard/sermons", 
-      //   icon: MusicalNoteIcon, 
-      //   badge: null,
-      //   moduleId: "sermons" 
-      // },
+      {
+        name: "Sermons",
+        href: "/dashboard/sermons",
+        icon: DocumentTextIcon,
+        badge: null,
+        moduleId: "sermons"
+      },
     ]
   },
   {

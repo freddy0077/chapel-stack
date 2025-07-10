@@ -164,6 +164,8 @@ export default function MemberDetailPage() {
         <nav className="flex space-x-8 justify-center md:justify-start mb-8" aria-label="Tabs">
           {[
             { key: "info", label: "Info" },
+            { key: "ministries", label: "Ministries" },
+            { key: "groups", label: "Groups" },
             { key: "attendance", label: "Attendance" },
           ].map((tab) => (
             <button
@@ -304,6 +306,42 @@ export default function MemberDetailPage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "ministries" && (
+        <div className="mt-8">
+          <div className="backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ministry Memberships</h3>
+            {member.ministryMemberships && member.ministryMemberships.length > 0 ? (
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {member.ministryMemberships.map((membership: any) => (
+                  <li key={membership.ministry.id} className="py-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-100">{membership.ministry.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Role: {membership.role}</p>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">Joined: {new Date(membership.joinDate).toLocaleDateString()}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 italic">No ministry memberships.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "groups" && (
+        <div className="mt-8">
+          <div className="backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Group Memberships</h3>
+            {member.groupMemberships && member.groupMemberships.length > 0 ? (
+              <p className="text-gray-500 italic">Group memberships data structure not yet implemented.</p>
+            ) : (
+              <p className="text-gray-500 italic">No group memberships.</p>
+            )}
           </div>
         </div>
       )}

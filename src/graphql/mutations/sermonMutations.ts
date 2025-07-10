@@ -1,15 +1,29 @@
 import { gql } from '@apollo/client';
 
 export const CREATE_SERMON = gql`
-  mutation CreateSermon($input: CreateSermonInput!) {
-    createSermon(input: $input) {
+  mutation CreateSermon($createSermonInput: CreateSermonInput!) {
+    createSermon(createSermonInput: $createSermonInput) {
       id
       title
       description
-      date
+      datePreached
       status
-      speakerId
-      seriesId
+      speaker {
+        id
+        name
+      }
+      series {
+        id
+        title
+      }
+      category {
+        id
+        name
+      }
+      tags {
+        id
+        name
+      }
       mediaUrl
       thumbnailUrl
       duration
@@ -21,15 +35,29 @@ export const CREATE_SERMON = gql`
 `;
 
 export const UPDATE_SERMON = gql`
-  mutation UpdateSermon($id: ID!, $input: UpdateSermonInput!) {
-    updateSermon(id: $id, input: $input) {
+  mutation UpdateSermon($id: ID!, $updateSermonInput: UpdateSermonInput!) {
+    updateSermon(id: $id, updateSermonInput: $updateSermonInput) {
       id
       title
       description
-      date
+      datePreached
       status
-      speakerId
-      seriesId
+      speaker {
+        id
+        name
+      }
+      series {
+        id
+        title
+      }
+      category {
+        id
+        name
+      }
+      tags {
+        id
+        name
+      }
       mediaUrl
       thumbnailUrl
       duration
@@ -40,10 +68,9 @@ export const UPDATE_SERMON = gql`
 `;
 
 export const DELETE_SERMON = gql`
-  mutation DeleteSermon($id: ID!) {
-    deleteSermon(id: $id) {
+  mutation removeSermon($id: ID!) {
+    removeSermon(id: $id) {
       id
-      title
     }
   }
 `;

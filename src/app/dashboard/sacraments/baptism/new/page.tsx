@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, DocumentArrowUpIcon, UserIcon, TagIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -10,33 +10,16 @@ import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
-function MemberSearchDropdown({ query, onSelect }: { query: string; onSelect: (member: any) => void }) {
-  const { user } = useAuth();
-  const { organisationId: orgIdFromFilter } = useOrganizationBranchFilter();
-  const organisationId = orgIdFromFilter ? String(orgIdFromFilter) : "";
-  const { data, loading, error } = useSearchMembers(query, organisationId);
-  const members = Array.isArray(data) ? data : Array.isArray(data?.members) ? data.members : [];
-  return (
-    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-      {loading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
-      {error && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
-      {!loading && !error && members.length === 0 && (
-        <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
-      )}
-      {members.map((member: any) => (
-        <button
-          key={member.id}
-          type="button"
-          className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
-          onClick={() => onSelect(member)}
-        >
-          <span className="font-medium">{member.firstName} {member.lastName}</span>
-          {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
-          <span className="ml-auto text-xs text-gray-400">{member.id}</span>
-        </button>
-      ))}
-    </div>
-  );
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  const handler = useRef<NodeJS.Timeout>();
+  useEffect(() => {
+    if (handler.current) clearTimeout(handler.current);
+    handler.current = setTimeout(() => setDebouncedValue(value), delay);
+    return () => handler.current && clearTimeout(handler.current);
+  }, [value, delay]);
+  return debouncedValue;
 }
 
 export default function NewBaptismRecord() {
@@ -45,7 +28,7 @@ export default function NewBaptismRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";
-  const organisationId = orgIdFromFilter;
+  const organisationId = user?.organisationId || orgIdFromFilter;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
   const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +44,17 @@ export default function NewBaptismRecord() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [memberSearch, setMemberSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Debounced search term
+  const debouncedSearch = useDebounce(memberSearch, 400);
+  const { data, loading: searchLoading, error: searchError } = useSearchMembers(
+    debouncedSearch,
+    organisationId,
+    branchId
+  );
+  const members = Array.isArray(data) ? data : Array.isArray(data?.members) ? data.members : [];
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -70,7 +63,7 @@ export default function NewBaptismRecord() {
     }));
     setErrorMessage(null);
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData(prev => ({
@@ -79,7 +72,7 @@ export default function NewBaptismRecord() {
       }));
     }
   };
-  
+
   const { createBaptismRecord, loading: mutationLoading, error: mutationError } = useCreateBaptismRecord();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,7 +139,7 @@ export default function NewBaptismRecord() {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="py-8 px-2 sm:px-6 lg:px-8 max-w-2xl mx-auto">
       {/* Sticky Page Header */}
@@ -203,6 +196,7 @@ export default function NewBaptismRecord() {
           </label>
           <div className="relative">
             <input
+              ref={inputRef}
               type="text"
               name="memberSearch"
               id="memberSearch"
@@ -218,16 +212,32 @@ export default function NewBaptismRecord() {
               onFocus={() => memberSearch && setShowDropdown(true)}
               onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
             />
-            {/* Autocomplete Dropdown */}
+            {/* Search Dropdown */}
             {showDropdown && memberSearch && (
-              <MemberSearchDropdown
-                query={memberSearch}
-                onSelect={member => {
-                  setFormData(prev => ({ ...prev, memberId: member.id }));
-                  setMemberSearch(`${member.firstName} ${member.lastName}`);
-                  setShowDropdown(false);
-                }}
-              />
+              <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                {searchLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
+                {searchError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
+                {!searchLoading && !searchError && members.length === 0 && (
+                  <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
+                )}
+                {members.map((member: any) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, memberId: member.id }));
+                      setMemberSearch(`${member.firstName} ${member.lastName}`);
+                      setShowDropdown(false);
+                      inputRef.current?.blur();
+                    }}
+                  >
+                    <span className="font-medium">{member.firstName} {member.lastName}</span>
+                    {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
+                    <span className="ml-auto text-xs text-gray-400">{member.id}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
           <p className="mt-1 text-xs text-gray-400">Start typing to search for a member. Select from the list to fill the form.</p>

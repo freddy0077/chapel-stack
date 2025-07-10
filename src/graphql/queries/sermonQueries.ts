@@ -1,49 +1,75 @@
 import { gql } from '@apollo/client';
 
-// Get all sermons (with optional filters)
+// Get all sermons (with optional branchId filter)
 export const GET_SERMONS = gql`
-  query GetSermons($branchId: String, $speakerId: String, $seriesId: String, $status: ContentStatus) {
-    findAll(branchId: $branchId, speakerId: $speakerId, seriesId: $seriesId, status: $status) {
+  query Sermons(
+    $branchId: String
+    $speakerId: String
+    $seriesId: String
+    $status: String
+  ) {
+    sermons(
+      branchId: $branchId
+      speakerId: $speakerId
+      seriesId: $seriesId
+      status: $status
+    ) {
       id
       title
       description
       datePreached
-      speakerId
-      seriesId
       mainScripture
-      audioUrl
-      videoUrl
-      transcriptUrl
-      transcriptText
       duration
-      branchId
       status
       createdAt
       updatedAt
+      speaker {
+        id
+        name
+      }
+      series {
+        id
+        title
+      }
+      category {
+        id
+        name
+      }
+      tags {
+        id
+        name
+      }
     }
   }
 `;
 
 // Get a single sermon by ID
 export const GET_SERMON = gql`
-  query GetSermon($id: ID!) {
-    findOne(id: $id) {
+  query GetSermon($id: String!) {
+    sermon(id: $id) {
       id
       title
       description
       datePreached
-      speakerId
-      seriesId
-      mainScripture
-      audioUrl
+      speaker {
+        id
+        name
+      }
+      series {
+        id
+        title
+      }
+      category {
+        id
+        name
+      }
+      tags {
+        id
+        name
+      }
       videoUrl
-      transcriptUrl
-      transcriptText
-      duration
-      branchId
-      status
-      createdAt
-      updatedAt
+      audioUrl
+      notesUrl
     }
   }
 `;
@@ -51,13 +77,15 @@ export const GET_SERMON = gql`
 // Get recent sermons
 export const GET_RECENT_SERMONS = gql`
   query GetRecentSermons($limit: Int, $branchId: String) {
-    findRecent(limit: $limit, branchId: $branchId) {
+    recentSermons(limit: $limit, branchId: $branchId) {
       id
       title
-      description
       datePreached
-      speakerId
       status
+      speaker {
+        id
+        name
+      }
     }
   }
 `;
@@ -65,12 +93,15 @@ export const GET_RECENT_SERMONS = gql`
 // Search sermons
 export const SEARCH_SERMONS = gql`
   query SearchSermons($query: String!, $branchId: String) {
-    search(query: $query, branchId: $branchId) {
+    searchSermons(query: $query, branchId: $branchId) {
       id
       title
       description
       datePreached
-      speakerId
+      speaker {
+        id
+        name
+      }
     }
   }
 `;
@@ -78,23 +109,9 @@ export const SEARCH_SERMONS = gql`
 // Create a new sermon
 export const CREATE_SERMON = gql`
   mutation CreateSermon($input: CreateSermonInput!) {
-    create(createSermonInput: $input) {
+    createSermon(createSermonInput: $input) {
       id
       title
-      description
-      datePreached
-      speakerId
-      seriesId
-      mainScripture
-      audioUrl
-      videoUrl
-      transcriptUrl
-      transcriptText
-      duration
-      branchId
-      status
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -102,12 +119,27 @@ export const CREATE_SERMON = gql`
 // Update an existing sermon
 export const UPDATE_SERMON = gql`
   mutation UpdateSermon($input: UpdateSermonInput!) {
-    update(updateSermonInput: $input) {
+    updateSermon(updateSermonInput: $input) {
       id
       title
       description
       datePreached
-      # Add other fields as needed
+      speaker {
+        id
+        name
+      }
+      series {
+        id
+        title
+      }
+      category {
+        id
+        name
+      }
+      tags {
+        id
+        name
+      }
     }
   }
 `;
@@ -115,7 +147,7 @@ export const UPDATE_SERMON = gql`
 // Delete a sermon
 export const DELETE_SERMON = gql`
   mutation DeleteSermon($id: ID!) {
-    remove(id: $id) {
+    deleteSermon(id: $id) {
       id
       title
     }
@@ -124,11 +156,42 @@ export const DELETE_SERMON = gql`
 
 // Update sermon status
 export const UPDATE_SERMON_STATUS = gql`
-  mutation UpdateSermonStatus($id: ID!, $status: ContentStatus!) {
+  mutation UpdateSermonStatus($id: ID!, $status: String!) {
     updateSermonStatus(id: $id, status: $status) {
       id
       title
       status
+    }
+  }
+`;
+
+// Get speakers
+export const GET_SPEAKERS = gql`
+  query GetSpeakers($branchId: String) {
+    members(branchId: $branchId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`;
+
+// Get series
+export const GET_SERIES = gql`
+  query GetSeries($branchId: String) {
+    series(branchId: $branchId) {
+      id
+      title
+    }
+  }
+`;
+
+// Get categories
+export const GET_CATEGORIES = gql`
+  query GetCategories($branchId: String) {
+    categories(branchId: $branchId) {
+      id
+      name
     }
   }
 `;

@@ -267,6 +267,14 @@ export const GET_MEMBER = gql`
       prayerRequests
       contributions
       groupMemberships
+      ministryMemberships {
+        ministry {
+          id
+          name
+        }
+        role
+        joinDate
+      }
       attendanceRecords
       sacramentalRecords
       guardianProfile

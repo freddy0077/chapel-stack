@@ -9,6 +9,7 @@ import { useCreateFirstCommunionRecord } from "@/graphql/hooks/useCreateFirstCom
 import { useAuth } from "@/graphql/hooks/useAuth";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function NewCommunionRecord() {
   const router = useRouter();
@@ -16,7 +17,8 @@ export default function NewCommunionRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";
-  const organisationId = orgIdFromFilter;
+  // Only use orgIdFromFilter for super admins. For all others, always use user's organisationId
+  const organisationId = isSuperAdmin ? orgIdFromFilter : user?.organisationId;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
   const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,15 +34,16 @@ export default function NewCommunionRecord() {
     certificate: null as File | null
   });
   const [memberSearch, setMemberSearch] = useState("");
+  const debouncedMemberSearch = useDebounce(memberSearch, 400);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const { createFirstCommunionRecord } = useCreateFirstCommunionRecord();
 
   // Member search hook
-  const { members, loading: memberLoading, error: memberError } = useSearchMembers(memberSearch, 8);
+  const { data: members, loading: memberLoading, error: memberError } = useSearchMembers(debouncedMemberSearch, organisationId, branchId);
 
   // When a member is selected from dropdown
-  const handleSelectMember = (member: unknown) => {
+  const handleSelectMember = (member: any) => {
     setFormData(prev => ({
       ...prev,
       memberId: member.id,
@@ -252,10 +255,10 @@ export default function NewCommunionRecord() {
                     <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
                       {memberLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
                       {memberError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
-                      {!memberLoading && !memberError && members.length === 0 && (
+                      {!memberLoading && !memberError && (!members || members.length === 0) && (
                         <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
                       )}
-                      {members.map((member: unknown) => (
+                      {members && members.map((member: any) => (
                         <button
                           key={member.id}
                           type="button"

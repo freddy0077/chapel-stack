@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import {
   GET_SERMONS,
-  GET_SERMON
+  GET_SERMON,
+  GET_SPEAKERS,
+  GET_SERIES,
+  GET_CATEGORIES,
 } from '../queries/sermonQueries';
 import {
   CREATE_SERMON,
@@ -11,149 +14,109 @@ import {
   UPLOAD_SERMON_MEDIA
 } from '../mutations/sermonMutations';
 
-/**
- * Hook for fetching paginated sermons with filtering options
- */
-export const useSermons = (customOptions = {}) => {
-  const [filters, setFilters] = useState({ branchId: undefined, search: '', status: '' });
-  const [pagination, setPagination] = useState({ page: 1, pageSize: 10 });
 
-  // Use the updated GET_SERMONS query
-  const { data, loading, error, refetch, fetchMore } = useQuery(GET_SERMONS, {
-    variables: { ...filters },
-    fetchPolicy: 'cache-and-network',
-    ...customOptions,
+/**
+ * Hook for fetching sermons with filtering options
+ */
+export function useSermons(branchId?: string) {
+  const { data, loading, error, refetch } = useQuery(GET_SERMONS, {
+    variables: { branchId },
   });
 
-  // Compose enrichedSermons for UI (no speaker/series enrichment for now)
-  const enrichedSermons = () => {
-    return data?.findAll || [];
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-  };
-
-  const handleFilterChange = (newFilters: unknown) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
+  const sermons = useMemo(() => {
+    return data?.sermons || [];
+  }, [data]);
 
   return {
+    sermons,
+    totalCount: sermons.length,
     loading,
     error,
-    data: enrichedSermons(),
     refetch,
-    fetchMore,
-    filters,
-    pagination,
-    setFilters: handleFilterChange,
-    setPagination: handlePageChange
   };
 };
 
 /**
  * Hook for fetching a single sermon by ID
  */
-export const useSermon = (id: string) => {
-  const { loading, error, data } = useQuery(GET_SERMON, {
+export const useSermon = (id: string, customOptions = {}) => {
+  const { data, loading, error, refetch } = useQuery(GET_SERMON, {
     variables: { id },
     skip: !id,
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'cache-and-network',
+    ...customOptions,
   });
-
   return {
+    sermon: data?.sermon || null,
     loading,
     error,
-    sermon: data?.findOne || null,
+    refetch,
   };
 };
 
 /**
+ * Hook for fetching speakers
+ */
+export function useSpeakers(branchId?: string) {
+  const { data, loading, error } = useQuery(GET_SPEAKERS, {
+    variables: { branchId },
+    skip: !branchId,
+  });
+
+  const speakers = useMemo(() => {
+    return data?.members?.map(member => ({ ...member, name: `${member.firstName} ${member.lastName}` })) || [];
+  }, [data]);
+
+  return { speakers, loading, error };
+}
+
+/**
+ * Hook for fetching series
+ */
+export function useSeries(branchId?: string) {
+  const { data, loading, error } = useQuery(GET_SERIES, {
+    variables: { branchId },
+    skip: !branchId,
+  });
+
+  return { series: data?.series || [], loading, error };
+};
+
+/**
+ * Hook for fetching categories
+ */
+export function useCategories(branchId?: string) {
+  const { data, loading, error } = useQuery(GET_CATEGORIES, {
+    variables: { branchId },
+  });
+
+  return { categories: data?.categories || [], loading, error };
+}
+
+/**
  * Hook for sermon mutations (create, update, delete)
  */
-export const useSermonMutations = () => {
-  const [createSermon, { loading: creating }] = useMutation(CREATE_SERMON, {
+export function useSermonMutations() {
+  const [createSermon, { loading: createLoading, error: createError }] = useMutation(CREATE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }]
   });
 
-  const [updateSermon, { loading: updating }] = useMutation(UPDATE_SERMON, {
+  const [updateSermon, { loading: updateLoading, error: updateError }] = useMutation(UPDATE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }]
   });
 
-  const [deleteSermon, { loading: deleting }] = useMutation(DELETE_SERMON, {
+  const [deleteSermon, { loading: deleteLoading, error: deleteError }] = useMutation(DELETE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }]
   });
 
-  const [uploadMedia, { loading: uploading }] = useMutation(UPLOAD_SERMON_MEDIA);
+  const [uploadMedia, { loading: uploadLoading, error: uploadError }] = useMutation(UPLOAD_SERMON_MEDIA);
 
   return {
     createSermon,
     updateSermon,
     deleteSermon,
     uploadMedia,
-    loading: creating || updating || deleting || uploading
-  };
-};
-
-/**
- * Hook for fetching series data
- */
-export const useSeries = (customOptions = {}) => {
-  const [filters, setFilters] = useState<{ search?: string; isActive?: boolean }>({});
-  const [pagination, setPagination] = useState<{ page: number; pageSize: number }>({
-    page: 1,
-    pageSize: 10
-  });
-
-  const { loading, error, data } = useQuery(GET_SERIES, {
-    variables: {
-      filter: filters,
-      pagination
-    },
-    fetchPolicy: 'cache-and-network',
-    ...customOptions
-  });
-
-  return {
-    loading,
-    error,
-    series: data?.paginatedSeries?.items || [],
-    totalCount: data?.paginatedSeries?.totalCount || 0,
-    filters,
-    setFilters,
-    pagination,
-    setPagination
-  };
-};
-
-/**
- * Hook for fetching speakers data
- */
-export const useSpeakers = (customOptions = {}) => {
-  const [filters, setFilters] = useState<{ search?: string; isActive?: boolean }>({});
-  const [pagination, setPagination] = useState<{ page: number; pageSize: number }>({
-    page: 1,
-    pageSize: 10
-  });
-
-  const { loading, error, data } = useQuery(GET_SPEAKERS, {
-    variables: {
-      filter: filters,
-      pagination
-    },
-    fetchPolicy: 'cache-and-network',
-    ...customOptions
-  });
-
-  return {
-    loading,
-    error,
-    speakers: data?.paginatedSpeakers?.items || [],
-    totalCount: data?.paginatedSpeakers?.totalCount || 0,
-    filters,
-    setFilters,
-    pagination,
-    setPagination
+    loading: createLoading || updateLoading || deleteLoading || uploadLoading,
+    error: createError || updateError || deleteError || uploadError
   };
 };

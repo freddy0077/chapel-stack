@@ -594,55 +594,55 @@ export default function SacramentsPage() {
             </SacramentStatsLoader>
             <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Recent Activity Card */}
-              <div className="overflow-hidden rounded-lg bg-white shadow">
-                <div className="p-6">
-                  <h3 className="text-base font-semibold leading-6 text-gray-900">Recent Activity</h3>
-                  <div className="mt-2 divide-y divide-gray-200">
-                    <div className="py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-blue-100 rounded-full p-1">
-                          <DocumentTextIcon className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">New baptism record added</p>
-                          <p className="text-sm text-gray-500">Emma Wilson&apos;s baptism recorded by Pastor Thomas</p>
-                          <p className="mt-1 text-xs text-gray-500">Today at 9:42 AM</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-green-100 rounded-full p-1">
-                          <DocumentTextIcon className="h-5 w-5 text-green-600" aria-hidden="true" />
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">First Communion record added</p>
-                          <p className="text-sm text-gray-500">Noah Martinez received first communion</p>
-                          <p className="mt-1 text-xs text-gray-500">Yesterday at 2:15 PM</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-pink-100 rounded-full p-1">
-                          <DocumentTextIcon className="h-5 w-5 text-pink-600" aria-hidden="true" />
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">Marriage certificate uploaded</p>
-                          <p className="text-sm text-gray-500">Michael &amp; Sarah Johnson&apos;s marriage certificate</p>
-                          <p className="mt-1 text-xs text-gray-500">2 days ago</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                      View all activity
-                      <span aria-hidden="true"> &rarr;</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
+              {/*<div className="overflow-hidden rounded-lg bg-white shadow">*/}
+              {/*  <div className="p-6">*/}
+              {/*    <h3 className="text-base font-semibold leading-6 text-gray-900">Recent Activity</h3>*/}
+              {/*    <div className="mt-2 divide-y divide-gray-200">*/}
+              {/*      <div className="py-4">*/}
+              {/*        <div className="flex items-center">*/}
+              {/*          <div className="flex-shrink-0 bg-blue-100 rounded-full p-1">*/}
+              {/*            <DocumentTextIcon className="h-5 w-5 text-blue-600" aria-hidden="true" />*/}
+              {/*          </div>*/}
+              {/*          <div className="ml-4">*/}
+              {/*            <p className="text-sm font-medium text-gray-900">New baptism record added</p>*/}
+              {/*            <p className="text-sm text-gray-500">Emma Wilson&apos;s baptism recorded by Pastor Thomas</p>*/}
+              {/*            <p className="mt-1 text-xs text-gray-500">Today at 9:42 AM</p>*/}
+              {/*          </div>*/}
+              {/*        </div>*/}
+              {/*      </div>*/}
+              {/*      <div className="py-4">*/}
+              {/*        <div className="flex items-center">*/}
+              {/*          <div className="flex-shrink-0 bg-green-100 rounded-full p-1">*/}
+              {/*            <DocumentTextIcon className="h-5 w-5 text-green-600" aria-hidden="true" />*/}
+              {/*          </div>*/}
+              {/*          <div className="ml-4">*/}
+              {/*            <p className="text-sm font-medium text-gray-900">First Communion record added</p>*/}
+              {/*            <p className="text-sm text-gray-500">Noah Martinez received first communion</p>*/}
+              {/*            <p className="mt-1 text-xs text-gray-500">Yesterday at 2:15 PM</p>*/}
+              {/*          </div>*/}
+              {/*        </div>*/}
+              {/*      </div>*/}
+              {/*      <div className="py-4">*/}
+              {/*        <div className="flex items-center">*/}
+              {/*          <div className="flex-shrink-0 bg-pink-100 rounded-full p-1">*/}
+              {/*            <DocumentTextIcon className="h-5 w-5 text-pink-600" aria-hidden="true" />*/}
+              {/*          </div>*/}
+              {/*          <div className="ml-4">*/}
+              {/*            <p className="text-sm font-medium text-gray-900">Marriage certificate uploaded</p>*/}
+              {/*            <p className="text-sm text-gray-500">Michael &amp; Sarah Johnson&apos;s marriage certificate</p>*/}
+              {/*            <p className="mt-1 text-xs text-gray-500">2 days ago</p>*/}
+              {/*          </div>*/}
+              {/*        </div>*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*    <div className="mt-6">*/}
+              {/*      <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">*/}
+              {/*        View all activity*/}
+              {/*        <span aria-hidden="true"> &rarr;</span>*/}
+              {/*      </a>*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
               <div className="overflow-hidden rounded-lg bg-white shadow">
                 <div className="p-6">
                   <h3 className="text-base font-semibold leading-6 text-gray-900">Upcoming Anniversaries</h3>

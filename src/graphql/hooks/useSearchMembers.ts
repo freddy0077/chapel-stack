@@ -14,7 +14,7 @@ export interface SearchMember {
 export function useSearchMembers(searchTerm: string, organisationId: string, branchId?: string) {
   const { data, loading, error } = useQuery(SEARCH_MEMBERS, {
     variables: { search: searchTerm, organisationId, branchId },
-    skip: !searchTerm || !organisationId || !branchId,
+    skip: !searchTerm,
   });
 
   return { data: data?.members, loading, error };

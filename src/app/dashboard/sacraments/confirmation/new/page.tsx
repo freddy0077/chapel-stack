@@ -16,7 +16,9 @@ export default function NewConfirmationRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";
-  const organisationId = orgIdFromFilter;
+  // Only use orgIdFromFilter for super admins. For all others, always use user's organisationId
+  const organisationId = isSuperAdmin ? orgIdFromFilter : user?.organisationId;
+  console.log('NewConfirmationRecord - user:', user);
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
   const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,8 +114,8 @@ export default function NewConfirmationRecord() {
         variables: {
           input: {
             memberId: formData.memberId,
-            branchId,
-            organisationId,
+            branchId: String(branchId),
+            organisationId: String(organisationId),
             sacramentType: "CONFIRMATION",
             dateOfSacrament: formData.confirmationDate,
             locationOfSacrament: formData.location,
@@ -261,7 +263,7 @@ export default function NewConfirmationRecord() {
                       {!memberLoading && !memberError && members.length === 0 && (
                         <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
                       )}
-                      {members.map((member: unknown) => (
+                      {members?.map((member: unknown) => (
                         <button
                           key={member.id}
                           type="button"

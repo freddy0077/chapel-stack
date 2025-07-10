@@ -64,31 +64,15 @@ export interface Sermon {
   isBookmarked?: boolean;
 }
 
-/**
- * Paginated sermons response
- */
-export interface PaginatedSermons {
-  items: Sermon[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-/**
- * Sermon filter input
- */
-export interface SermonFilterInput {
-  searchTerm?: string;
-  speakerId?: string;
-  seriesId?: string;
-  branchId?: string;
-  startDate?: string | Date;
-  endDate?: string | Date;
-  status?: SermonStatus;
-}
+// export interface SermonFilterInput {
+//   searchTerm?: string;
+//   speakerId?: string;
+//   seriesId?: string;
+//   branchId?: string;
+//   startDate?: string | Date;
+//   endDate?: string | Date;
+//   status?: SermonStatus;
+// }
 
 /**
  * Pagination input

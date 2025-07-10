@@ -42,6 +42,8 @@ import MemberContributionsTab from './MemberContributionsTab';
 import MemberActivityTimeline from "./MemberActivityTimeline";
 import { CREATE_FAMILY } from "@/graphql/mutations/familyMutations";
 import UpdateFamilyModal from './UpdateFamilyModal';
+import { useMinistryMutations } from "@/graphql/hooks/useMinistryMutations";
+import { useFilteredMinistries } from "@/graphql/hooks/useFilteredMinistries";
 
 const ADD_MEMBER_TO_GROUP = gql`
   mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleInGroup: String!, $status: String!, $joinDate: String!) {
@@ -347,6 +349,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
     { key: "info", label: "Info" },
     { key: "family", label: "Family" },
     { key: "groups", label: "Groups" },
+    { key: "ministries", label: "Ministries" },
     { key: "attendance", label: "Attendance" },
     { key: "sacraments", label: "Sacraments" },
     { key: "prayer", label: "Prayer Requests" },
@@ -479,8 +482,15 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
   activityTimeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-screen-xl h-[90vh] p-12 relative overflow-y-auto flex flex-col justify-start">
+    <div className="fixed inset-0 z-50 w-full h-full bg-white overflow-y-auto flex flex-col">
+      <button
+        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+        onClick={onClose}
+        aria-label="Close"
+      >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+      <div className="flex-1 flex flex-col w-full h-full">
         {/* Edit Modal */}
         {showEditModal && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
@@ -882,13 +892,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             </div>
           </div>
         )}
-        <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold"
-          onClick={onClose}
-          aria-label="Close details"
-        >
-          ×
-        </button>
         {/* Modal Header */}
         <div className="flex flex-col items-center pt-8 pb-4 px-6 border-b border-gray-100">
           <div className="relative">
@@ -1107,6 +1110,33 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
               )}
             </div>
           )}
+          {activeTab === "ministries" && (
+            <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm bg-white">
+              <AddToMinistry memberId={member.id} onSuccess={refetch} />
+              {member.ministries && member.ministries.length > 0 ? (
+                <table className="min-w-full divide-y divide-gray-200 text-sm mt-4">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Ministry Name</th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Role</th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {member.ministries.map((min, idx) => (
+                      <tr key={min.ministry?.id || idx} className="hover:bg-indigo-50 transition">
+                        <td className="px-4 py-2 whitespace-nowrap">{min.ministry?.name || <span className='text-gray-400'>Unnamed Ministry</span>}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{min.role || <span className='text-gray-400'>—</span>}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{min.joinDate ? new Date(min.joinDate).toLocaleDateString() : <span className='text-gray-400'>—</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-gray-400 px-4 py-6 text-center">No ministry memberships.</div>
+              )}
+            </div>
+          )}
           {activeTab === "attendance" && (
             <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm bg-white">
               <AddToAttendance memberId={member.id} rfidCardId={member.rfidCardId} onSuccess={() => { /* Optionally refetch attendance */ }} />
@@ -1139,7 +1169,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           {activeTab === "sacraments" && (
             <div className="overflow-x-auto rounded-2xl border border-indigo-100 shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 px-0 py-8 flex flex-col items-center">
               <div className="w-full max-w-xl mb-6">
-                <h4 className="text-2xl font-extrabold text-indigo-700 mb-4 text-center">Add Sacramental Record</h4>
+                {/*<h4 className="text-2xl font-extrabold text-indigo-700 mb-4 text-center">Add Sacramental Record</h4>*/}
                 <AddToSacraments memberId={member.id} onSuccess={() => { /* Optionally refetch sacramental records */ }} />
               </div>
               <div className="w-full max-w-xl">
@@ -1335,9 +1365,113 @@ function AddToGroup({ memberId }: AddToGroupProps) {
             >
               Cancel
             </button>
-            {success && <div className="text-green-600 text-sm mt-2">Successfully added to group!</div>}
-            {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+            {success && <div className="text-green-600 text-xs mt-2">Successfully added to group!</div>}
+            {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface AddToMinistryProps {
+  memberId: string;
+  onSuccess?: () => void;
+}
+
+function AddToMinistry({ memberId, onSuccess }: AddToMinistryProps) {
+  const { user } = useAuth();
+  // Filter ministries by organisation for super admins, by branch for others
+  const orgId = user?.organisationId;
+  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const filter = user?.primaryRole === 'super_admin' ? { organisationId: orgId } : { branchId };
+  const { ministries, loading } = useFilteredMinistries(filter);
+  const { addMemberToMinistry, loading: adding, error, data } = useMinistryMutations();
+  const [showAdd, setShowAdd] = useState(false);
+  const [selectedMinistry, setSelectedMinistry] = useState<{ id: string; name: string } | null>(null);
+  const [role, setRole] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  const filteredMinistries = ministries.filter((m: { name: string }) => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const handleAdd = async () => {
+    if (!selectedMinistry) return;
+    try {
+      await addMemberToMinistry({
+        memberId,
+        ministryId: selectedMinistry.id,
+        role,
+        joinDate: new Date().toISOString().split('T')[0],
+      });
+      setSuccess(true);
+      setShowAdd(false);
+      setSelectedMinistry(null);
+      setRole('');
+      setSearchQuery('');
+      setErrMsg(null);
+      if (onSuccess) onSuccess();
+    } catch (e: any) {
+      setErrMsg(e?.message || 'Failed to add member to ministry.');
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      {!showAdd ? (
+        <button
+          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm mb-2"
+          onClick={() => { setShowAdd(true); setSuccess(false); }}
+        >
+          <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+          Add to Ministry
+        </button>
+      ) : (
+        <div className="bg-gray-50 border rounded p-4 mb-2">
+          <input
+            type="text"
+            placeholder="Search ministry..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full border px-2 py-1 mb-2 rounded"
+          />
+          <div className="max-h-40 overflow-y-auto mb-2">
+            {filteredMinistries.length === 0 && <div className="p-2 text-xs text-gray-400">No ministries found</div>}
+            {filteredMinistries.map((m: { name: string; id: string }) => (
+              <button
+                key={m.id}
+                className={`block w-full text-left px-3 py-1 text-sm hover:bg-indigo-100 ${selectedMinistry?.id === m.id ? 'bg-indigo-200 font-semibold' : ''}`}
+                onClick={() => setSelectedMinistry(m)}
+              >
+                {m.name}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            placeholder="Role (optional)"
+            value={role}
+            onChange={e => setRole(e.target.value)}
+            className="w-full border px-2 py-1 mb-2 rounded"
+          />
+          <div className="flex gap-2">
+            <button
+              className="px-4 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
+              disabled={!selectedMinistry || adding}
+              onClick={handleAdd}
+            >
+              {adding ? 'Adding...' : 'Add to Ministry'}
+            </button>
+            <button
+              className="px-4 py-1 bg-gray-200 rounded"
+              onClick={() => { setShowAdd(false); setSelectedMinistry(null); setSearchQuery(''); setRole(''); setErrMsg(null); }}
+            >
+              Cancel
+            </button>
+          </div>
+          {errMsg && <div className="text-red-600 text-xs mt-2">{errMsg}</div>}
+          {success && <div className="text-green-600 text-xs mt-2">Successfully added to ministry!</div>}
         </div>
       )}
     </div>

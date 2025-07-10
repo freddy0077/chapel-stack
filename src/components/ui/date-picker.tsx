@@ -52,7 +52,7 @@ export function DatePicker({ date, onDateChange, className, id }: DatePickerProp
           {date ? format(date, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 bg-white shadow-lg border border-gray-200" align="start">
         <Calendar
           mode="single"
           selected={date}
