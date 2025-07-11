@@ -224,45 +224,44 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Family Card */}
-          {(member.spouse || (member.children && member.children.length > 0) || member.parent) && (
+          {member.familyRelationships && member.familyRelationships.length > 0 && (
             <div className="backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8 flex flex-col gap-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Family</h3>
               <div className="flex flex-col gap-4">
-                {member.spouse && (
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-sm font-semibold">
-                      {`${member.spouse.firstName?.charAt(0) || ''}${member.spouse.lastName?.charAt(0) || ''}`}
+                {member.familyRelationships.map(rel => {
+                  const related = rel.direction === 'SOURCE' ? rel.relatedMember : rel.member;
+                  const label = (() => {
+                    // You may want to improve these labels for each relationshipType
+                    if (rel.direction === 'SOURCE') {
+                      switch (rel.relationshipType) {
+                        case 'PARENT': return 'My Parent';
+                        case 'CHILD': return 'My Child';
+                        case 'SPOUSE': return 'My Spouse';
+                        case 'SIBLING': return 'My Sibling';
+                        default: return `My ${rel.relationshipType?.toLowerCase()}`;
+                      }
+                    } else {
+                      switch (rel.relationshipType) {
+                        case 'PARENT': return 'Child of Me';
+                        case 'CHILD': return 'Parent of Me';
+                        case 'SPOUSE': return 'Spouse of Me';
+                        case 'SIBLING': return 'Sibling of Me';
+                        default: return `${rel.relationshipType?.toLowerCase()} of Me`;
+                      }
+                    }
+                  })();
+                  return (
+                    <div key={rel.id} className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-sm font-semibold">
+                        {`${related.firstName?.charAt(0) || ''}${related.lastName?.charAt(0) || ''}`}
+                      </div>
+                      <Link href={`/dashboard/members/${related.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                        {related.firstName} {related.lastName}
+                      </Link>
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border border-gray-200">{label}</span>
                     </div>
-                    <Link href={`/dashboard/members/${member.spouse.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                      {member.spouse.firstName} {member.spouse.lastName}
-                    </Link>
-                  </div>
-                )}
-                {member.children && member.children.length > 0 && (
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white mb-1">Children</div>
-                    <div className="flex flex-wrap gap-2">
-                      {member.children.map(child => (
-                        <Link key={child.id} href={`/dashboard/members/${child.id}`} className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                          <span className="h-7 w-7 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold">
-                            {`${child.firstName?.charAt(0) || ''}${child.lastName?.charAt(0) || ''}`}
-                          </span>
-                          {child.firstName} {child.lastName}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {member.parent && (
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-sm font-semibold">
-                      {`${member.parent.firstName?.charAt(0) || ''}${member.parent.lastName?.charAt(0) || ''}`}
-                    </div>
-                    <Link href={`/dashboard/members/${member.parent.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                      {member.parent.firstName} {member.parent.lastName}
-                    </Link>
-                  </div>
-                )}
+                  );
+                })}
               </div>
             </div>
           )}

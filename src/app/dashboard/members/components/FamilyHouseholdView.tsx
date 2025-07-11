@@ -133,7 +133,8 @@ export default function FamilyHouseholdView({
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Family Members</h3>
-              {isEditable && onAddFamilyMember && (
+              {/* Only show Add Family Member button if editable AND this is the primary profile view */}
+              {isEditable && typeof window !== 'undefined' && window.location.pathname === `/dashboard/members/${memberId}` && onAddFamilyMember && (
                 <button
                   type="button"
                   onClick={() => handleOpenEditor("family")}
@@ -148,7 +149,8 @@ export default function FamilyHouseholdView({
             {familyMembers.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-sm text-gray-500">No family connections added yet.</p>
-                {isEditable && onAddFamilyMember && (
+                {/* Only show Add Family Connection button if editable AND this is the primary profile view */}
+                {isEditable && typeof window !== 'undefined' && window.location.pathname === `/dashboard/members/${memberId}` && onAddFamilyMember && (
                   <button
                     type="button"
                     onClick={() => handleOpenEditor("family")}
@@ -202,7 +204,8 @@ export default function FamilyHouseholdView({
                       >
                         View
                       </Link>
-                      {isEditable && onRemoveFamilyMember && (
+                      {/* Only show remove if editable AND this is the primary profile view */}
+                      {isEditable && typeof window !== 'undefined' && window.location.pathname === `/dashboard/members/${memberId}` && onRemoveFamilyMember && (
                         <button
                           onClick={() => onRemoveFamilyMember(member.id)}
                           className="text-sm font-medium text-red-600 hover:text-red-900"

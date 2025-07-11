@@ -199,23 +199,27 @@ export default function MembersRedesigned() {
     // Server-side filtering will happen on the next render
   }, []);
 
-  // Refresh data
-  const refreshData = useCallback(() => {
-    setIsRefreshing(true);
-    refetch().then(() => {
-      setIsRefreshing(false);
-    }).catch(() => {
-      setIsRefreshing(false);
-    });
-  }, [refetch]);
-
   // Fetch member statistics from the API using our custom hook
   const { 
     stats: memberStats, 
     loading: statsLoading,
-    error: statsError
+    error: statsError,
+    refetch: memberStatsRefetch
   } = useMemberStatistics(orgBranchFilter.branchId, orgBranchFilter.organisationId);
   
+  // Refresh data
+  const refreshData = useCallback(() => {
+    setIsRefreshing(true);
+    Promise.all([
+      refetch(),
+      memberStatsRefetch()
+    ]).then(() => {
+      setIsRefreshing(false);
+    }).catch(() => {
+      setIsRefreshing(false);
+    });
+  }, [refetch, memberStatsRefetch]);
+
   return (
     <>
       <DashboardHeader
@@ -424,7 +428,7 @@ export default function MembersRedesigned() {
       {selectedMemberId && (
         <MemberDetailsModal memberId={selectedMemberId} onClose={closeMemberModal} />
       )}
-      <AddMemberModal isOpen={addMemberOpen} onClose={() => setAddMemberOpen(false)} />
+      <AddMemberModal isOpen={addMemberOpen} onClose={() => setAddMemberOpen(false)} onMemberAdded={refreshData} />
     </div>
     </>
   );

@@ -57,7 +57,7 @@ export default function DashboardPage() {
         <UpcomingEvents
           events={dashboard?.activityEngagement?.upcomingEvents}
         />
-        <BranchPerformance />
+        {/*<BranchPerformance />*/}
         <AdminTools />
       </main>
     </div>

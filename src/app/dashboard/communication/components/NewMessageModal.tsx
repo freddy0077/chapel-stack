@@ -24,7 +24,7 @@ interface NewMessageModalProps {
 
 export default function NewMessageModal({ open, onClose }: NewMessageModalProps) {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
   
   // Message type state
   const [messageType, setMessageType] = useState<MessageType>("email");

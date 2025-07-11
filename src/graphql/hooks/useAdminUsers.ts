@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { ADMIN_USERS_QUERY } from '../queries/adminQueries';
+import { useOrganizationBranchFilter } from './useOrganizationBranchFilter';
 
 export interface AdminUser {
   id: string;
@@ -19,13 +20,24 @@ export interface AdminUsersData {
 
 export interface AdminUsersVars {
   pagination: { skip: number; take: number };
-  filter: { isActive?: boolean };
+  filter: { isActive?: boolean; organisationId?: string };
 }
 
 export function useAdminUsers(variables: AdminUsersVars) {
+  const { organisationId: orgFromContext } = useOrganizationBranchFilter();
+
+  // Always include organisationId in filter if available
+  const mergedVariables = {
+    ...variables,
+    filter: {
+      ...variables.filter,
+      ...(orgFromContext ? { organisationId: orgFromContext } : {}),
+    },
+  };
+
   const { data, loading, error, refetch } = useQuery<AdminUsersData, AdminUsersVars>(
     ADMIN_USERS_QUERY,
-    { variables }
+    { variables: mergedVariables }
   );
   return {
     adminUsers: data?.adminUsers.items || [],

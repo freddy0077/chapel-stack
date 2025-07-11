@@ -21,9 +21,10 @@ type FamilyMember = {
 interface AddMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onMemberAdded?: () => void;
 }
 
-export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
+export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMemberModalProps) {
   const router = useRouter();
   const { user } = useAuth();
   console.log("User from AddMemberModal:", user);
@@ -163,7 +164,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
       setTimeout(() => {
         setShowSuccessNotification(false);
         onClose();
-        router.refresh();
+        if (onMemberAdded) onMemberAdded();
       }, 1200);
     } catch (error: any) {
       const friendly = humanizeError(error?.message || "Failed to save member. Please try again.");

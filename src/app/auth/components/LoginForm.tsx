@@ -11,7 +11,6 @@ import {
   ArrowRightIcon,
   CheckCircleIcon
 } from "@heroicons/react/24/outline";
-import SocialButtons from "./SocialButtons";
 import "../components/AuthStyles.css";
 
 // Input component with floating label and animation
@@ -249,17 +248,14 @@ export default function LoginForm({ onSubmit, error, successMessage, isSubmittin
               <div className="flex-grow border-t border-white/10"></div>
             </div>
             
-            {/* Social login */}
-            <SocialButtons />
-            
             {/* Registration link */}
             <div className="mt-6 text-center">
-              <p className="text-indigo-200">
+              {/* <p className="text-indigo-200">
                 Don&apos;t have an account?{' '}
                 <Link href="/auth/register" className="text-indigo-300 hover:text-white font-medium transition-colors">
                   Register now
                 </Link>
-              </p>
+              </p> */}
             </div>
           </div>
         </div>

@@ -79,7 +79,18 @@ const ChurchProfileScreen = ({
   const [backendError, setBackendError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Change: Accept event and prevent default to stop form GET submission
+  // When preparing the payload for submission, ensure empty strings are omitted for optional fields
+  const normaliseProfile = (profile) => {
+    const result = { ...profile };
+    if (!result.email || result.email.trim() === '') {
+      delete result.email;
+    }
+    if (!result.website || result.website.trim() === '') {
+      delete result.website;
+    }
+    return result;
+  };
+
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     // Validate required fields
@@ -117,7 +128,7 @@ const ChurchProfileScreen = ({
     setBackendError(null);
     try {
       // Prepare input: remove tertiaryColor, leave size as string
-      const orgInput = { ...localOrganisation };
+      const orgInput = normaliseProfile({ ...localOrganisation });
       delete orgInput.tertiaryColor;
       // Call mutation
       const response = await createOrganisation({
@@ -194,7 +205,7 @@ const ChurchProfileScreen = ({
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Basic Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-1 col-span-1">
+                <div>
                   <label className="block font-semibold mb-1">Church Name*</label>
                   <input
                     type="text"
@@ -202,55 +213,31 @@ const ChurchProfileScreen = ({
                     value={localOrganisation.name || ''}
                     onChange={handleChange}
                     className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Enter your church name"
+                    placeholder="Church Name"
                     required
                   />
                 </div>
-                <div className="md:col-span-1 col-span-1">
-                  <label className="block font-semibold mb-1">Description</label>
-                  <textarea
-                    name="description"
-                    value={localOrganisation.description || ''}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Brief description of your church"
-                  />
-                </div>
-              </div>
-              {/* Contact Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block font-semibold mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={localOrganisation.email || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="contact@yourchurch.org"
-                  />
-                </div>
+
                 <div>
                   <label className="block font-semibold mb-1">Phone Number</label>
                   <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={localOrganisation.phoneNumber || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Phone Number"
+                      type="tel"
+                      name="phoneNumber"
+                      value={localOrganisation.phoneNumber || ''}
+                      onChange={handleChange}
+                      className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+                      placeholder="e.g. +233501234567"
                   />
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">Website</label>
                   <input
-                    type="url"
+                    type="text"
                     name="website"
                     value={localOrganisation.website || ''}
                     onChange={handleChange}
                     className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="https://yourchurch.org"
+                    placeholder="Website (optional)"
                   />
                 </div>
                 <div>
@@ -261,9 +248,34 @@ const ChurchProfileScreen = ({
                     value={localOrganisation.address || ''}
                     onChange={handleChange}
                     className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Street address"
+                    placeholder="Address"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block font-semibold mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    value={localOrganisation.description || ''}
+                    onChange={handleChange}
+                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+                    placeholder="Brief description of your church"
+                    rows={3}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block font-semibold mb-1">Mission Statement</label>
+                  <textarea
+                    name="missionStatement"
+                    value={localOrganisation.missionStatement || ''}
+                    onChange={handleChange}
+                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
+                    placeholder="Mission Statement"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              {/* Contact Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block font-semibold mb-1">City</label>
                   <input
@@ -303,141 +315,6 @@ const ChurchProfileScreen = ({
                     <option value="Western North">Western North</option>
                   </select>
                 </div>
-                {/* Country field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Country</label>
-                  <select
-                    name="country"
-                    value={localOrganisation.country || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    required
-                  >
-                    {countryOptions.map((country) => (
-                      <option key={country} value={country}>{country || 'Select country'}</option>
-                    ))}
-                  </select>
-                </div>
-                */}
-                {/* Zip Code field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Zip Code</label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={localOrganisation.zipCode || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Zip Code"
-                  />
-                </div>
-                */}
-                {/* Denomination field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Denomination</label>
-                  <input
-                    type="text"
-                    name="denomination"
-                    value={localOrganisation.denomination || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Denomination"
-                  />
-                </div>
-                */}
-                {/* Founding Year field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Founding Year</label>
-                  <input
-                    type="number"
-                    name="foundingYear"
-                    value={localOrganisation.foundingYear || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Founding Year"
-                  />
-                </div>
-                */}
-                {/* Size field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Size</label>
-                  <input
-                    type="text"
-                    name="size"
-                    value={localOrganisation.size || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Size"
-                  />
-                </div>
-                */}
-                {/* Vision field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Vision</label>
-                  <textarea
-                    name="vision"
-                    value={localOrganisation.vision || ''}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    placeholder="Vision"
-                  />
-                </div>
-                */}
-                <div className="col-span-full">
-                  <label className="block font-semibold mb-1">Mission Statement</label>
-                  <textarea
-                    name="missionStatement"
-                    value={localOrganisation.missionStatement || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition min-h-[120px]"
-                    placeholder="Mission Statement"
-                  />
-                </div>
-                {/* Timezone field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Timezone</label>
-                  <select
-                    id="timezone"
-                    name="timezone"
-                    value={localOrganisation.timezone || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    required
-                  >
-                    <option value="">Select timezone</option>
-                    {timezoneOptions.map((tz) => {
-                      return (
-                        <option key={tz} value={tz}>{tz}</option>
-                      );
-                    })}
-                  </select>
-                </div>
-                */}
-                {/* Currency field hidden as per user request */}
-                {/*
-                <div>
-                  <label className="block font-semibold mb-1">Currency</label>
-                  <select
-                    name="currency"
-                    value={localOrganisation.currency || ''}
-                    onChange={handleChange}
-                    className="w-full border-2 border-indigo-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
-                    required
-                  >
-                    {Array.from(new Set(currencyOptions)).map((currency) => (
-                      <option key={currency} value={currency}>{currency || 'Select currency'}</option>
-                    ))}
-                  </select>
-                </div>
-                */}
               </div>
               {/* Action Buttons */}
               <div className="flex justify-between items-center mt-8 gap-2">

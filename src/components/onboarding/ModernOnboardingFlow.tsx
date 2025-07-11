@@ -10,9 +10,9 @@ import { Button } from '@tremor/react';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ChurchProfileScreen from './screens/ChurchProfileScreen';
 import AdminSetupScreen from './screens/AdminSetupScreen';
-import BrandingScreen from './screens/BrandingScreen';
+// import BrandingScreen from './screens/BrandingScreen';
 import UserInvitationsScreen from './screens/UserInvitationsScreen';
-import RoleConfigurationScreen from './screens/RoleConfigurationScreen';
+// import RoleConfigurationScreen from './screens/RoleConfigurationScreen';
 import FinanceSetupScreen from './screens/FinanceSetupScreen';
 import OnboardingCompletionScreen from './screens/OnboardingCompletionScreen';
 import BranchCountScreen from './screens/BranchCountScreen';
@@ -68,9 +68,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
     'Admin Setup',
     'Branch Count',
     'Branch Details',
-    'Branding',
     'User Invitations',
-    'Role Configuration',
     'Complete',
   ];
 
@@ -234,38 +232,18 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         />
       );
     }
-    // Step 5: Branding
+    // Step 5: User Invitations
     if (branchStep === 5) {
       return (
-        <BrandingScreen
+        <UserInvitationsScreen
           onNext={() => setBranchStep(6)}
           onBack={() => setBranchStep(4)}
           isLoading={false}
         />
       );
     }
-    // Step 6: User Invitations
+    // Step 6: Complete
     if (branchStep === 6) {
-      return (
-        <UserInvitationsScreen
-          onNext={() => setBranchStep(7)}
-          onBack={() => setBranchStep(5)}
-          isLoading={false}
-        />
-      );
-    }
-    // Step 7: Role Configuration
-    if (branchStep === 7) {
-      return (
-        <RoleConfigurationScreen
-          onNext={() => setBranchStep(8)}
-          onBack={() => setBranchStep(6)}
-          isLoading={false}
-        />
-      );
-    }
-    // Step 8: Complete
-    if (branchStep === 8) {
       return <OnboardingCompletionScreen onFinish={handleFinish} />;
     }
     // Fallback: show the rest of the onboarding flow (original logic)

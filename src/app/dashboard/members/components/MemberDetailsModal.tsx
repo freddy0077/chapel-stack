@@ -34,7 +34,7 @@ import { useAllSmallGroups, useSmallGroupMutations, SmallGroupMemberRole, SmallG
 import { gql } from "@apollo/client";
 import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/graphql/hooks/useAuth";
-import { useOrganizationBranchFilter } from '@/hooks';
+import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 import { useFilteredSmallGroups } from '@/graphql/hooks/useSmallGroups';
 import AddToSacraments from './AddToSacraments';
 import MemberPrayerRequestsTab from './MemberPrayerRequestsTab';
@@ -44,6 +44,7 @@ import { CREATE_FAMILY } from "@/graphql/mutations/familyMutations";
 import UpdateFamilyModal from './UpdateFamilyModal';
 import { useMinistryMutations } from "@/graphql/hooks/useMinistryMutations";
 import { useFilteredMinistries } from "@/graphql/hooks/useFilteredMinistries";
+import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 
 const ADD_MEMBER_TO_GROUP = gql`
   mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleInGroup: String!, $status: String!, $joinDate: String!) {
@@ -94,9 +95,6 @@ function AddToAttendance({ memberId, rfidCardId, onSuccess }: AddToAttendancePro
       });
       setSuccessMsg("Member added to attendance session!");
       if (onSuccess) onSuccess();
-      if (typeof window !== 'undefined') {
-        window.location.reload(); // Simple way to refresh modal data (can be replaced with a smarter refetch if available)
-      }
     } catch (e) {
       setSuccessMsg("");
     }
@@ -1028,12 +1026,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           {activeTab === "family" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {member.families && member.families.length > 0 ? (
-                <AddFamilyConnection
-                  key={member.families[0].id}
-                  memberId={member.id}
-                  familyId={member.families[0].id}
-                  onSuccess={refetch}
-                />
+                <AddToGroup memberId={member.id} />
               ) : (
                 <div className="col-span-2 flex flex-col items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
                   <span className="text-gray-700 mb-2">This member does not belong to any family.</span>
@@ -1078,29 +1071,22 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           )}
           {activeTab === "groups" && (
             <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm bg-white">
-              {/* Add to Group Button & Search */}
               <AddToGroup memberId={member.id} />
-              {member.groupMemberships && member.groupMemberships.length > 0 ? (
+              {member.groupMemberships && member.groupMemberships.filter(gm => !gm.ministry).length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200 text-sm mt-4">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Group Name</th>
                       <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Role</th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Status</th>
                       <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Joined</th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Type</th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-700 whitespace-nowrap">Location</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {member.groupMemberships.map((gm, idx) => (
-                      <tr key={gm.id || idx} className="hover:bg-indigo-50 transition">
-                        <td className="px-4 py-2 whitespace-nowrap">{gm.smallGroup?.name || gm.ministry?.name || <span className='text-gray-400'>Unnamed Group</span>}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{gm.role}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{gm.status}</td>
+                    {member.groupMemberships.filter(gm => !gm.ministry).map((gm, idx) => (
+                      <tr key={gm.smallGroup?.id || idx} className="hover:bg-indigo-50 transition">
+                        <td className="px-4 py-2 whitespace-nowrap">{gm.smallGroup?.name || <span className='text-gray-400'>Unnamed Group</span>}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{gm.role || <span className='text-gray-400'>—</span>}</td>
                         <td className="px-4 py-2 whitespace-nowrap">{gm.joinDate ? new Date(gm.joinDate).toLocaleDateString() : <span className='text-gray-400'>—</span>}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{gm.smallGroup?.type || <span className='text-gray-400'>—</span>}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{gm.smallGroup?.location || <span className='text-gray-400'>—</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1113,7 +1099,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           {activeTab === "ministries" && (
             <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm bg-white">
               <AddToMinistry memberId={member.id} onSuccess={refetch} />
-              {member.ministries && member.ministries.length > 0 ? (
+              {member.groupMemberships && member.groupMemberships.filter(gm => !!gm.ministry).length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200 text-sm mt-4">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
@@ -1123,11 +1109,11 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {member.ministries.map((min, idx) => (
-                      <tr key={min.ministry?.id || idx} className="hover:bg-indigo-50 transition">
-                        <td className="px-4 py-2 whitespace-nowrap">{min.ministry?.name || <span className='text-gray-400'>Unnamed Ministry</span>}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{min.role || <span className='text-gray-400'>—</span>}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{min.joinDate ? new Date(min.joinDate).toLocaleDateString() : <span className='text-gray-400'>—</span>}</td>
+                    {member.groupMemberships.filter(gm => !!gm.ministry).map((gm, idx) => (
+                      <tr key={gm.ministry?.id || idx} className="hover:bg-indigo-50 transition">
+                        <td className="px-4 py-2 whitespace-nowrap">{gm.ministry?.name || <span className='text-gray-400'>Unnamed Ministry</span>}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{gm.role || <span className='text-gray-400'>—</span>}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{gm.joinDate ? new Date(gm.joinDate).toLocaleDateString() : <span className='text-gray-400'>—</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1139,7 +1125,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           )}
           {activeTab === "attendance" && (
             <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm bg-white">
-              <AddToAttendance memberId={member.id} rfidCardId={member.rfidCardId} onSuccess={() => { /* Optionally refetch attendance */ }} />
+              <AddToAttendance memberId={member.id} rfidCardId={member.rfidCardId} onSuccess={refetch} />
               {member.attendanceRecords && member.attendanceRecords.length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead className="bg-gray-50 sticky top-0 z-10">
@@ -1275,17 +1261,6 @@ function AddToGroup({ memberId }: AddToGroupProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!showAdd) {
-      setUploadError(null);
-      setImageFile(null);
-      setPreviewImage(null);
-    }
-  }, [showAdd]);
 
   const filteredGroups = smallGroups.filter((g: { name: string }) => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -1314,60 +1289,78 @@ function AddToGroup({ memberId }: AddToGroupProps) {
     <div className="mb-4">
       {!showAdd && (
         <button
-          className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
+          className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition font-semibold text-base"
           onClick={() => setShowAdd(true)}
         >
-          <PlusIcon className="h-4 w-4 mr-1" /> Add to Group
+          {/* Inline SVG for plus icon */}
+          <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Add to Group
         </button>
       )}
       {showAdd && (
-        <div className="flex flex-col gap-2 bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
-          <input
-            type="text"
-            className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-            placeholder="Search group..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-          <select
-            className="rounded border-gray-300 text-xs px-2 py-1"
-            value={role}
-            onChange={e => setRole(e.target.value)}
-          >
-            <option value="MEMBER">Member</option>
-            <option value="LEADER">Leader</option>
-            <option value="CO_LEADER">Co-Leader</option>
-            <option value="VISITOR">Visitor</option>
-          </select>
-          <div className="max-h-32 overflow-auto border border-gray-100 rounded mt-1 bg-white">
-            {filteredGroups.length === 0 && <div className="p-2 text-xs text-gray-400">No groups found</div>}
-            {filteredGroups.map((g: { name: string; id: string }) => (
-              <button
-                key={g.id}
-                className={`block w-full text-left px-3 py-1 text-sm hover:bg-indigo-100 ${selectedGroup?.id === g.id ? 'bg-indigo-200 font-semibold' : ''}`}
-                onClick={() => setSelectedGroup(g)}
-              >
-                {g.name}
-              </button>
-            ))}
+        <div className="flex flex-col gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-lg max-w-md mx-auto">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Search Group</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Type group name..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-base px-4 py-2 w-full"
+                autoComplete="off"
+              />
+              {searchQuery && (
+                <div className="absolute z-20 bg-white border border-gray-200 rounded-lg w-full mt-1 max-h-56 overflow-y-auto shadow-xl">
+                  {filteredGroups.length === 0 && (
+                    <div className="p-3 text-sm text-gray-400">No groups found</div>
+                  )}
+                  {filteredGroups.map((g: { name: string; id: string }) => (
+                    <button
+                      key={g.id}
+                      className="block w-full text-left px-4 py-2 text-base hover:bg-indigo-50 hover:text-indigo-700 transition"
+                      onClick={() => setSelectedGroup(g)}
+                    >
+                      <span className="font-semibold">{g.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Role</label>
+            <select
+              className="rounded-lg border border-gray-300 text-base px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+              value={role}
+              onChange={e => setRole(e.target.value)}
+            >
+              <option value="MEMBER">Member</option>
+              <option value="LEADER">Leader</option>
+              <option value="CO_LEADER">Co-Leader</option>
+              <option value="VISITOR">Visitor</option>
+            </select>
           </div>
           <div className="flex gap-2 mt-2">
             <button
-              className="inline-flex items-center px-3 py-1 rounded bg-indigo-600 text-white text-xs font-semibold shadow-sm disabled:opacity-50"
+              className="inline-flex items-center justify-center px-5 py-2 rounded-lg bg-indigo-600 text-white text-base font-semibold shadow hover:bg-indigo-700 disabled:opacity-50 transition"
               disabled={!selectedGroup || isAdding}
               onClick={handleAdd}
             >
               {isAdding ? "Adding..." : "Add to Group"}
             </button>
             <button
-              className="inline-flex items-center px-2 py-1 rounded text-xs border border-gray-300 text-gray-600 hover:bg-gray-100"
-              onClick={() => { setShowAdd(false); setSelectedGroup(null); setSearchQuery(""); }}
+              className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 border border-gray-300 text-base font-semibold hover:bg-gray-200 transition"
+              onClick={() => { setShowAdd(false); setSelectedGroup(null); setSearchQuery(""); setRole("MEMBER"); setError(null); }}
+              type="button"
             >
               Cancel
             </button>
-            {success && <div className="text-green-600 text-xs mt-2">Successfully added to group!</div>}
-            {error && <div className="text-red-600 text-xs mt-2">{error}</div>}
           </div>
+          {error && <div className="text-red-600 text-sm mt-1">{error}</div>}
+          {success && <div className="text-green-600 text-sm mt-1">Successfully added to group!</div>}
         </div>
       )}
     </div>
@@ -1383,7 +1376,7 @@ function AddToMinistry({ memberId, onSuccess }: AddToMinistryProps) {
   const { user } = useAuth();
   // Filter ministries by organisation for super admins, by branch for others
   const orgId = user?.organisationId;
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
   const filter = user?.primaryRole === 'super_admin' ? { organisationId: orgId } : { branchId };
   const { ministries, loading } = useFilteredMinistries(filter);
   const { addMemberToMinistry, loading: adding, error, data } = useMinistryMutations();
@@ -1441,7 +1434,7 @@ function AddToMinistry({ memberId, onSuccess }: AddToMinistryProps) {
             {filteredMinistries.map((m: { name: string; id: string }) => (
               <button
                 key={m.id}
-                className={`block w-full text-left px-3 py-1 text-sm hover:bg-indigo-100 ${selectedMinistry?.id === m.id ? 'bg-indigo-200 font-semibold' : ''}`}
+                className="block w-full text-left px-3 py-1 text-sm hover:bg-indigo-100"
                 onClick={() => setSelectedMinistry(m)}
               >
                 {m.name}
@@ -1491,7 +1484,23 @@ function AddFamilyConnection({ memberId, familyId, onSuccess }: AddFamilyConnect
   const [adding, setAdding] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { data: members, loading } = useSearchMembers(
+    searchTerm,
+    orgBranchFilter.organisationId,
+    orgBranchFilter.branchId
+  );
+
   const [addFamilyConnection] = useMutation(ADD_FAMILY_CONNECTION);
+
+  const handleSelectMember = (member: { id: string; firstName: string; lastName: string }) => {
+    setRelatedMemberId(member.id);
+    setSearchTerm(`${member.firstName} ${member.lastName}`);
+    setDropdownOpen(false);
+  };
 
   const handleAdd = async () => {
     if (!relatedMemberId) return;
@@ -1511,43 +1520,82 @@ function AddFamilyConnection({ memberId, familyId, onSuccess }: AddFamilyConnect
     <div className="mb-4">
       {!showInput && (
         <button
-          className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold shadow-sm"
+          className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition font-semibold text-base"
           onClick={() => setShowInput(true)}
         >
-          <PlusIcon className="h-4 w-4 mr-1" /> Add Family Connection
+          <PlusIcon className="h-5 w-5 mr-2" /> Add Family Connection
         </button>
       )}
       {showInput && (
-        <div className="flex flex-col gap-2 bg-indigo-50 p-3 rounded-md border border-indigo-100 mt-2">
-          <input
-            type="text"
-            placeholder="Related Member ID"
-            value={relatedMemberId}
-            onChange={e => setRelatedMemberId(e.target.value)}
-            className="rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-          />
-          <select
-            value={relationship}
-            onChange={e => setRelationship(e.target.value)}
-            className="rounded border-gray-300 text-sm"
-          >
-            <option value="SPOUSE">Spouse</option>
-            <option value="PARENT">Parent</option>
-            <option value="CHILD">Child</option>
-            <option value="SIBLING">Sibling</option>
-            <option value="GRANDPARENT">Grandparent</option>
-            <option value="GRANDCHILD">Grandchild</option>
-            <option value="OTHER">Other</option>
-          </select>
-          <button
-            onClick={handleAdd}
-            disabled={adding}
-            className="inline-flex items-center px-3 py-1 rounded-md bg-indigo-600 text-white text-xs font-semibold shadow-sm"
-          >
-            {adding ? "Adding..." : "Add Connection"}
-          </button>
-          {error && <div className="text-red-500 text-xs">{error}</div>}
-          {success && <div className="text-green-600 text-xs">Added!</div>}
+        <div className="flex flex-col gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-lg max-w-md mx-auto">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Search Member in Branch</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Type a name, email, or phone..."
+                value={searchTerm}
+                onChange={e => {
+                  setSearchTerm(e.target.value);
+                  setDropdownOpen(true);
+                }}
+                className="rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-base px-4 py-2 w-full"
+                autoComplete="off"
+              />
+              {dropdownOpen && searchTerm && members && (
+                <div className="absolute z-20 bg-white border border-gray-200 rounded-lg w-full mt-1 max-h-56 overflow-y-auto shadow-xl">
+                  {loading && <div className="p-3 text-sm text-gray-400">Searching...</div>}
+                  {members.length === 0 && !loading && (
+                    <div className="p-3 text-sm text-gray-400">No members found</div>
+                  )}
+                  {members.map((m: any) => (
+                    <button
+                      key={m.id}
+                      className="block w-full text-left px-4 py-2 text-base hover:bg-indigo-50 hover:text-indigo-700 transition"
+                      onClick={() => handleSelectMember(m)}
+                    >
+                      <span className="font-semibold">{m.firstName} {m.lastName}</span>
+                      <span className="text-gray-500 ml-2 text-sm">{m.email || m.phoneNumber || m.id}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Relationship</label>
+            <select
+              value={relationship}
+              onChange={e => setRelationship(e.target.value)}
+              className="rounded-lg border border-gray-300 text-base px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="SPOUSE">Spouse</option>
+              <option value="PARENT">Parent</option>
+              <option value="CHILD">Child</option>
+              <option value="SIBLING">Sibling</option>
+              <option value="GRANDPARENT">Grandparent</option>
+              <option value="GRANDCHILD">Grandchild</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={handleAdd}
+              disabled={adding || !relatedMemberId}
+              className="inline-flex items-center justify-center px-5 py-2 rounded-lg bg-indigo-600 text-white text-base font-semibold shadow hover:bg-indigo-700 disabled:opacity-50 transition"
+            >
+              {adding ? "Adding..." : "Add Connection"}
+            </button>
+            <button
+              className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 border border-gray-300 text-base font-semibold hover:bg-gray-200 transition"
+              onClick={() => { setShowInput(false); setSuccess(false); setError(null); setSearchTerm(""); setRelatedMemberId(""); }}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+          {error && <div className="text-red-600 text-sm mt-1">{error}</div>}
+          {success && <div className="text-green-600 text-sm mt-1">Added!</div>}
         </div>
       )}
     </div>

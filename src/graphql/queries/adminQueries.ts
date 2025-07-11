@@ -9,9 +9,15 @@ export const ADMIN_USERS_QUERY = gql`
         firstName
         lastName
         isActive
-        roles { id name }
+        roles {
+          id
+          name
+          __typename
+        }
+        __typename
       }
       totalCount
+      __typename
     }
   }
 `;

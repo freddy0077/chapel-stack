@@ -22,7 +22,7 @@ const SACRAMENT_OPTIONS = [
 
 export default function AddToSacraments({ memberId, onSuccess }: { memberId: string; onSuccess?: () => void }) {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
+  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
 
   const [sacramentType, setSacramentType] = useState("");
   const [dateOfSacrament, setDateOfSacrament] = useState("");
