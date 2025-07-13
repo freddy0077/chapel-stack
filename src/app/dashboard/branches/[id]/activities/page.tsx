@@ -1,3 +1,5 @@
+"use client";
+
 import { useParams } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { GET_BRANCH, GET_BRANCH_ACTIVITIES } from "@/graphql/queries/branchQueries";
