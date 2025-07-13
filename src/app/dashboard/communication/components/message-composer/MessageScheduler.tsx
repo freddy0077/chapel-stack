@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { CalendarIcon, ClockIcon } from "@heroicons/react/24/outline";
 
 interface MessageSchedulerProps {
@@ -24,9 +23,14 @@ export default function MessageScheduler({
   const today = new Date().toISOString().split('T')[0];
   
   return (
-    <div className="border-t border-gray-200 pt-4 mt-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-900">Schedule Delivery</h3>
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-5 w-5 text-gray-500" />
+          <label htmlFor="schedule-toggle" className="text-sm font-medium text-gray-900">
+            Schedule Delivery
+          </label>
+        </div>
         <div className="flex items-center">
           <input
             id="schedule-toggle"
@@ -42,52 +46,56 @@ export default function MessageScheduler({
       </div>
       
       {scheduled && (
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label htmlFor="scheduled-date" className="block text-sm font-medium text-gray-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 bg-gray-50 p-4 rounded-md border border-gray-100">
+          <div className="space-y-2">
+            <label htmlFor="scheduled-date" className="block text-sm text-gray-600 flex items-center gap-1.5">
+              <CalendarIcon className="h-4 w-4 text-gray-500" />
               Date
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <CalendarIcon className="h-4 w-4 text-gray-400" aria-hidden="true" />
-              </div>
+            <div className="relative">
               <input
-                type="date"
                 id="scheduled-date"
-                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                type="date"
+                min={today}
                 value={scheduledDate}
                 onChange={(e) => onChangeScheduledDate(e.target.value)}
-                min={today}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required={scheduled}
               />
             </div>
           </div>
           
-          <div>
-            <label htmlFor="scheduled-time" className="block text-sm font-medium text-gray-700">
+          <div className="space-y-2">
+            <label htmlFor="scheduled-time" className="block text-sm text-gray-600 flex items-center gap-1.5">
+              <ClockIcon className="h-4 w-4 text-gray-500" />
               Time
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <ClockIcon className="h-4 w-4 text-gray-400" aria-hidden="true" />
-              </div>
+            <div className="relative">
               <input
-                type="time"
                 id="scheduled-time"
-                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                type="time"
                 value={scheduledTime}
                 onChange={(e) => onChangeScheduledTime(e.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required={scheduled}
               />
             </div>
           </div>
+          
+          {scheduledDate && scheduledTime && (
+            <div className="col-span-1 sm:col-span-2 text-sm text-gray-600 flex items-center gap-2 mt-1">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <span>
+                Message will be sent on {new Date(`${scheduledDate}T${scheduledTime}`).toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })} at {scheduledTime}
+              </span>
+            </div>
+          )}
         </div>
-      )}
-      
-      {scheduled && (
-        <p className="mt-2 text-xs text-gray-500">
-          Your message will be sent on {scheduledDate} at {scheduledTime} local time.
-        </p>
       )}
     </div>
   );

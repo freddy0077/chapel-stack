@@ -66,12 +66,19 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "members" 
       // },
+      // {
+      //   name: "Prayer Requests",
+      //   href: "/dashboard/prayer-requests",
+      //   icon: ChatBubbleLeftRightIcon,
+      //   badge: null,
+      //   moduleId: "members"
+      // },
       {
-        name: "Prayer Requests",
-        href: "/dashboard/prayer-requests",
+        name: "Communication",
+        href: "/dashboard/communication",
         icon: ChatBubbleLeftRightIcon,
         badge: null,
-        moduleId: "members"
+        moduleId: "communication"
       },
     ]
   },
@@ -157,7 +164,7 @@ const fullNavigation = [
         name: "Communication", 
         href: "/dashboard/communication", 
         icon: ChatBubbleLeftRightIcon, 
-        // badge: { count: 5, color: "bg-rose-500" },
+        badge: null,
         moduleId: "communication" 
       },
       { 

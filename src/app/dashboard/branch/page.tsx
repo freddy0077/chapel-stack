@@ -117,6 +117,24 @@ export default function BranchDashboardPage() {
           branchId={branchId}
           funds={fundsData?.funds || []}
         />
+        {/* Recent Events Section */}
+        <section className="my-8">
+          <h2 className="text-2xl font-bold text-blue-800 mb-4">Recent Events</h2>
+          {branchDashboard.activityStats.recentEvents.length === 0 ? (
+            <div className="text-gray-500">No recent events.</div>
+          ) : (
+            <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100 bg-white/80 shadow-sm">
+              {branchDashboard.activityStats.recentEvents.map((event: any) => (
+                <li key={event.id} className="flex items-center px-6 py-4 hover:bg-blue-50 transition">
+                  <div className="flex-1">
+                    <div className="font-semibold text-blue-900">{event.title}</div>
+                    <div className="text-gray-500 text-sm">{new Date(event.startDate).toLocaleString()}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
         <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
         {/*<BranchPerformance />*/}
         <BranchAdminTools branchInfo={branchDashboard.branchInfo} />

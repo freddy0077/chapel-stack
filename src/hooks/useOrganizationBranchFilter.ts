@@ -33,6 +33,7 @@ export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
       console.log('SUPER_ADMIN with organisationId detected - using organisationId:', user.organisationId);
     } else {
       // For all other users, filter by branchId
+      filter.organisationId = String(user?.organisationId);
       filter.branchId = defaultBranchId;
     }
     

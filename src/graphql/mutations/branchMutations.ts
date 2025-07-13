@@ -20,8 +20,26 @@ export const CREATE_BRANCH = gql`
       settings {
         id
         branchId
-        key
-        value
+        allowMemberTransfers
+        allowResourceSharing
+        visibilityToOtherBranches
+        financialReportingLevel
+        attendanceReportingLevel
+        memberDataVisibility
+        timezone
+        currency
+        language
+        brandingSettings {
+          primaryColor
+          secondaryColor
+          fontFamily
+        }
+        notificationSettings {
+          emailNotifications
+          smsNotifications
+          transferNotifications
+          financialNotifications
+        }
         createdAt
         updatedAt
       }
@@ -54,8 +72,6 @@ export const UPDATE_BRANCH = gql`
       settings {
         id
         branchId
-        key
-        value
         createdAt
         updatedAt
       }

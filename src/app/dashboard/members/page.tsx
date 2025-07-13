@@ -72,10 +72,13 @@ export default function MembersRedesigned() {
   const getGraphQLFilters = useCallback((): UserFilterInput => { 
     const filters: UserFilterInput = {}; 
 
-    // Apply organization or branch filter based on user role
+    // Apply organization filter first, then branch filter if organization is not available
     if (orgBranchFilter.organisationId) {
       filters.organisationId = orgBranchFilter.organisationId;
-    } else if (orgBranchFilter.branchId) {
+    }
+    
+    // Only add branchId if it has a value
+    if (orgBranchFilter.branchId) {
       filters.branchId = orgBranchFilter.branchId;
     }
     
@@ -117,7 +120,7 @@ export default function MembersRedesigned() {
     }
     
     return filters;
-  }, [activeFilters, orgBranchFilter, searchTerm]);
+  }, [searchTerm, activeFilters, orgBranchFilter]);
 
   // Create pagination input
   const paginationInput: PaginationInput = useMemo(() => ({

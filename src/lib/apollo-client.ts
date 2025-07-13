@@ -181,5 +181,13 @@ export const client = new ApolloClient({
     watchQuery: {
       fetchPolicy: 'cache-and-network',
     },
+    query: {
+      fetchPolicy: 'network-only', // Don't use cache for queries to ensure latest schema
+    },
   },
 });
+
+// Add a method to clear the cache
+export const clearApolloCache = () => {
+  return client.resetStore();
+};

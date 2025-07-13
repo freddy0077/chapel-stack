@@ -17,5 +17,5 @@ export function useSearchMembers(searchTerm: string, organisationId: string, bra
     skip: !searchTerm,
   });
 
-  return { data: data?.members, loading, error };
+  return { members: data?.members || [], loading, error };
 }

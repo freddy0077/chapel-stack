@@ -186,7 +186,7 @@ export const GET_USER_DASHBOARD_PREFERENCE = gql`
 
 // Mutation for saving user dashboard preferences
 export const SAVE_USER_DASHBOARD_PREFERENCE = gql`
-  mutation SaveUserDashboardPreference($branchId: ID!, $dashboardType: DashboardType!, $layoutConfig: JSON!) {
+  mutation SaveUserDashboardPreference($branchId: String!, $dashboardType: DashboardType!, $layoutConfig: JSON!) {
     saveUserDashboardPreference(branchId: $branchId, dashboardType: $dashboardType, layoutConfig: $layoutConfig) {
       id
       userId

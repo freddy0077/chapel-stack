@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import { 
   CogIcon,
@@ -8,6 +8,8 @@ import {
   ChartPieIcon,
   ClockIcon
 } from "@heroicons/react/24/outline";
+import { useBranchSettings } from "../../../../hooks/useBranchSettings";
+import { usePermissions } from "../../../../hooks/usePermissions";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -40,54 +42,108 @@ export interface BranchSettings {
 }
 
 interface BranchSettingsProps {
-  settings: BranchSettings;
-  onSave: (settings: BranchSettings) => Promise<void>;
-  branchId?: string; // Make branchId optional since it's not used
+  branchId: string;
+  initialSettings?: BranchSettings; // Make initial settings optional
 }
 
-export default function BranchSettings({ settings, onSave }: BranchSettingsProps) {
-  const [currentSettings, setCurrentSettings] = useState(settings);
+// Default settings to use if no settings are provided
+const defaultSettings: BranchSettings = {
+  allowMemberTransfers: true,
+  allowResourceSharing: true,
+  visibilityToOtherBranches: 'limited',
+  financialReportingLevel: 'summary',
+  attendanceReportingLevel: 'summary',
+  memberDataVisibility: 'limited',
+  timezone: 'UTC',
+  currency: 'USD',
+  language: 'en',
+  brandingSettings: {
+    primaryColor: '#4f46e5',
+    secondaryColor: '#9333ea',
+    fontFamily: 'Inter, sans-serif'
+  },
+  notificationSettings: {
+    emailNotifications: true,
+    smsNotifications: false,
+    transferNotifications: true,
+    financialNotifications: true
+  }
+};
+
+export default function BranchSettings({ branchId, initialSettings }: BranchSettingsProps) {
+  // Get permissions to check if user can edit settings
+  const { canCustomizeModules, isBranchAdmin, isSuperAdmin } = usePermissions();
+  const canEdit = canCustomizeModules || isBranchAdmin || isSuperAdmin;
+  
+  // Use the branch settings hook
+  const { 
+    settings: fetchedSettings, 
+    loading, 
+    error, 
+    saveSettings 
+  } = useBranchSettings({ branchId });
+  
+  // Initialize with either provided settings, fetched settings, or defaults
+  const [currentSettings, setCurrentSettings] = useState<BranchSettings>(
+    initialSettings || defaultSettings
+  );
+  
+  // Update settings when they're fetched from the API
+  useEffect(() => {
+    if (fetchedSettings) {
+      setCurrentSettings(fetchedSettings);
+    }
+  }, [fetchedSettings]);
+  
   const [isSaving, setIsSaving] = useState(false);
   
-  const handleToggleChange = (field: string, value: boolean) => {
+  // Handle saving settings
+  const handleSave = async () => {
+    if (!canEdit) return;
+    
+    setIsSaving(true);
+    try {
+      await saveSettings(currentSettings);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Handle toggle changes
+  const handleToggleChange = (field: keyof BranchSettings, value: boolean) => {
+    if (!canEdit) return;
+    
     setCurrentSettings({
       ...currentSettings,
-      [field]: value,
+      [field]: value
     });
   };
-  
-  const handleNotificationToggle = (field: string, value: boolean) => {
+
+  // Handle notification toggle changes
+  const handleNotificationToggleChange = (field: keyof typeof currentSettings.notificationSettings, value: boolean) => {
+    if (!canEdit) return;
+    
     setCurrentSettings({
       ...currentSettings,
       notificationSettings: {
         ...currentSettings.notificationSettings,
-        [field]: value,
-      },
+        [field]: value
+      }
     });
   };
-  
-  const handleSelectChange = (field: string, value: string) => {
+
+  // Handle select changes
+  const handleSelectChange = (field: keyof BranchSettings, value: string) => {
+    if (!canEdit) return;
+    
     setCurrentSettings({
       ...currentSettings,
-      [field]: value,
+      [field]: value
     });
   };
-  
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // In a real app, this would be an API call
-      await onSave(currentSettings);
-      // Successfully saved
-      setTimeout(() => {
-        setIsSaving(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      setIsSaving(false);
-    }
-  };
-  
+
   const visibilityOptions = [
     { value: 'full', label: 'Full Visibility' },
     { value: 'limited', label: 'Limited Visibility' },
@@ -297,7 +353,7 @@ export default function BranchSettings({ settings, onSave }: BranchSettingsProps
                 </div>
                 <Switch
                   checked={currentSettings.notificationSettings.emailNotifications}
-                  onChange={(checked) => handleNotificationToggle('emailNotifications', checked)}
+                  onChange={(checked) => handleNotificationToggleChange('emailNotifications', checked)}
                   className={classNames(
                     currentSettings.notificationSettings.emailNotifications ? 'bg-indigo-600' : 'bg-gray-200',
                     'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
@@ -325,7 +381,7 @@ export default function BranchSettings({ settings, onSave }: BranchSettingsProps
                 </div>
                 <Switch
                   checked={currentSettings.notificationSettings.smsNotifications}
-                  onChange={(checked) => handleNotificationToggle('smsNotifications', checked)}
+                  onChange={(checked) => handleNotificationToggleChange('smsNotifications', checked)}
                   className={classNames(
                     currentSettings.notificationSettings.smsNotifications ? 'bg-indigo-600' : 'bg-gray-200',
                     'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
@@ -353,7 +409,7 @@ export default function BranchSettings({ settings, onSave }: BranchSettingsProps
                 </div>
                 <Switch
                   checked={currentSettings.notificationSettings.transferNotifications}
-                  onChange={(checked) => handleNotificationToggle('transferNotifications', checked)}
+                  onChange={(checked) => handleNotificationToggleChange('transferNotifications', checked)}
                   className={classNames(
                     currentSettings.notificationSettings.transferNotifications ? 'bg-indigo-600' : 'bg-gray-200',
                     'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'

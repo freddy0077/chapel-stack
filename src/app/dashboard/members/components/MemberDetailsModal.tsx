@@ -45,6 +45,9 @@ import UpdateFamilyModal from './UpdateFamilyModal';
 import { useMinistryMutations } from "@/graphql/hooks/useMinistryMutations";
 import { useFilteredMinistries } from "@/graphql/hooks/useFilteredMinistries";
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
+import AddFamilyRelationship from './AddFamilyRelationship';
+import RemoveFamilyRelationship from './RemoveFamilyRelationship';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const ADD_MEMBER_TO_GROUP = gql`
   mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleInGroup: String!, $status: String!, $joinDate: String!) {
@@ -138,6 +141,11 @@ interface MemberDetailsModalProps {
 }
 
 export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProps) {
+  const { user } = useAuth();
+  const orgBranchFilter = useOrganizationBranchFilter();
+  const { member, loading, error, refetch } = useMember(memberId);
+  const { isBranchAdmin, isPastoral } = usePermissions();
+  const canManageFamilies = isBranchAdmin || isPastoral;
   const [showCreateFamily, setShowCreateFamily] = useState(false);
   const [showUpdateFamily, setShowUpdateFamily] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -167,8 +175,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  const { member, loading, error, refetch } = useMember(memberId);
 
   // Reset upload state when modal closes
   useEffect(() => {
@@ -340,8 +346,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
     refetch();
   };
 
-  const { user } = useAuth();
-  const orgBranchFilter = useOrganizationBranchFilter();
   const tabs = [
     { key: "activity", label: "Activity" },
     { key: "info", label: "Info" },
@@ -413,8 +417,8 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
     switch (status) {
       case 'ACTIVE': return 'bg-green-100 text-green-800';
       case 'INACTIVE': return 'bg-red-100 text-red-800';
-      case 'VISITOR': return 'bg-blue-100 text-blue-800';
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'VISITOR': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -1024,49 +1028,143 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             </div>
           )}
           {activeTab === "family" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {member.families && member.families.length > 0 ? (
-                <AddToGroup memberId={member.id} />
-              ) : (
-                <div className="col-span-2 flex flex-col items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-                  <span className="text-gray-700 mb-2">This member does not belong to any family.</span>
-                  <button
-                    className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
-                    onClick={() => setShowCreateFamily(true)}
-                  >
-                    <PlusIcon className="h-5 w-5 inline mr-1" /> Create Family
-                  </button>
-                  <button
-                    className="mt-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
-                    onClick={() => setShowUpdateFamily(true)}
-                  >
-                    Update Family
-                  </button>
-                </div>
-              )}
-              <CreateFamilyModal open={showCreateFamily} onClose={() => setShowCreateFamily(false)} onCreated={handleFamilyCreated} memberId={member.id} />
-              <UpdateFamilyModal open={showUpdateFamily} onClose={() => setShowUpdateFamily(false)} memberId={member.id} onUpdated={refetch} />
-              {/* --- Family Relationships --- */}
-              {member.familyRelationships && member.familyRelationships.length > 0 && (
-                <div className="mt-4 col-span-2">
-                  <div className="font-semibold text-indigo-700 mb-1 flex items-center"><UsersIcon className="h-5 w-5 mr-1" />Family Relationships</div>
-                  <ul className="divide-y divide-gray-100">
-                    {member.familyRelationships.map(rel => {
-                      return (
-                          <li key={rel.id}
-                              className="py-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
-                            <div>
-                              <span className="font-semibold mr-2">{rel.relationshipType}:</span>
-                              <span>{rel.relatedMember?.firstName} {rel.relatedMember?.lastName}</span>
+            <div className="grid grid-cols-1 gap-6">
+              {/* Family Management Section */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Family Management</h3>
+                
+                {member.families && member.families.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="font-semibold text-indigo-700 mb-1 flex items-center">
+                      <UsersIcon className="h-5 w-5 mr-1" />Family Memberships
+                    </div>
+                    <ul className="divide-y divide-gray-100">
+                      {member.families.map((family: any) => (
+                        <li key={family.id} className="py-3 flex justify-between items-center">
+                          <div>
+                            <span className="font-medium text-gray-800">{family.name}</span>
+                            {family.address && (
+                              <p className="text-sm text-gray-500 mt-1">{family.address}</p>
+                            )}
+                          </div>
+                          {canManageFamilies && (
+                            <button
+                              className="text-sm text-indigo-600 hover:text-indigo-800"
+                              onClick={() => setShowUpdateFamily(true)}
+                            >
+                              Manage
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    {canManageFamilies && (
+                      <div className="flex justify-end mt-2">
+                        <button
+                          className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm"
+                          onClick={() => setShowCreateFamily(true)}
+                        >
+                          <PlusIcon className="h-4 w-4 inline mr-1" /> Create New Family
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                    <span className="text-gray-700 mb-2">This member does not belong to any family.</span>
+                    {canManageFamilies && (
+                      <>
+                        <button
+                          className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+                          onClick={() => setShowCreateFamily(true)}
+                        >
+                          <PlusIcon className="h-5 w-5 inline mr-1" /> Create Family
+                        </button>
+                        <button
+                          className="mt-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
+                          onClick={() => setShowUpdateFamily(true)}
+                        >
+                          Add to Existing Family
+                        </button>
+                      </>
+                    )}
+                    {!canManageFamilies && (
+                      <p className="text-sm text-gray-500 text-center">
+                        Contact an administrator to add this member to a family.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {/* Family Relationships Section */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Family Relationships</h3>
+                
+                {member.familyRelationships && member.familyRelationships.length > 0 ? (
+                  <div className="space-y-4">
+                    <ul className="divide-y divide-gray-100">
+                      {member.familyRelationships.map((rel: any) => (
+                        <li key={rel.id} className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                              <UserIcon className="h-5 w-5" />
                             </div>
-                            <div
-                                className="text-xs text-gray-400 mt-1 md:mt-0">Added {new Date(rel.createdAt).toLocaleDateString()}</div>
-                          </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
+                            <div>
+                              <div className="font-medium text-gray-800">
+                                {rel.relatedMember?.firstName} {rel.relatedMember?.lastName}
+                              </div>
+                              <div className="text-sm text-indigo-600 font-medium">
+                                {rel.relationshipType.charAt(0) + rel.relationshipType.slice(1).toLowerCase()}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 mt-2 md:mt-0">
+                            <div className="text-xs text-gray-500">
+                              Added {new Date(rel.createdAt).toLocaleDateString()}
+                            </div>
+                            {canManageFamilies && (
+                              <RemoveFamilyRelationship 
+                                relationshipId={rel.id} 
+                                relationshipName={`${rel.relationshipType.charAt(0) + rel.relationshipType.slice(1).toLowerCase()} - ${rel.relatedMember?.firstName} ${rel.relatedMember?.lastName}`}
+                                onSuccess={refetch} 
+                              />
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 mb-3">
+                      <UsersIcon className="h-6 w-6" />
+                    </div>
+                    <p className="text-gray-600 text-center mb-1">No family relationships defined yet.</p>
+                    <p className="text-sm text-gray-500 text-center">Add relationships to connect this member with others.</p>
+                  </div>
+                )}
+                
+                {/* Add Family Relationship Form */}
+                {member.families && member.families.length > 0 && canManageFamilies && (
+                  <div className="mt-4">
+                    <AddFamilyRelationship memberId={member.id} onSuccess={refetch} />
+                  </div>
+                )}
+              </div>
+              
+              <CreateFamilyModal 
+                open={showCreateFamily} 
+                onClose={() => setShowCreateFamily(false)} 
+                onCreated={handleFamilyCreated} 
+                memberId={member.id} 
+              />
+              <UpdateFamilyModal 
+                open={showUpdateFamily} 
+                onClose={() => setShowUpdateFamily(false)} 
+                memberId={member.id} 
+                onUpdated={refetch} 
+              />
             </div>
           )}
           {activeTab === "groups" && (
@@ -1231,7 +1329,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
           <a
               onClick={() => setShowEditModal(true)}
             href="#"
-            className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-semibold text-indigo-600 bg-white border border-indigo-200 hover:bg-indigo-50 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center text-indigo-600 hover:text-indigo-500"
           >
             <PencilIcon className="h-5 w-5 mr-2 text-indigo-500" />
             Edit
@@ -1293,9 +1391,7 @@ function AddToGroup({ memberId }: AddToGroupProps) {
           onClick={() => setShowAdd(true)}
         >
           {/* Inline SVG for plus icon */}
-          <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+          <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
           Add to Group
         </button>
       )}

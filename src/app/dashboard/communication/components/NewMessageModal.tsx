@@ -3,11 +3,28 @@
 import { useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { EnvelopeIcon, ChatBubbleLeftRightIcon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "../../../../graphql/hooks/useAuth";
-import { useSendEmail } from "../../../../graphql/hooks/useSendEmail";
-import { useSendSms } from "../../../../graphql/hooks/useSendSms";
-import { useCreateNotification } from "../../../../graphql/hooks/useCreateNotification";
+import { 
+  EnvelopeIcon, 
+  ChatBubbleLeftRightIcon, 
+  BellIcon, 
+  XMarkIcon,
+  PaperAirplaneIcon,
+  CalendarIcon
+} from "@heroicons/react/24/outline";
+import { useAuth } from "@/graphql/hooks/useAuth";
+import { useSendEmail } from "@/graphql/hooks/useSendEmail";
+import { useSendSms } from "@/graphql/hooks/useSendSms";
+import { useCreateNotification } from "@/graphql/hooks/useCreateNotification";
+
+// UI Components
+import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardContent, 
+  CardFooter 
+} from "@/components/ui/card";
 
 // Import our modular components
 import MessageTypeSelector, { MessageType } from "./message-composer/MessageTypeSelector";
@@ -51,6 +68,7 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
   
   // Loading state
   const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Email mutation
   const { sendEmail, loading: emailSending, error: emailError } = useSendEmail();
@@ -61,6 +79,7 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
   
   async function handleSend() {
     setIsSending(true);
+    setError(null);
     
     // Prepare message data based on type
     if (messageType === "email") {
@@ -69,8 +88,12 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
         recipients: selectedRecipients.map(r => r.email || r.phone || r.id.toString()),
         subject: emailSubject,
         bodyHtml: emailContent,
-        // Optionally add bodyText, templateId, scheduledAt, etc.
+        // Add scheduledAt if scheduled
+        ...(isScheduled && scheduledDate && scheduledTime ? {
+          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+        } : {})
       };
+      
       try {
         await sendEmail({ variables: { input: emailInput } });
         setIsSending(false);
@@ -78,17 +101,23 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
         resetForm();
       } catch (err) {
         setIsSending(false);
-        // Optionally show error feedback
+        setError("Failed to send email. Please try again.");
+        console.error(err);
       }
       return;
     }
+    
     if (messageType === "sms") {
       const smsInput = {
         branchId,
         recipients: selectedRecipients.map(r => r.phone || r.email || r.id.toString()),
         body: smsContent,
-        // Optionally add senderNumber, scheduledAt, etc.
+        // Add scheduledAt if scheduled
+        ...(isScheduled && scheduledDate && scheduledTime ? {
+          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+        } : {})
       };
+      
       try {
         await sendSms({ variables: { input: smsInput } });
         setIsSending(false);
@@ -96,10 +125,12 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
         resetForm();
       } catch (err) {
         setIsSending(false);
-        // Optionally show error feedback
+        setError("Failed to send SMS. Please try again.");
+        console.error(err);
       }
       return;
     }
+    
     if (messageType === "notification") {
       const notificationInput = {
         branchId,
@@ -107,8 +138,12 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
         title: notificationTitle,
         message: notificationContent,
         link: notificationLink,
-        // Optionally add type, scheduledAt, etc.
+        // Add scheduledAt if scheduled
+        ...(isScheduled && scheduledDate && scheduledTime ? {
+          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+        } : {})
       };
+      
       try {
         await createNotification({ variables: { input: notificationInput } });
         setIsSending(false);
@@ -116,10 +151,12 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
         resetForm();
       } catch (err) {
         setIsSending(false);
-        // Optionally show error feedback
+        setError("Failed to create notification. Please try again.");
+        console.error(err);
       }
       return;
     }
+    
     setIsSending(false);
   }
   
@@ -134,7 +171,20 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
     setIsScheduled(false);
     setScheduledDate("");
     setScheduledTime("");
+    setError(null);
   }
+
+  // Get icon based on message type
+  const getMessageTypeIcon = () => {
+    switch(messageType) {
+      case "email":
+        return <EnvelopeIcon className="h-6 w-6 text-white" />;
+      case "sms":
+        return <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />;
+      case "notification":
+        return <BellIcon className="h-6 w-6 text-white" />;
+    }
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -148,8 +198,9 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" />
         </Transition.Child>
+        
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <Transition.Child
@@ -161,114 +212,151 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-2xl transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8">
-                {/* Header with gradient background */}
-                <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {messageType === "email" && <EnvelopeIcon className="h-6 w-6 text-white" />}
-                      {messageType === "sms" && <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />}
-                      {messageType === "notification" && <BellIcon className="h-6 w-6 text-white" />}
-                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-white">
-                        New {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
-                      </Dialog.Title>
+              <Dialog.Panel className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8">
+                <div className="border-0 shadow-none">
+                  {/* Header with gradient background */}
+                  <div className="px-6 py-4 bg-gradient-to-br from-indigo-700 via-blue-600 to-purple-600">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {getMessageTypeIcon()}
+                        <h2 className="text-xl font-semibold text-white">
+                          New {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+                        </h2>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0 flex items-center justify-center"
+                        onClick={onClose}
+                        disabled={isSending}
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                        <span className="sr-only">Close</span>
+                      </button>
                     </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <form
+                      onSubmit={e => {
+                        e.preventDefault();
+                        handleSend();
+                      }}
+                      className="space-y-6"
+                    >
+                      {/* Message type selector */}
+                      <div className="mb-6">
+                        <MessageTypeSelector 
+                          messageType={messageType} 
+                          onChangeType={setMessageType} 
+                        />
+                      </div>
+                      
+                      {/* Recipients selector */}
+                      <div className="mb-6">
+                        <RecipientSelector
+                          selectedRecipients={selectedRecipients}
+                          onSelectRecipient={setSelectedRecipients}
+                        />
+                      </div>
+                      
+                      {/* Message content based on type */}
+                      <div className="border-t border-gray-200 pt-6">
+                        <h3 className="text-sm font-medium text-gray-500 mb-3">Message Content</h3>
+                        
+                        {messageType === "email" && (
+                          <EmailEditor
+                            subject={emailSubject}
+                            content={emailContent}
+                            onChangeSubject={setEmailSubject}
+                            onChangeContent={setEmailContent}
+                          />
+                        )}
+                        
+                        {messageType === "sms" && (
+                          <SmsEditor
+                            content={smsContent}
+                            onChangeContent={setSmsContent}
+                          />
+                        )}
+                        
+                        {messageType === "notification" && (
+                          <NotificationEditor
+                            title={notificationTitle}
+                            content={notificationContent}
+                            link={notificationLink}
+                            onChangeTitle={setNotificationTitle}
+                            onChangeContent={setNotificationContent}
+                            onChangeLink={setNotificationLink}
+                          />
+                        )}
+                      </div>
+                      
+                      {/* Scheduling options */}
+                      <div className="border-t border-gray-200 pt-6">
+                        <h3 className="text-sm font-medium text-gray-500 mb-3">Delivery Options</h3>
+                        <MessageScheduler
+                          scheduled={isScheduled}
+                          scheduledDate={scheduledDate}
+                          scheduledTime={scheduledTime}
+                          onToggleSchedule={setIsScheduled}
+                          onChangeScheduledDate={setScheduledDate}
+                          onChangeScheduledTime={setScheduledTime}
+                        />
+                      </div>
+                      
+                      {/* Error message */}
+                      {error && (
+                        <div className="rounded-md bg-red-50 p-4 mt-4">
+                          <div className="flex">
+                            <div className="flex-shrink-0">
+                              <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                              <h3 className="text-sm font-medium text-red-800">{error}</h3>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </form>
+                  </div>
+                  
+                  <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
                     <button
                       type="button"
-                      className="rounded-md bg-transparent text-white hover:text-gray-200 focus:outline-none"
                       onClick={onClose}
                       disabled={isSending}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
-                      <span className="sr-only">Close</span>
-                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      Cancel
                     </button>
-                  </div>
-                </div>
-                
-                {/* Message type selector */}
-                <div className="px-6 pt-5">
-                  <MessageTypeSelector 
-                    messageType={messageType} 
-                    onChangeType={setMessageType} 
-                  />
-                </div>
-                
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    handleSend();
-                  }}
-                  className="px-6 pb-6 space-y-6"
-                >
-                  {/* Recipients selector */}
-                  <RecipientSelector
-                    selectedRecipients={selectedRecipients}
-                    onSelectRecipient={setSelectedRecipients}
-                  />
-                  
-                  {/* Message content based on type */}
-                  <div className="border-t border-gray-200 pt-4">
-                    {messageType === "email" && (
-                      <EmailEditor
-                        subject={emailSubject}
-                        content={emailContent}
-                        onChangeSubject={setEmailSubject}
-                        onChangeContent={setEmailContent}
-                      />
-                    )}
-                    
-                    {messageType === "sms" && (
-                      <SmsEditor
-                        content={smsContent}
-                        onChangeContent={setSmsContent}
-                      />
-                    )}
-                    
-                    {messageType === "notification" && (
-                      <NotificationEditor
-                        title={notificationTitle}
-                        content={notificationContent}
-                        link={notificationLink}
-                        onChangeTitle={setNotificationTitle}
-                        onChangeContent={setNotificationContent}
-                        onChangeLink={setNotificationLink}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Scheduling options */}
-                  <MessageScheduler
-                    scheduled={isScheduled}
-                    scheduledDate={scheduledDate}
-                    scheduledTime={scheduledTime}
-                    onToggleSchedule={setIsScheduled}
-                    onChangeScheduledDate={setScheduledDate}
-                    onChangeScheduledTime={setScheduledTime}
-                  />
-                  
-                  {/* Send button */}
-                  <div className="pt-4">
                     <button
-                      type="submit"
-                      className="w-full flex justify-center items-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+                      type="button"
+                      onClick={handleSend}
                       disabled={isSending || selectedRecipients.length === 0}
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
                     >
                       {isSending ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                           Sending...
                         </>
                       ) : isScheduled ? (
-                        `Schedule for ${scheduledDate} at ${scheduledTime}`
+                        <>
+                          <CalendarIcon className="h-4 w-4" />
+                          Schedule Message
+                        </>
                       ) : (
-                        "Send Message"
+                        <>
+                          <PaperAirplaneIcon className="h-4 w-4" />
+                          Send Message
+                        </>
                       )}
                     </button>
                   </div>
-                </form>
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

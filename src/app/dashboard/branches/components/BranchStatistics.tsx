@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   UsersIcon,
   UserGroupIcon,
@@ -9,224 +10,150 @@ import {
   ChartBarIcon,
   ArrowUpIcon
 } from "@heroicons/react/24/outline";
+import { useBranchStatistics, BranchStatistics as BranchStatsType } from "../../../../hooks/useBranchStatistics";
 
 interface BranchStatisticsProps {
-  statistics: {
-    totalMembers: number;
-    activeMembersLastMonth: number;
-    totalFamilies: number;
-    averageWeeklyAttendance: number;
-    totalMinistries: number;
-    baptismsYTD: number;
-    firstCommunionsYTD: number;
-    confirmationsYTD: number;
-    marriagesYTD: number;
-    annualBudget?: number;
-    ytdIncome?: number;
-    ytdExpenses?: number;
-  };
-  branchName: string;
+  branchId: string;
+  statistics?: BranchStatsType;
+  branchName?: string;
 }
 
-export default function BranchStatistics({ statistics, branchName }: BranchStatisticsProps) {
-  return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Branch Statistics</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Key metrics and statistics for {branchName}
-          </p>
-        </div>
-        
-        <div className="mt-4 sm:mt-0 flex space-x-2">
-          <button className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            <CalendarIcon className="-ml-0.5 mr-1.5 h-3.5 w-3.5" />
-            Last Month
-          </button>
-          <button className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            <ChartBarIcon className="-ml-0.5 mr-1.5 h-3.5 w-3.5" />
-            View Report
-          </button>
+export default function BranchStatistics({ branchId, statistics: initialStatistics, branchName: initialBranchName }: BranchStatisticsProps) {
+  // Use the hook to fetch statistics if not provided
+  const { 
+    statistics: fetchedStatistics, 
+    branchName: fetchedBranchName,
+    loading 
+  } = useBranchStatistics({ 
+    branchId 
+  });
+
+  // Use provided statistics or fetched ones
+  const statistics = initialStatistics || fetchedStatistics;
+  const branchName = initialBranchName || fetchedBranchName || "this branch";
+
+  // Calculate growth rate (no longer using membershipGrowth array)
+  const membershipGrowthRate = useMemo(() => {
+    // Since we don't have membershipGrowth array anymore, we'll use newMembersInPeriod as a percentage of total
+    if (!statistics?.totalMembers || statistics.totalMembers === 0) return 0;
+    return (statistics.newMembersInPeriod / statistics.totalMembers) * 100;
+  }, [statistics]);
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            ))}
+          </div>
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 shadow-sm">
-              <UsersIcon className="h-6 w-6 text-white" aria-hidden="true" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Members</dt>
-                <dd>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {statistics.totalMembers.toLocaleString()}
-                  </div>
-                </dd>
-              </dl>
-            </div>
-          </div>
-          <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <div className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 mr-2">
-                <ArrowUpIcon className="h-3 w-3 mr-0.5" />
-                {(typeof statistics.activeMembersLastMonth === 'number' && typeof statistics.totalMembers === 'number' ? ((statistics.activeMembersLastMonth / statistics.totalMembers) * 100).toFixed(1) : '-')}%
-              </div>
-              {(typeof statistics.activeMembersLastMonth === 'number' ? statistics.activeMembersLastMonth.toLocaleString() : '-')} active in the last month
-            </div>
-          </div>
+    );
+  }
+
+  if (!statistics) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <p>No statistics available for this branch</p>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 rounded-xl bg-gradient-to-br from-green-500 to-green-600 p-3 shadow-sm">
-              <CalendarIcon className="h-6 w-6 text-white" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  // Define stat cards with updated field names
+  const statCards = [
+    {
+      title: "Total Members",
+      value: statistics.totalMembers,
+      icon: UsersIcon,
+      color: "bg-blue-100 dark:bg-blue-900/20",
+      iconColor: "text-blue-600 dark:text-blue-400",
+    },
+    {
+      title: "Active Members",
+      value: statistics.activeMembers,
+      icon: UserGroupIcon,
+      color: "bg-green-100 dark:bg-green-900/20",
+      iconColor: "text-green-600 dark:text-green-400",
+    },
+    {
+      title: "Inactive Members",
+      value: statistics.inactiveMembers,
+      icon: UserGroupIcon,
+      color: "bg-yellow-100 dark:bg-yellow-900/20",
+      iconColor: "text-yellow-600 dark:text-yellow-400",
+    },
+    {
+      title: "New Members",
+      value: statistics.newMembersInPeriod,
+      icon: ArrowUpIcon,
+      color: "bg-purple-100 dark:bg-purple-900/20",
+      iconColor: "text-purple-600 dark:text-purple-400",
+    },
+    {
+      title: "Weekly Attendance",
+      value: statistics.averageWeeklyAttendance || 0,
+      icon: CalendarIcon,
+      color: "bg-indigo-100 dark:bg-indigo-900/20",
+      iconColor: "text-indigo-600 dark:text-indigo-400",
+    },
+    {
+      title: "Total Families",
+      value: statistics.totalFamilies || 0,
+      icon: UserGroupIcon,
+      color: "bg-pink-100 dark:bg-pink-900/20",
+      iconColor: "text-pink-600 dark:text-pink-400",
+    },
+    {
+      title: "Total Ministries",
+      value: statistics.totalMinistries || 0,
+      icon: ChartBarIcon,
+      color: "bg-cyan-100 dark:bg-cyan-900/20",
+      iconColor: "text-cyan-600 dark:text-cyan-400",
+    },
+    {
+      title: "Annual Budget",
+      value: statistics.annualBudget ? `$${statistics.annualBudget.toLocaleString()}` : "N/A",
+      icon: CurrencyDollarIcon,
+      color: "bg-emerald-100 dark:bg-emerald-900/20",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
+      isMonetary: true
+    },
+  ];
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+        Statistics for {branchName}
+      </h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Overview of key metrics and performance indicators
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((stat, index) => (
+          <div 
+            key={index} 
+            className="p-4 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center space-x-4"
+          >
+            <div className={`p-2 rounded-lg ${stat.color}`}>
+              <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Weekly Attendance</dt>
-                <dd>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {(typeof statistics.averageWeeklyAttendance === 'number' ? statistics.averageWeeklyAttendance.toLocaleString() : '-')}
-                  </div>
-                </dd>
-              </dl>
-            </div>
-          </div>
-          <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <div className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 mr-2">
-                {((statistics.averageWeeklyAttendance / statistics.totalMembers) * 100).toFixed(0)}%
-              </div>
-              Average over the past 3 months
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-sm">
-              <UserGroupIcon className="h-6 w-6 text-white" aria-hidden="true" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Families</dt>
-                <dd>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {(typeof statistics.totalFamilies === 'number' ? statistics.totalFamilies.toLocaleString() : '-')}
-                  </div>
-                </dd>
-              </dl>
-            </div>
-          </div>
-          <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 mr-2">
-                {(statistics.totalMembers / statistics.totalFamilies).toFixed(1)}
-              </span>
-              members per family on average
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 p-3 shadow-sm">
-              <ChartBarIcon className="h-6 w-6 text-white" aria-hidden="true" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Sacraments (YTD)</dt>
-                <dd>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {(statistics.baptismsYTD + statistics.firstCommunionsYTD + 
-                      statistics.confirmationsYTD + statistics.marriagesYTD).toLocaleString()}
-                  </div>
-                </dd>
-              </dl>
-            </div>
-          </div>
-          <div className="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <div className="grid grid-cols-2 gap-y-2 text-sm">
-              <div className="flex items-center text-gray-500 dark:text-gray-400">
-                <span className="inline-block w-2 h-2 rounded-full bg-pink-400 mr-2"></span>
-                Baptisms: {statistics.baptismsYTD}
-              </div>
-              <div className="flex items-center text-gray-500 dark:text-gray-400">
-                <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
-                First Communions: {statistics.firstCommunionsYTD}
-              </div>
-              <div className="flex items-center text-gray-500 dark:text-gray-400">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-2"></span>
-                Confirmations: {statistics.confirmationsYTD}
-              </div>
-              <div className="flex items-center text-gray-500 dark:text-gray-400">
-                <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-2"></span>
-                Marriages: {statistics.marriagesYTD}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {statistics.annualBudget && (
-          <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 rounded-md bg-amber-500 p-3">
-                <CurrencyDollarIcon className="h-6 w-6 text-white" aria-hidden="true" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="truncate text-sm font-medium text-gray-500">Annual Budget</dt>
-                  <dd>
-                    <div className="text-lg font-medium text-gray-900">
-                      ${statistics.annualBudget.toLocaleString()}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-            {statistics.ytdIncome && statistics.ytdExpenses && (
-              <div className="mt-4 border-t border-gray-200 pt-4">
-                <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-500">
-                  <div>YTD Income: ${statistics.ytdIncome.toLocaleString()}</div>
-                  <div>YTD Expenses: ${statistics.ytdExpenses.toLocaleString()}</div>
-                  <div className="col-span-2">
-                    Balance: ${(statistics.ytdIncome - statistics.ytdExpenses).toLocaleString()}
-                    <span className={statistics.ytdIncome >= statistics.ytdExpenses ? " text-green-600" : " text-red-600"}>
-                      ({statistics.ytdIncome >= statistics.ytdExpenses ? "+" : ""}
-                      {((statistics.ytdIncome - statistics.ytdExpenses) / statistics.annualBudget * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 rounded-md bg-rose-500 p-3">
-              <ClockIcon className="h-6 w-6 text-white" aria-hidden="true" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="truncate text-sm font-medium text-gray-500">Active Ministries</dt>
-                <dd>
-                  <div className="text-lg font-medium text-gray-900">
-                    {statistics.totalMinistries}
-                  </div>
-                </dd>
-              </dl>
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {stat.title}
+              </p>
+              <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                {typeof stat.value === 'number' && !stat.isMonetary ? stat.value.toLocaleString() : stat.value}
+              </p>
             </div>
           </div>
-          <div className="mt-4 border-t border-gray-200 pt-4">
-            <div className="text-sm text-gray-500">
-              Click to view all ministries and their leaders
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -7,7 +7,16 @@ export const CREATE_PRAYER_REQUEST = gql`
       requestText
       status
       createdAt
+      updatedAt
       memberId
+      branchId
+      assignedPastorId
+      organisationId
+      member {
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;
@@ -18,6 +27,17 @@ export const UPDATE_PRAYER_REQUEST = gql`
       id
       requestText
       status
+      createdAt
+      updatedAt
+      memberId
+      branchId
+      assignedPastorId
+      organisationId
+      member {
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;

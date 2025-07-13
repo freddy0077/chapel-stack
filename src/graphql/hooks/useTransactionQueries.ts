@@ -6,6 +6,7 @@ const GET_TRANSACTIONS = gql`
     $branchId: String
     $type: TransactionType
     $fundId: String
+    $eventId: String
     $paginationInput: PaginationInput
     $dateRange: DateRangeInput
   ) {
@@ -14,6 +15,7 @@ const GET_TRANSACTIONS = gql`
       branchId: $branchId
       type: $type
       fundId: $fundId
+      eventId: $eventId
       paginationInput: $paginationInput
       dateRange: $dateRange
     ) {
@@ -28,6 +30,13 @@ const GET_TRANSACTIONS = gql`
         branchId
         organisationId
         userId
+        eventId
+        event {
+          id
+          title
+          startDate
+          endDate
+        }
         metadata
         createdAt
         updatedAt
@@ -51,11 +60,13 @@ const GET_TRANSACTION_STATS = gql`
     $organisationId: String!
     $fundId: String
     $dateRange: DateRangeInput
+    $eventId: String
   ) {
     transactionStats(
       organisationId: $organisationId
       fundId: $fundId
       dateRange: $dateRange
+      eventId: $eventId
     ) {
       totalIncome
       totalExpenses
@@ -72,12 +83,13 @@ export const useTransactionsQuery = (variables: {
   branchId?: string;
   type?: string;
   fundId?: string;
+  eventId?: string;
   skip?: number;
   take?: number;
   startDate?: string;
   endDate?: string;
 }) => {
-  const { organisationId, branchId, type, fundId, skip = 0, take = 10, startDate, endDate } = variables;
+  const { organisationId, branchId, type, fundId, eventId, skip = 0, take = 10, startDate, endDate } = variables;
   
   // Create dateRange object if dates are provided, converting string dates to Date objects
   const dateRange = (startDate || endDate) 
@@ -93,6 +105,7 @@ export const useTransactionsQuery = (variables: {
       ...(branchId && { branchId }),
       ...(type && { type }),
       ...(fundId && { fundId }),
+      ...(eventId && { eventId }),
       paginationInput: { skip, take },
       ...(dateRange && { dateRange }),
     },
@@ -103,10 +116,11 @@ export const useTransactionsQuery = (variables: {
 export const useTransactionStatsQuery = (variables: {
   organisationId: string;
   fundId?: string;
+  eventId?: string;
   startDate?: string;
   endDate?: string;
 }) => {
-  const { organisationId, fundId, startDate, endDate } = variables;
+  const { organisationId, fundId, eventId, startDate, endDate } = variables;
   
   // Create dateRange object if dates are provided, converting string dates to Date objects
   const dateRange = (startDate || endDate) 
@@ -120,6 +134,7 @@ export const useTransactionStatsQuery = (variables: {
     variables: {
       organisationId,
       ...(fundId && { fundId }),
+      ...(eventId && { eventId }),
       ...(dateRange && { dateRange }),
     },
   });

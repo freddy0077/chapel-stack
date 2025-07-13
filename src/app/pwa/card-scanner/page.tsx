@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import CardScannerApp from "./page";
 
 export default function CardScannerPage() {
   return (

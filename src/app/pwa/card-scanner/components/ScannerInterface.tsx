@@ -26,6 +26,43 @@ export default function ScannerInterface({
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerContainerRef = useRef<HTMLDivElement>(null);
 
+  // Safe check for NFC support
+  interface NDEFReader {
+    scan: () => Promise<void>;
+    addEventListener: (event: string, callback: unknown) => void;
+  }
+  const checkNfcSupport = (): boolean => {
+    return typeof window !== 'undefined' && 'NDEFReader' in window;
+  };
+
+  const initNfcReading = useCallback(async () => {
+    if (!checkNfcSupport()) {
+      setErrorMessage("NFC is not supported on this device");
+      return;
+    }
+    try {
+      const ndef = new (window as any).NDEFReader() as NDEFReader;
+      await ndef.scan();
+      ndef.addEventListener("reading", (event: any) => {
+        if (event.serialNumber) {
+          onScanComplete(event.serialNumber);
+        } else {
+          setErrorMessage("NFC tag read but serial number not found.");
+        }
+      });
+      ndef.addEventListener("error", () => {
+        setErrorMessage("Error reading NFC card. Please try again.");
+      });
+      console.log("NFC scanning initialized");
+    } catch (error: any) {
+      if (error && error.name === "NotAllowedError") {
+        setErrorMessage("NFC access was denied. Please allow NFC permissions in your browser.");
+      } else {
+        setErrorMessage("Failed to initialize NFC scanning: " + (error?.message || error));
+      }
+    }
+  }, [onScanComplete]);
+
   // Initialize NFC reading when in NFC mode and idle
   useEffect(() => {
     if (scanMode === "NFC" && status === "idle") {
@@ -45,51 +82,12 @@ export default function ScannerInterface({
     };
   }, [scanMode, status]);
 
-  // Define a type for the Web NFC API which is experimental
-  interface NDEFReader {
-    scan: () => Promise<void>;
-    addEventListener: (event: string, callback: unknown) => void;
-  }
-
-  // Safe check for NFC support
-  const checkNfcSupport = (): boolean => {
-    return typeof window !== 'undefined' && 'NDEFReader' in window;
-  };
-
-  const initNfcReading = useCallback(async () => {
-    if (!checkNfcSupport()) {
-      setErrorMessage("NFC is not supported on this device");
-      return;
-    }
-
-    try {
-      // Enable real NFC scanning using the Web NFC API
-      const ndef = new (window as any).NDEFReader() as NDEFReader;
-      await ndef.scan();
-      
-      ndef.addEventListener("reading", (event: unknown) => {
-        // Use the NFC card's serial number as the card ID
-        onScanComplete(event.serialNumber);
-      });
-
-      ndef.addEventListener("error", () => {
-        setErrorMessage("Error reading NFC card");
-      });
-      
-      console.log("NFC scanning initialized");
-    } catch (error) {
-      console.error("Error initializing NFC:", error);
-      setErrorMessage("Could not access NFC. Please ensure NFC is enabled on your device.");
-    }
-  }, [onScanComplete]);
-
   const handleSimulateScan = async () => {
     if (simulateCardId.trim()) {
       await onScanComplete(simulateCardId);
       setSimulateCardId("");
     }
   };
-
 
   const renderScanAnimation = () => {
     if (status === "scanning") {
@@ -143,6 +141,11 @@ export default function ScannerInterface({
 
   return (
     <div className={`bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden ${className}`}>
+      {errorMessage && (
+        <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 my-2 text-center">
+          {errorMessage}
+        </div>
+      )}
       <div 
         ref={scannerContainerRef}
         className="relative h-96 flex items-center justify-center bg-gradient-to-b from-indigo-50 to-white"

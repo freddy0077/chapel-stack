@@ -53,6 +53,17 @@ export default function TakeAttendancePage() {
   const [error, setError] = useState<string | null>(null);
   const [recordAttendance] = useMutation(RECORD_ATTENDANCE);
 
+  // Member search state
+  const [search, setSearch] = useState("");
+  const filteredMembers = useMemo(() => {
+    if (!search.trim()) return members;
+    const s = search.trim().toLowerCase();
+    return members.filter((m: any) =>
+      m.firstName?.toLowerCase().includes(s) ||
+      m.lastName?.toLowerCase().includes(s)
+    );
+  }, [search, members]);
+
   // Handle attendance checkbox
   const toggleAttendance = (memberId: string) => {
     setAttendance(prev => ({ ...prev, [memberId]: !prev[memberId] }));
@@ -126,13 +137,20 @@ export default function TakeAttendancePage() {
         <div className="px-8 py-6 bg-white/70">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Members</h2>
-            {/* Placeholder for future: search/filter */}
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search members..."
+              className="ml-4 px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white shadow-sm"
+              style={{ minWidth: 180 }}
+            />
           </div>
           {loadingMembers ? (
             <div className="flex items-center justify-center py-8 text-gray-400 text-lg">Loading members...</div>
           ) : (
             <ul className="divide-y divide-gray-100 max-h-[52vh] overflow-y-auto rounded-lg border border-gray-100 bg-white/60">
-              {members.map((member: any) => (
+              {filteredMembers.map((member: any) => (
                 <li key={member.id} className="flex items-center px-4 py-3 hover:bg-indigo-50 transition">
                   <input
                     type="checkbox"

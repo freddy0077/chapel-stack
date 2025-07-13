@@ -1,281 +1,546 @@
 "use client";
 
 import { useState } from "react";
-import toast from "react-hot-toast";
-import { useMutation } from "@apollo/client";
-import { CREATE_BRANCH } from "../../../../graphql/mutations/branchMutations";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useMutation } from "@apollo/client";
+import { CREATE_BRANCH } from "@/graphql/mutations/branchMutations";
+import { CREATE_BRANCH_ADMIN } from "@/graphql/mutations/branchAdminMutations";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
-import countries from "@/data/countries";
+import toast from "react-hot-toast";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, BuildingOffice2Icon, UserCircleIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+
+// Ghana regions for dropdown
+const ghanaRegions = [
+  "Ahafo", "Ashanti", "Bono", "Bono East", "Central", 
+  "Eastern", "Greater Accra", "North East", "Northern", 
+  "Oti", "Savannah", "Upper East", "Upper West", 
+  "Volta", "Western", "Western North"
+];
 
 export default function NewBranchPage() {
   const router = useRouter();
-  const orgBranchFilter = useOrganizationBranchFilter();
-  const organisationId = orgBranchFilter.organisationId;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
+  const { organisationId } = useOrganizationBranchFilter();
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [activeStep, setActiveStep] = useState(1);
+
+  // Branch details state
+  const [branchData, setBranchData] = useState({
+    branchName: "",
     address: "",
+    status: "active",
+    establishedDate: "",
     city: "",
     state: "",
-    postalCode: "",
-    country: "USA",
-    phoneNumber: "",
-    email: "",
-    website: "",
-    establishedDate: "",
-    status: "active"
+    country: "Ghana",
+    phone: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  // Admin details state
+  const [adminData, setAdminData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // Loading and error states
+  const [primaryLoading, setPrimaryLoading] = useState(false);
+  const [primaryError, setPrimaryError] = useState<string | null>(null);
+  const [primarySaved, setPrimarySaved] = useState(false);
+
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const [adminSaved, setAdminSaved] = useState(false);
+
+  // GraphQL mutations
+  const [createBranch] = useMutation(CREATE_BRANCH);
+  const [createBranchAdmin] = useMutation(CREATE_BRANCH_ADMIN);
+
+  // Handle branch form changes
+  const handleBranchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setBranchData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const [createBranch] = useMutation(CREATE_BRANCH);
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle admin form changes
+  const handleAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAdminData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Save branch details
+  const handleSaveBranch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setPrimaryLoading(true);
+    setPrimaryError(null);
+    
+    const input = {
+      name: branchData.branchName,
+      address: branchData.address,
+      city: branchData.city,
+      state: branchData.state,
+      country: branchData.country,
+      phoneNumber: branchData.phone,
+      email: null,
+      website: null,
+      establishedAt: branchData.establishedDate ? new Date(branchData.establishedDate).toISOString() : undefined,
+      isActive: branchData.status === 'active',
+      organisationId: String(organisationId || ""),
+    };
+    
     try {
-      const input = {
-        name: formData.name,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        postalCode: formData.postalCode,
-        country: formData.country,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        website: formData.website,
-        establishedAt: formData.establishedDate ? new Date(formData.establishedDate).toISOString() : undefined,
-        isActive: formData.status === 'active',
-        organisationId: String(organisationId || ""),
-      };
       const { data } = await createBranch({ variables: { input } });
-      if (data?.createBranch) {
-        toast.success("Branch created successfully!");
-        router.push("/dashboard/branches");
+      if (data?.createBranch?.id) {
+        setBranchId(data.createBranchAdmin.id);
+        setPrimarySaved(true);
+        toast.success("Branch information saved successfully!");
+        setActiveStep(2);
+      } else {
+        setPrimaryError("Failed to create branch. Please try again.");
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to create branch. Please try again.");
+    } catch (error: any) {
+      setPrimaryError(error.message || "An error occurred while creating the branch.");
+      toast.error("Failed to save branch information.");
     } finally {
-      setIsSubmitting(false);
+      setPrimaryLoading(false);
+    }
+  };
+
+  // Save admin details
+  const handleSaveAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (adminData.password !== adminData.confirmPassword) {
+      setAdminError("Passwords do not match.");
+      return;
+    }
+    
+    setAdminLoading(true);
+    setAdminError(null);
+    
+    const input = {
+      firstName: adminData.firstName,
+      lastName: adminData.lastName,
+      email: adminData.email,
+      password: adminData.password,
+      branchId,
+      organisationId
+    };
+    
+    try {
+      const { data } = await createBranchAdmin({ variables: { input } });
+      if (data?.createBranchAdmin?.id) {
+        setAdminSaved(true);
+        toast.success("Branch admin created successfully!");
+        
+        // Redirect to branches list after admin is created
+        setTimeout(() => {
+          router.push('/dashboard/branches');
+        }, 1500);
+      } else {
+        setAdminError("Failed to create branch admin. Please try again.");
+      }
+    } catch (error: any) {
+      setAdminError(error.message || "An error occurred while creating the branch admin.");
+      toast.error("Failed to create branch admin.");
+    } finally {
+      setAdminLoading(false);
     }
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-3xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center">
-          <Link href="/dashboard/branches" className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500">
-            <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Add New Branch</h1>
-        </div>
-        <p className="mt-2 text-sm text-gray-500">
-          Create a new branch or parish in your church network
-        </p>
-      </div>
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <form onSubmit={handleSubmit}>
-          <div className="px-6 py-8 grid grid-cols-1 gap-y-8 gap-x-8 sm:grid-cols-2">
-            {/* Branch Info Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 01-8 0m8 0a4 4 0 00-8 0m8 0V5a4 4 0 00-8 0v2m8 0v2a4 4 0 01-8 0V7m8 0a4 4 0 00-8 0"></path></svg>
-                Branch Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-indigo-800 mb-1">Branch Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="e.g. Grace Chapel, Downtown"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-indigo-800 mb-1">Street Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="123 Main St, Suite 100"
-                    value={formData.address}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-indigo-800 mb-1">City <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    name="city"
-                    id="city"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="e.g. Accra"
-                    value={formData.city}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">Region <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    name="state"
-                    id="state"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="e.g. Greater Accra"
-                    value={formData.state}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-indigo-800 mb-1">ZIP / Postal Code</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    id="postalCode"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="e.g. 00233"
-                    value={formData.postalCode}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="country" className="block text-sm font-medium text-indigo-800 mb-1">Country <span className="text-red-500">*</span></label>
-                  <select
-                    id="country"
-                    name="country"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={formData.country}
-                    onChange={handleChange}
-                    required
-                  >
-                    {countries.map(c => (
-                      <option key={c["alpha-3"]} value={c["alpha-3"]}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            {/* Contact Info Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V8a2 2 0 00-2-2H3a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
-                Contact Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-indigo-800 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    id="phoneNumber"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="(123) 456-7890"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-indigo-800 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="info@yourbranch.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="website" className="block text-sm font-medium text-indigo-800 mb-1">Website</label>
-                  <input
-                    type="url"
-                    name="website"
-                    id="website"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="https://www.example.com"
-                    value={formData.website}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-            {/* Status & Established Date Card */}
-            <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100">
-              <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9"></path><path strokeLinecap="round" strokeLinejoin="round" d="M12 7V4m0 0a2 2 0 012 2v2m-2-2a2 2 0 00-2 2v2m0 9h6"></path></svg>
-                Branch Status & Established Date
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label htmlFor="establishedDate" className="block text-sm font-medium text-indigo-800 mb-1">Established Date</label>
-                  <input
-                    type="date"
-                    name="establishedDate"
-                    id="establishedDate"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={formData.establishedDate}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-indigo-800 mb-1">Branch Status</label>
-                  <select
-                    id="status"
-                    name="status"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={formData.status}
-                    onChange={handleChange}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-end space-x-3">
-            <Link
-              href="/dashboard/branches"
-              className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Cancel
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center">
+            <Link href="/dashboard/branches" className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
+              Back to Branches
             </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating...
-                </>
-              ) : (
-                "Create Branch"
-              )}
-            </button>
           </div>
-        </form>
+          <div className="mt-4">
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create New Branch</h1>
+            <p className="mt-2 text-lg text-gray-500">Set up a new branch location for your organization</p>
+          </div>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="w-full flex items-center">
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full ${activeStep === 1 ? 'bg-indigo-600 text-white' : primarySaved ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {primarySaved ? <CheckCircleIcon className="h-6 w-6" /> : <span>1</span>}
+              </div>
+              <div className={`h-1 flex-1 ${primarySaved ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full ${activeStep === 2 ? 'bg-indigo-600 text-white' : adminSaved ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {adminSaved ? <CheckCircleIcon className="h-6 w-6" /> : <span>2</span>}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-between mt-2 text-sm">
+            <div className={`font-medium ${activeStep === 1 ? 'text-indigo-600' : primarySaved ? 'text-green-500' : 'text-gray-500'}`}>Branch Details</div>
+            <div className={`font-medium ${activeStep === 2 ? 'text-indigo-600' : adminSaved ? 'text-green-500' : 'text-gray-500'}`}>Admin Setup</div>
+          </div>
+        </div>
+
+        {/* Branch Information Form */}
+        <div className={`transition-all duration-300 ${activeStep === 1 ? 'block' : 'hidden'}`}>
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-6 py-5 border-b border-gray-200">
+              <div className="flex items-center">
+                <BuildingOffice2Icon className="h-6 w-6 text-indigo-500 mr-3" />
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Branch Information</h3>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Enter the details for your new branch location</p>
+            </div>
+            <form onSubmit={handleSaveBranch}>
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                <div>
+                  <label htmlFor="branchName" className="block text-sm font-medium text-gray-700">Branch Name <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      name="branchName"
+                      id="branchName"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="e.g. Grace Chapel, Downtown"
+                      value={branchData.branchName}
+                      onChange={handleBranchChange}
+                      required
+                      disabled={primarySaved}
+                    />
+                    {primarySaved && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      name="address"
+                      id="address"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="123 Main St, Suite 100"
+                      value={branchData.address}
+                      onChange={handleBranchChange}
+                      disabled={primarySaved}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">City <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      name="city"
+                      id="city"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="e.g. Accra"
+                      value={branchData.city}
+                      onChange={handleBranchChange}
+                      required
+                      disabled={primarySaved}
+                    />
+                    {primarySaved && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="state" className="block text-sm font-medium text-gray-700">Region <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <select
+                      name="state"
+                      id="state"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all appearance-none"
+                      value={branchData.state}
+                      onChange={handleBranchChange}
+                      required
+                      disabled={primarySaved}
+                    >
+                      <option value="">Select Region</option>
+                      {ghanaRegions.map(region => (
+                        <option key={region} value={region}>{region}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      {primarySaved ? (
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <select
+                      name="status"
+                      id="status"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all appearance-none"
+                      value={branchData.status}
+                      onChange={handleBranchChange}
+                      required
+                      disabled={primarySaved}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      {primarySaved ? (
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="establishedDate" className="block text-sm font-medium text-gray-700">Established Date</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="date"
+                      name="establishedDate"
+                      id="establishedDate"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      value={branchData.establishedDate}
+                      onChange={handleBranchChange}
+                      disabled={primarySaved}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="e.g. +233 24 000 0000"
+                      value={branchData.phone}
+                      onChange={handleBranchChange}
+                      disabled={primarySaved}
+                    />
+                  </div>
+                </div>
+              </div>
+              {primaryError && (
+                <div className="px-6 py-2 text-sm text-red-600 bg-red-50 rounded-md mx-6 mb-4">
+                  <div className="flex">
+                    <svg className="h-5 w-5 text-red-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {primaryError}
+                  </div>
+                </div>
+              )}
+              <div className="px-6 py-4 bg-gray-50 flex justify-end">
+                <button
+                  type="submit"
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${primarySaved 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                  disabled={primaryLoading || primarySaved}
+                >
+                  {primaryLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : primarySaved ? (
+                    <>
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Saved
+                    </>
+                  ) : (
+                    "Continue to Admin Setup"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Admin Setup Form */}
+        <div className={`transition-all duration-300 ${activeStep === 2 ? 'block' : 'hidden'}`}>
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-6 py-5 border-b border-gray-200">
+              <div className="flex items-center">
+                <UserCircleIcon className="h-6 w-6 text-indigo-500 mr-3" />
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Branch Admin</h3>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Create an administrator account for this branch</p>
+            </div>
+            <form onSubmit={handleSaveAdmin}>
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      name="firstName"
+                      id="firstName"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="John"
+                      value={adminData.firstName}
+                      onChange={handleAdminChange}
+                      required
+                      disabled={!branchId || adminSaved}
+                    />
+                    {adminSaved && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      name="lastName"
+                      id="lastName"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="Doe"
+                      value={adminData.lastName}
+                      onChange={handleAdminChange}
+                      required
+                      disabled={!branchId || adminSaved}
+                    />
+                    {adminSaved && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="admin@example.com"
+                      value={adminData.email}
+                      onChange={handleAdminChange}
+                      required
+                      disabled={!branchId || adminSaved}
+                    />
+                    {adminSaved && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="password"
+                      name="password"
+                      id="password"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="••••••••"
+                      value={adminData.password}
+                      onChange={handleAdminChange}
+                      required
+                      disabled={!branchId || adminSaved}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      id="confirmPassword"
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all"
+                      placeholder="••••••••"
+                      value={adminData.confirmPassword}
+                      onChange={handleAdminChange}
+                      required
+                      disabled={!branchId || adminSaved}
+                    />
+                  </div>
+                </div>
+              </div>
+              {adminError && (
+                <div className="px-6 py-2 text-sm text-red-600 bg-red-50 rounded-md mx-6 mb-4">
+                  <div className="flex">
+                    <svg className="h-5 w-5 text-red-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {adminError}
+                  </div>
+                </div>
+              )}
+              <div className="px-6 py-4 bg-gray-50 flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(1)}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={adminSaved}
+                >
+                  Back to Branch Details
+                </button>
+                <button
+                  type="submit"
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${adminSaved 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  disabled={!branchId || adminLoading || adminSaved}
+                >
+                  {adminLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : adminSaved ? (
+                    <>
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Saved
+                    </>
+                  ) : (
+                    "Create Branch & Admin"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -51,7 +51,7 @@ export default function AttendanceDashboard() {
     setCreateError(null);
 
     // For SUPER_ADMIN users, we need to ensure we have either branchId or organisationId
-    if (!orgBranchFilter.branchId && !orgBranchFilter.organisationId) {
+    if (orgBranchFilter.branchId && !orgBranchFilter.organisationId) {
       setCreatingEvent(false);
       setCreateError("No branch or organization selected. Cannot create attendance event.");
       return;
