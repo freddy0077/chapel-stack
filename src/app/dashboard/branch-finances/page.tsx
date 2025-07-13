@@ -622,10 +622,12 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   const balance = stats?.currentBalance || 0;
 
   const [exportLoading, setExportLoading] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const client = useApolloClient();
 
   const handleExport = async (type:  "excel" | "csv") => {
     setExportLoading(true);
+    setIsExportMenuOpen(false); // Close menu on selection
     try {
       const variables: any = {
         organisationId,
@@ -709,7 +711,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   type="date"
                   value={dateRange.startDate}
                   onChange={e => handleDateRangeChange('startDate', e.target.value)}
-                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0"
+                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition w-full min-w-0"
                   placeholder="Start"
                 />
                 <span className="text-gray-400 font-bold">–</span>
@@ -717,7 +719,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   type="date"
                   value={dateRange.endDate}
                   onChange={e => handleDateRangeChange('endDate', e.target.value)}
-                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0"
+                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition w-full min-w-0"
                   placeholder="End"
                 />
               </div>
@@ -789,7 +791,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
               <select
                 value={activeTab}
                 onChange={e => setActiveTab(e.target.value)}
-                className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition w-full min-w-0 appearance-none"
+                className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition w-full min-w-0 appearance-none"
               >
                 <option value="all">All Types</option>
                 <option value="contribution">Contributions</option>
@@ -810,7 +812,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   placeholder="Search transactions..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0 pr-8"
+                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition w-full min-w-0 pr-8"
                   aria-label="Search transactions"
                 />
                 {searchQuery && (
@@ -823,44 +825,38 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
             {/* Actions */}
             <div className="flex flex-col gap-2 md:ml-2 md:w-auto w-full mt-2 md:mt-0">
               {/* Export Dropdown Button */}
-              <div className="relative group">
+              <div className="relative">
                 <button
                   type="button"
+                  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
                   className="inline-flex items-center justify-center rounded-full bg-white/80 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition w-full"
                 >
                   <svg className="w-4 h-4 mr-1 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16v-8m0 8l-4-4m4 4l4-4M4 20h16" /></svg>
                   Export
                   <svg className="w-3 h-3 ml-2 text-gray-400" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7l3-3 3 3m0 6l-3 3-3-3" /></svg>
                 </button>
-                <div className="absolute right-0 mt-2 min-w-[120px] bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition z-20">
-                  {/*<button*/}
-                  {/*  className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-t-lg"*/}
-                  {/*  onClick={() => handleExport("pdf")}*/}
-                  {/*>*/}
-                  {/*  <span className="inline-flex items-center">*/}
-                  {/*    <svg className="w-3 h-3 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 16V4a2 2 0 012-2h8a2 2 0 012 2v12M6 16h12M6 16l-2 2m2-2l2 2" /></svg>*/}
-                  {/*    PDF*/}
-                  {/*  </span>*/}
-                  {/*</button>*/}
-                  <button
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50"
-                    onClick={() => handleExport("excel")}
-                  >
-                    <span className="inline-flex items-center">
-                      <svg className="w-3 h-3 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-8-8v8m8-8H8m8 8h-8" /></svg>
-                      Excel
-                    </span>
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-b-lg"
-                    onClick={() => handleExport("csv")}
-                  >
-                    <span className="inline-flex items-center">
-                      <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4V4zm4 4h8v8H8V8z" /></svg>
-                      CSV
-                    </span>
-                  </button>
-                </div>
+                {isExportMenuOpen && (
+                  <div className="absolute right-0 mt-2 min-w-[120px] bg-white border border-gray-200 rounded-lg shadow-lg transition z-20">
+                    <button
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50"
+                      onClick={() => handleExport("excel")}
+                    >
+                      <span className="inline-flex items-center">
+                        <svg className="w-3 h-3 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-8-8v8m8-8H8m8 8h-8" /></svg>
+                        Excel
+                      </span>
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-b-lg"
+                      onClick={() => handleExport("csv")}
+                    >
+                      <span className="inline-flex items-center">
+                        <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4V4zm4 4h8v8H8V8z" /></svg>
+                        CSV
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
               <button
                 type="button"

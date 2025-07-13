@@ -1,128 +1,207 @@
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { MessageModalProps } from './types';
-import { Button } from '@/components/ui/button';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardFooter 
-} from '@/components/ui/card';
-import { 
-  EnvelopeIcon, 
-  XMarkIcon, 
-  ArrowUturnRightIcon, 
-  CalendarIcon, 
-  UserGroupIcon, 
-  ChatBubbleLeftRightIcon, 
-  BellIcon 
-} from '@heroicons/react/24/outline';
+"use client";
 
-const MessageModal = ({ message, onClose }: MessageModalProps) => {
-  if (!message) return null;
+import { Fragment, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { 
+  XMarkIcon, 
+  EnvelopeIcon, 
+  ChatBubbleLeftRightIcon, 
+  BellIcon,
+  ArrowPathIcon,
+  ForwardIcon,
+  ClockIcon,
+  UserGroupIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon
+} from "@heroicons/react/24/outline";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+
+import { useMessageById } from "@/graphql/hooks/useMessages";
+import { usePermissions } from "@/hooks/usePermissions";
+
+interface MessageModalProps {
+  messageId: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function MessageModal({ messageId, isOpen, onClose }: MessageModalProps) {
+  const [messageType, setMessageType] = useState<string>("email");
+  const { canSendMessages } = usePermissions();
+  
+  // Fetch message details
+  const { message, loading, error } = useMessageById(messageId, messageType);
+  
+  // Handle forward message
+  const handleForward = () => {
+    // Implementation will be added later
+    console.log("Forward message:", messageId);
+  };
   
   // Format date for display
-  const formatDate = (dateString: string | undefined) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
+    
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
+    return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }).format(date);
+  };
+  
+  // Determine message type from message data
+  const determineMessageType = (msg: any): string => {
+    if (!msg) return "unknown";
+    if ('subject' in msg) return "email";
+    if ('body' in msg) return "sms";
+    return "notification";
   };
   
   // Get message type icon
-  const getMessageTypeIcon = () => {
-    if ('subject' in message) {
-      return <EnvelopeIcon className="h-6 w-6 text-indigo-500" />;
-    } else if ('body' in message) {
-      return <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-500" />;
-    } else {
-      return <BellIcon className="h-6 w-6 text-amber-500" />;
+  const getMessageTypeIcon = (type: string) => {
+    switch (type) {
+      case 'email':
+        return <EnvelopeIcon className="h-6 w-6 text-blue-500" />;
+      case 'sms':
+        return <ChatBubbleLeftRightIcon className="h-6 w-6 text-green-500" />;
+      case 'notification':
+        return <BellIcon className="h-6 w-6 text-amber-500" />;
+      default:
+        return <EnvelopeIcon className="h-6 w-6 text-gray-500" />;
     }
   };
   
-  // Get message subject/title
-  const getMessageSubject = () => {
-    if ('subject' in message && message.subject) {
-      return message.subject;
-    } else if ('title' in message && message.title) {
-      return message.title;
-    } else if ('body' in message && message.body) {
-      return message.body.substring(0, 30) + (message.body.length > 30 ? '...' : '');
-    } else {
-      return 'Message Details';
+  // Get status badge
+  const getStatusBadge = (status?: string) => {
+    if (!status) return null;
+    
+    let color = "";
+    let icon = null;
+    
+    switch (status.toLowerCase()) {
+      case 'sent':
+      case 'delivered':
+        color = "bg-green-100 text-green-800";
+        icon = <CheckCircleIcon className="h-4 w-4 mr-1" />;
+        break;
+      case 'failed':
+        color = "bg-red-100 text-red-800";
+        icon = <ExclamationCircleIcon className="h-4 w-4 mr-1" />;
+        break;
+      case 'pending':
+      case 'processing':
+        color = "bg-yellow-100 text-yellow-800";
+        icon = <ClockIcon className="h-4 w-4 mr-1" />;
+        break;
+      case 'scheduled':
+        color = "bg-purple-100 text-purple-800";
+        icon = <ClockIcon className="h-4 w-4 mr-1" />;
+        break;
+      default:
+        color = "bg-gray-100 text-gray-800";
     }
+    
+    return (
+      <Badge variant="outline" className={`${color} border-0 flex items-center`}>
+        {icon}
+        {status}
+      </Badge>
+    );
   };
   
-  // Get message content
-  const getMessageContent = () => {
-    if ('body' in message && message.body) {
-      return message.body;
-    } else if ('message' in message && message.message) {
-      return message.message;
-    } else if ('content' in message && message.content) {
-      return message.content;
-    } else {
-      return 'No content available';
-    }
-  };
-  
-  // Get message sender
-  const getMessageSender = () => {
-    if ('senderEmail' in message && message.senderEmail) {
-      return message.senderEmail;
-    } else if ('senderNumber' in message && message.senderNumber) {
-      return message.senderNumber;
-    } else if ('sender' in message && message.sender) {
-      return message.sender;
-    } else if ('memberId' in message && message.memberId) {
-      return `Member ID: ${message.memberId}`;
-    } else {
-      return 'System';
-    }
-  };
-  
-  // Get message date
-  const getMessageDate = () => {
-    return formatDate(message.sentAt || message.createdAt || message.updatedAt || '');
-  };
-  
-  // Get message channel
-  const getMessageChannel = () => {
-    if ('channel' in message && message.channel) {
-      return message.channel;
-    } else if ('subject' in message) {
-      return 'Email';
-    } else if ('body' in message) {
-      return 'SMS';
-    } else if ('title' in message) {
-      return 'Notification';
-    } else {
-      return 'Unknown';
-    }
-  };
-  
-  // Get message recipients
-  const getMessageRecipients = () => {
-    if (Array.isArray(message.recipients) && message.recipients.length > 0) {
-      return `${message.recipients.length} recipient${message.recipients.length !== 1 ? 's' : ''}`;
-    } else if (message.recipients && typeof message.recipients === 'object' && 'type' in message.recipients) {
-      return `${message.recipients.type}${message.recipients.count ? ` (${message.recipients.count})` : ''}`;
-    } else if (typeof message.recipients === 'string') {
-      return message.recipients;
-    } else {
-      return 'N/A';
+  // Render message content based on type
+  const renderMessageContent = () => {
+    if (!message) return null;
+    
+    const type = determineMessageType(message);
+    
+    switch (type) {
+      case 'email':
+        return (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Subject</h3>
+              <p className="text-base font-medium">{message.subject}</p>
+            </div>
+            
+            {message.bodyHtml ? (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Content</h3>
+                <div 
+                  className="prose max-w-none mt-1 p-4 border rounded-md bg-white"
+                  dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
+                />
+              </div>
+            ) : message.bodyText ? (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Content</h3>
+                <div className="whitespace-pre-wrap mt-1 p-4 border rounded-md bg-white">
+                  {message.bodyText}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        );
+        
+      case 'sms':
+        return (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Message</h3>
+              <div className="whitespace-pre-wrap mt-1 p-4 border rounded-md bg-white">
+                {message.body}
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 'notification':
+        return (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Title</h3>
+              <p className="text-base font-medium">{message.title}</p>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Message</h3>
+              <div className="whitespace-pre-wrap mt-1 p-4 border rounded-md bg-white">
+                {message.message}
+              </div>
+            </div>
+            
+            {message.link && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Link</h3>
+                <a 
+                  href={message.link} 
+                  className="text-blue-600 hover:underline"
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  {message.link}
+                </a>
+              </div>
+            )}
+          </div>
+        );
+        
+      default:
+        return <p>Unknown message type</p>;
     }
   };
 
   return (
-    <Transition.Root show={!!message} as={Fragment}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
@@ -133,113 +212,147 @@ const MessageModal = ({ message, onClose }: MessageModalProps) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/25" />
         </Transition.Child>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
-                <Card className="border-0 shadow-none">
-                  <CardHeader className="border-b border-gray-100 bg-gray-50 px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getMessageTypeIcon()}
-                        <CardTitle className="text-xl font-semibold text-gray-800">
-                          {getMessageSubject()}
-                        </CardTitle>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="rounded-full h-8 w-8 p-0" 
-                        onClick={onClose}
-                      >
-                        <XMarkIcon className="h-5 w-5 text-gray-500" />
-                        <span className="sr-only">Close</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-xl transition-all">
+                <Card>
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-6 py-4 flex justify-between items-center">
+                    <Dialog.Title as="h3" className="text-lg font-medium text-white flex items-center">
+                      {loading ? (
+                        <Skeleton className="h-6 w-32" />
+                      ) : message ? (
+                        <>
+                          {getMessageTypeIcon(determineMessageType(message))}
+                          <span className="ml-2">
+                            Message Details
+                          </span>
+                        </>
+                      ) : (
+                        <span>Message Details</span>
+                      )}
+                    </Dialog.Title>
+                    <button
+                      type="button"
+                      className="text-white hover:text-gray-200"
+                      onClick={onClose}
+                    >
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  </div>
                   
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100">
-                          <EnvelopeIcon className="h-4 w-4 text-indigo-600" />
-                        </div>
-                        <div>
-                          <div className="text-gray-500">From</div>
-                          <div className="font-medium text-gray-900">{getMessageSender()}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100">
-                          <UserGroupIcon className="h-4 w-4 text-purple-600" />
-                        </div>
-                        <div>
-                          <div className="text-gray-500">Recipients</div>
-                          <div className="font-medium text-gray-900">{getMessageRecipients()}</div>
+                  {/* Content */}
+                  <div className="p-6">
+                    {loading ? (
+                      <div className="space-y-4">
+                        <Skeleton className="h-6 w-1/3" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-32 w-full" />
+                        <div className="flex space-x-4">
+                          <Skeleton className="h-4 w-1/4" />
+                          <Skeleton className="h-4 w-1/4" />
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
-                          <CalendarIcon className="h-4 w-4 text-blue-600" />
+                    ) : error ? (
+                      <Alert variant="destructive">
+                        <AlertDescription>
+                          Error loading message: {error.message}
+                        </AlertDescription>
+                      </Alert>
+                    ) : message ? (
+                      <div className="space-y-6">
+                        {/* Message details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                            <div className="mt-1">
+                              {getStatusBadge(message.status)}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">
+                              {message.sentAt ? "Sent At" : "Created At"}
+                            </h3>
+                            <p className="text-sm">
+                              {formatDate(message.sentAt || message.createdAt)}
+                            </p>
+                          </div>
+                          
+                          {determineMessageType(message) === 'email' && (
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">From</h3>
+                              <p className="text-sm">{message.senderEmail}</p>
+                            </div>
+                          )}
+                          
+                          {determineMessageType(message) === 'sms' && (
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-500">From</h3>
+                              <p className="text-sm">{message.senderNumber}</p>
+                            </div>
+                          )}
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500">Recipients</h3>
+                            <div className="flex items-center">
+                              <UserGroupIcon className="h-4 w-4 text-gray-500 mr-1" />
+                              <p className="text-sm">
+                                {Array.isArray(message.recipients) 
+                                  ? `${message.recipients.length} recipients` 
+                                  : 'N/A'}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-gray-500">Date</div>
-                          <div className="font-medium text-gray-900">{getMessageDate()}</div>
+                        
+                        {/* Message content */}
+                        <div className="mt-4">
+                          {renderMessageContent()}
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-100">
-                          <ChatBubbleLeftRightIcon className="h-4 w-4 text-amber-600" />
-                        </div>
-                        <div>
-                          <div className="text-gray-500">Channel</div>
-                          <div className="font-medium text-gray-900">{getMessageChannel()}</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="border-t border-gray-100 pt-6">
-                      <h4 className="text-sm font-medium text-gray-500 mb-3">Message Content</h4>
-                      <div className="bg-gray-50 rounded-lg p-4 text-gray-800 whitespace-pre-wrap">
-                        {getMessageContent()}
-                      </div>
-                    </div>
-                  </CardContent>
+                    ) : (
+                      <p>No message found</p>
+                    )}
+                  </div>
                   
-                  <CardFooter className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
+                  {/* Footer */}
+                  <div className="bg-gray-50 px-6 py-4 flex justify-between">
                     <Button
                       variant="outline"
-                      onClick={() => alert('Forward functionality to be implemented')}
+                      onClick={onClose}
                     >
-                      <ArrowUturnRightIcon className="h-4 w-4 mr-2" />
-                      Forward
-                    </Button>
-                    <Button onClick={onClose}>
                       Close
                     </Button>
-                  </CardFooter>
+                    
+                    {canSendMessages && message && (
+                      <Button
+                        onClick={handleForward}
+                        className="flex items-center"
+                      >
+                        <ForwardIcon className="h-4 w-4 mr-1" />
+                        Forward
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               </Dialog.Panel>
             </Transition.Child>
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition>
   );
-};
-
-export default MessageModal;
+}

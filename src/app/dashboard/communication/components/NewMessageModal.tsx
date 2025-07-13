@@ -1,194 +1,188 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useState, useEffect } from "react";
+import { Dialog, Transition, Tab } from "@headlessui/react";
 import { 
+  XMarkIcon, 
   EnvelopeIcon, 
   ChatBubbleLeftRightIcon, 
-  BellIcon, 
-  XMarkIcon,
-  PaperAirplaneIcon,
-  CalendarIcon
+  BellIcon,
+  PaperClipIcon,
+  CalendarIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
-import { useAuth } from "@/graphql/hooks/useAuth";
-import { useSendEmail } from "@/graphql/hooks/useSendEmail";
-import { useSendSms } from "@/graphql/hooks/useSendSms";
-import { useCreateNotification } from "@/graphql/hooks/useCreateNotification";
+import { useMutation } from "@apollo/client";
 
-// UI Components
 import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardFooter 
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 
-// Import our modular components
-import MessageTypeSelector, { MessageType } from "./message-composer/MessageTypeSelector";
-import RecipientSelector, { Recipient } from "./message-composer/RecipientSelector";
-import EmailEditor from "./message-composer/EmailEditor";
-import SmsEditor from "./message-composer/SmsEditor";
-import NotificationEditor from "./message-composer/NotificationEditor";
+import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
+import { useEmailTemplates } from "@/graphql/hooks/useEmailTemplates";
+import { SEND_EMAIL, SEND_SMS } from "@/graphql/mutations/messageMutations";
+
+import RecipientSelector from "./message-composer/RecipientSelector";
 import MessageScheduler from "./message-composer/MessageScheduler";
+import RichTextEditor from "./message-composer/RichTextEditor";
+import TemplateSelector from "./message-composer/TemplateSelector";
 
 interface NewMessageModalProps {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
+  onMessageSent: () => void;
 }
 
-export default function NewMessageModal({ open, onClose }: NewMessageModalProps) {
-  const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
+type MessageType = "email" | "sms" | "notification";
+
+export default function NewMessageModal({ isOpen, onClose, onMessageSent }: NewMessageModalProps) {
+  const { organisationId, branchId } = useOrganizationBranchFilter();
   
-  // Message type state
+  // State for message composition
   const [messageType, setMessageType] = useState<MessageType>("email");
-  
-  // Recipients state
-  const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
-  
-  // Email specific state
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailContent, setEmailContent] = useState("");
-  
-  // SMS specific state
-  const [smsContent, setSmsContent] = useState("");
-  
-  // Notification specific state
-  const [notificationTitle, setNotificationTitle] = useState("");
-  const [notificationContent, setNotificationContent] = useState("");
-  const [notificationLink, setNotificationLink] = useState("");
-  
-  // Scheduling state
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [htmlContent, setHtmlContent] = useState("");
+  const [selectedRecipients, setSelectedRecipients] = useState<Array<{ id: string; name: string; type: "member" | "group" }>>([]);
   const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [scheduledTime, setScheduledTime] = useState("");
-  
-  // Loading state
-  const [isSending, setIsSending] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // Email mutation
-  const { sendEmail, loading: emailSending, error: emailError } = useSendEmail();
-  // SMS mutation
-  const { sendSms, loading: smsSending, error: smsError } = useSendSms();
-  // Notification mutation
-  const { createNotification, loading: notificationSending, error: notificationError } = useCreateNotification();
+  const [isSending, setIsSending] = useState(false);
   
-  async function handleSend() {
-    setIsSending(true);
-    setError(null);
-    
-    // Prepare message data based on type
-    if (messageType === "email") {
-      const emailInput = {
-        branchId,
-        recipients: selectedRecipients.map(r => r.email || r.phone || r.id.toString()),
-        subject: emailSubject,
-        bodyHtml: emailContent,
-        // Add scheduledAt if scheduled
-        ...(isScheduled && scheduledDate && scheduledTime ? {
-          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
-        } : {})
-      };
-      
-      try {
-        await sendEmail({ variables: { input: emailInput } });
-        setIsSending(false);
-        onClose();
-        resetForm();
-      } catch (err) {
-        setIsSending(false);
-        setError("Failed to send email. Please try again.");
-        console.error(err);
-      }
-      return;
-    }
-    
-    if (messageType === "sms") {
-      const smsInput = {
-        branchId,
-        recipients: selectedRecipients.map(r => r.phone || r.email || r.id.toString()),
-        body: smsContent,
-        // Add scheduledAt if scheduled
-        ...(isScheduled && scheduledDate && scheduledTime ? {
-          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
-        } : {})
-      };
-      
-      try {
-        await sendSms({ variables: { input: smsInput } });
-        setIsSending(false);
-        onClose();
-        resetForm();
-      } catch (err) {
-        setIsSending(false);
-        setError("Failed to send SMS. Please try again.");
-        console.error(err);
-      }
-      return;
-    }
-    
-    if (messageType === "notification") {
-      const notificationInput = {
-        branchId,
-        // If your backend expects memberId or userId, add them here
-        title: notificationTitle,
-        message: notificationContent,
-        link: notificationLink,
-        // Add scheduledAt if scheduled
-        ...(isScheduled && scheduledDate && scheduledTime ? {
-          scheduledAt: new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
-        } : {})
-      };
-      
-      try {
-        await createNotification({ variables: { input: notificationInput } });
-        setIsSending(false);
-        onClose();
-        resetForm();
-      } catch (err) {
-        setIsSending(false);
-        setError("Failed to create notification. Please try again.");
-        console.error(err);
-      }
-      return;
-    }
-    
-    setIsSending(false);
-  }
+  // Fetch email templates
+  const { templates, loading: loadingTemplates } = useEmailTemplates(organisationId || "", branchId);
   
-  function resetForm() {
+  // GraphQL mutations
+  const [sendEmail] = useMutation(SEND_EMAIL);
+  const [sendSms] = useMutation(SEND_SMS);
+  
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+  
+  // Reset form fields
+  const resetForm = () => {
+    setMessageType("email");
+    setSubject("");
+    setContent("");
+    setHtmlContent("");
     setSelectedRecipients([]);
-    setEmailSubject("");
-    setEmailContent("");
-    setSmsContent("");
-    setNotificationTitle("");
-    setNotificationContent("");
-    setNotificationLink("");
     setIsScheduled(false);
-    setScheduledDate("");
-    setScheduledTime("");
+    setScheduledDate(null);
+    setSelectedTemplateId(null);
+    setAttachments([]);
     setError(null);
-  }
-
-  // Get icon based on message type
-  const getMessageTypeIcon = () => {
-    switch(messageType) {
-      case "email":
-        return <EnvelopeIcon className="h-6 w-6 text-white" />;
-      case "sms":
-        return <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />;
-      case "notification":
-        return <BellIcon className="h-6 w-6 text-white" />;
+  };
+  
+  // Handle recipient selection
+  const handleRecipientChange = (recipients: Array<{ id: string; name: string; type: "member" | "group" }>) => {
+    setSelectedRecipients(recipients);
+  };
+  
+  // Handle template selection
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    
+    // Find the selected template
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setSubject(template.subject || "");
+      setContent(template.bodyText || "");
+      setHtmlContent(template.bodyHtml || "");
+    }
+  };
+  
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setAttachments([...attachments, ...newFiles]);
+    }
+  };
+  
+  // Remove attachment
+  const removeAttachment = (index: number) => {
+    const newAttachments = [...attachments];
+    newAttachments.splice(index, 1);
+    setAttachments(newAttachments);
+  };
+  
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      setError(null);
+      setIsSending(true);
+      
+      // Validate form
+      if (selectedRecipients.length === 0) {
+        throw new Error("Please select at least one recipient");
+      }
+      
+      // Extract recipient IDs
+      const recipientIds = selectedRecipients.map(r => r.id);
+      
+      // Send message based on type
+      if (messageType === "email") {
+        // Validate email fields
+        if (!subject) throw new Error("Subject is required");
+        if (!htmlContent && !content) throw new Error("Message content is required");
+        
+        // Send email
+        await sendEmail({
+          variables: {
+            input: {
+              subject,
+              bodyHtml: htmlContent || content,
+              bodyText: content,
+              recipients: recipientIds,
+              templateId: selectedTemplateId,
+              organisationId,
+              branchId,
+              scheduledFor: isScheduled && scheduledDate ? scheduledDate.toISOString() : undefined
+            }
+          }
+        });
+      } else if (messageType === "sms") {
+        // Validate SMS fields
+        if (!content) throw new Error("Message content is required");
+        
+        // Send SMS
+        await sendSms({
+          variables: {
+            input: {
+              message: content,
+              recipients: recipientIds,
+              organisationId,
+              branchId,
+              scheduledFor: isScheduled && scheduledDate ? scheduledDate.toISOString() : undefined
+            }
+          }
+        });
+      } else if (messageType === "notification") {
+        // Notification functionality will be implemented later
+        throw new Error("In-app notifications are not yet supported");
+      }
+      
+      // Success
+      onMessageSent();
+    } catch (err: any) {
+      setError(err.message || "Failed to send message");
+    } finally {
+      setIsSending(false);
     }
   };
 
   return (
-    <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={isSending ? () => {} : onClose}>
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -198,170 +192,245 @@ export default function NewMessageModal({ open, onClose }: NewMessageModalProps)
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/25" />
         </Transition.Child>
-        
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8">
-                <div className="border-0 shadow-none">
-                  {/* Header with gradient background */}
-                  <div className="px-6 py-4 bg-gradient-to-br from-indigo-700 via-blue-600 to-purple-600">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getMessageTypeIcon()}
-                        <h2 className="text-xl font-semibold text-white">
-                          New {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
-                        </h2>
+              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-xl transition-all">
+                <Card>
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-indigo-600 to-violet-500 px-6 py-4 flex justify-between items-center">
+                    <Dialog.Title as="h3" className="text-lg font-medium text-white">
+                      New Message
+                    </Dialog.Title>
+                    <button
+                      type="button"
+                      className="text-white hover:text-gray-200"
+                      onClick={onClose}
+                    >
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-6">
+                    {/* Message Type Selector */}
+                    <div className="mb-6">
+                      <Tab.Group selectedIndex={["email", "sms", "notification"].indexOf(messageType)} onChange={(index) => setMessageType(["email", "sms", "notification"][index] as MessageType)}>
+                        <Tab.List className="flex space-x-1 rounded-lg bg-gray-100 p-1">
+                          <Tab as={Fragment}>
+                            {({ selected }) => (
+                              <button
+                                className={`flex items-center w-full rounded-md py-2 px-4 text-sm font-medium leading-5 ${
+                                  selected
+                                    ? 'bg-white shadow text-indigo-600'
+                                    : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                                }`}
+                              >
+                                <EnvelopeIcon className="h-5 w-5 mr-2" />
+                                Email
+                              </button>
+                            )}
+                          </Tab>
+                          <Tab as={Fragment}>
+                            {({ selected }) => (
+                              <button
+                                className={`flex items-center w-full rounded-md py-2 px-4 text-sm font-medium leading-5 ${
+                                  selected
+                                    ? 'bg-white shadow text-indigo-600'
+                                    : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'
+                                }`}
+                              >
+                                <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
+                                SMS
+                              </button>
+                            )}
+                          </Tab>
+                          <Tab as={Fragment} disabled>
+                            {({ selected }) => (
+                              <button
+                                className={`flex items-center w-full rounded-md py-2 px-4 text-sm font-medium leading-5 ${
+                                  selected
+                                    ? 'bg-white shadow text-indigo-600'
+                                    : 'text-gray-400'
+                                }`}
+                                disabled
+                              >
+                                <BellIcon className="h-5 w-5 mr-2" />
+                                Notification
+                              </button>
+                            )}
+                          </Tab>
+                        </Tab.List>
+                      </Tab.Group>
+                    </div>
+                    
+                    {/* Error Alert */}
+                    {error && (
+                      <Alert variant="destructive" className="mb-4">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {/* Recipients */}
+                    <div className="mb-6">
+                      <Label>Recipients</Label>
+                      <RecipientSelector 
+                        selectedRecipients={selectedRecipients}
+                        onChange={handleRecipientChange}
+                      />
+                    </div>
+                    
+                    {/* Email Template Selector (Email only) */}
+                    {messageType === "email" && (
+                      <div className="mb-6">
+                        <Label>Template (Optional)</Label>
+                        <TemplateSelector
+                          templates={templates}
+                          loading={loadingTemplates}
+                          selectedTemplateId={selectedTemplateId}
+                          onSelect={handleTemplateSelect}
+                        />
                       </div>
-                      <button
-                        type="button"
-                        className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0 flex items-center justify-center"
-                        onClick={onClose}
-                        disabled={isSending}
-                      >
-                        <XMarkIcon className="h-5 w-5" />
-                        <span className="sr-only">Close</span>
-                      </button>
+                    )}
+                    
+                    {/* Subject (Email only) */}
+                    {messageType === "email" && (
+                      <div className="mb-6">
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input
+                          id="subject"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                          placeholder="Enter email subject"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Message Content */}
+                    <div className="mb-6">
+                      <Label htmlFor="content">Message</Label>
+                      {messageType === "email" ? (
+                        <RichTextEditor
+                          value={htmlContent}
+                          onChange={(value) => {
+                            setHtmlContent(value);
+                            // Extract plain text from HTML for text version
+                            const div = document.createElement('div');
+                            div.innerHTML = value;
+                            setContent(div.textContent || '');
+                          }}
+                        />
+                      ) : (
+                        <Textarea
+                          id="content"
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          placeholder="Enter your message"
+                          rows={6}
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Attachments (Email only) */}
+                    {messageType === "email" && (
+                      <div className="mb-6">
+                        <Label>Attachments</Label>
+                        <div className="mt-1 flex items-center">
+                          <label className="cursor-pointer">
+                            <div className="flex items-center space-x-2 rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">
+                              <PaperClipIcon className="h-5 w-5 text-gray-500" />
+                              <span>Attach files</span>
+                            </div>
+                            <input
+                              type="file"
+                              multiple
+                              className="hidden"
+                              onChange={handleFileUpload}
+                            />
+                          </label>
+                        </div>
+                        
+                        {/* Display attachments */}
+                        {attachments.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {attachments.map((file, index) => (
+                              <div key={index} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-sm">
+                                <div className="flex items-center">
+                                  <DocumentTextIcon className="h-5 w-5 text-gray-500 mr-2" />
+                                  <span>{file.name}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeAttachment(index)}
+                                  className="text-gray-500 hover:text-red-500"
+                                >
+                                  <XMarkIcon className="h-5 w-5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Schedule Message */}
+                    <div className="mb-6">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={isScheduled}
+                          onCheckedChange={setIsScheduled}
+                          id="schedule-toggle"
+                        />
+                        <Label htmlFor="schedule-toggle" className="cursor-pointer">
+                          Schedule for later
+                        </Label>
+                      </div>
+                      
+                      {isScheduled && (
+                        <div className="mt-4">
+                          <MessageScheduler
+                            selectedDate={scheduledDate}
+                            onDateChange={setScheduledDate}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="p-6">
-                    <form
-                      onSubmit={e => {
-                        e.preventDefault();
-                        handleSend();
-                      }}
-                      className="space-y-6"
-                    >
-                      {/* Message type selector */}
-                      <div className="mb-6">
-                        <MessageTypeSelector 
-                          messageType={messageType} 
-                          onChangeType={setMessageType} 
-                        />
-                      </div>
-                      
-                      {/* Recipients selector */}
-                      <div className="mb-6">
-                        <RecipientSelector
-                          selectedRecipients={selectedRecipients}
-                          onSelectRecipient={setSelectedRecipients}
-                        />
-                      </div>
-                      
-                      {/* Message content based on type */}
-                      <div className="border-t border-gray-200 pt-6">
-                        <h3 className="text-sm font-medium text-gray-500 mb-3">Message Content</h3>
-                        
-                        {messageType === "email" && (
-                          <EmailEditor
-                            subject={emailSubject}
-                            content={emailContent}
-                            onChangeSubject={setEmailSubject}
-                            onChangeContent={setEmailContent}
-                          />
-                        )}
-                        
-                        {messageType === "sms" && (
-                          <SmsEditor
-                            content={smsContent}
-                            onChangeContent={setSmsContent}
-                          />
-                        )}
-                        
-                        {messageType === "notification" && (
-                          <NotificationEditor
-                            title={notificationTitle}
-                            content={notificationContent}
-                            link={notificationLink}
-                            onChangeTitle={setNotificationTitle}
-                            onChangeContent={setNotificationContent}
-                            onChangeLink={setNotificationLink}
-                          />
-                        )}
-                      </div>
-                      
-                      {/* Scheduling options */}
-                      <div className="border-t border-gray-200 pt-6">
-                        <h3 className="text-sm font-medium text-gray-500 mb-3">Delivery Options</h3>
-                        <MessageScheduler
-                          scheduled={isScheduled}
-                          scheduledDate={scheduledDate}
-                          scheduledTime={scheduledTime}
-                          onToggleSchedule={setIsScheduled}
-                          onChangeScheduledDate={setScheduledDate}
-                          onChangeScheduledTime={setScheduledTime}
-                        />
-                      </div>
-                      
-                      {/* Error message */}
-                      {error && (
-                        <div className="rounded-md bg-red-50 p-4 mt-4">
-                          <div className="flex">
-                            <div className="flex-shrink-0">
-                              <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                              <h3 className="text-sm font-medium text-red-800">{error}</h3>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </form>
-                  </div>
-                  
-                  <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
-                    <button
-                      type="button"
+                  {/* Footer */}
+                  <div className="bg-gray-50 px-6 py-4 flex justify-between">
+                    <Button
+                      variant="outline"
                       onClick={onClose}
-                      disabled={isSending}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
                       Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSend}
-                      disabled={isSending || selectedRecipients.length === 0}
-                      className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={isSending}
+                      className="flex items-center"
                     >
-                      {isSending ? (
-                        <>
-                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Sending...
-                        </>
-                      ) : isScheduled ? (
-                        <>
-                          <CalendarIcon className="h-4 w-4" />
-                          Schedule Message
-                        </>
-                      ) : (
-                        <>
-                          <PaperAirplaneIcon className="h-4 w-4" />
-                          Send Message
-                        </>
-                      )}
-                    </button>
+                      {isSending ? "Sending..." : "Send Message"}
+                    </Button>
                   </div>
-                </div>
+                </Card>
               </Dialog.Panel>
             </Transition.Child>
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition>
   );
 }

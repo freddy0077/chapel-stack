@@ -19,7 +19,7 @@ export function useFilteredMinistries(filters?: MinistryFilters) {
     variables.filters.branchId = filters.branchId;
   }
   
-  if (filters?.organisationId) {
+  if (filters?.organisationId && filters.organisationId !== 'undefined' && filters.organisationId !== undefined && filters.organisationId !== '') {
     variables.filters.organisationId = filters.organisationId;
   }
   

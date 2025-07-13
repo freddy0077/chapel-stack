@@ -302,3 +302,39 @@ export const useSmallGroupMutations = () => {
     updateGroupMember
   };
 };
+
+// Custom hook for filtered small groups with search functionality
+export const useFilteredSmallGroupsSearch = (filters: SmallGroupFilterInput) => {
+  const GET_FILTERED_SMALL_GROUPS_SEARCH = gql`
+    query GetFilteredSmallGroups($filters: SmallGroupFilterInput) {
+      smallGroups(filters: $filters) {
+        id
+        name
+        description
+        type
+        meetingSchedule
+        location
+        maximumCapacity
+        status
+        members {
+          id
+          role
+          status
+          memberId
+        }
+      }
+    }
+  `;
+
+  const { data, loading, error, refetch } = useQuery(GET_FILTERED_SMALL_GROUPS_SEARCH, {
+    variables: { filters },
+    skip: !filters.organisationId || (filters.search && filters.search.length < 2)
+  });
+
+  return {
+    smallGroups: data?.smallGroups || [],
+    loading,
+    error,
+    refetch
+  };
+};

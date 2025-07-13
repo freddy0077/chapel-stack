@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DashboardHeader from '@/components/DashboardHeader';
 import { 
@@ -49,15 +50,18 @@ export default function BranchesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader title="Branches">
-        <Link
-          href="/dashboard/branches/new"
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Branch
-        </Link>
-      </DashboardHeader>
+      <DashboardHeader title="Branches" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-6 flex justify-end">
+        <Button asChild variant="default">
+          <Link href="/dashboard/branches/new">
+            <span className="flex items-center">
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Branch
+            </span>
+          </Link>
+        </Button>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <BranchLoader pagination={pagination}>

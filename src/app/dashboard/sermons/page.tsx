@@ -18,7 +18,10 @@ import {
   CloudArrowDownIcon,
   ChevronDownIcon,
   DocumentDuplicateIcon,
-  XMarkIcon
+  XMarkIcon,
+  TagIcon,
+  CheckCircleIcon,
+  SpeakerWaveIcon
 } from "@heroicons/react/24/outline";
 import { PlayIcon as SolidPlayIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/graphql/hooks/useAuth';
@@ -35,6 +38,7 @@ import { gql, useMutation } from "@apollo/client";
 import { GET_PRESIGNED_UPLOAD_URL } from "@/graphql/mutations/memberMutations";
 import { useSermonMutations, useSermons, useSpeakers, useCategories } from "@/graphql/hooks/useSermon";
 import { SpeakerManagerModal } from './SpeakerManagerModal';
+import { CategoryManagerModal } from './CategoryManagerModal';
 
 // Utility function for formatting dates
 function formatDate(dateString: string) {
@@ -66,7 +70,7 @@ function SermonFormModal({
 }) {
   const [form, setForm] = useState(() => {
     if (!initialData) {
-      return { title: '', speaker: '', date: undefined, category: '', tags: [], duration: '', description: '', videoUrl: '', audioUrl: '', notesUrl: '' };
+      return { title: '', speaker: '', date: undefined, category: '', series: '', tags: [], duration: '', description: '', videoUrl: '', audioUrl: '', notesUrl: '' };
     }
     return {
       ...initialData,
@@ -74,13 +78,13 @@ function SermonFormModal({
       date: normalizeDate(initialData.date)
     };
   });
-  const [addingCategory, setAddingCategory] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
+  const [newTag, setNewTag] = useState('');
   const videoInputRef = useRef(null);
   const audioInputRef = useRef(null);
-  const [uploading, setUploading] = useState({ video: false, audio: false });
-  const [selectedFiles, setSelectedFiles] = useState({ videoUrl: null, audioUrl: null });
-  const [uploadErrors, setUploadErrors] = useState({ videoUrl: '', audioUrl: '' });
+  const notesInputRef = useRef(null);
+  const [uploading, setUploading] = useState({ video: false, audio: false, notes: false });
+  const [selectedFiles, setSelectedFiles] = useState({ videoUrl: null, audioUrl: null, notesUrl: null });
+  const [uploadErrors, setUploadErrors] = useState({ videoUrl: '', audioUrl: '', notesUrl: '' });
   const [getPresignedUploadUrl] = useMutation(GET_PRESIGNED_UPLOAD_URL);
   const {user} = useAuth();
 
@@ -89,291 +93,419 @@ function SermonFormModal({
     setSelectedFiles(prev => ({ ...prev, [type]: file }));
   };
 
-  const handleFileUpload = async (type) => {
-    const file = selectedFiles[type];
-    if (!file) {
-      setUploadErrors(prev => ({ ...prev, [type]: 'No file selected!' }));
-      return;
-    }
-    setUploading(u => ({ ...u, [type === 'videoUrl' ? 'video' : 'audio']: true }));
+  const uploadToS3 = async (file, type) => {
+    if (!file) return;
+    
     try {
-      // 1. Request presigned URL
+      setUploading(prev => ({ ...prev, [type]: true }));
+      setUploadErrors(prev => ({ ...prev, [type]: '' }));
+      
+      // Get presigned URL
       const { data } = await getPresignedUploadUrl({
         variables: {
           input: {
             fileName: file.name,
-            contentType: file.type,
-            mediaType: type === "videoUrl" ? "VIDEO" : "AUDIO",
-            description: `${type === "videoUrl" ? "Sermon video" : "Sermon audio"} for new sermon`,
-            branchId: user?.userBranches[0]?.branch?.id,
-          },
-        },
+            fileType: file.type,
+            folder: 'sermons'
+          }
+        }
       });
-      const { uploadUrl, fileUrl } = data.getPresignedUploadUrl;
-      // 2. Proxy upload through backend to avoid CORS
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('uploadUrl', uploadUrl);
-      const uploadResp = await fetch('/api/proxy-upload', {
-        method: 'POST',
-        body: formData,
+      
+      const { url, key } = data.getPresignedUploadUrl;
+      
+      // Upload file to S3
+      const uploadResult = await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
       });
-      if (!uploadResp.ok) {
-        const errorText = await uploadResp.text();
-        throw new Error(`Proxy upload failed: ${errorText}`);
+      
+      if (uploadResult.ok) {
+        // Construct the final URL
+        const fileUrl = `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${key}`;
+        setForm(prev => ({ ...prev, [type]: fileUrl }));
+        if (onUploadComplete) {
+          onUploadComplete(type, fileUrl);
+        }
+      } else {
+        setUploadErrors(prev => ({ ...prev, [type]: 'Failed to upload file' }));
       }
-      // 3. Set URL in form
-      setForm(prev => ({ ...prev, [type]: fileUrl }));
-      // 4. Trigger any logic needed after upload (success notification, callback, etc.)
-      if (typeof onUploadComplete === 'function') {
-        onUploadComplete(type, fileUrl);
-      }
-      // 5. Clear selected file & error
-      setSelectedFiles(prev => ({ ...prev, [type]: null }));
-      setUploadErrors(prev => ({ ...prev, [type]: '' }));
-    } catch (err) {
-      setUploadErrors(prev => ({ ...prev, [type]: 'Failed to upload file. Please try again.' }));
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      setUploadErrors(prev => ({ ...prev, [type]: `Error: ${error.message}` }));
     } finally {
-      setUploading(u => ({ ...u, [type === 'videoUrl' ? 'video' : 'audio']: false }));
+      setUploading(prev => ({ ...prev, [type]: false }));
     }
-  };
-
-  function normalizeTags(tags: any): string[] {
-    if (Array.isArray(tags)) return tags;
-    if (typeof tags === 'string') {
-      return tags.split(',').map(t => t.trim()).filter(Boolean);
-    }
-    return [];
-  }
-
-  function normalizeDate(date: any): Date | undefined {
-    if (!date) return undefined;
-    if (date instanceof Date) return date;
-    const d = new Date(date);
-    return isNaN(d.getTime()) ? undefined : d;
-  }
-
-  const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleAddCategory = () => {
-    if (!newCategory.trim()) return;
-    const newCat = { id: newCategory.trim().toLowerCase().replace(/\s+/g, '-'), name: newCategory.trim() };
-    setForm({ ...form, category: newCat.id });
-    setNewCategory('');
-    setAddingCategory(false);
   };
 
   useEffect(() => {
-    if (initialData) {
-      setForm({ ...initialData, tags: normalizeTags(initialData.tags), date: normalizeDate(initialData.date) });
+    if (selectedFiles.videoUrl) {
+      uploadToS3(selectedFiles.videoUrl, 'videoUrl');
     }
-  }, [initialData]);
+  }, [selectedFiles.videoUrl]);
+
+  useEffect(() => {
+    if (selectedFiles.audioUrl) {
+      uploadToS3(selectedFiles.audioUrl, 'audioUrl');
+    }
+  }, [selectedFiles.audioUrl]);
+
+  useEffect(() => {
+    if (selectedFiles.notesUrl) {
+      uploadToS3(selectedFiles.notesUrl, 'notesUrl');
+    }
+  }, [selectedFiles.notesUrl]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTagAdd = (e) => {
+    e.preventDefault();
+    if (newTag && !form.tags.includes(newTag)) {
+      setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+      setNewTag('');
+    }
+  };
+
+  const handleTagRemove = (tagToRemove) => {
+    setForm(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(form);
+  };
+
+  // Helper functions for normalizing data
+  function normalizeTags(tags) {
+    if (!tags) return [];
+    if (Array.isArray(tags)) return tags;
+    if (typeof tags === 'string') return tags.split(',').map(tag => tag.trim()).filter(Boolean);
+    return [];
+  }
+
+  function normalizeDate(date) {
+    if (!date) return undefined;
+    try {
+      return new Date(date);
+    } catch (e) {
+      return undefined;
+    }
+  }
 
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg mx-4 my-8 rounded-3xl shadow-2xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50 to-white overflow-hidden animate-fadeIn">
-        {/* Modal Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-6 bg-gradient-to-r from-indigo-100/60 to-white border-b border-indigo-200 rounded-t-3xl">
-          <h2 className="text-xl font-extrabold text-indigo-900 tracking-tight flex items-center gap-2">
-            <DocumentTextIcon className="h-6 w-6 text-indigo-500" />
-            {initialData ? 'Edit Sermon' : 'Add New Sermon'}
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-indigo-500 transition"><XCircleIcon className="h-7 w-7" /></button>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-white">
+              {initialData ? 'Edit Sermon' : 'Add New Sermon'}
+            </h2>
+            <button 
+              onClick={onClose}
+              className="text-white hover:text-gray-200 rounded-full p-1"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
         </div>
-        {/* Modal Body */}
-        <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="px-8 py-8 space-y-7 max-h-[70vh] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Title */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              Sermon Title
+            </label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Enter sermon title"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+          
+          {/* Two column layout for speaker and date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Speaker */}
             <div>
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Title</label>
-              <input
-                type="text"
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-indigo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/90 text-indigo-900 shadow-sm"
-                placeholder="Sermon title"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Speaker</label>
+              <label htmlFor="speaker" className="block text-sm font-medium text-gray-700 mb-1">
+                Speaker
+              </label>
               <select
+                id="speaker"
                 name="speaker"
-                value={form.speaker}
+                value={form.speaker || ''}
                 onChange={handleChange}
-                className="border border-indigo-100 rounded-lg px-3 py-2 flex-1 bg-white/90 text-indigo-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               >
-                <option value="" disabled>Select speaker</option>
-                {speakers.map(sp => (
-                  <option key={sp.id} value={sp.id}>{sp.name}</option>
+                <option value="">Select a speaker</option>
+                {speakers.map(speaker => (
+                  <option key={speaker.id} value={speaker.id}>
+                    {speaker.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Date */}
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                Date Preached
+              </label>
+              <DatePicker
+                date={form.date}
+                onSelect={(date) => setForm(prev => ({ ...prev, date }))}
+              />
+            </div>
+          </div>
+          
+          {/* Two column layout for category and series */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Category */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={form.category || ''}
+                onChange={handleChange}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select a category</option>
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Series */}
+            <div>
+              <label htmlFor="series" className="block text-sm font-medium text-gray-700 mb-1">
+                Series (Optional)
+              </label>
+              <select
+                id="series"
+                name="series"
+                value={form.series || ''}
+                onChange={handleChange}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select a series</option>
+                {series.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Date</label>
-              <DatePicker
-                date={form.date}
-                onDateChange={(date: Date | undefined) => setForm(prev => ({ ...prev, date }))}
-              />
+          
+          {/* Duration */}
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+              Duration (Optional)
+            </label>
+            <input
+              id="duration"
+              name="duration"
+              type="text"
+              value={form.duration || ''}
+              onChange={handleChange}
+              placeholder="e.g. 45:30"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          {/* Description */}
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <Textarea
+              id="description"
+              name="description"
+              value={form.description || ''}
+              onChange={handleChange}
+              placeholder="Enter sermon description"
+              rows={4}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tags
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {form.tags.map(tag => (
+                <Badge key={tag} className="bg-indigo-100 text-indigo-800 flex items-center gap-1 py-1 px-2">
+                  {tag}
+                  <button 
+                    type="button" 
+                    onClick={() => handleTagRemove(tag)}
+                    className="text-indigo-600 hover:text-indigo-800"
+                  >
+                    <XCircleIcon className="h-4 w-4" />
+                  </button>
+                </Badge>
+              ))}
             </div>
+            <div className="flex">
+              <input
+                type="text"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Add a tag"
+                className="flex-grow p-2 border rounded-l focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={handleTagAdd}
+                className="bg-indigo-600 text-white px-3 py-2 rounded-r hover:bg-indigo-700 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          
+          {/* Media uploads section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-gray-700">Media Files</h3>
+            
+            {/* Video upload */}
             <div>
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Category</label>
-              <div className="flex items-center gap-2">
-                <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="border border-indigo-100 rounded-lg px-3 py-2 flex-1 bg-white/90 text-indigo-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  required
+              <label htmlFor="video-upload" className="block text-sm font-medium text-gray-700 mb-1">
+                Video (Optional)
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="file"
+                  id="video-upload"
+                  ref={videoInputRef}
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files[0], 'videoUrl')}
+                />
+                <button
+                  type="button"
+                  onClick={() => videoInputRef.current?.click()}
+                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={uploading.video}
                 >
-                  <option value="" disabled>Select category</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
-                {!addingCategory && (
-                  <button type="button" onClick={() => setAddingCategory(true)} className="text-indigo-600 hover:underline text-xs font-semibold">+ Add</button>
+                  <VideoCameraIcon className="h-5 w-5 mr-2 text-gray-500" />
+                  {uploading.video ? 'Uploading...' : 'Upload Video'}
+                </button>
+                {form.videoUrl && (
+                  <span className="ml-3 text-sm text-green-600 flex items-center">
+                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Video uploaded
+                  </span>
                 )}
               </div>
-              {addingCategory && (
-                <div className="flex items-center gap-2 mt-2">
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={e => setNewCategory(e.target.value)}
-                    placeholder="New category name"
-                    className="border border-indigo-100 rounded-lg px-2 py-1 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    autoFocus
-                  />
-                  <button type="button" onClick={handleAddCategory} className="bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 text-xs font-semibold">Add</button>
-                  <button type="button" onClick={() => { setAddingCategory(false); setNewCategory(''); }} className="text-gray-400 hover:text-red-400 text-xs font-semibold">Cancel</button>
-                </div>
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-indigo-800 mb-1">Description</label>
-            <Textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              className="w-full border border-indigo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/90 text-indigo-900 shadow-sm"
-              rows={4}
-              placeholder="Sermon description"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Video URL</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  name="videoUrl"
-                  value={form.videoUrl}
-                  onChange={handleChange}
-                  className="flex-1 border border-indigo-100 rounded-lg px-3 py-2 bg-white/90 text-indigo-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Paste or upload video..."
-                />
-                <input
-                  type="file"
-                  accept="video/*"
-                  ref={videoInputRef}
-                  style={{ display: 'none' }}
-                  onChange={e => handleFileSelect(e.target.files[0], 'videoUrl')}
-                />
-                <button
-                  type="button"
-                  className="rounded bg-indigo-500 text-white px-3 py-2 font-semibold hover:bg-indigo-600 disabled:opacity-50"
-                  onClick={() => videoInputRef.current && videoInputRef.current.click()}
-                  disabled={uploading.video}
-                  title="Select video file"
-                >
-                  Select File
-                </button>
-                <button
-                  type="button"
-                  className="rounded bg-indigo-600 text-white px-3 py-2 font-semibold hover:bg-indigo-700 disabled:opacity-50"
-                  onClick={() => handleFileUpload('videoUrl')}
-                  disabled={uploading.video || !selectedFiles.videoUrl}
-                  title="Upload video to S3"
-                >
-                  {uploading.video ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
               {uploadErrors.videoUrl && (
-                <div className="text-sm text-red-600 mt-2">{uploadErrors.videoUrl}</div>
+                <p className="mt-1 text-sm text-red-600">{uploadErrors.videoUrl}</p>
               )}
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-indigo-800 mb-1">Audio URL</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  name="audioUrl"
-                  value={form.audioUrl}
-                  onChange={handleChange}
-                  className="flex-1 border border-indigo-100 rounded-lg px-3 py-2 bg-white/90 text-indigo-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Paste or upload audio..."
-                />
+            
+            {/* Audio upload */}
+            <div>
+              <label htmlFor="audio-upload" className="block text-sm font-medium text-gray-700 mb-1">
+                Audio (Optional)
+              </label>
+              <div className="flex items-center">
                 <input
                   type="file"
-                  accept="audio/*"
+                  id="audio-upload"
                   ref={audioInputRef}
-                  style={{ display: 'none' }}
-                  onChange={e => handleFileSelect(e.target.files[0], 'audioUrl')}
+                  accept="audio/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files[0], 'audioUrl')}
                 />
                 <button
                   type="button"
-                  className="rounded bg-indigo-500 text-white px-3 py-2 font-semibold hover:bg-indigo-600 disabled:opacity-50"
-                  onClick={() => audioInputRef.current && audioInputRef.current.click()}
+                  onClick={() => audioInputRef.current?.click()}
+                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   disabled={uploading.audio}
-                  title="Select audio file"
                 >
-                  Select File
+                  <SpeakerWaveIcon className="h-5 w-5 mr-2 text-gray-500" />
+                  {uploading.audio ? 'Uploading...' : 'Upload Audio'}
                 </button>
-                <button
-                  type="button"
-                  className="rounded bg-indigo-600 text-white px-3 py-2 font-semibold hover:bg-indigo-700 disabled:opacity-50"
-                  onClick={() => handleFileUpload('audioUrl')}
-                  disabled={uploading.audio || !selectedFiles.audioUrl}
-                  title="Upload audio to S3"
-                >
-                  {uploading.audio ? 'Uploading...' : 'Upload'}
-                </button>
+                {form.audioUrl && (
+                  <span className="ml-3 text-sm text-green-600 flex items-center">
+                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Audio uploaded
+                  </span>
+                )}
               </div>
               {uploadErrors.audioUrl && (
-                <div className="text-sm text-red-600 mt-2">{uploadErrors.audioUrl}</div>
+                <p className="mt-1 text-sm text-red-600">{uploadErrors.audioUrl}</p>
+              )}
+            </div>
+            
+            {/* Notes upload */}
+            <div>
+              <label htmlFor="notes-upload" className="block text-sm font-medium text-gray-700 mb-1">
+                Notes PDF (Optional)
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="file"
+                  id="notes-upload"
+                  ref={notesInputRef}
+                  accept=".pdf"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files[0], 'notesUrl')}
+                />
+                <button
+                  type="button"
+                  onClick={() => notesInputRef.current?.click()}
+                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={uploading.notes}
+                >
+                  <DocumentIcon className="h-5 w-5 mr-2 text-gray-500" />
+                  {uploading.notes ? 'Uploading...' : 'Upload Notes'}
+                </button>
+                {form.notesUrl && (
+                  <span className="ml-3 text-sm text-green-600 flex items-center">
+                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Notes uploaded
+                  </span>
+                )}
+              </div>
+              {uploadErrors.notesUrl && (
+                <p className="mt-1 text-sm text-red-600">{uploadErrors.notesUrl}</p>
               )}
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-indigo-800 mb-1">Tags</label>
-            <TagsInput
-              value={form.tags || []}
-              onChange={tags => setForm({ ...form, tags })}
-              placeholder="Type a tag and press Enter"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-indigo-100 mt-2">
+          
+          {/* Form actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 rounded-xl text-indigo-700 bg-indigo-50 hover:bg-indigo-100 font-bold shadow-sm border border-indigo-100 transition"
+              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md border border-indigo-700 transition"
-              disabled={isSaving}
+              disabled={isSaving || uploading.video || uploading.audio || uploading.notes}
+              className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
             >
-              {initialData ? 'Update Sermon' : 'Add Sermon'}
+              {isSaving ? 'Saving...' : initialData ? 'Update Sermon' : 'Create Sermon'}
             </button>
           </div>
         </form>
@@ -634,6 +766,7 @@ export default function SermonsPage() {
   const [isVideoModalOpen, setVideoModalOpen] = useState(false);
   const [isAudioModalOpen, setAudioModalOpen] = useState(false);
   const [isSpeakerManagerOpen, setSpeakerManagerOpen] = useState(false);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [selectedSermon, setSelectedSermon] = useState(null);
   const [editingSermon, setEditingSermon] = useState(null);
 
@@ -641,7 +774,7 @@ export default function SermonsPage() {
   const { canManageContent } = usePermissions();
   const { sermons, loading, error } = useSermons(selectedBranchId);
   const { speakers } = useSpeakers(selectedBranchId);
-  const { categories } = useCategories(selectedBranchId);
+  const { categories } = useCategories();
   const { createSermon, updateSermon, deleteSermon, loading: isSaving } = useSermonMutations();
 
   const filteredSermons = useMemo(() => {
@@ -688,6 +821,10 @@ export default function SermonsPage() {
     setSpeakerManagerOpen(true);
   };
 
+  const handleOpenCategoryManager = () => {
+    setIsCategoryManagerOpen(true);
+  };
+
   const handleSaveSermon = async (formData: any) => {
     const { id, tags, datePreached, speaker, ...rest } = formData;
     
@@ -725,11 +862,47 @@ export default function SermonsPage() {
   };
 
   if (loading) {
-    return <div>Loading sermons...</div>;
+    return (
+      <div className="flex-1 bg-gray-50/50 p-6">
+        <div className="text-center mb-10">
+          <DashboardHeader 
+            title="Sermon Library" 
+            description="Manage and organize your church's sermon collection" 
+            icon={<DocumentTextIcon className="h-6 w-6" />}
+          />
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading sermons...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error loading sermons: {error.message}</div>;
+    return (
+      <div className="flex-1 bg-gray-50/50 p-6">
+        <div className="text-center mb-10">
+          <DashboardHeader 
+            title="Sermon Library" 
+            description="Manage and organize your church's sermon collection" 
+            icon={<DocumentTextIcon className="h-6 w-6" />}
+          />
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-md mx-auto mt-16">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
+            <XCircleIcon className="h-10 w-10 text-red-500" />
+          </div>
+          <h3 className="mt-6 text-lg font-medium text-gray-900">Error Loading Sermons</h3>
+          <p className="mt-2 text-gray-500">{error.message}</p>
+          <Button onClick={() => window.location.reload()} className="mt-6" size="lg">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -784,6 +957,15 @@ export default function SermonsPage() {
               Manage Speakers
             </button>
           </div>
+          {/* View Categories button */}
+          <div className="flex-shrink-0">
+            <button
+              onClick={handleOpenCategoryManager}
+              className="bg-white text-indigo-600 px-4 py-2 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-100 transition-colors"
+            >
+              View Categories
+            </button>
+          </div>
           {/* Add sermon button */}
           <div className="flex-shrink-0">
             <button
@@ -826,6 +1008,35 @@ export default function SermonsPage() {
             <PlusIcon className="h-5 w-5 mr-2" /> 
             Add Your First Sermon
           </Button>
+        </div>
+      )}
+      
+      {/* Pagination */}
+      {filteredSermons.length > 0 && (
+        <div className="flex justify-center mt-16 mb-8">
+          <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span className="sr-only">Previous</span>
+              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </a>
+            <a href="#" aria-current="page" className="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600 hover:bg-indigo-100">
+              1
+            </a>
+            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              2
+            </a>
+            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              3
+            </a>
+            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span className="sr-only">Next</span>
+              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </a>
+          </nav>
         </div>
       )}
       
@@ -872,37 +1083,18 @@ export default function SermonsPage() {
         onClose={() => setSpeakerManagerOpen(false)}
       />
       
-      {/* Pagination placeholder - would be implemented with real data */}
-      {filteredSermons.length > 0 && (
-        <div className="flex justify-center mt-16 mb-8">
-          <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              <span className="sr-only">Previous</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-            <a href="#" aria-current="page" className="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600 hover:bg-indigo-100">
-              1
-            </a>
-            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              2
-            </a>
-            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              3
-            </a>
-            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              <span className="sr-only">Next</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-          </nav>
+      <CategoryManagerModal 
+        open={isCategoryManagerOpen}
+        onClose={() => setIsCategoryManagerOpen(false)}
+      />
+      
+      {/* Saving notification toast */}
+      {isSaving && (
+        <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-100 p-4 flex items-center space-x-3 transition-opacity duration-300 opacity-100 animate-fadeIn">
+          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-indigo-500"></div>
+          <span className="text-gray-700">Saving sermon...</span>
         </div>
       )}
-      
-      {/* Optionally show loading/error UI */}
-      {isSaving && <div className="text-indigo-600">Saving sermon...</div>}
     </div>
   );
 }

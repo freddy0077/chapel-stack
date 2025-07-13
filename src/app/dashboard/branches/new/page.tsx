@@ -99,8 +99,9 @@ export default function NewBranchPage() {
     
     try {
       const { data } = await createBranch({ variables: { input } });
-      if (data?.createBranch?.id) {
-        setBranchId(data.createBranchAdmin.id);
+      console.log("Data from createBranch mutation: ",data);
+      if (data) {
+        setBranchId(data.createBranch.id);
         setPrimarySaved(true);
         toast.success("Branch information saved successfully!");
         setActiveStep(2);
@@ -138,7 +139,7 @@ export default function NewBranchPage() {
     
     try {
       const { data } = await createBranchAdmin({ variables: { input } });
-      if (data?.createBranchAdmin?.id) {
+      if (data) {
         setAdminSaved(true);
         toast.success("Branch admin created successfully!");
         

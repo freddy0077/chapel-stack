@@ -85,10 +85,8 @@ export function useSeries(branchId?: string) {
 /**
  * Hook for fetching categories
  */
-export function useCategories(branchId?: string) {
-  const { data, loading, error } = useQuery(GET_CATEGORIES, {
-    variables: { branchId },
-  });
+export function useCategories() {
+  const { data, loading, error } = useQuery(GET_CATEGORIES);
 
   return { categories: data?.categories || [], loading, error };
 }

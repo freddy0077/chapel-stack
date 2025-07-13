@@ -1,244 +1,679 @@
 "use client";
 
-import { useState, Fragment } from "react";
-import { Combobox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect, Fragment } from "react";
+import { useQuery } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { Combobox, Transition, Tab } from "@headlessui/react";
+import { 
+  CheckIcon, 
+  ChevronUpDownIcon, 
+  XMarkIcon, 
+  UserGroupIcon, 
+  UserIcon,
+  FunnelIcon,
+  AdjustmentsHorizontalIcon,
+  CalendarIcon,
+  ClockIcon
+} from "@heroicons/react/24/outline";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select } from "@/components/ui/select";
+import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
+import { cn } from "@/lib/utils";
 
-import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
-import { useAllSmallGroups } from '@/graphql/hooks/useSmallGroups';
-import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
-import { useFilteredBranches } from '@/graphql/hooks/useFilteredBranches';
+// GraphQL queries
+const GET_MEMBERS = gql`
+  query GetMembers($filter: MemberFilterInput!) {
+    members(filter: $filter) {
+      items {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+        role
+        activityStatus
+        lastAttendance
+      }
+      totalCount
+    }
+  }
+`;
 
-export type RecipientType = 'member' | 'group';
+const GET_GROUPS = gql`
+  query GetGroups($filter: GroupFilterInput!) {
+    groups(filter: $filter) {
+      items {
+        id
+        name
+        description
+        memberCount
+        type
+      }
+      totalCount
+    }
+  }
+`;
 
-export type Recipient = {
-  id: number | string;
+const GET_ROLES = gql`
+  query GetRoles($organisationId: ID!) {
+    roles(organisationId: $organisationId) {
+      id
+      name
+      description
+    }
+  }
+`;
+
+const GET_EVENTS = gql`
+  query GetEvents($filter: EventFilterInput!) {
+    events(filter: $filter) {
+      items {
+        id
+        name
+        startDate
+        endDate
+      }
+      totalCount
+    }
+  }
+`;
+
+export interface Recipient {
+  id: string;
+  type: 'individual' | 'group';
   name: string;
   email?: string;
-  phone?: string;
-  isGroup?: boolean;
-};
+  phoneNumber?: string;
+  memberCount?: number;
+  role?: string;
+  activityStatus?: string;
+  lastAttendance?: string;
+}
 
 interface RecipientSelectorProps {
   selectedRecipients: Recipient[];
-  onSelectRecipient: (recipients: Recipient[]) => void;
+  onChange: (recipients: Recipient[]) => void;
+  messageType: 'email' | 'sms' | 'notification';
+  disabled?: boolean;
 }
 
-export default function RecipientSelector({ selectedRecipients, onSelectRecipient }: RecipientSelectorProps) {
+export default function RecipientSelector({
+  selectedRecipients,
+  onChange,
+  messageType,
+  disabled = false
+}: RecipientSelectorProps) {
   const { organisationId, branchId } = useOrganizationBranchFilter();
-  const [query, setQuery] = useState("");
-  const [recipientType, setRecipientType] = useState<RecipientType>('member');
-  const { data: members, loading, error } = useSearchMembers(query, organisationId);
-  const { smallGroups } = useAllSmallGroups();
-  const [groupResults, setGroupResults] = useState<any[]>([]);
-  const { branches: filteredBranches, loading: branchesLoading } = useFilteredBranches({ organisationId });
-
-  // Helper to get group member count by group id
-  const getGroupMemberCount = (groupId: string) => {
-    const group = smallGroups.find((g: any) => g.id === groupId);
-    return group && group.members ? group.members.length : null;
-  };
-
-  // Search as user types
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setQuery(value);
-    if (recipientType === 'group' && value.length > 1) {
-      setGroupResults(
-        smallGroups.filter((group: any) =>
-          group.name.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-    } else if (recipientType === 'group') {
-      setGroupResults([]);
-    }
-  };
-
-  // Combine member and group results for selection
-  let combinedResults: Recipient[] = [];
-  if (recipientType === 'group') {
-    combinedResults = groupResults.map((group: any) => ({
-      id: group.id,
-      name: group.name,
-      isGroup: true,
-    }));
-  } else {
-    combinedResults = (members || []).map((member: any) => ({
-      id: member.id,
-      name: `${member.firstName} ${member.lastName}`,
-      email: member.email,
-      phone: member.phoneNumber,
-      isGroup: false,
-    }));
-  }
-
-  // Handler for branch select
-  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newBranchId = e.target.value;
-    const url = new URL(window.location.href);
-    url.searchParams.set('branchId', newBranchId);
-    window.history.replaceState({}, '', url.toString());
-  };
-
-  const handleRemoveRecipient = (id: number) => {
-    onSelectRecipient(selectedRecipients.filter(recipient => recipient.id !== id));
-  };
-
+  const [query, setQuery] = useState('');
+  const [recipientType, setRecipientType] = useState<'individual' | 'group'>('individual');
+  
+  // Advanced filters
+  const [filters, setFilters] = useState({
+    roles: [] as string[],
+    activityStatus: [] as string[],
+    attendedEvents: [] as string[],
+    lastAttendance: '',
+    missedServices: false
+  });
+  
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Fetch members
+  const { data: membersData, loading: loadingMembers } = useQuery(GET_MEMBERS, {
+    variables: {
+      filter: {
+        organisationId,
+        branchId,
+        searchTerm: query,
+        // Only fetch members with email for email messages, or phone for SMS
+        ...(messageType === 'email' ? { hasEmail: true } : {}),
+        ...(messageType === 'sms' ? { hasPhone: true } : {}),
+        // Advanced filters
+        ...(filters.roles.length > 0 ? { roles: filters.roles } : {}),
+        ...(filters.activityStatus.length > 0 ? { activityStatus: filters.activityStatus } : {}),
+        ...(filters.attendedEvents.length > 0 ? { attendedEvents: filters.attendedEvents } : {}),
+        ...(filters.lastAttendance ? { lastAttendanceBefore: filters.lastAttendance } : {}),
+        ...(filters.missedServices ? { missedLastService: true } : {})
+      }
+    },
+    skip: !organisationId || recipientType !== 'individual',
+    fetchPolicy: 'network-only'
+  });
+  
+  // Fetch groups
+  const { data: groupsData, loading: loadingGroups } = useQuery(GET_GROUPS, {
+    variables: {
+      filter: {
+        organisationId,
+        branchId,
+        searchTerm: query
+      }
+    },
+    skip: !organisationId || recipientType !== 'group',
+    fetchPolicy: 'network-only'
+  });
+  
+  // Fetch roles for filtering
+  const { data: rolesData } = useQuery(GET_ROLES, {
+    variables: {
+      organisationId
+    },
+    skip: !organisationId,
+    fetchPolicy: 'cache-first'
+  });
+  
+  // Fetch events for filtering
+  const { data: eventsData } = useQuery(GET_EVENTS, {
+    variables: {
+      filter: {
+        organisationId,
+        branchId,
+        // Get events from the last 3 months
+        startDateFrom: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    },
+    skip: !organisationId,
+    fetchPolicy: 'cache-first'
+  });
+  
+  // Format members as recipients
+  const memberRecipients: Recipient[] = membersData?.members?.items.map((member: any) => ({
+    id: member.id,
+    type: 'individual',
+    name: `${member.firstName} ${member.lastName}`,
+    email: member.email,
+    phoneNumber: member.phoneNumber,
+    role: member.role,
+    activityStatus: member.activityStatus,
+    lastAttendance: member.lastAttendance
+  })) || [];
+  
+  // Format groups as recipients
+  const groupRecipients: Recipient[] = groupsData?.groups?.items.map((group: any) => ({
+    id: group.id,
+    type: 'group',
+    name: group.name,
+    memberCount: group.memberCount
+  })) || [];
+  
+  // Combined recipients based on current type
+  const recipients = recipientType === 'individual' ? memberRecipients : groupRecipients;
+  
+  // Filter out already selected recipients
+  const filteredRecipients = recipients.filter(
+    recipient => !selectedRecipients.some(selected => selected.id === recipient.id && selected.type === recipient.type)
+  );
+  
+  // Handle recipient selection
   const handleSelectRecipient = (recipient: Recipient) => {
-    if (!selectedRecipients.filter(Boolean).find(r => r.id === recipient.id)) {
-      onSelectRecipient([...selectedRecipients, recipient]);
-    }
+    onChange([...selectedRecipients, recipient]);
+    setQuery('');
   };
-
+  
+  // Handle recipient removal
+  const handleRemoveRecipient = (recipient: Recipient) => {
+    onChange(selectedRecipients.filter(
+      selected => !(selected.id === recipient.id && selected.type === recipient.type)
+    ));
+  };
+  
+  // Clear all recipients
+  const handleClearAll = () => {
+    onChange([]);
+  };
+  
+  // Update filters
+  const updateFilter = (filterType: keyof typeof filters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+  
+  // Reset filters
+  const resetFilters = () => {
+    setFilters({
+      roles: [],
+      activityStatus: [],
+      attendedEvents: [],
+      lastAttendance: '',
+      missedServices: false
+    });
+  };
+  
+  // Count active filters
+  const activeFilterCount = 
+    (filters.roles.length > 0 ? 1 : 0) +
+    (filters.activityStatus.length > 0 ? 1 : 0) +
+    (filters.attendedEvents.length > 0 ? 1 : 0) +
+    (filters.lastAttendance ? 1 : 0) +
+    (filters.missedServices ? 1 : 0);
+  
   return (
-    <div className="space-y-2">
-      {/* Branch select for super_admin */}
-      {organisationId && !branchId && (
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Select a branch to search recipients</label>
-          <select
-            className="block w-full rounded border border-gray-300 py-2 px-3 text-sm"
-            onChange={handleBranchChange}
-            defaultValue=""
-            disabled={branchesLoading}
-          >
-            <option value="" disabled>
-              {branchesLoading ? 'Loading branches...' : 'Select branch'}
-            </option>
-            {filteredBranches.map(branch => (
-              <option key={branch.id} value={branch.id}>{branch.name}</option>
+    <div>
+      <div className="flex flex-col space-y-2">
+        {/* Recipient type toggle and filters */}
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex space-x-2">
+            <Button
+              type="button"
+              variant={recipientType === 'individual' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecipientType('individual')}
+              disabled={disabled}
+              className="flex items-center"
+            >
+              <UserIcon className="h-4 w-4 mr-1" />
+              Individuals
+            </Button>
+            <Button
+              type="button"
+              variant={recipientType === 'group' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecipientType('group')}
+              disabled={disabled}
+              className="flex items-center"
+            >
+              <UserGroupIcon className="h-4 w-4 mr-1" />
+              Groups
+            </Button>
+          </div>
+          
+          {recipientType === 'individual' && (
+            <Popover open={showFilters} onOpenChange={setShowFilters}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "flex items-center",
+                    activeFilterCount > 0 && "border-blue-300 bg-blue-50 text-blue-700"
+                  )}
+                >
+                  <FunnelIcon className="h-4 w-4 mr-1" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <Badge className="ml-1 bg-blue-500 hover:bg-blue-600">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">Advanced Filters</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={resetFilters}
+                      className="text-xs h-7"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Role filter */}
+                    <div>
+                      <Label className="text-sm font-medium mb-1.5 block">Roles</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {rolesData?.roles?.map((role: any) => (
+                          <div key={role.id} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`role-${role.id}`}
+                              checked={filters.roles.includes(role.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  updateFilter('roles', [...filters.roles, role.id]);
+                                } else {
+                                  updateFilter('roles', filters.roles.filter(id => id !== role.id));
+                                }
+                              }}
+                            />
+                            <Label 
+                              htmlFor={`role-${role.id}`}
+                              className="text-sm font-normal"
+                            >
+                              {role.name}
+                            </Label>
+                          </div>
+                        ))}
+                        {!rolesData?.roles?.length && (
+                          <span className="text-sm text-gray-500 col-span-2">No roles found</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Activity status filter */}
+                    <div>
+                      <Label className="text-sm font-medium mb-1.5 block">Activity Status</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['Active', 'Inactive', 'New', 'Visitor'].map((status) => (
+                          <div key={status} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`status-${status}`}
+                              checked={filters.activityStatus.includes(status.toUpperCase())}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  updateFilter('activityStatus', [...filters.activityStatus, status.toUpperCase()]);
+                                } else {
+                                  updateFilter('activityStatus', filters.activityStatus.filter(s => s !== status.toUpperCase()));
+                                }
+                              }}
+                            />
+                            <Label 
+                              htmlFor={`status-${status}`}
+                              className="text-sm font-normal"
+                            >
+                              {status}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Attendance filters */}
+                    <div>
+                      <Label className="text-sm font-medium mb-1.5 block">Attendance</Label>
+                      
+                      <div className="space-y-2">
+                        {/* Missed services */}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="missed-services"
+                            checked={filters.missedServices}
+                            onCheckedChange={(checked) => {
+                              updateFilter('missedServices', !!checked);
+                            }}
+                          />
+                          <Label 
+                            htmlFor="missed-services"
+                            className="text-sm font-normal"
+                          >
+                            Missed last service
+                          </Label>
+                        </div>
+                        
+                        {/* Last attendance */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-gray-500">Not attended since</Label>
+                          <Select
+                            value={filters.lastAttendance}
+                            onValueChange={(value) => updateFilter('lastAttendance', value)}
+                          >
+                            <option value="">Any time</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                          </Select>
+                        </div>
+                        
+                        {/* Attended events */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-gray-500">Attended events</Label>
+                          <div className="max-h-32 overflow-y-auto border rounded-md p-2">
+                            {eventsData?.events?.items?.map((event: any) => (
+                              <div key={event.id} className="flex items-center space-x-2 py-1">
+                                <Checkbox 
+                                  id={`event-${event.id}`}
+                                  checked={filters.attendedEvents.includes(event.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      updateFilter('attendedEvents', [...filters.attendedEvents, event.id]);
+                                    } else {
+                                      updateFilter('attendedEvents', filters.attendedEvents.filter(id => id !== event.id));
+                                    }
+                                  }}
+                                />
+                                <Label 
+                                  htmlFor={`event-${event.id}`}
+                                  className="text-sm font-normal"
+                                >
+                                  {event.name}
+                                  <span className="text-xs text-gray-500 block">
+                                    {new Date(event.startDate).toLocaleDateString()}
+                                  </span>
+                                </Label>
+                              </div>
+                            ))}
+                            {!eventsData?.events?.items?.length && (
+                              <span className="text-sm text-gray-500">No recent events found</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 flex justify-end">
+                    <Button 
+                      onClick={() => setShowFilters(false)}
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                    >
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+        
+        {/* Active filters display */}
+        {activeFilterCount > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {filters.roles.length > 0 && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <AdjustmentsHorizontalIcon className="h-3 w-3 mr-1" />
+                {filters.roles.length} role{filters.roles.length !== 1 ? 's' : ''}
+                <XMarkIcon 
+                  className="h-3 w-3 ml-1 cursor-pointer" 
+                  onClick={() => updateFilter('roles', [])}
+                />
+              </Badge>
+            )}
+            {filters.activityStatus.length > 0 && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <UserIcon className="h-3 w-3 mr-1" />
+                {filters.activityStatus.length} status{filters.activityStatus.length !== 1 ? 'es' : ''}
+                <XMarkIcon 
+                  className="h-3 w-3 ml-1 cursor-pointer" 
+                  onClick={() => updateFilter('activityStatus', [])}
+                />
+              </Badge>
+            )}
+            {filters.attendedEvents.length > 0 && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <CalendarIcon className="h-3 w-3 mr-1" />
+                {filters.attendedEvents.length} event{filters.attendedEvents.length !== 1 ? 's' : ''}
+                <XMarkIcon 
+                  className="h-3 w-3 ml-1 cursor-pointer" 
+                  onClick={() => updateFilter('attendedEvents', [])}
+                />
+              </Badge>
+            )}
+            {filters.lastAttendance && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <ClockIcon className="h-3 w-3 mr-1" />
+                Not attended in {filters.lastAttendance} days
+                <XMarkIcon 
+                  className="h-3 w-3 ml-1 cursor-pointer" 
+                  onClick={() => updateFilter('lastAttendance', '')}
+                />
+              </Badge>
+            )}
+            {filters.missedServices && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <CalendarIcon className="h-3 w-3 mr-1" />
+                Missed last service
+                <XMarkIcon 
+                  className="h-3 w-3 ml-1 cursor-pointer" 
+                  onClick={() => updateFilter('missedServices', false)}
+                />
+              </Badge>
+            )}
+          </div>
+        )}
+        
+        {/* Recipient search combobox */}
+        <Combobox
+          as="div"
+          value={null}
+          onChange={handleSelectRecipient}
+          disabled={disabled}
+        >
+          <div className="relative">
+            <div className="relative w-full cursor-default overflow-hidden rounded-md border border-gray-200 bg-white text-left focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-300 transition-all duration-200">
+              <Combobox.Input
+                className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={`Search ${recipientType === 'individual' ? 'members' : 'groups'}...`}
+                displayValue={() => query}
+              />
+              <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                <ChevronUpDownIcon
+                  className="h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
+              </Combobox.Button>
+            </div>
+
+            <Transition
+              as={Fragment}
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+              afterLeave={() => setQuery('')}
+            >
+              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                {loadingMembers || loadingGroups ? (
+                  <div className="p-2">
+                    <Skeleton className="h-6 w-full mb-2" />
+                    <Skeleton className="h-6 w-full mb-2" />
+                    <Skeleton className="h-6 w-full" />
+                  </div>
+                ) : filteredRecipients.length === 0 && query !== '' ? (
+                  <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                    No {recipientType === 'individual' ? 'members' : 'groups'} found.
+                  </div>
+                ) : (
+                  filteredRecipients.map((recipient) => (
+                    <Combobox.Option
+                      key={`${recipient.type}-${recipient.id}`}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                          active ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' : 'text-gray-900'
+                        } transition-colors duration-150`
+                      }
+                      value={recipient}
+                    >
+                      {({ selected, active }) => (
+                        <>
+                          <div className="flex items-center">
+                            <div className={`absolute left-2 flex items-center justify-center ${active ? "text-white" : "text-blue-500"}`}>
+                              <div className={`rounded-full ${active ? "bg-white/20" : "bg-blue-100"} p-1`}>
+                                {recipient.type === 'individual' ? (
+                                  <UserIcon className="h-3.5 w-3.5" />
+                                ) : (
+                                  <UserGroupIcon className="h-3.5 w-3.5" />
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span
+                                className={`block truncate ${
+                                  selected ? 'font-medium' : 'font-normal'
+                                }`}
+                              >
+                                {recipient.name}
+                              </span>
+                              {recipient.type === 'individual' && (
+                                <span className={`block truncate text-xs ${
+                                  active ? 'text-blue-100' : 'text-gray-500'
+                                }`}>
+                                  {messageType === 'email' ? recipient.email : recipient.phoneNumber}
+                                  {recipient.role && ` • ${recipient.role}`}
+                                </span>
+                              )}
+                              {recipient.type === 'group' && recipient.memberCount && (
+                                <span className={`block truncate text-xs ${
+                                  active ? 'text-blue-100' : 'text-gray-500'
+                                }`}>
+                                  {recipient.memberCount} members
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {selected ? (
+                            <span
+                              className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
+                                active ? 'text-white' : 'text-blue-600'
+                              }`}
+                            >
+                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Combobox.Option>
+                  ))
+                )}
+              </Combobox.Options>
+            </Transition>
+          </div>
+        </Combobox>
+      </div>
+      
+      {/* Selected recipients */}
+      {selectedRecipients.length > 0 && (
+        <div className="mt-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-500">
+              {selectedRecipients.length} recipient{selectedRecipients.length !== 1 ? 's' : ''} selected
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAll}
+              disabled={disabled}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Clear all
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedRecipients.map((recipient) => (
+              <Badge
+                key={`${recipient.type}-${recipient.id}`}
+                variant="secondary"
+                className="flex items-center"
+              >
+                {recipient.type === 'individual' ? (
+                  <UserIcon className="h-3 w-3 mr-1" />
+                ) : (
+                  <UserGroupIcon className="h-3 w-3 mr-1" />
+                )}
+                <span>{recipient.name}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRecipient(recipient)}
+                  disabled={disabled}
+                  className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
+              </Badge>
             ))}
-          </select>
+          </div>
         </div>
       )}
-      {/* Recipient type select */}
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Type</label>
-        <select
-          className="block w-full rounded border border-gray-300 py-2 px-3 text-sm"
-          value={recipientType}
-          onChange={e => {
-            setRecipientType(e.target.value as RecipientType);
-            setQuery("");
-            setGroupResults([]);
-          }}
-        >
-          <option value="member">Member</option>
-          <option value="group">Group</option>
-        </select>
-      </div>
-      <label className="block text-sm font-medium text-gray-700">Recipients</label>
-      {/* Selected recipients */}
-      <div className="flex flex-wrap gap-2 mt-2">
-        {selectedRecipients.filter(Boolean).map((recipient) => (
-          <span
-            key={recipient?.id ?? Math.random()}
-            className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700 mr-2 mb-2"
-          >
-            {recipient?.name || recipient?.email || recipient?.phone || 'Unknown'}
-            {recipient?.isGroup && (
-              <span className="ml-2 text-xs text-gray-500">(
-                {getGroupMemberCount(recipient.id) !== null
-                  ? `${getGroupMemberCount(recipient.id)} members`
-                  : '...'}
-              )</span>
-            )}
-            <button
-              type="button"
-              className="ml-2 text-indigo-700 hover:text-indigo-900"
-              onClick={() => handleRemoveRecipient(recipient.id)}
-            >
-              <XMarkIcon className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </span>
-        ))}
-      </div>
-      {/* Recipient search */}
-      <Combobox value={null} onChange={handleSelectRecipient}>
-        <div className="relative">
-          <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
-            <Combobox.Input
-              className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-              onChange={handleInputChange}
-              value={query}
-              placeholder={recipientType === 'group' ? 'Search groups...' : 'Search members...'}
-              disabled={recipientType === 'member' && (!branchId || !organisationId)}
-            />
-            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
-                aria-hidden="true"
-              />
-            </Combobox.Button>
-          </div>
-          <Transition
-            as={Fragment}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-            afterLeave={() => setQuery("")}
-          >
-            <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {loading && query.length > 1 ? (
-                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">Searching...</div>
-              ) : error ? (
-                <div className="relative cursor-default select-none py-2 px-4 text-red-500">Error searching members</div>
-              ) : combinedResults.length === 0 && query.length > 1 ? (
-                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">Nothing found.</div>
-              ) : (
-                combinedResults.map((recipient) => (
-                  <Combobox.Option
-                    key={recipient.id}
-                    className={({ active }) =>
-                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                        active ? "bg-indigo-600 text-white" : "text-gray-900"
-                      }`
-                    }
-                    value={recipient}
-                  >
-                    {({ selected, active }) => (
-                      <>
-                        <span
-                          className={`block truncate ${
-                            selected ? "font-medium" : "font-normal"
-                          }`}
-                        >
-                          {recipient.name}
-                        </span>
-                        {recipient.email && (
-                          <span className="block truncate text-xs text-gray-500">
-                            {recipient.email}
-                          </span>
-                        )}
-                        {recipient.phone && (
-                          <span className="block truncate text-xs text-gray-500">
-                            {recipient.phone}
-                          </span>
-                        )}
-                        {selectedRecipients.filter(Boolean).some(r => r.id === recipient?.id) ? (
-                          <span
-                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                              active ? "text-white" : "text-indigo-600"
-                            }`}
-                          >
-                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                          </span>
-                        ) : null}
-                      </>
-                    )}
-                  </Combobox.Option>
-                ))
-              )}
-            </Combobox.Options>
-          </Transition>
-        </div>
-      </Combobox>
-      <div className="mt-1 text-xs text-gray-500">
-        {selectedRecipients.length === 0 
-          ? "Select recipients from the dropdown or enter email addresses/phone numbers" 
-          : `${selectedRecipients.length} recipient${selectedRecipients.length > 1 ? 's' : ''} selected`}
-      </div>
     </div>
   );
 }

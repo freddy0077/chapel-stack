@@ -188,8 +188,8 @@ export const GET_SERIES = gql`
 
 // Get categories
 export const GET_CATEGORIES = gql`
-  query GetCategories($branchId: String) {
-    categories(branchId: $branchId) {
+  query GetCategories {
+    categories {
       id
       name
     }
