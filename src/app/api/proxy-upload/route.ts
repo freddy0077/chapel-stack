@@ -41,10 +41,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Increase the body size limit for file uploads
+// Increase the body size limit for file uploads to match backend (10GB)
 export const config = {
   api: {
     bodyParser: false,
-    responseLimit: '10mb',
+    responseLimit: '10gb',
   },
 };
