@@ -51,8 +51,8 @@ export function SermonFormModal({
         duration: '',
         audioUrl: '',
         videoUrl: '',
-        notesUrl: '',
         transcriptUrl: '',
+        notesUrl: '',
         transcriptText: '',
         status: ContentStatus.DRAFT,
         tags: [] as string[]
@@ -68,6 +68,7 @@ export function SermonFormModal({
 
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState({ video: false, audio: false, notes: false, transcript: false });
+  const [uploadProgress, setUploadProgress] = useState({ video: 0, audio: 0, notes: 0, transcript: 0 });
   const [uploadErrors, setUploadErrors] = useState({ videoUrl: '', audioUrl: '', notesUrl: '', transcriptUrl: '' });
   const [selectedFiles, setSelectedFiles] = useState({ videoUrl: null as File | null, audioUrl: null as File | null, notesUrl: null as File | null, transcriptUrl: null as File | null });
 
@@ -86,9 +87,15 @@ export function SermonFormModal({
   const uploadToS3 = async (file: File, type: string) => {
     if (!file) return;
     
+    // Map the type to the correct state key
+    const stateKey = type.replace('Url', ''); // 'videoUrl' -> 'video', 'audioUrl' -> 'audio', etc.
+    
     try {
-      setUploading(prev => ({ ...prev, [type]: true }));
+      setUploading(prev => ({ ...prev, [stateKey]: true }));
+      setUploadProgress(prev => ({ ...prev, [stateKey]: 0 }));
       setUploadErrors(prev => ({ ...prev, [type]: '' }));
+      
+      console.log(`Starting upload for ${type} (stateKey: ${stateKey})`);
       
       // Determine media type based on file type
       let mediaType = 'DOCUMENT';
@@ -114,32 +121,92 @@ export function SermonFormModal({
         throw new Error('Failed to get presigned URL');
       }
       
-      // Use the proxy upload approach like in MemberDetailsModal
+      // Use XMLHttpRequest for progress tracking
       const formData = new FormData();
       formData.append('file', file);
       formData.append('uploadUrl', data.getPresignedUploadUrl.uploadUrl);
       
-      // Send to our backend API which will proxy the upload to S3
-      const uploadResult = await fetch('/api/proxy-upload', {
-        method: 'POST',
-        body: formData,
+      // Create XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+      
+      // Set up progress tracking
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          console.log(`Upload progress for ${type} (stateKey: ${stateKey}):`, percentComplete + '%');
+          setUploadProgress(prev => {
+            const newProgress = { ...prev, [stateKey]: percentComplete };
+            console.log('Updated progress state:', newProgress);
+            return newProgress;
+          });
+        }
       });
       
-      if (uploadResult.ok) {
-        const fileUrl = data.getPresignedUploadUrl.fileUrl;
-        setForm(prev => ({ ...prev, [type]: fileUrl }));
-        if (onUploadComplete) {
-          onUploadComplete(type, fileUrl);
+      // Send the request
+      xhr.open('POST', '/api/proxy-upload');
+      console.log(`Starting upload for ${type}:`, file.name);
+      
+      // Fallback progress simulation in case XMLHttpRequest progress doesn't work
+      let progressInterval: NodeJS.Timeout;
+      let simulatedProgress = 0;
+      
+      // Start simulated progress
+      progressInterval = setInterval(() => {
+        if (simulatedProgress < 90) {
+          simulatedProgress += Math.random() * 10;
+          if (simulatedProgress > 90) simulatedProgress = 90;
+          setUploadProgress(prev => {
+            const newProgress = { ...prev, [stateKey]: Math.round(simulatedProgress) };
+            console.log('Simulated progress state:', newProgress);
+            return newProgress;
+          });
         }
-      } else {
-        const errorText = await uploadResult.text();
-        setUploadErrors(prev => ({ ...prev, [type]: `Failed to upload file: ${errorText}` }));
-      }
+      }, 500);
+      
+      // Clear interval when upload completes
+      xhr.addEventListener('load', () => {
+        clearInterval(progressInterval);
+      });
+      
+      xhr.addEventListener('error', () => {
+        clearInterval(progressInterval);
+      });
+      
+      xhr.send(formData);
+      
+      // Handle completion
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const fileUrl = data.getPresignedUploadUrl.fileUrl;
+          setForm(prev => ({ ...prev, [type]: fileUrl }));
+          setUploadProgress(prev => ({ ...prev, [stateKey]: 100 }));
+          console.log(`Upload completed for ${type}:`, fileUrl);
+          if (onUploadComplete) {
+            onUploadComplete(type, fileUrl);
+          }
+        } else {
+          console.error(`Upload failed for ${type}:`, xhr.status, xhr.statusText);
+          setUploadErrors(prev => ({ ...prev, [type]: `Failed to upload file: ${xhr.statusText}` }));
+        }
+      });
+      
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        console.error(`Upload error for ${type}`);
+        setUploadErrors(prev => ({ ...prev, [type]: 'Upload failed due to network error' }));
+      });
+      
+      // Wait for completion
+      await new Promise((resolve, reject) => {
+        xhr.addEventListener('load', resolve);
+        xhr.addEventListener('error', reject);
+      });
+      
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
       setUploadErrors(prev => ({ ...prev, [type]: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` }));
     } finally {
-      setUploading(prev => ({ ...prev, [type]: false }));
+      setUploading(prev => ({ ...prev, [stateKey]: false }));
     }
   };
 
@@ -451,7 +518,7 @@ export function SermonFormModal({
                   disabled={uploading.video}
                 >
                   <VideoCameraIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.video ? 'Uploading...' : 'Upload Video'}
+                  {uploading.video ? `Uploading... (${uploadProgress.video}%)` : 'Upload Video'}
                 </button>
                 {form.videoUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -459,6 +526,20 @@ export function SermonFormModal({
                   </span>
                 )}
               </div>
+              {uploading.video && (
+                <div className="mt-3 w-full">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Uploading video...</span>
+                    <span>{uploadProgress.video}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress.video}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
               {uploadErrors.videoUrl && (
                 <p className="mt-1 text-sm text-red-600">{uploadErrors.videoUrl}</p>
               )}
@@ -485,7 +566,7 @@ export function SermonFormModal({
                   disabled={uploading.audio}
                 >
                   <SpeakerWaveIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.audio ? 'Uploading...' : 'Upload Audio'}
+                  {uploading.audio ? `Uploading... (${uploadProgress.audio}%)` : 'Upload Audio'}
                 </button>
                 {form.audioUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -493,6 +574,20 @@ export function SermonFormModal({
                   </span>
                 )}
               </div>
+              {uploading.audio && (
+                <div className="mt-2">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Uploading audio...</span>
+                    <span>{uploadProgress.audio}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress.audio}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
               {uploadErrors.audioUrl && (
                 <p className="mt-1 text-sm text-red-600">{uploadErrors.audioUrl}</p>
               )}
@@ -519,7 +614,7 @@ export function SermonFormModal({
                   disabled={uploading.notes}
                 >
                   <DocumentIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.notes ? 'Uploading...' : 'Upload Notes'}
+                  {uploading.notes ? `Uploading... (${uploadProgress.notes}%)` : 'Upload Notes'}
                 </button>
                 {form.notesUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -527,6 +622,20 @@ export function SermonFormModal({
                   </span>
                 )}
               </div>
+              {uploading.notes && (
+                <div className="mt-2">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Uploading notes...</span>
+                    <span>{uploadProgress.notes}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress.notes}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
               {uploadErrors.notesUrl && (
                 <p className="mt-1 text-sm text-red-600">{uploadErrors.notesUrl}</p>
               )}
