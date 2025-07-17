@@ -28,17 +28,53 @@ export interface CardDevice {
 
 export interface AttendanceRecord {
   id: string;
-  memberId: string;
-  memberName: string;
-  eventId: string;
-  eventName: string;
-  timestamp: Date;
-  method: 'card_scan' | 'manual_entry' | 'mobile_app' | 'qr_code';
-  deviceId?: string;
-  locationId: string;
-  branchId: string;
+  checkInTime: string;
+  checkOutTime?: string;
+  checkInMethod?: string;
   notes?: string;
-  status: 'checked_in' | 'checked_out' | 'pending';
+  visitorName?: string;
+  visitorEmail?: string;
+  visitorPhone?: string;
+  recordedById?: string;
+  branchId?: string;
+  createdAt: string;
+  updatedAt: string;
+  session?: {
+    id: string;
+    name?: string;
+    date?: string;
+    type?: string;
+  };
+  event?: {
+    id: string;
+    title?: string;
+    startDate?: string;
+    endDate?: string;
+    location?: string;
+    category?: string;
+  };
+  member?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  recordedBy?: {
+    id: string;
+  };
+  branch?: {
+    id: string;
+    name?: string;
+  };
+  // Legacy fields for backward compatibility
+  memberId?: string;
+  memberName?: string;
+  eventId?: string;
+  eventName?: string;
+  timestamp?: Date;
+  method?: 'card_scan' | 'manual_entry' | 'mobile_app' | 'qr_code';
+  deviceId?: string;
+  locationId?: string;
+  status?: 'checked_in' | 'checked_out' | 'pending';
   checkedOutTimestamp?: Date;
   familyCheckIn?: boolean;
   familyMembers?: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
   CalendarIcon, 
@@ -9,22 +9,48 @@ import {
   ListBulletIcon,
   Squares2X2Icon,
   CreditCardIcon,
-  CheckIcon
+  CheckIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+  ClockIcon,
+  MapPinIcon,
+  TagIcon,
+  ChartBarIcon
 } from "@heroicons/react/24/outline";
 import AttendanceReportModal from "./components/AttendanceReportModal";
 import NewEventModal, { NewEventInput } from "./components/NewEventModal";
 import AttendanceSessionDetailsModal from "./components/AttendanceSessionDetailsModal";
-import { AttendanceRecord } from "./types";
-import { useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
+import AttendanceReportDownloadModal from "@/components/attendance/AttendanceReportDownloadModal";
+import { useFilteredAttendanceSessions, useAllAttendanceRecords } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/graphql/hooks/useAuth";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery, gql } from "@apollo/client";
 import { CREATE_ATTENDANCE_SESSION } from "@/graphql/queries/attendanceQueries";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useOrganizationBranchFilter } from '@/hooks';
 
+// Query to get events for the dashboard with correct parameter types
+const GET_EVENTS = gql`
+  query GetEvents($branchId: String, $organisationId: String) {
+    events(branchId: $branchId, organisationId: $organisationId) {
+      id
+      title
+      startDate
+      endDate
+      location
+      category
+    }
+  }
+`;
+
 export default function AttendanceDashboard() {
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [activeTab, setActiveTab] = useState<"sessions" | "events" | "all">("all");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [detailsModalSessionId, setDetailsModalSessionId] = useState<string | null>(null);
@@ -45,12 +71,29 @@ export default function AttendanceDashboard() {
   // Apollo mutation for creating attendance session
   const [createAttendanceSession] = useMutation(CREATE_ATTENDANCE_SESSION);
 
+  // Fetch attendance sessions and events
+  const { sessions, loading: loadingSessions, error: sessionsError, refetch } = useFilteredAttendanceSessions(orgBranchFilter);
+  const { data: eventsData, loading: loadingEvents } = useQuery(GET_EVENTS, {
+    variables: {
+      branchId: orgBranchFilter.branchId || null,
+      organisationId: orgBranchFilter.organisationId || null,
+    },
+    skip: !orgBranchFilter.branchId || !orgBranchFilter.organisationId,
+  });
+  const events = eventsData?.events || [];
+
+  // Fetch all attendance records for statistics
+  const { attendanceRecords } = useAllAttendanceRecords({
+    filter: {
+      branchId: orgBranchFilter.branchId,
+    }
+  });
+
   // Handler for creating a new event
   const handleCreateNewEvent = async (event: NewEventInput) => {
     setCreatingEvent(true);
     setCreateError(null);
 
-    // For SUPER_ADMIN users, we need to ensure we have either branchId or organisationId
     if (orgBranchFilter.branchId && !orgBranchFilter.organisationId) {
       setCreatingEvent(false);
       setCreateError("No branch or organization selected. Cannot create attendance event.");
@@ -58,7 +101,6 @@ export default function AttendanceDashboard() {
     }
 
     try {
-      // Prepare input object, combining date and time fields into valid Date objects
       const { date, startTime, endTime, ...rest } = event;
       const startDateTime = new Date(`${date}T${startTime}`);
       const endDateTime = new Date(`${date}T${endTime}`);
@@ -70,12 +112,10 @@ export default function AttendanceDashboard() {
         endTime: endDateTime,
       };
 
-      // Only add branchId if it exists
       if (orgBranchFilter.branchId) {
         input.branchId = orgBranchFilter.branchId;
       }
 
-      // The organisationId is passed from the modal, but we ensure it's correctly set
       if (orgBranchFilter.organisationId) {
         input.organisationId = orgBranchFilter.organisationId;
       } else {
@@ -88,7 +128,6 @@ export default function AttendanceDashboard() {
 
       setCreatingEvent(false);
       setIsNewEventModalOpen(false);
-      // Refetch attendance sessions for latest data
       if (refetch) refetch();
     } catch (err: any) {
       setCreatingEvent(false);
@@ -96,458 +135,470 @@ export default function AttendanceDashboard() {
     }
   };
 
-  // Fetch attendance sessions using the organization-branch filter
-  const { sessions, loading, error, refetch } = useFilteredAttendanceSessions(orgBranchFilter);
+  // Combine sessions and events for unified display
+  const combinedItems = useMemo(() => {
+    const sessionItems = sessions.map((session: any) => ({
+      id: session.id,
+      title: session.name || "Attendance Session",
+      type: "session",
+      category: session.type || "other",
+      date: session.startTime ? new Date(session.startTime) : new Date(session.date || ""),
+      startTime: session.startTime,
+      endTime: session.endTime,
+      location: session.location,
+      attendanceCount: attendanceRecords.filter(r => r.session?.id === session.id).length,
+      raw: session,
+    }));
 
-  // Map attendance sessions for UI (each row is a session, not a record)
-  type AttendanceSessionUIItem = {
-    id: string;
-    name: string;
-    type: string;
-    date: string;
-    time: string;
-    totalAttendees: string | number;
-    childrenCount: string | number;
-    youthCount: string | number;
-    adultsCount: string | number;
-    volunteers: string | number;
-    firstTimeVisitors: string | number;
-    raw: any;
-  };
+    const eventItems = events.map((event: any) => ({
+      id: event.id,
+      title: event.title,
+      type: "event",
+      category: event.category || "other",
+      date: new Date(event.startDate),
+      startTime: event.startDate,
+      endTime: event.endDate,
+      location: event.location,
+      attendanceCount: attendanceRecords.filter(r => r.event?.id === event.id).length,
+      raw: event,
+    }));
 
-  const filteredAttendance: AttendanceSessionUIItem[] = sessions
-    .map((session: any): AttendanceSessionUIItem => {
-      return {
-        id: session.id,
-        name: session.name || "Attendance Session",
-        type: session.type || "other",
-        date: session.startTime ? new Date(session.startTime).toISOString() : session.date || "",
-        time: session.startTime ? new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
-        totalAttendees: '--', // No record-level data available
-        childrenCount: '--',
-        youthCount: '--',
-        adultsCount: '--',
-        volunteers: '--',
-        firstTimeVisitors: '--',
-        raw: session,
-      };
-    })
-    .filter((item) => {
-      // Filter by search term
-      const matchesSearch = searchTerm === "" || item.name.toLowerCase().includes(searchTerm.toLowerCase());
-      // Filter by type
-      const matchesType = filterType === null || item.type === filterType;
-      // Filter by date range
-      let matchesDateRange = true;
-      if (dateRange.start && dateRange.end) {
-        const itemDate = new Date(item.date);
-        const startDate = new Date(dateRange.start);
-        const endDate = new Date(dateRange.end);
-        matchesDateRange = itemDate >= startDate && itemDate <= endDate;
-      }
-      return matchesSearch && matchesType && matchesDateRange;
-    });
+    return [...sessionItems, ...eventItems];
+  }, [sessions, events, attendanceRecords]);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
-  const totalPages = Math.ceil(filteredAttendance.length / pageSize);
+  // Filter items based on active tab and search/filter criteria
+  const filteredItems = useMemo(() => {
+    return combinedItems
+      .filter(item => {
+        // Tab filtering
+        if (activeTab === "sessions" && item.type !== "session") return false;
+        if (activeTab === "events" && item.type !== "event") return false;
+        
+        // Search filtering
+        if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        
+        // Type filtering
+        if (filterType && item.category !== filterType) return false;
+        
+        // Date range filtering
+        if (dateRange.start && dateRange.end) {
+          const itemDate = item.date;
+          const startDate = new Date(dateRange.start);
+          const endDate = new Date(dateRange.end);
+          if (itemDate < startDate || itemDate > endDate) return false;
+        }
+        
+        return true;
+      })
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [combinedItems, activeTab, searchTerm, filterType, dateRange]);
 
-  // Sort by date (most recent first)
-  const sortedAttendance = [...filteredAttendance].sort((a, b) =>
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  const paginatedAttendance = sortedAttendance.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const totalAttendees = attendanceRecords.length;
+    const uniqueMembers = new Set(attendanceRecords.map(r => r.member?.id).filter(Boolean)).size;
+    const visitors = attendanceRecords.filter(r => r.visitorName).length;
+    const recentAttendance = attendanceRecords.filter(r => {
+      const recordDate = new Date(r.checkInTime);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return recordDate >= thirtyDaysAgo;
+    }).length;
 
-  // Calculate overall stats
-  const totalAttendees = sortedAttendance.length; // Each record is one attendee
-  const averageAttendance = sortedAttendance.length > 0
-    ? Math.round(totalAttendees / sortedAttendance.length)
-    : 0;
-  const totalFirstTimeVisitors = sortedAttendance.reduce((sum, item) => sum + item.firstTimeVisitors, 0);
+    return {
+      totalAttendees,
+      uniqueMembers,
+      visitors,
+      recentAttendance,
+      totalSessions: sessions.length,
+      totalEvents: events.length,
+    };
+  }, [attendanceRecords, sessions, events]);
 
-  // Show loading and error states
+  const loading = loadingSessions || loadingEvents;
+  const error = sessionsError;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <span className="text-lg text-gray-500">Loading attendance records...</span>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <span className="text-lg text-gray-500">Loading attendance data...</span>
+        </div>
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-96">
-        <span className="text-lg text-red-500">Error loading attendance records: {error.message}</span>
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <span className="text-lg text-red-500">Error loading attendance data: {error.message}</span>
+        </div>
       </div>
     );
   }
 
-  // Helpers for displaying event information
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "service": return "Service";
-      case "small_group": return "Small Group";
-      case "event": return "Event";
-      default: return "Other";
-    }
-  };
-  
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "service": return "bg-blue-100 text-blue-800";
-      case "small_group": return "bg-green-100 text-green-800";
-      case "event": return "bg-purple-100 text-purple-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
   return (
     <>
-    <DashboardHeader title="Attendance Dashboard" subtitle="Monitor attendance for services, events, and small groups" />
-    <div className="px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center min-h-[80vh]">
-      {/* Centered content wrapper start */}
-      <div className="w-full max-w-6xl">
-        {/* Header section with stats */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
-                  <UsersIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Total Attendees</h3>
-                  <p className="text-2xl font-semibold text-gray-900">{totalAttendees}</p>
-                </div>
+      <DashboardHeader title="Attendance Dashboard" subtitle="Monitor attendance for sessions, events, and activities" />
+      
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        {/* Modern Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Total Attendance</p>
+                <p className="text-3xl font-bold">{stats.totalAttendees}</p>
+              </div>
+              <div className="bg-blue-400 bg-opacity-30 rounded-full p-3">
+                <UsersIcon className="h-8 w-8" />
               </div>
             </div>
-            
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
-                  <CalendarIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Average Attendance</h3>
-                  <p className="text-2xl font-semibold text-gray-900">{averageAttendance}</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium">Unique Members</p>
+                <p className="text-3xl font-bold">{stats.uniqueMembers}</p>
+              </div>
+              <div className="bg-green-400 bg-opacity-30 rounded-full p-3">
+                <UsersIcon className="h-8 w-8" />
               </div>
             </div>
-            
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-100 rounded-md p-3">
-                  <UsersIcon className="h-6 w-6 text-purple-600" aria-hidden="true" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">First-time Visitors</h3>
-                  <p className="text-2xl font-semibold text-gray-900">{totalFirstTimeVisitors}</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium">Visitors</p>
+                <p className="text-3xl font-bold">{stats.visitors}</p>
+              </div>
+              <div className="bg-purple-400 bg-opacity-30 rounded-full p-3">
+                <UsersIcon className="h-8 w-8" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-100 text-sm font-medium">Recent (30d)</p>
+                <p className="text-3xl font-bold">{stats.recentAttendance}</p>
+              </div>
+              <div className="bg-amber-400 bg-opacity-30 rounded-full p-3">
+                <ClockIcon className="h-8 w-8" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Actions and filters section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="sm:flex sm:items-center sm:justify-between">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <label htmlFor="search" className="sr-only">Search</label>
-                  <div className="relative rounded-md shadow-sm">
-                    <input
-                      type="text"
-                      name="search"
-                      id="search"
-                      className="block w-full rounded-md border-gray-300 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Search events..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="type" className="sr-only">Filter by Type</label>
-                  <select
-                    id="type"
-                    name="type"
-                    className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    value={filterType || ""}
-                    onChange={(e) => setFilterType(e.target.value === "" ? null : e.target.value)}
-                  >
-                    <option value="">All Types</option>
-                    <option value="service">Services</option>
-                    <option value="small_group">Small Groups</option>
-                    <option value="event">Events</option>
-                  </select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <div>
-                    <label htmlFor="start-date" className="sr-only">Start Date</label>
-                    <input
-                      type="date"
-                      id="start-date"
-                      name="start-date"
-                      className="block w-full rounded-md border-gray-300 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                      value={dateRange.start}
-                      onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                    />
-                  </div>
-                  <span className="text-gray-500">to</span>
-                  <div>
-                    <label htmlFor="end-date" className="sr-only">End Date</label>
-                    <input
-                      type="date"
-                      id="end-date"
-                      name="end-date"
-                      className="block w-full rounded-md border-gray-300 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                      value={dateRange.end}
-                      onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 sm:mt-0 flex items-center">
-                <div className="flex items-center space-x-2 mr-4">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("list")}
-                    className={`p-1.5 rounded-md ${viewMode === "list" 
-                      ? "bg-gray-100 text-gray-900" 
-                      : "text-gray-400 hover:text-gray-500"}`}
-                  >
-                    <ListBulletIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("grid")}
-                    className={`p-1.5 rounded-md ${viewMode === "grid" 
-                      ? "bg-gray-100 text-gray-900" 
-                      : "text-gray-400 hover:text-gray-500"}`}
-                  >
-                    <Squares2X2Icon className="h-5 w-5" />
-                  </button>
-                </div>
-                
-                <div className="flex space-x-3">
-                  <Link
-                    href="/dashboard/attendance/card-scanning"
-                    className="inline-flex items-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                  >
-                    <CreditCardIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                    Card Scanning System
-                  </Link>
-                  
-                  <button
-                    type="button"
-                    onClick={() => setIsReportModalOpen(true)}
-                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none"
-                  >
-                    <ArrowDownTrayIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                    Generate Report
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Attendance records */}
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Attendance Records</h2>
-          
-          {sortedAttendance.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-              <CalendarIcon className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No attendance records found</h3>
-              <p className="mt-1 text-sm text-gray-500">Adjust your filters or try a different search term.</p>
-            </div>
-          ) : viewMode === "list" ? (
-            <>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {paginatedAttendance.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-gradient-to-br from-indigo-50 to-white rounded-xl shadow-md border border-indigo-100 p-6 flex flex-col justify-between hover:shadow-lg transition"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getTypeColor(item.type)}`}>{getTypeLabel(item.type)}</span>
-                      <time className="text-xs text-gray-500">{formatDate(item.date)}</time>
-                    </div>
-                    <h3 className="text-lg font-bold text-indigo-900 mb-1 truncate">{item.name}</h3>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-sm text-gray-500">{item.time}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-white rounded-lg p-3 shadow-sm flex flex-col items-center">
-                        <span className="text-xs text-gray-500">Total</span>
-                        <span className="text-xl font-bold text-indigo-800">{item.totalAttendees}</span>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 shadow-sm flex flex-col items-center">
-                        <span className="text-xs text-gray-500">New Visitors</span>
-                        <span className="text-xl font-bold text-indigo-800">{item.firstTimeVisitors}</span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 mb-4">
-                      <span>{item.adultsCount} adults</span>, <span>{item.youthCount} youth</span>, <span>{item.childrenCount} children</span>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-900 transition"
-                        onClick={() => {
-                          setDetailsModalSessionId(item.id);
-                          setDetailsModalSessionName(item.name);
-                          setDetailsModalOpen(true);
-                        }}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center mt-6 space-x-2">
-                  <button
-                    className="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                  <span className="mx-2 text-sm text-gray-700">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    className="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {sortedAttendance.map((item) => (
-                <div
-                  key={item.id}
-                  className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+        {/* Action Bar */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Tab Navigation */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab("all")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "all"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
                 >
-                  <div className="flex justify-between">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getTypeColor(item.type)}`}>
-                      {getTypeLabel(item.type)}
-                    </span>
-                    <time className="text-xs text-gray-500">{formatDate(item.date)}</time>
-                  </div>
-                  <h3 className="mt-2 text-lg font-medium text-gray-900">{item.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500">{item.time}</p>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded p-2">
-                      <p className="text-xs text-gray-500">Total</p>
-                      <p className="text-xl font-semibold text-gray-900">{item.totalAttendees}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded p-2">
-                      <p className="text-xs text-gray-500">New Visitors</p>
-                      <p className="text-xl font-semibold text-gray-900">{item.firstTimeVisitors}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      type="button"
-                      className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
-                      onClick={() => {
-                        setDetailsModalSessionId(item.id);
-                        setDetailsModalSessionName(item.name);
-                        setDetailsModalOpen(true);
-                      }}
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  All ({combinedItems.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("sessions")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "sessions"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Sessions ({stats.totalSessions})
+                </button>
+                <button
+                  onClick={() => setActiveTab("events")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "events"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Events ({stats.totalEvents})
+                </button>
+              </div>
 
-        {/* Quick action buttons */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="sm:flex sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
-              <p className="mt-1 text-sm text-gray-500">Manage attendance activities</p>
+              {/* Search */}
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search sessions and events..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64"
+                />
+              </div>
             </div>
-            <div className="mt-4 sm:mt-0 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none transition"
-                onClick={() => setIsNewEventModalOpen(true)}
-              >
-                <CalendarIcon className="w-5 h-5 mr-2 -ml-1" />
-                Add New Event
-              </button>
+
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "grid"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <Squares2X2Icon className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "list"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <ListBulletIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Action Buttons */}
               <Link
                 href="/dashboard/attendance/take"
-                className="inline-flex items-center justify-center rounded-md border border-indigo-500 bg-white px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm hover:bg-indigo-50 focus:outline-none"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
-                <CheckIcon className="w-5 h-5 mr-2 -ml-1" />
+                <CheckIcon className="h-5 w-5" />
                 Take Attendance
               </Link>
-              <Link
-                href="/dashboard/attendance/reports"
-                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
+
+              <button
+                onClick={() => setIsNewEventModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
               >
-                View All Reports
-              </Link>
+                <PlusIcon className="h-5 w-5" />
+                New Session
+              </button>
+
+              <button
+                onClick={() => setIsDownloadModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              >
+                <ArrowDownTrayIcon className="h-5 w-5" />
+                Download Report
+              </button>
             </div>
           </div>
         </div>
 
-        {/* New Event Modal */}
-        <NewEventModal
-          isOpen={isNewEventModalOpen}
-          onClose={() => setIsNewEventModalOpen(false)}
-          onCreate={handleCreateNewEvent}
-          loading={creatingEvent}
-          error={createError || undefined}
-        />
+        {/* Content Display */}
+        {filteredItems.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <div className="text-gray-400 mb-4">
+              <CalendarIcon className="h-16 w-16 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No attendance records found</h3>
+            <p className="text-gray-500 mb-6">
+              {searchTerm || filterType || dateRange.start
+                ? "Try adjusting your search or filter criteria."
+                : "Get started by creating a new session or event."}
+            </p>
+            <button
+              onClick={() => setIsNewEventModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <PlusIcon className="h-5 w-5" />
+              Create New Session
+            </button>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map((item) => (
+              <div key={`${item.type}-${item.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.type === "session" 
+                            ? "bg-blue-100 text-blue-800" 
+                            : "bg-purple-100 text-purple-800"
+                        }`}>
+                          {item.type === "session" ? "Session" : "Event"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {item.category}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        {item.title}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-500 mb-2">
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        {item.date.toLocaleDateString()}
+                      </div>
+                      {item.location && (
+                        <div className="flex items-center text-sm text-gray-500 mb-2">
+                          <MapPinIcon className="h-4 w-4 mr-1" />
+                          {item.location}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-        {detailsModalOpen && detailsModalSessionId && (
-          <AttendanceSessionDetailsModal
-            isOpen={detailsModalOpen}
-            onClose={() => {
-              setDetailsModalOpen(false);
-              setDetailsModalSessionId(null);
-            }}
-            sessionId={detailsModalSessionId}
-            sessionName={detailsModalSessionName}
-          />
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <UsersIcon className="h-4 w-4 mr-1" />
+                      {item.attendanceCount} attendees
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          if (item.type === "session") {
+                            setDetailsModalSessionId(item.id);
+                            setDetailsModalSessionName(item.title);
+                            setDetailsModalOpen(true);
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        title="View Details"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      <Link
+                        href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
+                        className="p-2 text-indigo-400 hover:text-indigo-600 transition-colors"
+                        title="Take Attendance"
+                      >
+                        <CheckIcon className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Attendance
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredItems.map((item) => (
+                    <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{item.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.type === "session" 
+                            ? "bg-blue-100 text-blue-800" 
+                            : "bg-purple-100 text-purple-800"
+                        }`}>
+                          {item.type === "session" ? "Session" : "Event"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.date.toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.location || "—"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.attendanceCount} attendees
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          {item.type === "session" && (
+                            <button
+                              onClick={() => {
+                                setDetailsModalSessionId(item.id);
+                                setDetailsModalSessionName(item.title);
+                                setDetailsModalOpen(true);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              title="View Details"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                          <Link
+                            href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
+                            className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                            title="Take Attendance"
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
-
-        {/* Report modal */}
-        <AttendanceReportModal
-          isOpen={isReportModalOpen}
-          onClose={() => setIsReportModalOpen(false)}
-          attendanceData={sortedAttendance}
-        />
       </div>
-      {/* Centered content wrapper end */}
-    </div>
+
+      {/* Modals */}
+      <AttendanceReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+      />
+
+      <AttendanceReportDownloadModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
+      />
+
+      <NewEventModal
+        isOpen={isNewEventModalOpen}
+        onClose={() => setIsNewEventModalOpen(false)}
+        onSubmit={handleCreateNewEvent}
+        loading={creatingEvent}
+        error={createError}
+      />
+
+      <AttendanceSessionDetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        sessionId={detailsModalSessionId}
+        sessionName={detailsModalSessionName}
+      />
     </>
   );
 }

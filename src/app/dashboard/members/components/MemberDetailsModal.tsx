@@ -168,7 +168,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
     gender: '',
     maritalStatus: '',
     occupation: '',
-    employerName: '',
     notes: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -214,7 +213,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
         gender: member.gender || '',
         maritalStatus: member.maritalStatus || '',
         occupation: member.occupation || '',
-        employerName: member.employerName || '',
         notes: member.notes || '',
       });
       setPreviewImage(null);
@@ -327,7 +325,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             gender: editFormData.gender,
             maritalStatus: editFormData.maritalStatus,
             occupation: editFormData.occupation,
-            employerName: editFormData.employerName,
             notes: editFormData.notes,
             // Use the complete file URL
             profileImageUrl: imageUrl,
@@ -845,20 +842,6 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="employerName" className="block text-sm font-medium text-gray-700 mb-1">
-                        Employer Name
-                      </label>
-                      <input
-                        type="text"
-                        id="employerName"
-                        name="employerName"
-                        value={editFormData.employerName}
-                        onChange={(e) => setEditFormData({ ...editFormData, employerName: e.target.value })}
-                        className="mt-1 block w-full border border-gray-200 rounded-full pl-10 pr-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white shadow-sm"
-                        placeholder="Enter employer name"
-                      />
-                    </div>
-                    <div>
                       <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
                         Notes
                       </label>
@@ -1005,7 +988,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-gray-700">
                   <BriefcaseIcon className="h-5 w-5 text-indigo-400" />
-                  <span>{member.occupation || member.employerName || <span className='text-gray-400'>Not specified</span>}</span>
+                  <span>{member.occupation || <span className='text-gray-400'>Not specified</span>}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <InformationCircleIcon className="h-5 w-5 text-indigo-400" />
@@ -1254,7 +1237,7 @@ export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsM
             <div className="overflow-x-auto rounded-2xl border border-indigo-100 shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 px-0 py-8 flex flex-col items-center">
               <div className="w-full max-w-xl mb-6">
                 {/*<h4 className="text-2xl font-extrabold text-indigo-700 mb-4 text-center">Add Sacramental Record</h4>*/}
-                <AddToSacraments memberId={member.id} onSuccess={() => { /* Optionally refetch sacramental records */ }} />
+                <AddToSacraments memberId={member.id} onSuccess={() => refetch()} />
               </div>
               <div className="w-full max-w-xl">
                 <h5 className="text-lg font-bold text-gray-700 mb-2 mt-6">Existing Sacramental Records</h5>

@@ -138,7 +138,6 @@
 
 .form-input:focus {
   outline: none;
-  ring: 2px solid var(--auth-gradient-start);
   border-color: var(--auth-gradient-start);
   background-color: #FFF;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);

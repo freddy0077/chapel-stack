@@ -9,6 +9,26 @@ import { UPDATE_BRANCH } from "../../../../../graphql/mutations/branchMutations"
 import { useBranch } from "../../../../../graphql/hooks/useBranch";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
+// Ghana regions list
+const GHANA_REGIONS = [
+  "Greater Accra",
+  "Ashanti",
+  "Western",
+  "Eastern",
+  "Central",
+  "Volta",
+  "Northern",
+  "Upper East",
+  "Upper West",
+  "Bono",
+  "Bono East",
+  "Ahafo",
+  "Western North",
+  "Oti",
+  "Savannah",
+  "North East"
+];
+
 export default function EditBranchPage() {
   const router = useRouter();
   const params = useParams();
@@ -19,8 +39,7 @@ export default function EditBranchPage() {
     name: "",
     address: "",
     city: "",
-    state: "",
-    postalCode: "",
+    state: "", // Will be used for region
     country: "",
     phoneNumber: "",
     email: "",
@@ -36,12 +55,11 @@ export default function EditBranchPage() {
         name: branch.name || "",
         address: branch.address || "",
         city: branch.city || "",
-        state: branch.state || "",
-        postalCode: branch.postalCode || "",
+        state: branch.state || "", // Using state field for region
         country: branch.country || "",
         phoneNumber: branch.phoneNumber || "",
-        email: branch.email || "",
-        website: branch.website || "",
+        // email: branch.email || "",
+        // website: branch.website || "",
         establishedDate: branch.establishedAt ? branch.establishedAt.substring(0, 10) : "",
         status: branch.isActive ? "active" : "inactive"
       });
@@ -64,19 +82,21 @@ export default function EditBranchPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // Create input object, filtering out empty email to prevent unique constraint errors
       const input = {
         name: formData.name,
         address: formData.address,
         city: formData.city,
         state: formData.state,
-        postalCode: formData.postalCode,
         country: formData.country,
-        email: formData.email,
+        // Only include email if it's not an empty string
+        ...(formData.email && formData.email.trim() !== "" ? { email: formData.email } : {}),
         phoneNumber: formData.phoneNumber,
         website: formData.website,
         establishedAt: formData.establishedDate ? new Date(formData.establishedDate).toISOString() : undefined,
         isActive: formData.status === "active",
       };
+      
       const { data } = await updateBranch({ variables: { id: branchId, input } });
       if (data?.updateBranch) {
         toast.success("Branch updated successfully!");
@@ -178,28 +198,19 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">State</label>
-                  <input
-                    type="text"
+                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">Region</label>
+                  <select
                     name="state"
                     id="state"
                     className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="State"
                     value={formData.state}
                     onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-indigo-800 mb-1">Postal Code</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    id="postalCode"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="Postal Code"
-                    value={formData.postalCode}
-                    onChange={handleChange}
-                  />
+                  >
+                    <option value="">Select Region</option>
+                    {GHANA_REGIONS.map(region => (
+                      <option key={region} value={region}>{region}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="country" className="block text-sm font-medium text-indigo-800 mb-1">Country</label>
@@ -225,30 +236,30 @@ export default function EditBranchPage() {
                     onChange={handleChange}
                   />
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-indigo-800 mb-1">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="website" className="block text-sm font-medium text-indigo-800 mb-1">Website</label>
-                  <input
-                    type="text"
-                    name="website"
-                    id="website"
-                    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    placeholder="https://www.example.com"
-                    value={formData.website}
-                    onChange={handleChange}
-                  />
-                </div>
+                {/*<div>*/}
+                {/*  <label htmlFor="email" className="block text-sm font-medium text-indigo-800 mb-1">Email</label>*/}
+                {/*  <input*/}
+                {/*    type="email"*/}
+                {/*    name="email"*/}
+                {/*    id="email"*/}
+                {/*    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"*/}
+                {/*    placeholder="Email"*/}
+                {/*    value={formData.email}*/}
+                {/*    onChange={handleChange}*/}
+                {/*  />*/}
+                {/*</div>*/}
+                {/*<div>*/}
+                {/*  <label htmlFor="website" className="block text-sm font-medium text-indigo-800 mb-1">Website</label>*/}
+                {/*  <input*/}
+                {/*    type="text"*/}
+                {/*    name="website"*/}
+                {/*    id="website"*/}
+                {/*    className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"*/}
+                {/*    placeholder="https://www.example.com"*/}
+                {/*    value={formData.website}*/}
+                {/*    onChange={handleChange}*/}
+                {/*  />*/}
+                {/*</div>*/}
               </div>
             </div>
             {/* Status & Established Date Card */}

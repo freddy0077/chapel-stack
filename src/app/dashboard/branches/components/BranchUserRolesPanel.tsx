@@ -211,12 +211,6 @@ export default function BranchUserRolesPanel({
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Manage Existing Branch Users</h4>
             <div className="flex space-x-2">
               <button
-                onClick={() => setShowAddUserModal(true)}
-                className="px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-              >
-                Add Existing User
-              </button>
-              <button
                 onClick={onCreateUser}
                 className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
               >

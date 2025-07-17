@@ -84,12 +84,6 @@ export default function BranchMembersPanel({ branchId }: BranchMembersPanelProps
             View and manage all members associated with this branch
           </p>
         </div>
-        <Link 
-          href={`/dashboard/members/new?branchId=${branchId}`}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-        >
-          Add Member
-        </Link>
       </div>
       
       {/* Search bar */}

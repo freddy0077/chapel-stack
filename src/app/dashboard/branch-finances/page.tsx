@@ -224,6 +224,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   });
 
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   const [transactionForm, setTransactionForm] = useState({
     type: '',
@@ -663,6 +664,11 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
     } finally {
       setExportLoading(false);
     }
+  };
+
+  const handleViewTransaction = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setShowTransactionModal(true);
   };
 
   return (
@@ -1499,10 +1505,117 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
           {/*<FinancialHealthIndicator balance={balance} monthlyExpenses={monthlyExpenses} />*/}
         </div>
       </div>
+      {showTransactionModal && selectedTransaction !== null && (
+        <Modal
+          open={showTransactionModal && selectedTransaction !== null}
+          title={`Transaction Details - ${selectedTransaction?.type || ''}`}
+          onClose={() => {
+            setShowTransactionModal(false);
+            setSelectedTransaction(null);
+          }}
+        >
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Transaction Type</h4>
+                  <p className="text-base font-semibold text-gray-900">{selectedTransaction.type}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Amount</h4>
+                  <p className={`text-base font-semibold ${selectedTransaction.type === 'CONTRIBUTION' ? 'text-green-600' : 'text-red-600'}`}>
+                    {selectedTransaction.type === 'CONTRIBUTION' ? '+' : '-'} ₵{selectedTransaction.amount}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Date</h4>
+                  <p className="text-base font-semibold text-gray-900">
+                    {new Date(selectedTransaction.date).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Fund</h4>
+                  <p className="text-base font-semibold text-gray-900">
+                    {selectedTransaction.fund?.name || 'General Fund'}
+                  </p>
+                </div>
+              </div>
+              
+              {selectedTransaction.description && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Description</h4>
+                  <p className="text-base text-gray-900">{selectedTransaction.description}</p>
+                </div>
+              )}
+              
+              {selectedTransaction.reference && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Reference</h4>
+                  <p className="text-base text-gray-900">{selectedTransaction.reference}</p>
+                </div>
+              )}
+              
+              {selectedTransaction.event && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-500">Event</h4>
+                  <p className="text-base font-semibold text-gray-900">{selectedTransaction.event.title}</p>
+                  {selectedTransaction.event.date && (
+                    <p className="text-sm text-gray-500">
+                      {new Date(selectedTransaction.event.date).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {selectedTransaction.metadata && (
+                <div className="space-y-4">
+                  {selectedTransaction.metadata.contributionTypeId && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-500">Contribution Type</h4>
+                      <p className="text-base text-gray-900">
+                        {contributionTypes?.find((ct: any) => ct.id === selectedTransaction.metadata.contributionTypeId)?.name || selectedTransaction.metadata.contributionTypeId}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedTransaction.metadata.paymentMethodId && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-500">Payment Method</h4>
+                      <p className="text-base text-gray-900">
+                        {paymentMethods?.find((pm: any) => pm.id === selectedTransaction.metadata.paymentMethodId)?.name || selectedTransaction.metadata.paymentMethodId}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedTransaction.metadata.memberId && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-500">Member</h4>
+                      <p className="text-base text-gray-900">
+                        {selectedTransaction.metadata.memberId}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={() => {
+                    setShowTransactionModal(false);
+                    setSelectedTransaction(null);
+                  }}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }
-
 
 function FundBalances({ organisationId, funds }: { organisationId: string, funds: any[] }) {
   if (!funds?.length) return <div className="text-gray-500">No funds found.</div>;

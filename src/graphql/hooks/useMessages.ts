@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { ALL_MESSAGES_QUERY, GET_MESSAGE_BY_ID } from '../queries/messageQueries';
 import { useAuth } from '@/graphql/hooks/useAuth';
+import { useOrganizationBranchFilter } from './useOrganizationBranchFilter';
 
 export interface MessageFilterInput {
   organisationId?: string;
@@ -23,31 +24,53 @@ export interface Message {
   status: string;
   sentAt?: string;
   createdAt: string;
+  recipients: any[];
+  body: string;
+  bodyHtml?: string;
+  senderEmail?: string;
+  senderNumber?: string;
+  templateId?: string;
 }
 
 export function useMessages(filter: MessageFilterInput) {
   const { user } = useAuth();
+  const { organisationId: orgFilter, branchId: branchFilter } = useOrganizationBranchFilter();
   
-  // If no branch is specified but user has branches, use the first one
-  const effectiveBranchId = filter.branchId ?? 
-    (user?.userBranches && user.userBranches.length > 0 ? 
-      user.userBranches[0]?.branch?.id : undefined);
+  // Use filter values if provided, otherwise use values from useOrganizationBranchFilter
+  // Important: Convert empty strings to undefined to avoid sending them to GraphQL
+  const effectiveOrgId = filter.organisationId !== undefined && filter.organisationId !== '' 
+    ? filter.organisationId 
+    : (orgFilter !== '' ? orgFilter : undefined);
+    
+  const effectiveBranchId = filter.branchId !== undefined && filter.branchId !== '' 
+    ? filter.branchId 
+    : (branchFilter !== '' ? branchFilter : undefined);
+  
+  // Create a clean filter object with only defined values
+  const queryFilter: Record<string, any> = {};
+  
+  // Only add properties that have actual values (not empty strings)
+  if (effectiveOrgId && effectiveOrgId.trim() !== '') {
+    queryFilter.organisationId = effectiveOrgId;
+    console.log(`Using organisationId: ${effectiveOrgId}`);
+  }
+  
+  if (effectiveBranchId && effectiveBranchId.trim() !== '') {
+    queryFilter.branchId = effectiveBranchId;
+    console.log(`Using branchId: ${effectiveBranchId}`);
+  }
+  
+  // Add other filter properties
+  if (filter.type) queryFilter.types = [filter.type];
+  if (filter.startDate) queryFilter.startDate = filter.startDate;
+  if (filter.endDate) queryFilter.endDate = filter.endDate;
+  
+  console.log('Final useMessages filter:', queryFilter);
   
   const { data, loading, error, refetch } = useQuery(ALL_MESSAGES_QUERY, {
-    variables: { 
-      filter: { 
-        organisationId: filter.organisationId,
-        branchId: effectiveBranchId,
-        type: filter.type,
-        search: filter.search,
-        startDate: filter.startDate,
-        endDate: filter.endDate,
-        status: filter.status,
-        skip: filter.skip || 0,
-        take: filter.take || 20
-      } 
-    },
-    skip: !filter.organisationId && !effectiveBranchId,
+    variables: { filter: queryFilter },
+    skip: Object.keys(queryFilter).length === 0, // Skip if we have no filter parameters
+    fetchPolicy: 'network-only', // Don't use cache for this query
   });
   
   // Transform the raw message data into a consistent format
@@ -83,19 +106,37 @@ export function useMessages(filter: MessageFilterInput) {
       recipientCount: Array.isArray(msg.recipients) ? msg.recipients.length : 0,
       status: msg.status || (msg.isRead ? 'Read' : 'Unread'),
       sentAt: msg.sentAt,
-      createdAt: msg.createdAt
+      createdAt: msg.createdAt,
+      recipients: msg.recipients || [],
+      body: type === 'email' ? (msg.bodyText || stripHtmlTags(msg.bodyHtml)) : 
+            type === 'sms' ? msg.body : msg.message,
+      bodyHtml: msg.bodyHtml,
+      senderEmail: msg.senderEmail,
+      senderNumber: msg.senderNumber,
+      templateId: msg.templateId
     };
   });
   
+  // Count messages by type
+  const emailCount = transformedMessages.filter(msg => msg.type === 'email').length;
+  const smsCount = transformedMessages.filter(msg => msg.type === 'sms').length;
+  const notificationCount = transformedMessages.filter(msg => msg.type === 'notification').length;
+  const totalCount = transformedMessages.length;
+  
+  // Apply client-side pagination if needed
+  const paginatedMessages = filter.skip !== undefined && filter.take !== undefined
+    ? transformedMessages.slice(filter.skip, filter.skip + filter.take)
+    : transformedMessages;
+  
   return {
-    messages: transformedMessages,
+    messages: paginatedMessages,
     loading,
     error,
     refetch,
-    totalCount: data?.messageCounts?.total || 0,
-    emailCount: data?.messageCounts?.email || 0,
-    smsCount: data?.messageCounts?.sms || 0,
-    notificationCount: data?.messageCounts?.notification || 0
+    totalCount,
+    emailCount,
+    smsCount,
+    notificationCount
   };
 }
 

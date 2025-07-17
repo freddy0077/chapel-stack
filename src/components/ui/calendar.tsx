@@ -59,22 +59,22 @@ function Calendar({
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
-          "h-7 w-7 bg-transparent p-0 hover:bg-accent hover:text-accent-foreground",
+          "h-7 w-7 bg-transparent p-0 hover:bg-gray-100 rounded-full flex items-center justify-center",
           classNames?.nav_button
         ),
         table: "w-full border-collapse mt-2",
         head_row: "flex w-full",
         head_cell: "text-xs font-semibold text-center w-10 h-10",
-        row: "grid grid-cols-7 w-full",
-        cell: "text-center p-0 relative w-10 h-10",
+        row: "flex w-full mt-2",
+        cell: "text-center p-0 relative h-10 w-10 flex items-center justify-center",
         day: cn(
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400",
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-full hover:bg-gray-100 focus:bg-gray-100 cursor-pointer",
           classNames?.day
         ),
-        day_selected: "bg-indigo-600 text-white font-bold ring-2 ring-indigo-700 !important",
-        day_today: "bg-accent text-accent-foreground border border-indigo-300",
-        day_outside: "text-muted-foreground opacity-50",
-        day_disabled: "text-muted-foreground opacity-50",
+        day_selected: "bg-violet-600 hover:bg-violet-700 text-white hover:text-white focus:bg-violet-600",
+        day_today: "bg-gray-100 text-gray-900 font-bold",
+        day_outside: "text-gray-400 opacity-50",
+        day_disabled: "text-gray-400 opacity-50 cursor-not-allowed",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",

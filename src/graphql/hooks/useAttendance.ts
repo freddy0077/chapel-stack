@@ -2,7 +2,11 @@ import { useQuery, useMutation } from "@apollo/client";
 import { 
   GET_ATTENDANCE_RECORDS, 
   GET_ATTENDANCE_RECORDS_FOR_SESSION,
-  GET_FILTERED_ATTENDANCE_SESSIONS 
+  GET_ATTENDANCE_RECORDS_FOR_EVENT,
+  GET_ALL_ATTENDANCE_RECORDS,
+  GET_FILTERED_ATTENDANCE_SESSIONS,
+  RECORD_ATTENDANCE,
+  RECORD_BULK_ATTENDANCE
 } from "../queries/attendanceQueries";
 import { PROCESS_CARD_SCAN } from "../mutations/attendanceMutations";
 
@@ -14,8 +18,6 @@ export interface AttendanceRecord {
   checkOutTime?: string;
   checkInMethod?: string;
   notes?: string;
-  sessionId?: string;
-  memberId?: string;
   visitorName?: string;
   visitorEmail?: string;
   visitorPhone?: string;
@@ -24,6 +26,7 @@ export interface AttendanceRecord {
   createdAt: string;
   updatedAt: string;
   session?: AttendanceSession;
+  event?: AttendanceEvent;
   member?: AttendanceMember;
   recordedBy?: AttendanceUser;
   branch?: AttendanceBranch;
@@ -41,6 +44,15 @@ export interface AttendanceSession {
   location?: string;
 }
 
+export interface AttendanceEvent {
+  id: string;
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
+  category?: string;
+}
+
 export interface AttendanceMember {
   id: string;
   firstName?: string;
@@ -48,57 +60,154 @@ export interface AttendanceMember {
   email?: string;
 }
 
-export interface AttendanceUser {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-}
-
 export interface AttendanceBranch {
   id: string;
   name?: string;
 }
 
+export interface AttendanceUser {
+  id: string;
+}
+
 export interface AttendanceFilterInput {
-  // Add a member to fix @typescript-eslint/no-empty-object-type
-  dummy?: string;
+  sessionId?: string;
+  eventId?: string;
+  memberId?: string;
+  checkInMethod?: string;
+  visitorNameContains?: string;
+  branchId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface UseAttendanceRecordsOptions {
-  sessionId: string;
+  sessionId?: string;
   filter?: AttendanceFilterInput;
 }
 
-export const useAttendanceRecords = (options: UseAttendanceRecordsOptions) => {
-  const { sessionId, filter } = options;
-  const { data, loading, error, refetch } = useQuery<{ attendanceRecords: AttendanceRecord[] }>(GET_ATTENDANCE_RECORDS, {
-    variables: { sessionId, filter },
-    fetchPolicy: "cache-and-network"
+export interface UseEventAttendanceRecordsOptions {
+  eventId: string;
+  filter?: AttendanceFilterInput;
+}
+
+export interface UseAllAttendanceRecordsOptions {
+  filter?: AttendanceFilterInput;
+}
+
+// Hook to fetch attendance records (supports both session and event filtering)
+export function useAttendanceRecords(options: UseAttendanceRecordsOptions) {
+  const { data, loading, error, refetch } = useQuery(GET_ATTENDANCE_RECORDS, {
+    variables: options,
+    skip: !options.sessionId && !options.filter?.eventId,
   });
 
   return {
-    attendanceRecords: data?.attendanceRecords ?? [],
+    attendanceRecords: data?.attendanceRecords || [],
     loading,
     error,
-    refetch
+    refetch,
   };
-};
+}
 
 // Hook to fetch attendance records for a session with expanded fields
-export const useAttendanceRecordsForSession = (options: UseAttendanceRecordsOptions) => {
-  const { sessionId, filter } = options;
-  const { data, loading, error, refetch } = useQuery<{ attendanceRecords: AttendanceRecord[] }>(GET_ATTENDANCE_RECORDS_FOR_SESSION, {
-    variables: { sessionId, filter },
-    fetchPolicy: "cache-and-network"
+export function useAttendanceRecordsForSession(options: UseAttendanceRecordsOptions) {
+  const { data, loading, error, refetch } = useQuery(GET_ATTENDANCE_RECORDS_FOR_SESSION, {
+    variables: options,
+    skip: !options.sessionId,
   });
 
   return {
-    attendanceRecords: data?.attendanceRecords ?? [],
+    attendanceRecords: data?.attendanceRecords || [],
     loading,
     error,
-    refetch
+    refetch,
   };
-};
+}
+
+// Hook to fetch attendance records for an event
+export function useAttendanceRecordsForEvent(options: UseEventAttendanceRecordsOptions) {
+  const { data, loading, error, refetch } = useQuery(GET_ATTENDANCE_RECORDS_FOR_EVENT, {
+    variables: options,
+    skip: !options.eventId,
+  });
+
+  return {
+    attendanceRecords: data?.eventAttendanceRecords || [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+// Hook to fetch all attendance records with flexible filtering
+export function useAllAttendanceRecords(options: UseAllAttendanceRecordsOptions = {}) {
+  const { data, loading, error, refetch } = useQuery(GET_ALL_ATTENDANCE_RECORDS, {
+    variables: options,
+  });
+
+  return {
+    attendanceRecords: data?.allAttendanceRecords || [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+// Hook for recording attendance (supports both session and event)
+export function useRecordAttendance() {
+  const [recordAttendance, { loading, error }] = useMutation(RECORD_ATTENDANCE);
+
+  return {
+    recordAttendance: async (input: RecordAttendanceInput) => {
+      const result = await recordAttendance({
+        variables: { input },
+      });
+      return result.data?.recordAttendance;
+    },
+    loading,
+    error,
+  };
+}
+
+// Hook for bulk attendance recording (supports both session and event)
+export function useRecordBulkAttendance() {
+  const [recordBulkAttendance, { loading, error }] = useMutation(RECORD_BULK_ATTENDANCE);
+
+  return {
+    recordBulkAttendance: async (input: RecordBulkAttendanceInput) => {
+      const result = await recordBulkAttendance({
+        variables: { input },
+      });
+      return result.data?.recordBulkAttendance;
+    },
+    loading,
+    error,
+  };
+}
+
+// Types for attendance input
+export interface RecordAttendanceInput {
+  sessionId?: string;
+  eventId?: string;
+  memberId?: string;
+  visitorName?: string;
+  visitorEmail?: string;
+  visitorPhone?: string;
+  checkInTime?: string;
+  checkInMethod?: string;
+  notes?: string;
+  branchId?: string;
+  recordedById?: string;
+}
+
+export interface RecordBulkAttendanceInput {
+  sessionId?: string;
+  eventId?: string;
+  attendanceRecords?: RecordAttendanceInput[];
+  headcount?: number;
+  branchId?: string;
+  recordedById?: string;
+}
 
 // Types for processCardScan input and output
 export interface CardScanInput {
@@ -124,24 +233,19 @@ export interface CardScanResult {
     id: string;
     name?: string;
   };
-  // Add other AttendanceRecord fields as needed
 }
 
 // Custom hook for processCardScan mutation
 export function useProcessCardScan() {
-  const [processCardScanMutation, { data, loading, error }] = useMutation<
-    { processCardScan: CardScanResult },
-    { input: CardScanInput }
-  >(PROCESS_CARD_SCAN);
-
-  // Usage: runProcessCardScan({ input: { ... } })
-  const runProcessCardScan = async (input: CardScanInput) => {
-    return processCardScanMutation({ variables: { input } });
-  };
+  const [processCardScan, { loading, error }] = useMutation(PROCESS_CARD_SCAN);
 
   return {
-    processCardScan: runProcessCardScan,
-    data: data?.processCardScan,
+    processCardScan: async (input: CardScanInput) => {
+      const result = await processCardScan({
+        variables: { input },
+      });
+      return result.data?.processCardScan;
+    },
     loading,
     error,
   };
@@ -151,10 +255,8 @@ export function useProcessCardScan() {
 import type { AuthUser, Branch } from './useAuth';
 
 export function getCurrentBranchFromAuthUser(user?: AuthUser): Branch | undefined {
-  if (user?.userBranches && user.userBranches.length > 0) {
-    return user.userBranches[0].branch;
-  }
-  return undefined;
+  if (!user?.userBranches?.length) return undefined;
+  return user.userBranches[0]?.branch;
 }
 
 // New hook that supports organization-based filtering
@@ -163,22 +265,20 @@ export interface AttendanceFilterParams {
   branchId?: string;
 }
 
-export const useFilteredAttendanceSessions = (filter: AttendanceFilterParams) => {
-  const { data, loading, error, refetch } = useQuery(
-    GET_FILTERED_ATTENDANCE_SESSIONS,
-    {
-      variables: {
-        organisationId: filter.organisationId,
-        branchId: filter.branchId,
+export function useFilteredAttendanceSessions(filter: AttendanceFilterParams) {
+  const { data, loading, error, refetch } = useQuery(GET_FILTERED_ATTENDANCE_SESSIONS, {
+    variables: {
+      filterInput: {
+        ...(filter.organisationId && { organisationId: filter.organisationId }),
+        ...(filter.branchId && { branchId: filter.branchId }),
       },
-      skip: !filter.organisationId && !filter.branchId,
     },
-  );
+  });
 
   return {
-    sessions: data?.attendanceSessions ?? [],
+    sessions: data?.attendanceSessions?.items || [],
     loading,
     error,
     refetch,
   };
-};
+}

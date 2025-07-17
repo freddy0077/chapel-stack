@@ -1,15 +1,26 @@
 import { gql } from "@apollo/client";
 
 export const GET_ATTENDANCE_RECORDS = gql`
-  query GetAttendanceRecords($sessionId: ID!, $filter: AttendanceFilterInput) {
+  query GetAttendanceRecords($sessionId: ID, $filter: AttendanceFilterInput) {
     attendanceRecords(sessionId: $sessionId, filter: $filter) {
       id
       checkInTime
       checkOutTime
       checkInMethod
       notes
-      sessionId
-      memberId
+      session {
+        id
+        name
+      }
+      event {
+        id
+        title
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
       visitorName
       visitorEmail
       visitorPhone
@@ -39,6 +50,83 @@ export const GET_ATTENDANCE_RECORDS_FOR_SESSION = gql`
       session {
         id
         name
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy { id }
+      branch { id }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// New query for event-based attendance records
+export const GET_ATTENDANCE_RECORDS_FOR_EVENT = gql`
+  query GetAttendanceRecordsForEvent(
+    $eventId: ID!
+    $filter: AttendanceFilterInput
+  ) {
+    eventAttendanceRecords(
+      eventId: $eventId
+      filter: $filter
+    ) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy { id }
+      branch { id }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// New query for flexible attendance records filtering
+export const GET_ALL_ATTENDANCE_RECORDS = gql`
+  query GetAllAttendanceRecords($filter: AttendanceFilterInput) {
+    allAttendanceRecords(filter: $filter) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      session {
+        id
+        name
+        date
+        type
+      }
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+        category
       }
       member {
         id
@@ -150,15 +238,32 @@ export const RECORD_ATTENDANCE = gql`
       checkOutTime
       checkInMethod
       notes
-      sessionId
-      memberId
+      session {
+        id
+        name
+      }
+      event {
+        id
+        title
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
       visitorName
       visitorEmail
       visitorPhone
       recordedBy { id }
-      organisation { id }
+      branch { id }
       createdAt
       updatedAt
     }
+  }
+`;
+
+export const RECORD_BULK_ATTENDANCE = gql`
+  mutation RecordBulkAttendance($input: RecordBulkAttendanceInput!) {
+    recordBulkAttendance(input: $input)
   }
 `;

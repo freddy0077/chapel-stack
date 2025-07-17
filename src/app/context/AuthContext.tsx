@@ -540,10 +540,10 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
 
   // GraphQL reset password mutation
   const RESET_PASSWORD_MUTATION = gql`
-    mutation ForgotPassword($email: String!) {
-      forgotPassword(email: $email) {
-        success
+    mutation ForgotPassword($input: ForgotPasswordInput!) {
+      forgotPassword(input: $input) {
         message
+        __typename
       }
     }
   `;
@@ -555,10 +555,13 @@ const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
     setError(null);
     
     try {
+      console.log('Sending reset password request with email:', email);
       // Execute the reset password mutation
       const { data } = await resetPasswordMutation({
-        variables: { email }
+        variables: { input: { email } }
       });
+      
+      console.log('Reset password response:', data);
       
       if (!data || !data.forgotPassword) {
         throw new Error('Password reset failed. Please try again.');

@@ -29,37 +29,78 @@ const CalendarIcon = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 interface DatePickerProps {
-  date?: Date
-  onDateChange: (date?: Date) => void
-  className?: string
-  id?: string
+  date?: Date;
+  setDate?: (date: Date | undefined) => void;
+  onDateChange?: (date: Date | undefined) => void;
+  className?: string;
+  id?: string;
+  placeholderText?: string;
+  minDate?: Date;
+  maxDate?: Date;
 }
 
-export function DatePicker({ date, onDateChange, className, id }: DatePickerProps) {
+export function DatePicker({ 
+  date, 
+  setDate,
+  onDateChange, 
+  className, 
+  id,
+  placeholderText = "Pick a date",
+  minDate,
+  maxDate
+}: DatePickerProps) {
+  // Use internal state to ensure the component works even without external state management
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
+  
+  // Keep internal state in sync with external props
+  React.useEffect(() => {
+    setSelectedDate(date);
+  }, [date]);
+
+  const handleDateSelect = React.useCallback((selected: Date | undefined) => {
+    setSelectedDate(selected);
+    
+    // Propagate changes to parent components
+    if (setDate) {
+      setDate(selected);
+    }
+    
+    if (onDateChange) {
+      onDateChange(selected);
+    }
+  }, [setDate, onDateChange]);
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground",
-            className
-          )}
+    <div className="relative">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            id={id}
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal border-gray-300",
+              !selectedDate && "text-gray-500",
+              className
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {selectedDate ? format(selectedDate, "PPP") : <span>{placeholderText}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-auto p-0 bg-white shadow-xl border border-gray-200 rounded-lg" 
+          align="start"
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 bg-white shadow-lg border border-gray-200" align="start">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={onDateChange}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            initialFocus
+            disabled={minDate ? { before: minDate } : maxDate ? { after: maxDate } : undefined}
+            className="rounded-lg"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSpeakers } from '@/graphql/hooks/useSermon';
+import { useGetSpeakers } from '@/graphql/hooks/useSermon';
 import { useSpeakerMutations } from '@/graphql/hooks/useSpeakerMutations';
 import { XMarkIcon, PencilIcon, TrashIcon, PlusIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useAuth } from '@/graphql/hooks/useAuth';
@@ -102,7 +102,7 @@ const SpeakerFormModal = ({ open, onClose, onSubmit, initialData, isSaving }) =>
 export const SpeakerManagerModal = ({ open, onClose }) => {
   const { user } = useAuth();
   const branchId = user?.userBranches?.[0]?.branch?.id;
-  const { speakers, loading, error } = useSpeakers(branchId);
+  const { speakers, loading, error } = useGetSpeakers(branchId);
   const { createSpeaker, updateSpeaker, removeSpeaker, isSaving } = useSpeakerMutations();
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [editingSpeaker, setEditingSpeaker] = useState(null);

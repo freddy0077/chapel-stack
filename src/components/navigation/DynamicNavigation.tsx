@@ -226,13 +226,13 @@ const fullNavigation = [
         badge: null,
         moduleId: "dashboard" 
       },
-      { 
-        name: "Security", 
-        href: "/dashboard/admin/security", 
-        icon: ShieldCheckIcon, 
-        badge: null,
-        moduleId: "security" 
-      },
+      // {
+      //   name: "Security",
+      //   href: "/dashboard/admin/security",
+      //   icon: ShieldCheckIcon,
+      //   badge: null,
+      //   moduleId: "security"
+      // },
       { 
         name: "Settings", 
         href: "/dashboard/settings", 
@@ -240,13 +240,13 @@ const fullNavigation = [
         badge: null,
         moduleId: "dashboard" 
       },
-      { 
-        name: "Website", 
-        href: "/dashboard/website-integration", 
-        icon: GlobeAltIcon, 
-        badge: null,
-        moduleId: "website" 
-      },
+      // {
+      //   name: "Website",
+      //   href: "/dashboard/website-integration",
+      //   icon: GlobeAltIcon,
+      //   badge: null,
+      //   moduleId: "website"
+      // },
     ]
   },
 ];
@@ -356,9 +356,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
       ...category,
       items: category.items.filter(item => {
         if (category.category === "Operations" && ["Branch Finances", "Reports"].includes(item.name)) {
-          // Only show Branch Finances to branch_admin and super_admin, always hide Reports
+          // Only show Branch Finances to branch_admin, hide for super_admin (super_admin should only see "Finances")
           if (item.name === "Branch Finances") {
-            return ["branch_admin", "super_admin", "SUPER_ADMIN"].includes(user?.primaryRole?.toLowerCase?.());
+            return user?.primaryRole?.toLowerCase() === "branch_admin";
           }
           return false; // Hide Reports for all
         }
@@ -372,6 +372,10 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
         }
         // Hide Prayer Requests for super_admin in navigation
         if (isSuperAdmin && item.name === "Prayer Requests") {
+          return false;
+        }
+        // Hide Communication for super_admin in navigation
+        if (isSuperAdmin && item.name === "Communication") {
           return false;
         }
         // Super Admins see everything, always (except hidden above).
@@ -572,17 +576,17 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           </ul>
                         </div>
                       ))}
-                      {canCustomizeModules && (
-                        <li className="mt-auto">
-                          <Link
-                            href="/dashboard/settings/modules"
-                            className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                          >
-                            <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                            Customize Modules
-                          </Link>
-                        </li>
-                      )}
+                      {/*{canCustomizeModules && (*/}
+                      {/*  <li className="mt-auto">*/}
+                      {/*    <Link*/}
+                      {/*      href="/dashboard/settings/modules"*/}
+                      {/*      className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"*/}
+                      {/*    >*/}
+                      {/*      <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />*/}
+                      {/*      Customize Modules*/}
+                      {/*    </Link>*/}
+                      {/*  </li>*/}
+                      {/*)}*/}
                     </div>
                   </nav>
                 </div>
@@ -659,17 +663,17 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   </ul>
                 </li>
               ))}
-              {canCustomizeModules && (
-                <li className="mt-auto">
-                  <Link
-                    href="/dashboard/settings/modules"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                    Customize Modules
-                  </Link>
-                </li>
-              )}
+              {/*{canCustomizeModules && (*/}
+              {/*  <li className="mt-auto">*/}
+              {/*    <Link*/}
+              {/*      href="/dashboard/settings/modules"*/}
+              {/*      className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"*/}
+              {/*    >*/}
+              {/*      <Cog6ToothIcon className="h-6 w-6 shrink-0" aria-hidden="true" />*/}
+              {/*      Customize Modules*/}
+              {/*    </Link>*/}
+              {/*  </li>*/}
+              {/*)}*/}
             </ul>
             
             <div className="mt-auto pb-3 text-xs text-indigo-200 text-center">

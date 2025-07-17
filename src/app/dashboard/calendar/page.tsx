@@ -24,6 +24,7 @@ import { useOrganizationBranchFilter } from "@/hooks";
 import { Event } from "@/graphql/types/event";
 import Loading from "@/components/ui/Loading";
 import { usePermissions } from '@/hooks/usePermissions';
+import useAuth from "@/graphql/hooks/useAuth";
 
 const isClient = typeof window !== 'undefined';
 
@@ -72,6 +73,17 @@ function CalendarContent() {
   // On click, opens NewEventModal
   // Modal disables background scroll and blurs background when open
 
+  const{user} = useAuth();
+  
+  // Debug logging to understand the data
+  console.log('Calendar Debug:', {
+    user: user,
+    userBranches: user?.userBranches,
+    firstBranch: user?.userBranches?.[0],
+    branchId: user?.userBranches?.[0]?.branch?.id,
+    orgBranchFilter: useOrganizationBranchFilter()
+  });
+
   // State for current date and filter selections
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedType, setSelectedType] = useState("all");
@@ -83,10 +95,15 @@ function CalendarContent() {
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
 
-  // Decide which filter to use for API: organisationId for SUPER_ADMIN, branchId for others
-  const apiFilter = orgBranchFilter.organisationId
-    ? { organisationId: orgBranchFilter.organisationId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined }
-    : { branchId: orgBranchFilter.branchId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined };
+  // Get branchId from user data
+  const userBranchId = user?.userBranches?.[0]?.branch?.id;
+  
+  // Decide which filter to use for API: prioritize branchId if available, otherwise use organisationId
+  const apiFilter = userBranchId
+    ? { branchId: userBranchId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined }
+    : { organisationId: orgBranchFilter.organisationId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined };
+
+  console.log('API Filter:', apiFilter);
 
   // Use the correct filtered events hook
   const { events, loading, error, refetch } = useFilteredEvents(apiFilter);

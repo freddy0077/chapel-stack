@@ -1,4 +1,5 @@
 import { useQuery } from '@apollo/client';
+import { useMemo } from 'react';
 import { GET_EVENTS_FILTERED } from '../queries/eventQueries';
 import { Event } from '../types/event';
 
@@ -23,16 +24,37 @@ export function useFilteredEvents(filters?: EventsFilter): UseFilteredEventsResu
   const { branchId, organisationId, category, startDate, endDate } = filters || {};
   const { loading, error, data, refetch } = useQuery(GET_EVENTS_FILTERED, {
     variables: {
-      branchId: branchId || undefined,
-      organisationId: organisationId || undefined,
-      category: category || undefined,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      branchId: branchId || null,
+      organisationId: organisationId || null,
     },
+    skip: !branchId && !organisationId,
     fetchPolicy: 'cache-and-network',
   });
 
-  const events = data?.events || [];
+  // Client-side filtering for parameters not supported by the backend query
+  const events = useMemo(() => {
+    let filteredEvents = data?.events || [];
+
+    // Filter by category if specified
+    if (category && category !== 'all') {
+      filteredEvents = filteredEvents.filter(event => event.category === category);
+    }
+
+    // Filter by date range if specified
+    if (startDate || endDate) {
+      filteredEvents = filteredEvents.filter(event => {
+        const eventStart = new Date(event.startDate);
+        const eventEnd = new Date(event.endDate);
+        
+        if (startDate && eventEnd < startDate) return false;
+        if (endDate && eventStart > endDate) return false;
+        
+        return true;
+      });
+    }
+
+    return filteredEvents;
+  }, [data?.events, category, startDate, endDate]);
 
   return { events, loading, error, refetch };
 }

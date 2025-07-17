@@ -1,44 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import {
-  DocumentTextIcon,
-  MagnifyingGlassIcon,
+import React, { useState, useMemo } from 'react';
+import { 
+  MagnifyingGlassIcon, 
+  FunnelIcon, 
+  Squares2X2Icon, 
+  ListBulletIcon,
   PlusIcon,
-  XCircleIcon,
-  CalendarDaysIcon,
-  UserIcon,
   PlayIcon,
   VideoCameraIcon,
+  SpeakerWaveIcon,
   DocumentIcon,
-  ShareIcon,
+  HeartIcon,
+  BookmarkIcon,
+  EyeIcon,
   PencilIcon,
   TrashIcon,
-  ArrowTopRightOnSquareIcon,
-  CloudArrowDownIcon,
-  ChevronDownIcon,
-  DocumentDuplicateIcon,
+  CalendarDaysIcon,
+  UserIcon,
+  ClockIcon,
+  BookOpenIcon,
   XMarkIcon,
-  TagIcon,
-  CheckCircleIcon,
-  SpeakerWaveIcon
-} from "@heroicons/react/24/outline";
-import { PlayIcon as SolidPlayIcon } from '@heroicons/react/24/solid';
+  MicrophoneIcon,
+  TagIcon
+} from '@heroicons/react/24/outline';
+import { HeartIcon as SolidHeartIcon, BookmarkIcon as SolidBookmarkIcon, PlayIcon as SolidPlayIcon } from '@heroicons/react/24/solid';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/graphql/hooks/useAuth';
-import DashboardHeader from "@/components/DashboardHeader";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { Popover } from "@/components/ui/popover";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Badge } from "@/components/ui/badge";
-import { usePermissions } from "@/hooks/usePermissions";
-import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
-import { gql, useMutation } from "@apollo/client";
-import { GET_PRESIGNED_UPLOAD_URL } from "@/graphql/mutations/memberMutations";
-import { useSermonMutations, useSermons, useSpeakers, useCategories } from "@/graphql/hooks/useSermon";
-import { SpeakerManagerModal } from './SpeakerManagerModal';
-import { CategoryManagerModal } from './CategoryManagerModal';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
+import { useSermons, useGetSpeakers, useGetSeries, useCategories, useCreateSermon, useUpdateSermon, useDeleteSermon, SermonEntity } from '@/graphql/hooks/useSermon';
+import { SermonFormModal } from './components/SermonFormModal';
+import { SermonDetailsModal } from './components/SermonDetailsModal';
+import { SpeakerManagerModal } from './components/SpeakerManagerModal';
+import { CategoryManagerModal } from './components/CategoryManagerModal';
+import { SeriesManagerModal } from './components/SeriesManagerModal';
 
 // Utility function for formatting dates
 function formatDate(dateString: string) {
@@ -46,1055 +44,875 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', options);
 }
 
-// Modal component for adding/editing sermons
-function SermonFormModal({ 
-  open, 
-  onClose, 
-  onSubmit, 
-  initialData, 
-  categories, 
-  speakers,
-  series,
-  isSaving,
-  onUploadComplete
+// Utility function for formatting duration
+function formatDuration(minutes: number) {
+  if (!minutes) return 'N/A';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
+  return `${mins}m`;
+}
+
+// Modern Sermon Card Component
+function ModernSermonCard({ 
+  sermon, 
+  onViewDetails, 
+  onEdit, 
+  onDelete,
+  viewMode = 'grid'
 }: { 
-  open: boolean; 
-  onClose: () => void; 
-  onSubmit: (data: any) => void; 
-  initialData?: any;
-  categories: any[];
-  speakers: any[];
-  series: any[];
-  isSaving: boolean;
-  onUploadComplete?: (type: string, fileUrl: string) => void;
+  sermon: any; 
+  onViewDetails: (sermon: any) => void; 
+  onEdit: (sermon: any) => void;
+  onDelete: (sermon: any) => void;
+  viewMode?: 'grid' | 'list';
 }) {
-  const [form, setForm] = useState(() => {
-    if (!initialData) {
-      return { title: '', speaker: '', date: undefined, category: '', series: '', tags: [], duration: '', description: '', videoUrl: '', audioUrl: '', notesUrl: '' };
-    }
-    return {
-      ...initialData,
-      tags: normalizeTags(initialData.tags),
-      date: normalizeDate(initialData.date)
-    };
-  });
-  const [newTag, setNewTag] = useState('');
-  const videoInputRef = useRef(null);
-  const audioInputRef = useRef(null);
-  const notesInputRef = useRef(null);
-  const [uploading, setUploading] = useState({ video: false, audio: false, notes: false });
-  const [selectedFiles, setSelectedFiles] = useState({ videoUrl: null, audioUrl: null, notesUrl: null });
-  const [uploadErrors, setUploadErrors] = useState({ videoUrl: '', audioUrl: '', notesUrl: '' });
-  const [getPresignedUploadUrl] = useMutation(GET_PRESIGNED_UPLOAD_URL);
-  const {user} = useAuth();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // S3 upload logic matching member image upload
-  const handleFileSelect = (file, type) => {
-    setSelectedFiles(prev => ({ ...prev, [type]: file }));
-  };
+  if (viewMode === 'list') {
+    return (
+      <Card className="p-6 hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center gap-6">
+          {/* Thumbnail */}
+          <div className="relative w-24 h-24 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {sermon.thumbnailUrl ? (
+              <img src={sermon.thumbnailUrl} alt={sermon.title} className="w-full h-full object-cover" />
+            ) : (
+              <BookOpenIcon className="w-8 h-8 text-white" />
+            )}
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                 onClick={() => onViewDetails(sermon)}>
+              <SolidPlayIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
 
-  const uploadToS3 = async (file, type) => {
-    if (!file) return;
-    
-    try {
-      setUploading(prev => ({ ...prev, [type]: true }));
-      setUploadErrors(prev => ({ ...prev, [type]: '' }));
-      
-      // Get presigned URL
-      const { data } = await getPresignedUploadUrl({
-        variables: {
-          input: {
-            fileName: file.name,
-            fileType: file.type,
-            folder: 'sermons'
-          }
-        }
-      });
-      
-      const { url, key } = data.getPresignedUploadUrl;
-      
-      // Upload file to S3
-      const uploadResult = await fetch(url, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type
-        }
-      });
-      
-      if (uploadResult.ok) {
-        // Construct the final URL
-        const fileUrl = `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${key}`;
-        setForm(prev => ({ ...prev, [type]: fileUrl }));
-        if (onUploadComplete) {
-          onUploadComplete(type, fileUrl);
-        }
-      } else {
-        setUploadErrors(prev => ({ ...prev, [type]: 'Failed to upload file' }));
-      }
-    } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      setUploadErrors(prev => ({ ...prev, [type]: `Error: ${error.message}` }));
-    } finally {
-      setUploading(prev => ({ ...prev, [type]: false }));
-    }
-  };
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 truncate pr-4 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => onViewDetails(sermon)}>
+                {sermon.title}
+              </h3>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsFavorited(!isFavorited)}
+                  className="p-1 h-8 w-8"
+                >
+                  {isFavorited ? (
+                    <SolidHeartIcon className="w-4 h-4 text-red-500" />
+                  ) : (
+                    <HeartIcon className="w-4 h-4 text-gray-400" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsBookmarked(!isBookmarked)}
+                  className="p-1 h-8 w-8"
+                >
+                  {isBookmarked ? (
+                    <SolidBookmarkIcon className="w-4 h-4 text-yellow-500" />
+                  ) : (
+                    <BookmarkIcon className="w-4 h-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
+            </div>
 
-  useEffect(() => {
-    if (selectedFiles.videoUrl) {
-      uploadToS3(selectedFiles.videoUrl, 'videoUrl');
-    }
-  }, [selectedFiles.videoUrl]);
+            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+              <div className="flex items-center gap-1">
+                <UserIcon className="w-4 h-4" />
+                <span>{sermon.speaker?.name || 'Unknown Speaker'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CalendarDaysIcon className="w-4 h-4" />
+                <span>{formatDate(sermon.datePreached)}</span>
+              </div>
+              {sermon.duration && (
+                <div className="flex items-center gap-1">
+                  <ClockIcon className="w-4 h-4" />
+                  <span>{formatDuration(sermon.duration)}</span>
+                </div>
+              )}
+            </div>
 
-  useEffect(() => {
-    if (selectedFiles.audioUrl) {
-      uploadToS3(selectedFiles.audioUrl, 'audioUrl');
-    }
-  }, [selectedFiles.audioUrl]);
+            <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+              {sermon.description || 'No description available.'}
+            </p>
 
-  useEffect(() => {
-    if (selectedFiles.notesUrl) {
-      uploadToS3(selectedFiles.notesUrl, 'notesUrl');
-    }
-  }, [selectedFiles.notesUrl]);
+            <div className="flex items-center justify-between">
+              <div className="flex flex-wrap gap-1">
+                {sermon.category && (
+                  <Badge variant="secondary" className="text-xs">
+                    {sermon.category.name || sermon.category}
+                  </Badge>
+                )}
+                {sermon.tags?.slice(0, 2).map((tag: any, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag.name || tag}
+                  </Badge>
+                ))}
+                {sermon.tags?.length > 2 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{sermon.tags.length - 2}
+                  </Badge>
+                )}
+              </div>
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleTagAdd = (e) => {
-    e.preventDefault();
-    if (newTag && !form.tags.includes(newTag)) {
-      setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
-      setNewTag('');
-    }
-  };
-
-  const handleTagRemove = (tagToRemove) => {
-    setForm(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(form);
-  };
-
-  // Helper functions for normalizing data
-  function normalizeTags(tags) {
-    if (!tags) return [];
-    if (Array.isArray(tags)) return tags;
-    if (typeof tags === 'string') return tags.split(',').map(tag => tag.trim()).filter(Boolean);
-    return [];
-  }
-
-  function normalizeDate(date) {
-    if (!date) return undefined;
-    try {
-      return new Date(date);
-    } catch (e) {
-      return undefined;
-    }
-  }
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-t-lg">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-white">
-              {initialData ? 'Edit Sermon' : 'Add New Sermon'}
-            </h2>
-            <button 
-              onClick={onClose}
-              className="text-white hover:text-gray-200 rounded-full p-1"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
+              <div className="flex items-center gap-2">
+                {sermon.audioUrl && (
+                  <Button variant="outline" size="sm" onClick={() => onViewDetails(sermon)}>
+                    <SpeakerWaveIcon className="w-4 h-4 mr-1" />
+                    Audio
+                  </Button>
+                )}
+                {sermon.videoUrl && (
+                  <Button variant="outline" size="sm" onClick={() => onViewDetails(sermon)}>
+                    <VideoCameraIcon className="w-4 h-4 mr-1" />
+                    Video
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => onEdit(sermon)}>
+                  <PencilIcon className="w-4 h-4 mr-1" />
+                  Edit
+                </Button>
+                <Button variant="default" size="sm" onClick={() => onViewDetails(sermon)}>
+                  <SolidPlayIcon className="w-4 h-4 mr-1" />
+                  Play
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Sermon Title
-            </label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              value={form.title}
-              onChange={handleChange}
-              placeholder="Enter sermon title"
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          
-          {/* Two column layout for speaker and date */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Speaker */}
-            <div>
-              <label htmlFor="speaker" className="block text-sm font-medium text-gray-700 mb-1">
-                Speaker
-              </label>
-              <select
-                id="speaker"
-                name="speaker"
-                value={form.speaker || ''}
-                onChange={handleChange}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
-                <option value="">Select a speaker</option>
-                {speakers.map(speaker => (
-                  <option key={speaker.id} value={speaker.id}>
-                    {speaker.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Date */}
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                Date Preached
-              </label>
-              <DatePicker
-                date={form.date}
-                onSelect={(date) => setForm(prev => ({ ...prev, date }))}
-              />
-            </div>
-          </div>
-          
-          {/* Two column layout for category and series */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Category */}
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={form.category || ''}
-                onChange={handleChange}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="">Select a category</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Series */}
-            <div>
-              <label htmlFor="series" className="block text-sm font-medium text-gray-700 mb-1">
-                Series (Optional)
-              </label>
-              <select
-                id="series"
-                name="series"
-                value={form.series || ''}
-                onChange={handleChange}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="">Select a series</option>
-                {series.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          {/* Duration */}
-          <div>
-            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
-              Duration (Optional)
-            </label>
-            <input
-              id="duration"
-              name="duration"
-              type="text"
-              value={form.duration || ''}
-              onChange={handleChange}
-              placeholder="e.g. 45:30"
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              name="description"
-              value={form.description || ''}
-              onChange={handleChange}
-              placeholder="Enter sermon description"
-              rows={4}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tags
-            </label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {form.tags.map(tag => (
-                <Badge key={tag} className="bg-indigo-100 text-indigo-800 flex items-center gap-1 py-1 px-2">
-                  {tag}
-                  <button 
-                    type="button" 
-                    onClick={() => handleTagRemove(tag)}
-                    className="text-indigo-600 hover:text-indigo-800"
-                  >
-                    <XCircleIcon className="h-4 w-4" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex">
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Add a tag"
-                className="flex-grow p-2 border rounded-l focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <button
-                type="button"
-                onClick={handleTagAdd}
-                className="bg-indigo-600 text-white px-3 py-2 rounded-r hover:bg-indigo-700 transition-colors"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-          
-          {/* Media uploads section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-700">Media Files</h3>
-            
-            {/* Video upload */}
-            <div>
-              <label htmlFor="video-upload" className="block text-sm font-medium text-gray-700 mb-1">
-                Video (Optional)
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  id="video-upload"
-                  ref={videoInputRef}
-                  accept="video/*"
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files[0], 'videoUrl')}
-                />
-                <button
-                  type="button"
-                  onClick={() => videoInputRef.current?.click()}
-                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  disabled={uploading.video}
-                >
-                  <VideoCameraIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.video ? 'Uploading...' : 'Upload Video'}
-                </button>
-                {form.videoUrl && (
-                  <span className="ml-3 text-sm text-green-600 flex items-center">
-                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Video uploaded
-                  </span>
-                )}
-              </div>
-              {uploadErrors.videoUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.videoUrl}</p>
-              )}
-            </div>
-            
-            {/* Audio upload */}
-            <div>
-              <label htmlFor="audio-upload" className="block text-sm font-medium text-gray-700 mb-1">
-                Audio (Optional)
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  id="audio-upload"
-                  ref={audioInputRef}
-                  accept="audio/*"
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files[0], 'audioUrl')}
-                />
-                <button
-                  type="button"
-                  onClick={() => audioInputRef.current?.click()}
-                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  disabled={uploading.audio}
-                >
-                  <SpeakerWaveIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.audio ? 'Uploading...' : 'Upload Audio'}
-                </button>
-                {form.audioUrl && (
-                  <span className="ml-3 text-sm text-green-600 flex items-center">
-                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Audio uploaded
-                  </span>
-                )}
-              </div>
-              {uploadErrors.audioUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.audioUrl}</p>
-              )}
-            </div>
-            
-            {/* Notes upload */}
-            <div>
-              <label htmlFor="notes-upload" className="block text-sm font-medium text-gray-700 mb-1">
-                Notes PDF (Optional)
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  id="notes-upload"
-                  ref={notesInputRef}
-                  accept=".pdf"
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files[0], 'notesUrl')}
-                />
-                <button
-                  type="button"
-                  onClick={() => notesInputRef.current?.click()}
-                  className="bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  disabled={uploading.notes}
-                >
-                  <DocumentIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.notes ? 'Uploading...' : 'Upload Notes'}
-                </button>
-                {form.notesUrl && (
-                  <span className="ml-3 text-sm text-green-600 flex items-center">
-                    <CheckCircleIcon className="h-5 w-5 mr-1" /> Notes uploaded
-                  </span>
-                )}
-              </div>
-              {uploadErrors.notesUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.notesUrl}</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Form actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving || uploading.video || uploading.audio || uploading.notes}
-              className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
-            >
-              {isSaving ? 'Saving...' : initialData ? 'Update Sermon' : 'Create Sermon'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+      </Card>
+    );
+  }
 
-function TagsInput({ value, onChange, placeholder }: { value: string[]; onChange: (tags: string[]) => void; placeholder?: string }) {
-  const [input, setInput] = useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  const addTag = (tag: string) => {
-    tag = tag.trim();
-    if (!tag || value.includes(tag)) return;
-    onChange([...value, tag]);
-  };
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      if (input.trim()) {
-        addTag(input);
-        setInput("");
-      }
-    } else if (e.key === "Backspace" && !input && value.length > 0) {
-      onChange(value.slice(0, -1));
-    }
-  };
-
-  const removeTag = (idx: number) => {
-    onChange(value.filter((_, i) => i !== idx));
-  };
-
+  // Grid view
   return (
-    <div className="flex flex-wrap gap-2 px-2 py-2 border border-indigo-100 rounded-lg bg-white/90 shadow-sm min-h-[46px]">
-      {value.map((tag, idx) => (
-        <span key={tag + idx} className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-semibold">
-          {tag}
-          <button type="button" onClick={() => removeTag(idx)} className="ml-1 text-indigo-400 hover:text-red-500 focus:outline-none">
-            <XCircleIcon className="h-4 w-4" />
-          </button>
-        </span>
-      ))}
-      <input
-        ref={inputRef}
-        type="text"
-        value={input}
-        onChange={handleInput}
-        onKeyDown={handleKeyDown}
-        className="flex-1 min-w-[80px] border-none bg-transparent focus:outline-none text-indigo-900 text-sm"
-        placeholder={placeholder || "Add tag and press Enter"}
-      />
-    </div>
-  );
-}
-
-// Sermon Card Component
-function SermonCard({ sermon, onViewDetails, onPlay, onVideo, onAudio }: { sermon: any; onViewDetails: (sermon: any) => void; onPlay: (sermon: any) => void; onVideo: (sermon: any) => void; onAudio: (sermon: any) => void; }) {
-  return (
-    <Card className="overflow-hidden group">
-      <div className="relative w-full h-40 bg-gray-200">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+      {/* Thumbnail */}
+      <div className="relative aspect-video bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
         {sermon.thumbnailUrl ? (
           <img src={sermon.thumbnailUrl} alt={sermon.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <VideoCameraIcon className="h-16 w-16 text-gray-400" />
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpenIcon className="w-12 h-12 text-white/80" />
           </div>
         )}
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => onPlay(sermon)}>
-            <SolidPlayIcon className="h-10 w-10" />
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <Button
+            onClick={() => onViewDetails(sermon)}
+            className="bg-white/90 hover:bg-white text-gray-900 rounded-full w-16 h-16 p-0"
+          >
+            <SolidPlayIcon className="w-6 h-6 ml-1" />
+          </Button>
+        </div>
+
+        {/* Duration badge */}
+        {sermon.duration && (
+          <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+            {formatDuration(sermon.duration)}
+          </div>
+        )}
+
+        {/* Favorite and bookmark buttons */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsFavorited(!isFavorited)}
+            className="bg-black/20 hover:bg-black/40 text-white p-1 h-8 w-8 rounded-full"
+          >
+            {isFavorited ? (
+              <SolidHeartIcon className="w-4 h-4 text-red-400" />
+            ) : (
+              <HeartIcon className="w-4 h-4" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsBookmarked(!isBookmarked)}
+            className="bg-black/20 hover:bg-black/40 text-white p-1 h-8 w-8 rounded-full"
+          >
+            {isBookmarked ? (
+              <SolidBookmarkIcon className="w-4 h-4 text-yellow-400" />
+            ) : (
+              <BookmarkIcon className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg truncate">{sermon.title}</h3>
-        <div className="flex items-center text-sm text-gray-500 mt-1">
-          <UserIcon className="h-4 w-4 mr-2" />
-          <span>{sermon.speaker?.name || 'N/A'}</span>
+
+      {/* Content */}
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+              onClick={() => onViewDetails(sermon)}>
+            {sermon.title}
+          </h3>
         </div>
-        <div className="flex items-center text-sm text-gray-500 mt-1">
-          <CalendarDaysIcon className="h-4 w-4 mr-2" />
-          <span>{formatDate(sermon.datePreached)}</span>
+
+        <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
+          <div className="flex items-center gap-1">
+            <MicrophoneIcon className="w-4 h-4" />
+            <span className="truncate">{sermon.speaker?.name || 'Unknown Speaker'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <CalendarDaysIcon className="w-4 h-4" />
+            <span>{formatDate(sermon.datePreached)}</span>
+          </div>
         </div>
-        <div className="flex items-center text-sm text-gray-500 mt-1">
-          <Badge variant={sermon.status === 'PUBLISHED' ? 'default' : 'secondary'}>{sermon.status}</Badge>
-          {sermon.category && <Badge variant="outline" className="ml-2">{sermon.category.name}</Badge>}
+
+        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+          {sermon.description || 'No description available.'}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {sermon.category && (
+            <Badge variant="secondary" className="text-xs">
+              {sermon.category.name || sermon.category}
+            </Badge>
+          )}
+          {sermon.tags?.slice(0, 2).map((tag: any, index: number) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {tag.name || tag}
+            </Badge>
+          ))}
+          {sermon.tags?.length > 2 && (
+            <Badge variant="outline" className="text-xs">
+              +{sermon.tags.length - 2}
+            </Badge>
+          )}
         </div>
-        <div className="mt-4 flex justify-end space-x-2">
-          <Button variant="outline" size="sm" onClick={() => onViewDetails(sermon)}>Details</Button>
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {sermon.audioUrl && (
+              <Button variant="ghost" size="sm" onClick={() => onViewDetails(sermon)} className="p-2">
+                <SpeakerWaveIcon className="w-4 h-4" />
+              </Button>
+            )}
+            {sermon.videoUrl && (
+              <Button variant="ghost" size="sm" onClick={() => onViewDetails(sermon)} className="p-2">
+                <VideoCameraIcon className="w-4 h-4" />
+              </Button>
+            )}
+            {sermon.notesUrl && (
+              <Button variant="ghost" size="sm" className="p-2">
+                <DocumentIcon className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(sermon)}>
+              <PencilIcon className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onViewDetails(sermon)}>
+              <EyeIcon className="w-4 h-4 mr-1" />
+              View
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
   );
 }
 
-// Sermon Details Modal
-function SermonDetailsModal({ open, onClose, sermon, onEdit, onDelete }: { open: boolean; onClose: () => void; sermon: any | null; onEdit: (sermon: any) => void; onDelete: (sermon: any) => void; }) {
-  if (!open || !sermon) return null;
-  const categoryInfo = sermon.category || { name: "Other" };
-  const handleShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/sermons/${sermon.id}`);
-    alert('Sermon link copied to clipboard');
-  };
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-indigo-100 shadow-2xl w-full max-w-3xl mx-4 my-8 overflow-hidden animate-fadeIn">
-        <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-br from-indigo-50 to-white border-b border-indigo-100">
-          <h2 className="text-xl font-bold text-indigo-900">Sermon Details</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-indigo-500 transition"><XCircleIcon className="h-6 w-6" /></button>
-        </div>
-        <div className="flex flex-col md:flex-row">
-          {/* Left: Thumbnail/Video */}
-          <div className="w-full md:w-2/5 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6">
-            <DocumentTextIcon className="h-20 w-20 opacity-40 mb-2" />
-            <div className="font-bold text-lg text-center mb-2">{sermon.title}</div>
-            <div className="text-indigo-100 text-sm mb-2">{sermon.speaker}</div>
-            <div className="text-indigo-200 text-xs mb-4">{formatDate(sermon.datePreached)}</div>
-            <div className="flex gap-2 mt-2">
-              <a href={sermon.videoUrl} target="_blank" rel="noopener noreferrer" title="Watch Video" className="bg-white/90 hover:bg-white text-indigo-700 rounded-full p-2 transition"><VideoCameraIcon className="h-5 w-5" /></a>
-              <a href={sermon.audioUrl} target="_blank" rel="noopener noreferrer" title="Listen Audio" className="bg-white/90 hover:bg-white text-indigo-700 rounded-full p-2 transition"><SolidPlayIcon className="h-5 w-5" /></a>
-              <button onClick={handleShare} title="Share" className="bg-white/90 hover:bg-white text-indigo-700 rounded-full p-2 transition"><ShareIcon className="h-5 w-5" /></button>
-              <button onClick={() => alert('Download notes')} title="Download Notes" className="bg-white/90 hover:bg-white text-indigo-700 rounded-full p-2 transition"><CloudArrowDownIcon className="h-5 w-5" /></button>
-            </div>
-          </div>
-          {/* Right: Details */}
-          <div className="w-full md:w-3/5 p-6 flex flex-col">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700">{categoryInfo.name}</Badge>
-              <span className="text-xs text-gray-400">{sermon.duration}</span>
-            </div>
-            <div className="mb-4 text-gray-700 whitespace-pre-line">{sermon.description}</div>
-            <div className="mb-4">
-              <span className="font-semibold text-gray-800">Tags:</span> {sermon.tags.map((tag: string) => <Badge key={tag} className="ml-1 text-xs">{tag}</Badge>)}
-            </div>
-            <div className="flex gap-3 mt-auto">
-              <Button variant="outline" onClick={() => onEdit(sermon)} size="sm"><PencilIcon className="h-4 w-4 mr-1" />Edit</Button>
-              <Button variant="destructive" onClick={() => onDelete(sermon)} size="sm"><TrashIcon className="h-4 w-4 mr-1" />Delete</Button>
-              <Button variant="ghost" onClick={onClose} size="sm">Close</Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Sermon Play Modal
-function SermonPlayModal({ open, onClose, sermon }: { open: boolean; onClose: () => void; sermon: any | null; }) {
-  if (!open || !sermon) return null;
-  const hasVideo = Boolean(sermon.videoUrl);
-  const hasAudio = Boolean(sermon.audioUrl);
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-indigo-100 shadow-2xl w-full max-w-2xl mx-4 my-8 overflow-hidden animate-fadeIn">
-        <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-br from-indigo-50 to-white border-b border-indigo-100">
-          <h2 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
-            <SolidPlayIcon className="h-6 w-6 text-indigo-500" /> Playing: {sermon.title}
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-indigo-500 transition"><XCircleIcon className="h-6 w-6" /></button>
-        </div>
-        <div className="p-6 flex flex-col items-center justify-center">
-          {hasVideo ? (
-            <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
-              <video controls src={sermon.videoUrl} className="w-full h-full" poster="/sermon-thumbnails/placeholder.jpg">
-                Sorry, your browser does not support embedded videos.
-              </video>
-            </div>
-          ) : hasAudio ? (
-            <div className="w-full flex flex-col items-center justify-center">
-              <audio controls src={sermon.audioUrl} className="w-full mt-8">
-                Sorry, your browser does not support embedded audio.
-              </audio>
-            </div>
-          ) : (
-            <div className="text-gray-500">No media available for this sermon.</div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Sermon Video Modal
-function SermonVideoModal({ open, onClose, sermon }: { open: boolean; onClose: () => void; sermon: any | null; }) {
-  if (!open || !sermon) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-indigo-100 shadow-2xl w-full max-w-3xl mx-4 my-8 overflow-hidden animate-fadeIn">
-        <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-br from-indigo-50 to-white border-b border-indigo-100">
-          <h2 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
-            <VideoCameraIcon className="h-6 w-6 text-indigo-500" /> Video: {sermon.title}
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-indigo-500 transition"><XCircleIcon className="h-6 w-6" /></button>
-        </div>
-        <div className="p-6 flex flex-col items-center justify-center">
-          {sermon.videoUrl ? (
-            <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
-              <video controls src={sermon.videoUrl} className="w-full h-full" poster="/sermon-thumbnails/placeholder.jpg">
-                Sorry, your browser does not support embedded videos.
-              </video>
-            </div>
-          ) : (
-            <div className="text-gray-500">No video available for this sermon.</div>
-          )}
-          <div className="mt-4 w-full flex flex-col items-center">
-            <div className="font-bold text-lg text-indigo-900">{sermon.title}</div>
-            <div className="text-sm text-gray-500">{sermon.speaker} &bull; {formatDate(sermon.datePreached)}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Sermon Audio Modal
-function SermonAudioModal({ open, onClose, sermon }: { open: boolean; onClose: () => void; sermon: any | null; }) {
-  if (!open || !sermon) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-indigo-100 shadow-2xl w-full max-w-md mx-4 my-8 overflow-hidden animate-fadeIn">
-        <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-br from-indigo-50 to-white border-b border-indigo-100">
-          <h2 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
-            <ArrowTopRightOnSquareIcon className="h-6 w-6 text-indigo-500" /> Listen: {sermon.title}
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-indigo-500 transition"><XCircleIcon className="h-6 w-6" /></button>
-        </div>
-        <div className="p-6 flex flex-col items-center justify-center">
-          {sermon.audioUrl ? (
-            <audio controls src={sermon.audioUrl} className="w-full">
-              Sorry, your browser does not support embedded audio.
-            </audio>
-          ) : (
-            <div className="text-gray-500">No audio available for this sermon.</div>
-          )}
-          <div className="mt-4 w-full flex flex-col items-center">
-            <div className="font-bold text-lg text-indigo-900">{sermon.title}</div>
-            <div className="text-sm text-gray-500">{sermon.speaker} &bull; {formatDate(sermon.datePreached)}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Main Sermons Page Component
 export default function SermonsPage() {
+  // State management
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [isFormModalOpen, setFormModalOpen] = useState(false);
-  const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [isPlayModalOpen, setPlayModalOpen] = useState(false);
-  const [isVideoModalOpen, setVideoModalOpen] = useState(false);
-  const [isAudioModalOpen, setAudioModalOpen] = useState(false);
-  const [isSpeakerManagerOpen, setSpeakerManagerOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSpeaker, setSelectedSpeaker] = useState('');
+  const [selectedSeries, setSelectedSeries] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [sortBy, setSortBy] = useState('datePreached');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSermonForm, setShowSermonForm] = useState(false);
+  const [showSermonDetails, setShowSermonDetails] = useState(false);
+  const [selectedSermon, setSelectedSermon] = useState<SermonEntity | null>(null);
+  const [editingSermon, setEditingSermon] = useState<SermonEntity | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false); // Explicit mode tracking
+  const [isSpeakerManagerOpen, setIsSpeakerManagerOpen] = useState(false);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
-  const [selectedSermon, setSelectedSermon] = useState(null);
-  const [editingSermon, setEditingSermon] = useState(null);
+  const [isSeriesManagerOpen, setIsSeriesManagerOpen] = useState(false);
 
-  const { selectedBranchId } = useOrganizationBranchFilter();
-  const { canManageContent } = usePermissions();
-  const { sermons, loading, error } = useSermons(selectedBranchId);
-  const { speakers } = useSpeakers(selectedBranchId);
-  const { categories } = useCategories();
-  const { createSermon, updateSermon, deleteSermon, loading: isSaving } = useSermonMutations();
+  // Hooks
+  const { user } = useAuth();
+  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { organizationId, branchId } = useOrganizationBranchFilter();
 
-  const filteredSermons = useMemo(() => {
-    if (!sermons) return [];
-    let result = sermons;
-    if (searchTerm) {
-      result = result.filter(sermon =>
-        sermon.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sermon.speaker?.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (activeCategory !== 'all') {
-      result = result.filter(sermon => sermon.category?.id === activeCategory);
-    }
-    return result;
-  }, [sermons, searchTerm, activeCategory]);
+  // GraphQL hooks
+  const { data: sermonsData, loading: sermonsLoading, error: sermonsError, refetch: refetchSermons } = useSermons();
+  const { data: speakersData, loading: speakersLoading } = useGetSpeakers();
+  const { data: seriesData, loading: seriesLoading } = useGetSeries();
+  const { data: categoriesData, loading: categoriesLoading } = useCategories();
+  const [createSermon, { loading: createLoading }] = useCreateSermon();
+  const [updateSermon, { loading: updateLoading }] = useUpdateSermon();
+  const [deleteSermon, { loading: deleteLoading }] = useDeleteSermon();
 
-  const handleOpenFormModal = (sermon = null) => {
-    setEditingSermon(sermon);
-    setFormModalOpen(true);
-  };
+  const mutationLoading = createLoading || updateLoading || deleteLoading;
 
-  const handleOpenDetailsModal = (sermon) => {
-    setSelectedSermon(sermon);
-    setDetailsModalOpen(true);
-  };
+  const sermons = sermonsData?.sermons || [];
+  const speakers = speakersData?.speakers || [];
+  const series = seriesData?.series || [];
+  const categories = categoriesData?.categories || [];
 
-  const handleOpenPlayModal = (sermon) => {
-    setSelectedSermon(sermon);
-    setPlayModalOpen(true);
-  };
-
-  const handleOpenVideoModal = (sermon) => {
-    setSelectedSermon(sermon);
-    setVideoModalOpen(true);
-  };
-
-  const handleOpenAudioModal = (sermon) => {
-    setSelectedSermon(sermon);
-    setAudioModalOpen(true);
-  };
-
-  const handleOpenSpeakerManager = () => {
-    setSpeakerManagerOpen(true);
-  };
-
-  const handleOpenCategoryManager = () => {
-    setIsCategoryManagerOpen(true);
-  };
-
-  const handleSaveSermon = async (formData: any) => {
-    const { id, tags, datePreached, speaker, ...rest } = formData;
-    
-    const input = {
-      ...rest,
-      tags: Array.isArray(tags) ? tags : [],
-      datePreached: datePreached ? new Date(datePreached).toISOString() : new Date().toISOString(),
-      status: 'PUBLISHED',
-      speakerId: speaker, // Assuming form returns speakerId
-    };
-
-    try {
-      if (id) {
-        await updateSermon({ variables: { updateSermonInput: { id, ...input } } });
-      } else {
-        await createSermon({ variables: { createSermonInput: input } });
+  // Data processing
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    sermons.forEach((sermon: any) => {
+      if (sermon.tags && Array.isArray(sermon.tags)) {
+        sermon.tags.forEach((tag: any) => {
+          if (typeof tag === 'string') {
+            tags.add(tag);
+          } else if (tag && tag.name) {
+            tags.add(tag.name);
+          }
+        });
       }
-      setFormModalOpen(false);
+    });
+    return Array.from(tags).sort();
+  }, [sermons]);
+
+  // Filter and sort sermons
+  const filteredSermons = useMemo(() => {
+    let filtered = sermons.filter((sermon: any) => {
+      // Search term filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesTitle = sermon.title?.toLowerCase().includes(searchLower);
+        const matchesSpeaker = sermon.speaker?.name?.toLowerCase().includes(searchLower);
+        const matchesDescription = sermon.description?.toLowerCase().includes(searchLower);
+        const matchesTags = sermon.tags?.some((tag: any) => {
+          const tagName = typeof tag === 'string' ? tag : tag?.name || '';
+          return tagName.toLowerCase().includes(searchLower);
+        });
+        
+        if (!matchesTitle && !matchesSpeaker && !matchesDescription && !matchesTags) {
+          return false;
+        }
+      }
+
+      // Category filter
+      if (selectedCategory && sermon.category?.id !== selectedCategory) {
+        return false;
+      }
+
+      // Speaker filter
+      if (selectedSpeaker && sermon.speaker?.id !== selectedSpeaker) {
+        return false;
+      }
+
+      // Series filter
+      if (selectedSeries && sermon.series?.id !== selectedSeries) {
+        return false;
+      }
+
+      // Tags filter
+      if (selectedTags.length > 0) {
+        const sermonTags = sermon.tags?.map((tag: any) => 
+          typeof tag === 'string' ? tag : tag?.name || ''
+        ) || [];
+        const hasSelectedTag = selectedTags.some(tag => sermonTags.includes(tag));
+        if (!hasSelectedTag) {
+          return false;
+        }
+      }
+
+      // Date range filter
+      if (dateRange.from || dateRange.to) {
+        const sermonDate = new Date(sermon.datePreached);
+        if (dateRange.from && sermonDate < dateRange.from) {
+          return false;
+        }
+        if (dateRange.to && sermonDate > dateRange.to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Sort sermons
+    filtered.sort((a: any, b: any) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'title':
+          aValue = a.title || '';
+          bValue = b.title || '';
+          break;
+        case 'speaker':
+          aValue = a.speaker?.name || '';
+          bValue = b.speaker?.name || '';
+          break;
+        case 'datePreached':
+        default:
+          aValue = new Date(a.datePreached);
+          bValue = new Date(b.datePreached);
+          break;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [sermons, searchTerm, selectedCategory, selectedSpeaker, selectedSeries, selectedTags, dateRange, sortBy, sortOrder]);
+
+  // Event handlers
+  const handleOpenFormModal = (sermon?: SermonEntity) => {
+    console.log('handleOpenFormModal called with:', sermon); // Debug log
+    if (sermon && sermon.id) {
+      // Edit mode - editing an existing sermon
+      setEditingSermon(sermon);
+      setIsEditMode(true);
+    } else {
+      // Create mode - creating a new sermon
       setEditingSermon(null);
-      // refetchSermons();
+      setIsEditMode(false);
+    }
+    setShowSermonForm(true);
+  };
+
+  const handleCloseFormModal = () => {
+    setShowSermonForm(false);
+    setEditingSermon(null);
+    setIsEditMode(false);
+  };
+
+  const handleViewSermon = (sermon: SermonEntity) => {
+    setSelectedSermon(sermon);
+    setShowSermonDetails(true);
+  };
+
+  const handleCloseSermonDetails = () => {
+    setShowSermonDetails(false);
+    setSelectedSermon(null);
+  };
+
+  const handleSubmitSermon = async (data: any) => {
+    console.log('handleSubmitSermon called with data:', data);
+    console.log('editingSermon state:', editingSermon);
+    console.log('editingSermon truthy check:', !!editingSermon);
+    console.log('editingSermon && editingSermon.id check:', !!(editingSermon && editingSermon.id));
+    
+    try {
+      const submissionData = {
+        ...data,
+        branchId: user?.userBranches?.[0]?.branch?.id,
+        organisationId: user?.userBranches?.[0]?.branch?.organisation?.id,
+      };
+      
+      console.log('Final submission data:', submissionData);
+      
+      if (isEditMode) {
+        await updateSermon({ variables: { updateSermonInput: submissionData } });
+      } else {
+        await createSermon({ variables: { createSermonInput: submissionData } });
+      }
+      await refetchSermons();
+      setShowSermonForm(false);
+      setEditingSermon(null);
+      setIsEditMode(false);
     } catch (error) {
-      console.error("Failed to save sermon:", error);
+      console.error('Error saving sermon:', error);
+      alert('Failed to save sermon. Please try again.');
     }
   };
 
-  const handleDeleteSermon = async (sermon: any) => {
+  const handleDeleteSermon = async (sermon: SermonEntity) => {
     if (window.confirm(`Are you sure you want to delete "${sermon.title}"?`)) {
       try {
         await deleteSermon({ variables: { id: sermon.id } });
-        // refetchSermons();
+        await refetchSermons();
+        setShowSermonDetails(false);
       } catch (error) {
-        console.error("Failed to delete sermon:", error);
+        console.error('Error deleting sermon:', error);
+        alert('Failed to delete sermon. Please try again.');
       }
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex-1 bg-gray-50/50 p-6">
-        <div className="text-center mb-10">
-          <DashboardHeader 
-            title="Sermon Library" 
-            description="Manage and organize your church's sermon collection" 
-            icon={<DocumentTextIcon className="h-6 w-6" />}
-          />
-        </div>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading sermons...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('');
+    setSelectedSpeaker('');
+    setSelectedSeries('');
+    setSelectedTags([]);
+    setDateRange({});
+  };
 
-  if (error) {
+  const hasActiveFilters = searchTerm || selectedCategory || selectedSpeaker || selectedSeries || selectedTags.length > 0 || dateRange.from || dateRange.to;
+
+  if (sermonsLoading) {
     return (
-      <div className="flex-1 bg-gray-50/50 p-6">
-        <div className="text-center mb-10">
-          <DashboardHeader 
-            title="Sermon Library" 
-            description="Manage and organize your church's sermon collection" 
-            icon={<DocumentTextIcon className="h-6 w-6" />}
-          />
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-md mx-auto mt-16">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
-            <XCircleIcon className="h-10 w-10 text-red-500" />
-          </div>
-          <h3 className="mt-6 text-lg font-medium text-gray-900">Error Loading Sermons</h3>
-          <p className="mt-2 text-gray-500">{error.message}</p>
-          <Button onClick={() => window.location.reload()} className="mt-6" size="lg">
-            Try Again
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-gray-50/50 p-6">
-      <div className="text-center mb-10">
-        <DashboardHeader 
-          title="Sermon Library" 
-          description="Manage and organize your church's sermon collection" 
-          icon={<DocumentTextIcon className="h-6 w-6" />}
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       
-      {/* Filters and actions section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-10 mx-auto max-w-5xl">
-        <div className="flex flex-col lg:flex-row gap-4 justify-center items-center">
-          {/* Search */}
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+              Sermon Library
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+              Discover inspiring messages, grow in faith, and share God's word with our comprehensive sermon collection.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex items-center gap-6 text-blue-100">
+                <div className="flex items-center gap-2">
+                  <BookOpenIcon className="w-6 h-6" />
+                  <span className="font-semibold">{sermons.length}</span>
+                  <span>Sermons</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MicrophoneIcon className="w-6 h-6" />
+                  <span className="font-semibold">{speakers.length}</span>
+                  <span>Speakers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TagIcon className="w-6 h-6" />
+                  <span className="font-semibold">{categories.length}</span>
+                  <span>Categories</span>
+                </div>
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Search sermons..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
           </div>
-          
-          {/* Category filter */}
-          <div className="w-full lg:w-48">
-            <select
-              value={activeCategory || ""}
-              onChange={(e) => setActiveCategory(e.target.value || null)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
           </div>
-          
-          {/* Manage Speakers button */}
-          <div className="flex-shrink-0">
-            <button
-              onClick={handleOpenSpeakerManager}
-              className="bg-white text-indigo-600 px-4 py-2 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-100 transition-colors"
+        </div>
+      </div>
+
+      {/* Search and Filters Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          {/* Search Bar */}
+          <div className="flex flex-col lg:flex-row gap-4 items-center mb-6">
+            <div className="relative flex-1 max-w-2xl">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search sermons, speakers, topics..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 text-gray-900 placeholder-gray-500"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="px-3 py-2"
+                >
+                  <Squares2X2Icon className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="px-3 py-2"
+                >
+                  <ListBulletIcon className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Filters Toggle */}
+              <Button
+                variant={showFilters ? 'default' : 'outline'}
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <FunnelIcon className="w-4 h-4" />
+                Filters
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+                    {[searchTerm, selectedCategory, selectedSpeaker, selectedSeries, ...selectedTags, dateRange.from, dateRange.to].filter(Boolean).length}
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Add Sermon Button */}
+              <Button 
+                onClick={handleOpenFormModal}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Add Sermon
+              </Button>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="border-t border-gray-200 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((category: any) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Speaker Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Speaker</label>
+                  <select
+                    value={selectedSpeaker}
+                    onChange={(e) => setSelectedSpeaker(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  >
+                    <option value="">All Speakers</option>
+                    {speakers.map((speaker: any) => (
+                      <option key={speaker.id} value={speaker.id}>
+                        {speaker.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Sort By */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  >
+                    <option value="datePreached">Date Preached</option>
+                    <option value="title">Title</option>
+                    <option value="speaker">Speaker</option>
+                  </select>
+                </div>
+
+                {/* Sort Order */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Order</label>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  >
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Tags Filter */}
+              {allTags.length > 0 && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map((tag: string) => (
+                      <Button
+                        key={tag}
+                        variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => {
+                          if (selectedTags.includes(tag)) {
+                            setSelectedTags(selectedTags.filter(t => t !== tag));
+                          } else {
+                            setSelectedTags([...selectedTags, tag]);
+                          }
+                        }}
+                        className="text-xs"
+                      >
+                        {tag}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <div className="flex justify-end">
+                  <Button onClick={clearFilters} variant="ghost" className="text-sm">
+                    <XMarkIcon className="w-4 h-4 mr-1" />
+                    Clear All Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Results Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {/* Results Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {filteredSermons.length} {filteredSermons.length === 1 ? 'Sermon' : 'Sermons'}
+            </h2>
+            {hasActiveFilters && (
+              <Badge variant="outline" className="text-sm">
+                Filtered Results
+              </Badge>
+            )}
+          </div>
+
+          {/* Management Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSpeakerManagerOpen(true)}
+              className="flex items-center gap-2"
             >
+              <UserIcon className="w-4 h-4" />
               Manage Speakers
-            </button>
-          </div>
-          {/* View Categories button */}
-          <div className="flex-shrink-0">
-            <button
-              onClick={handleOpenCategoryManager}
-              className="bg-white text-indigo-600 px-4 py-2 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-100 transition-colors"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCategoryManagerOpen(true)}
+              className="flex items-center gap-2"
             >
-              View Categories
-            </button>
-          </div>
-          {/* Add sermon button */}
-          <div className="flex-shrink-0">
-            <button
-              onClick={handleOpenFormModal}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition-colors"
+              <TagIcon className="w-4 h-4" />
+              Manage Categories
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSeriesManagerOpen(true)}
+              className="flex items-center gap-2"
             >
-              + Add Sermon
-            </button>
+              <BookOpenIcon className="w-4 h-4" />
+              Manage Series
+            </Button>
           </div>
         </div>
-      </div>
-      
-      {/* Sermons Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-5xl mx-auto">
-        {filteredSermons.map((sermon) => (
-          <SermonCard
-            key={sermon.id}
-            sermon={sermon}
-            onViewDetails={handleOpenDetailsModal}
-            onPlay={handleOpenPlayModal}
-            onVideo={handleOpenVideoModal}
-            onAudio={handleOpenAudioModal}
-          />
-        ))}
-      </div>
-      
-      {/* Empty state - shown when no sermons match filters */}
-      {filteredSermons.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-md mx-auto mt-16">
-          <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto">
-            <DocumentTextIcon className="h-10 w-10 text-indigo-500" />
+
+        {/* Sermons Grid/List */}
+        {filteredSermons.length > 0 ? (
+          <div className={
+            viewMode === 'grid' 
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              : "space-y-4"
+          }>
+            {filteredSermons.map((sermon: any) => (
+              <ModernSermonCard
+                key={sermon.id}
+                sermon={sermon}
+                onViewDetails={handleViewSermon}
+                onEdit={handleOpenFormModal}
+                onDelete={handleDeleteSermon}
+                viewMode={viewMode}
+              />
+            ))}
           </div>
-          <h3 className="mt-6 text-lg font-medium text-gray-900">No sermons found</h3>
-          <p className="mt-2 text-gray-500">
-            {searchTerm || activeCategory 
-              ? "Try adjusting your filters or search term" 
-              : "Get started by adding your first sermon"}
-          </p>
-          <Button onClick={handleOpenFormModal} className="mt-6" size="lg">
-            <PlusIcon className="h-5 w-5 mr-2" /> 
-            Add Your First Sermon
-          </Button>
-        </div>
-      )}
-      
-      {/* Pagination */}
-      {filteredSermons.length > 0 && (
-        <div className="flex justify-center mt-16 mb-8">
-          <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              <span className="sr-only">Previous</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-            <a href="#" aria-current="page" className="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600 hover:bg-indigo-100">
-              1
-            </a>
-            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              2
-            </a>
-            <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              3
-            </a>
-            <a href="#" className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              <span className="sr-only">Next</span>
-              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </a>
-          </nav>
-        </div>
-      )}
-      
+        ) : (
+          <div className="text-center py-16">
+            <BookOpenIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              {hasActiveFilters ? 'No sermons match your filters' : 'No sermons found'}
+            </h3>
+            <p className="text-gray-500 mb-6">
+              {hasActiveFilters 
+                ? 'Try adjusting your search criteria or clearing filters.'
+                : 'Get started by adding your first sermon to the library.'
+              }
+            </p>
+            {hasActiveFilters ? (
+              <Button onClick={clearFilters} variant="outline">
+                Clear Filters
+              </Button>
+            ) : canCreate ? (
+              <Button onClick={() => handleOpenFormModal()}>
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Add First Sermon
+              </Button>
+            ) : null}
+          </div>
+        )}
+      </div>
+
       {/* Modals */}
       <SermonFormModal
-        open={isFormModalOpen}
-        onClose={() => { setFormModalOpen(false); setEditingSermon(null); }}
-        onSubmit={handleSaveSermon}
+        open={showSermonForm}
+        onClose={handleCloseFormModal}
+        onSubmit={handleSubmitSermon}
         initialData={editingSermon}
-        categories={categories} 
-        speakers={speakers || []}
-        series={[]}
-        isSaving={isSaving}
+        categories={categories}
+        speakers={speakers}
+        series={series}
+        isSaving={mutationLoading}
+        isEditMode={isEditMode}
+        user={user}
       />
-      
-      <SermonDetailsModal 
-        open={isDetailsModalOpen}
-        onClose={() => setDetailsModalOpen(false)}
+
+      <SermonDetailsModal
+        open={showSermonDetails}
+        onClose={handleCloseSermonDetails}
         sermon={selectedSermon}
         onEdit={handleOpenFormModal}
         onDelete={handleDeleteSermon}
       />
-      
-      <SermonPlayModal 
-        open={isPlayModalOpen}
-        onClose={() => setPlayModalOpen(false)}
-        sermon={selectedSermon}
-      />
-      
-      <SermonVideoModal 
-        open={isVideoModalOpen}
-        onClose={() => setVideoModalOpen(false)}
-        sermon={selectedSermon}
-      />
-      
-      <SermonAudioModal 
-        open={isAudioModalOpen}
-        onClose={() => setAudioModalOpen(false)}
-        sermon={selectedSermon}
-      />
-      
-      <SpeakerManagerModal 
+
+      <SpeakerManagerModal
         open={isSpeakerManagerOpen}
-        onClose={() => setSpeakerManagerOpen(false)}
+        onClose={() => setIsSpeakerManagerOpen(false)}
       />
-      
-      <CategoryManagerModal 
+
+      <CategoryManagerModal
         open={isCategoryManagerOpen}
         onClose={() => setIsCategoryManagerOpen(false)}
       />
-      
-      {/* Saving notification toast */}
-      {isSaving && (
-        <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-100 p-4 flex items-center space-x-3 transition-opacity duration-300 opacity-100 animate-fadeIn">
-          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-indigo-500"></div>
-          <span className="text-gray-700">Saving sermon...</span>
-        </div>
-      )}
+
+      <SeriesManagerModal
+        open={isSeriesManagerOpen}
+        onClose={() => setIsSeriesManagerOpen(false)}
+      />
     </div>
   );
 }

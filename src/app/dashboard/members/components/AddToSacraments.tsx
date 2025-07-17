@@ -32,6 +32,11 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
   const [notes, setNotes] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  // Baptism and Confirmation specific
+  const [godparent1Name, setGodparent1Name] = useState("");
+  const [godparent2Name, setGodparent2Name] = useState("");
+  const [sponsorName, setSponsorName] = useState("");
+
   // Matrimony-specific
   const [witness1Name, setWitness1Name] = useState("");
   const [witness2Name, setWitness2Name] = useState("");
@@ -54,6 +59,9 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
     setNotes("");
     setWitness1Name("");
     setWitness2Name("");
+    setGodparent1Name("");
+    setGodparent2Name("");
+    setSponsorName("");
   };
 
   const handleAdd = async () => {
@@ -74,8 +82,13 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
         input.witness2Name = witness2Name;
         await createMatrimonyRecord({ variables: { input } });
       } else if (sacramentType === "BAPTISM") {
+        input.godparent1Name = godparent1Name || undefined;
+        input.godparent2Name = godparent2Name || undefined;
         await createBaptismRecord({ variables: { input } });
       } else if (sacramentType === "CONFIRMATION") {
+        input.sponsorName = sponsorName || undefined;
+        input.godparent1Name = godparent1Name || undefined;
+        input.godparent2Name = godparent2Name || undefined;
         await createConfirmationRecord({ variables: { input } });
       } else if (sacramentType === "EUCHARIST_FIRST_COMMUNION") {
         await createFirstCommunionRecord({ variables: { input } });
@@ -83,9 +96,6 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
       setSuccessMsg("Sacrament record added!");
       resetFields();
       if (onSuccess) onSuccess();
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
     } catch (e) {
       setSuccessMsg("");
     }
@@ -155,6 +165,69 @@ export default function AddToSacraments({ memberId, onSuccess }: { memberId: str
               required
             />
           </div>
+          {/* Baptism-specific fields */}
+          {sacramentType === "BAPTISM" && <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 1 Name</label>
+              <input
+                type="text"
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-4 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-base"
+                value={godparent1Name}
+                onChange={e => setGodparent1Name(e.target.value)}
+                placeholder="e.g. Jane Smith"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 2 Name</label>
+              <input
+                type="text"
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-4 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-base"
+                value={godparent2Name}
+                onChange={e => setGodparent2Name(e.target.value)}
+                placeholder="e.g. Mark Johnson"
+                disabled={loading}
+              />
+            </div>
+          </>}
+
+          {/* Confirmation-specific fields */}
+          {sacramentType === "CONFIRMATION" && <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sponsor Name</label>
+              <input
+                type="text"
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-4 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-base"
+                value={sponsorName}
+                onChange={e => setSponsorName(e.target.value)}
+                placeholder="e.g. James Wilson"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 1 Name</label>
+              <input
+                type="text"
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-4 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-base"
+                value={godparent1Name}
+                onChange={e => setGodparent1Name(e.target.value)}
+                placeholder="e.g. Jane Smith"
+                disabled={loading}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Godparent 2 Name</label>
+              <input
+                type="text"
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-4 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-base"
+                value={godparent2Name}
+                onChange={e => setGodparent2Name(e.target.value)}
+                placeholder="e.g. Mark Johnson"
+                disabled={loading}
+              />
+            </div>
+          </>}
+          
           {/* Matrimony-specific fields */}
           {sacramentType === "MATRIMONY" && <>
             <div>

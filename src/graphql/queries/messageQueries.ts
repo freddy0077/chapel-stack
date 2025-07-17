@@ -6,6 +6,7 @@ export const ALL_MESSAGES_QUERY = gql`
       ... on EmailMessageDto {
         id
         subject
+        organisationId
         branchId
         bodyHtml
         bodyText
@@ -20,6 +21,7 @@ export const ALL_MESSAGES_QUERY = gql`
       ... on SmsMessageDto {
         id
         body
+        organisationId
         branchId
         senderNumber
         recipients
@@ -31,6 +33,7 @@ export const ALL_MESSAGES_QUERY = gql`
       ... on NotificationDto {
         id
         title
+        organisationId
         branchId
         message
         isRead
@@ -41,12 +44,6 @@ export const ALL_MESSAGES_QUERY = gql`
         createdAt
         updatedAt
       }
-    }
-    messageCounts {
-      total
-      email
-      sms
-      notification
     }
   }
 `;
@@ -159,22 +156,49 @@ export const GET_MESSAGES = gql`
 `;
 
 export const GET_MESSAGE_STATS = gql`
-  query GetMessageStats {
-    messageStats {
-      totalSent
-      emailStats {
-        sent
-        opened
-        clicked
+  query GetMessageStats($filter: CommunicationStatsFilterInput) {
+    communicationStats(filter: $filter) {
+      totalEmailsSent
+      totalSmsSent
+      totalNotifications
+      emailStatusCounts {
+        status
+        count
       }
-      smsStats {
-        sent
-        delivered
+      smsStatusCounts {
+        status
+        count
       }
-      notificationStats {
-        sent
-        opened
+      messagesByDate {
+        date
+        count
       }
+      activeTemplates
+      deliveryRate
+      averageResponseTime
+    }
+  }
+`;
+
+export const SEND_EMAIL_MUTATION = gql`
+  mutation SendEmail($input: SendEmailInput!) {
+    sendEmail(input: $input)
+  }
+`;
+
+export const SEND_SMS_MUTATION = gql`
+  mutation SendSms($input: SendSmsInput!) {
+    sendSms(input: $input)
+  }
+`;
+
+export const SEND_NOTIFICATION_MUTATION = gql`
+  mutation CreateNotification($input: CreateNotificationInput!) {
+    createNotification(input: $input) {
+      id
+      title
+      message
+      createdAt
     }
   }
 `;

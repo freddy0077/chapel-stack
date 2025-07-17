@@ -23,7 +23,7 @@ interface BranchHeaderProps {
     state: string;
     mainPastor: string;
     establishedDate: string;
-    status: string;
+    isActive: boolean;
     logo?: string;
     coverImage?: string;
     website?: string;
@@ -59,16 +59,19 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
         
         {/* Status Badge */}
         <div className="absolute top-4 right-4 z-10">
-          {branch.status === "active" ? (
-            <span className="inline-flex items-center rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-sm font-medium text-green-700 shadow-sm">
-              <CheckCircleIcon className="mr-1 h-4 w-4 text-green-500" />
+          {branch.isActive ? (
+            <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-4 py-2 text-sm font-medium text-white shadow-md border border-white/20">
+              <div className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              </div>
               Active
-            </span>
+            </div>
           ) : (
-            <span className="inline-flex items-center rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-sm font-medium text-red-700 shadow-sm">
-              <XCircleIcon className="mr-1 h-4 w-4 text-red-500" />
+            <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-red-500 px-4 py-2 text-sm font-medium text-white shadow-md border border-white/20">
+              <XCircleIcon className="h-4 w-4 text-white" />
               Inactive
-            </span>
+            </div>
           )}
         </div>
       </div>
