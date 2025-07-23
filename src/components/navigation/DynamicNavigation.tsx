@@ -5,7 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth/authContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from '@/hooks/usePermissions';
 import { useModulePreferences } from '@/hooks/useModulePreferences';
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -23,9 +23,14 @@ import {
   PhotoIcon,
   DevicePhoneMobileIcon,
   GlobeAltIcon,
+  BoltIcon,
+  HeartIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
 import { isModuleEnabled } from '../onboarding/ModulePreferences';
+import { getNavigationForRole } from '@/config/navigation.config';
+import { getUserNavigation } from '@/utils/navigation.utils';
 
 // The full navigation structure with module dependencies
 const fullNavigation = [
@@ -79,6 +84,13 @@ const fullNavigation = [
         icon: ChatBubbleLeftRightIcon,
         badge: null,
         moduleId: "communication"
+      },
+      {
+        name: "Pastoral Care",
+        href: "/dashboard/pastoral-care",
+        icon: HeartIcon,
+        badge: null,
+        moduleId: "pastoral-care"
       },
     ]
   },
@@ -174,6 +186,20 @@ const fullNavigation = [
         badge: null,
         moduleId: "dashboard" // Basic reporting is included in core dashboard
       },
+      { 
+        name: "Workflows", 
+        href: "/dashboard/workflows", 
+        icon: BoltIcon, 
+        badge: null,
+        moduleId: "workflows" 
+      },
+      { 
+        name: "Subscription Manager", 
+        href: "/dashboard/subscription-manager", 
+        icon: CreditCardIcon, 
+        badge: null,
+        moduleId: "subscription-manager" 
+      },
     ]
   },
   {
@@ -258,6 +284,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   // Get user data from authentication context
   const { user, logout } = useAuth();
   const { canCustomizeModules } = usePermissions();
+  const { enabledModules } = useModulePreferences();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -267,157 +294,23 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   useEffect(() => {
     const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
 
-    // --- Refactored navigation filtering for clarity ---
-    const getMemberNavigation = () =>
-      fullNavigation
-        .filter(section => ["Main", "Community", "Activities"].includes(section.category))
-        .map(section => {
-          // For member, make dashboard link point to /dashboard/member
-          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "member") {
-            return {
-              ...section,
-              items: section.items.map(item =>
-                item.name === "Dashboard"
-                  ? { ...item, href: "/dashboard/member" }
-                  : item
-              )
-            };
-          }
-          // For branch_admin, make dashboard link point to /dashboard/branch
-          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "branch_admin") {
-            return {
-              ...section,
-              items: section.items.map(item =>
-                item.name === "Dashboard"
-                  ? { ...item, href: "/dashboard/branch" }
-                  : item
-              )
-            };
-          }
-          return section;
-        })
-        .map(section => ({
-          ...section,
-          items: section.items.filter(item =>
-            ["Dashboard", "Prayer Requests", "Calendar", "Sermons"].includes(item.name)
-          )
-        }))
-        .filter(section => section.items.length > 0);
+    // Use our new role-based navigation configuration
+    const roleBasedNavigation = getUserNavigation(userRole, enabledModules);
+    
+    // Convert our new navigation format to the existing format expected by the UI
+    const convertedNavigation = roleBasedNavigation.map(category => ({
+      category: category.category,
+      items: category.items.map(item => ({
+        name: item.name,
+        href: item.href,
+        icon: item.icon,
+        badge: item.badge || null,
+        moduleId: item.moduleId
+      }))
+    }));
 
-    const getBranchAdminNavigation = () =>
-      fullNavigation
-        .map(section => {
-          if (section.category === "Main") {
-            // Remove Branch Admin Dashboard link and make Dashboard point to /dashboard/branch
-            let items = section.items
-              .filter(i => i.name !== "Branch Admin Dashboard")
-              .map(item =>
-                item.name === "Dashboard"
-                  ? { ...item, href: "/dashboard/branch" }
-                  : item
-              );
-            return { ...section, items };
-          }
-          if (["Community", "Activities"].includes(section.category)) {
-            return section;
-          }
-          if (section.category === "Operations") {
-            return {
-              ...section,
-              items: section.items.filter(item => item.name === "Branch Finances")
-            };
-          }
-          if (section.category === "System") {
-            return {
-              ...section,
-              items: section.items.filter(item =>
-                !["Admin", "Security"].includes(item.name)
-              )
-            };
-          }
-          // Hide Volunteers and any unhandled categories
-          return { ...section, items: [] };
-        })
-        .filter(section => section.items.length > 0);
-
-    if (userRole === 'MEMBER') {
-      setFilteredNavigation(getMemberNavigation());
-      return;
-    }
-    if (userRole === 'BRANCH_ADMIN') {
-      setFilteredNavigation(getBranchAdminNavigation());
-      return;
-    }
-
-    const isSuperAdmin = userRole === 'SUPER_ADMIN';
-
-    // 1. Filter navigation based on roles and enabled modules
-    const newFilteredNavigation = fullNavigation.map(category => ({
-      ...category,
-      items: category.items.filter(item => {
-        if (category.category === "Operations" && ["Branch Finances", "Reports"].includes(item.name)) {
-          // Only show Branch Finances to branch_admin, hide for super_admin (super_admin should only see "Finances")
-          if (item.name === "Branch Finances") {
-            return user?.primaryRole?.toLowerCase() === "branch_admin";
-          }
-          return false; // Hide Reports for all
-        }
-        if (category.category === "System" && item.name === "Admin") {
-          // Hide Admin menu item for all users
-          return false;
-        }
-        if (item.name === "Mobile App") {
-          // Hide Mobile App menu item for all users
-          return false;
-        }
-        // Hide Prayer Requests for super_admin in navigation
-        if (isSuperAdmin && item.name === "Prayer Requests") {
-          return false;
-        }
-        // Hide Communication for super_admin in navigation
-        if (isSuperAdmin && item.name === "Communication") {
-          return false;
-        }
-        // Super Admins see everything, always (except hidden above).
-        if (isSuperAdmin) {
-          return true;
-        }
-
-        // For other users, perform role-based checks for any protected routes
-        if (item.href.startsWith('/dashboard/admin')) {
-          // Only branch_admin should be checked here, as super_admin is already handled
-          if (userRole !== 'BRANCH_ADMIN') {
-            return false;
-          }
-        }
-
-        // Next, check if the item should be visible based on module selection.
-        // An item is visible if its module is enabled OR if it's a core dashboard item.
-        const moduleEnabled = isModuleEnabled(item.moduleId);
-        const isCoreItem = item.moduleId === 'dashboard';
-
-        return moduleEnabled || isCoreItem;
-      })
-    })).filter(category => category.items.length > 0);
-
-    setFilteredNavigation(newFilteredNavigation);
-
-    // 2. Perform redirect if user is on a page they don't have access to
-    const isCurrentPathAllowed = newFilteredNavigation
-      .flatMap(category => category.items)
-      .some(item => pathname === item.href || pathname.startsWith(`${item.href}/`));
-
-    if (!isCurrentPathAllowed && pathname !== '/dashboard') {
-      const isPotentiallyProtected = fullNavigation
-        .flatMap(c => c.items)
-        .some(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
-
-      if (isPotentiallyProtected) {
-        console.warn(`[DynamicNavigation] User with role '${userRole}' not allowed to access '${pathname}'. Redirecting to /dashboard.`);
-        router.push('/dashboard');
-      }
-    }
-  }, [user, pathname, router]);
+    setFilteredNavigation(convertedNavigation);
+  }, [user?.primaryRole, enabledModules]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

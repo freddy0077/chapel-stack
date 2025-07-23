@@ -1,5 +1,5 @@
 import { gql, useQuery, useMutation } from '@apollo/client';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 // GraphQL Fragments
 const CONTRIBUTION_FIELDS = gql`

@@ -1,41 +1,36 @@
-"use client";
+'use client';
 
-import { useEffect, ReactNode } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthGuardProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-/**
- * A component that restricts access to authenticated users only
- * @param children The components to render if the user is authenticated
- */
-export default function AuthGuard({ children }: AuthGuardProps) {
+export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // We don't want to redirect while the auth state is still being determined.
-    if (isLoading) {
-      return;
-    }
+    if (isLoading) return;
 
-    // If not authenticated and not loading, redirect to login.
-    // This is a robust fallback to the server-side middleware.
     if (!isAuthenticated) {
       console.log('AuthGuard: Not authenticated, redirecting to login.');
       router.push('/auth/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // While loading, or if the user is not yet authenticated (and the redirect is about to happen),
-  // show a loading indicator. This prevents a flash of the unprotected page.
   if (isLoading || !isAuthenticated) {
-    return <div>Loading...</div>; // Or a proper spinner component
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="h-12 w-12 rounded-full border-4 border-t-indigo-600 border-indigo-200 animate-spin mx-auto mb-4"></div>
+          <h2 className="text-2xl font-semibold text-gray-900">Loading...</h2>
+        </div>
+      </div>
+    );
   }
 
-  // If authenticated, render the children.
   return <>{children}</>;
 }

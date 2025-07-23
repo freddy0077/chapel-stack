@@ -12,8 +12,8 @@ import { MemberDemographicsReport } from './components/MemberDemographicsReport'
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client';
-import { useAuth } from '@/graphql/hooks/useAuth';
-import { useOrganizationBranchFilter } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 
 // Query to get branches and organizations for filters
 const GET_FILTER_OPTIONS = gql`
@@ -55,7 +55,7 @@ export default function ReportsPage() {
   });
 
   // Get organization/branch filter based on user role
-  const orgBranchFilter = useOrganizationBranchFilter();
+  const orgBranchFilter = useOrganisationBranch();
   const isSuperAdmin = user?.primaryRole === 'SUPER_ADMIN';
 
   // Update the query to include organizationId from the filter

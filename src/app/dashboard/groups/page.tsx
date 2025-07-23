@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/graphql/hooks/useAuth';
-import { useOrganizationBranchFilter } from '@/hooks';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import {
   useFilteredSmallGroups,
   SmallGroupStatus,
@@ -27,7 +27,7 @@ export default function Groups() {
   const { user } = useAuth();
   
   // Get organization/branch filter based on user role
-  const orgBranchFilter = useOrganizationBranchFilter();
+  const orgBranchFilter = useOrganisationBranch();
   
   // State for filtering and view mode
   const [searchTerm, setSearchTerm] = useState('');

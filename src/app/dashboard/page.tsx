@@ -7,12 +7,12 @@ import { FinancesSummary } from "@/components/dashboard/FinancesSummary";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 import { AdminTools } from "@/components/dashboard/AdminTools";
-import {useOrganizationBranchFilter} from "@/graphql/hooks/useOrganizationBranchFilter";
+import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
 import {useQuery} from "@apollo/client";
 import {GET_SUPER_ADMIN_DASHBOARD} from "@/graphql/queries/dashboardQueries";
 
 export default function DashboardPage() {
-  const { organisationId } = useOrganizationBranchFilter();
+  const { organisationId } = useOrganisationBranch();
   const { data, loading, error } = useQuery(GET_SUPER_ADMIN_DASHBOARD, {
     variables: { organisationId }, // Pass organisationId if you want to filter, or omit if not needed
   });

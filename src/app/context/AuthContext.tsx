@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, gql } from "@apollo/client";
-import { client } from "@/lib/apollo-client";
+import client from "@/lib/apollo-client";
 
 // Types for user roles and branches
 export type UserRole = 
@@ -14,7 +14,8 @@ export type UserRole =
   | "content_manager" // Can manage sermons, events, and other content
   | "ministry_leader" // Leaders of specific ministries
   | "volunteer"       // Volunteers with limited access
-  | "member";         // Regular church members
+  | "member"       // Regular church members
+  | "subscription_manager"; // Subscription manager
 
 export interface UserBranch {
   id: string;
@@ -167,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 photoUrl: '/images/avatars/default.jpg',
                 primaryBranchId: 'default_branch',
                 branches: apiUser.userBranches ? apiUser.userBranches.map((branchAccess: { branch: { id: string; name: string }; role: { name: string } }) => ({
-                  id: branchAccess.branch.id,
+                  id: branchAccess?.branch?.id,
                   name: branchAccess.branch.name,
                   role: branchAccess.role.name.toLowerCase() as UserRole,
                   permissions: []
@@ -234,24 +235,38 @@ const getDashboardRouteForRole = (role: string): string => {
   // Normalize role name: convert to lowercase and replace spaces with underscores
   const normalizedRole = role.toLowerCase().replace(/\s+/g, '_');
   
+  console.log('🔍 AuthContext - getDashboardRouteForRole called with role:', role, '-> normalized:', normalizedRole);
+
   switch (normalizedRole) {
     case 'super_admin':
+      console.log('✅ AuthContext - Routing to /dashboard/ for super_admin');
       return '/dashboard/';
+    case 'subscription_manager':
+      console.log('✅ AuthContext - Routing to /dashboard/subscription-manager for subscription_manager');
+      return '/dashboard/subscription-manager';
     case 'branch_admin':
+      console.log('✅ AuthContext - Routing to /dashboard/branch for branch_admin');
       return '/dashboard/branch';
     case 'pastor':
+      console.log('✅ AuthContext - Routing to /dashboard/pastor for pastor');
       return '/dashboard/pastor';
     case 'finance_manager':
+      console.log('✅ AuthContext - Routing to /dashboard/finance for finance_manager');
       return '/dashboard/finance';
     case 'content_manager':
+      console.log('✅ AuthContext - Routing to /dashboard/content for content_manager');
       return '/dashboard/content';
     case 'volunteer':
+      console.log('✅ AuthContext - Routing to /dashboard/volunteer for volunteer');
       return '/dashboard/volunteer';
     case 'ministry_leader':
+      console.log('✅ AuthContext - Routing to /dashboard/ministry for ministry_leader');
       return '/dashboard/ministry';
     case 'member':
+      console.log('✅ AuthContext - Routing to /dashboard/member for member');
       return '/dashboard/member';
     default:
+      console.log('⚠️ AuthContext - Unknown role, defaulting to /dashboard for role:', normalizedRole);
       return '/dashboard';
   }
 };

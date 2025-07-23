@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ModernOnboardingFlow from '@/components/onboarding/ModernOnboardingFlow';
 import { saveModulePreferences, loadModulePreferences, ChurchProfile } from '@/components/onboarding/ModulePreferences';
-import { useAuth, type AuthUser } from '@/graphql/hooks/useAuth'; // Added useAuth import and AuthUser type
+import { useAuth } from '@/contexts/AuthContext'; // Updated to use new auth context
 import { setCookie } from 'cookies-next';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  // Explicitly type the destructured user object
-  const { user, authLoading, isAuthenticated }: { user: AuthUser | null; authLoading: boolean; isAuthenticated: boolean } = useAuth();
+  const { user, authLoading, isAuthenticated } = useAuth();
   const [shouldSkip, setShouldSkip] = useState(false);
   const [isCheckingPrefs, setIsCheckingPrefs] = useState(true); // Renamed isLoading for clarity
 

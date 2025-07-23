@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { PlusCircleIcon, MagnifyingGlassIcon, UsersIcon } from "@heroicons/react/24/outline";
 import DashboardHeader from "@/components/DashboardHeader";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import type { Ministry, MinistryMember } from "@/types/ministry";
 import { MinistryType } from "@/types/ministry";
 import { useMinistry } from "@/graphql/hooks/useMinistry";
@@ -57,8 +58,8 @@ function MinistryDetailsModal({ ministryId, onClose }: { ministryId: string; onC
 
 function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCreate }: { onClose: () => void; onSuccess: () => void; branchId: string; afterCreate?: () => void }) {
   const { user } = useAuth();
+  const { organisationId } = useOrganisationBranch();
   const { isSuperAdmin } = usePermissions();
-  const organisationId = user?.organisationId;
   const [selectedBranchId, setSelectedBranchId] = useState<string>(propBranchId || "");
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
   const branchId = isSuperAdmin ? selectedBranchId : propBranchId;
@@ -89,7 +90,7 @@ function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCre
             name: formData.name,
             type: formData.type,
             branchId,
-            organisationId: String(organisationId || user?.organisationId || ""),
+            organisationId: String(organisationId),
             status: formData.status,
           },
         },

@@ -2,13 +2,10 @@ import {
   ApolloClient, 
   InMemoryCache, 
   ApolloLink, 
-  from, 
-  Observable
+  from
 } from '@apollo/client';
 import { createUploadLink } from 'apollo-upload-client';
 import { onError } from '@apollo/client/link/error';
-import { REFRESH_TOKEN_MUTATION } from '../graphql/mutations/auth';
-import Cookies from 'js-cookie';
 
 // Define the backend GraphQL API endpoint
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/graphql';
@@ -33,9 +30,9 @@ const loggerLink = new ApolloLink((operation, forward) => {
   });
 });
 
-// Authentication link that adds the auth token to requests
+// Simplified authentication link for new auth system
 const authLink = new ApolloLink((operation, forward) => {
-  // Get the authentication token from local storage if it exists
+  // Get the authentication token from local storage
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
   
   // Add the authorization header to the operation
@@ -49,145 +46,90 @@ const authLink = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-// Flag to prevent multiple token refresh requests
-let isRefreshing = false;
-// Array to hold requests that are waiting for a new token
-let pendingRequests: unknown[] = [];
-
-const resolvePendingRequests = () => {
-  pendingRequests.forEach(p => p.resolve());
-  pendingRequests = [];
-};
-
+// Simplified error handling - no automatic token refresh
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
-  // Diagnostic log to inspect the exact error response
-  console.log('APOLLO CLIENT ERROR LINK TRIGGERED', {
+  console.log('Apollo Client Error:', {
     graphQLErrors,
     networkError,
-    operationName: operation.operationName,
+    operation: operation.operationName
   });
 
-  if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
-  }
-
   if (graphQLErrors) {
-    const authError = graphQLErrors.find(
-      (err) => err.extensions?.code === 'UNAUTHENTICATED' || err.message.includes('Unauthorized'),
-    );
-
-    if (authError) {
-      return new Observable(observer => {
-        if (isRefreshing) {
-          pendingRequests.push({
-            resolve: () => {
-              const subscriber = {
-                next: observer.next.bind(observer),
-                error: observer.error.bind(observer),
-                complete: observer.complete.bind(observer),
-              };
-              forward(operation).subscribe(subscriber);
-            },
-          });
-          return;
-        }
-
-        isRefreshing = true;
-        const refreshToken = Cookies.get('refreshToken');
-
-        if (!refreshToken) {
-          console.error('No refresh token available. Logging out.');
-          isRefreshing = false;
-          observer.error(new Error('Invalid credentials!'));
-          return;
-        }
-
-        fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Ensure cookies are sent with the refresh request
-          body: JSON.stringify({
-            query: REFRESH_TOKEN_MUTATION.loc!.source.body,
-            variables: { input: { refreshToken } },
-          }),
-        })
-          .then(res => res.json())
-          .then(response => {
-            if (response.errors || !response.data?.refreshToken?.accessToken) {
-              throw new Error('Failed to refresh token');
-            }
-
-            const { accessToken, refreshToken: newRefreshToken } = response.data.refreshToken;
-            localStorage.setItem('authToken', accessToken);
-            if (newRefreshToken) {
-              Cookies.set('refreshToken', newRefreshToken, {
-                expires: 30,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path: '/',
-              });
-            }
-
-            operation.setContext(({ headers = {} }) => ({
-              headers: {
-                ...headers,
-                authorization: `Bearer ${accessToken}`,
-              },
-            }));
-
-            const subscriber = {
-              next: observer.next.bind(observer),
-              error: observer.error.bind(observer),
-              complete: observer.complete.bind(observer),
-            };
-            forward(operation).subscribe(subscriber);
-          })
-          .catch(error => {
-            console.error('Error during token refresh, logging out.', error);
-            // Clear all auth data
-            Cookies.remove('refreshToken', { path: '/' });
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-
-            // Redirect to login page to force re-authentication
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login?session_expired=true';
-            }
-
-            observer.error(error); // Propagate error to the original operation
-          })
-          .finally(() => {
-            isRefreshing = false;
-            resolvePendingRequests();
-          });
-      });
-    }
-
     graphQLErrors.forEach(({ message, locations, path }) => {
-      if (!message.includes('Unauthorized')) {
-        console.error(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-        );
+      console.error(`GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`);
+      
+      // Handle authentication errors - but don't redirect immediately to avoid loops
+      if (message.includes('Unauthorized') || message.includes('Token')) {
+        console.log('Authentication error detected, clearing token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userData');
+          // Clear auth cookie
+          if (typeof document !== 'undefined') {
+            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          }
+          
+          // Only redirect if not already on login page to prevent loops
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 100);
+          }
+        }
       }
     });
+  }
+
+  if (networkError) {
+    console.error(`Network error: ${networkError}`);
+    
+    // Handle 401 errors - but don't redirect immediately to avoid loops
+    if ('statusCode' in networkError && networkError.statusCode === 401) {
+      console.log('401 error detected, clearing token');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        // Clear auth cookie
+        if (typeof document !== 'undefined') {
+          document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+        
+        // Only redirect if not already on login page to prevent loops
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
+          setTimeout(() => {
+            window.location.href = '/auth/login';
+          }, 100);
+        }
+      }
+    }
   }
 });
 
 // Create the Apollo Client
-export const client = new ApolloClient({
-  link: from([errorLink, authLink, loggerLink, uploadLink]),
-  cache: new InMemoryCache(),
+const client = new ApolloClient({
+  link: from([
+    loggerLink,
+    errorLink,
+    authLink,
+    uploadLink,
+  ]),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          // Add any cache policies here if needed
+        },
+      },
+    },
+  }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network',
+      errorPolicy: 'all',
     },
     query: {
-      fetchPolicy: 'network-only', // Don't use cache for queries to ensure latest schema
+      errorPolicy: 'all',
     },
   },
 });
 
-// Add a method to clear the cache
-export const clearApolloCache = () => {
-  return client.resetStore();
-};
+export default client;

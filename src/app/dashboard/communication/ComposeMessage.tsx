@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import RecipientSelector from './RecipientSelector';
 import { useSendEmail, useSendSms, useSendNotification } from '@/graphql/hooks/useSendMessage';
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import Link from 'next/link';
 import ChannelSelector from './components/ChannelSelector';
@@ -123,6 +124,7 @@ const CHANNELS = [
 
 export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
   const { user } = useAuth();
+  const { organisationId, branchId } = useOrganisationBranch();
   const [selectedChannels, setSelectedChannels] = useState<string[]>(['email']);
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
@@ -191,9 +193,6 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
     setSuccess('');
 
     try {
-      const organisationId = user?.organisationId;
-      const branchId = user?.branchId;
-      
       // Process recipients and filters
       const memberIds = recipients.map(r => r.id);
       const groupIds = recipients.filter(r => r.type === 'group').map(r => r.id);

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpotifyProvider } from "@/lib/spotify/spotifyContext";
-import { AuthProvider } from "@/lib/auth/authContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ApolloWrapper } from "@/lib/apollo-provider";
+import { SubscriptionValidationProvider } from "@/components/subscription/SubscriptionValidationProvider";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
@@ -34,9 +35,11 @@ export default function RootLayout({
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <ApolloWrapper>
           <AuthProvider>
-            <SpotifyProvider>
-              {children}
-            </SpotifyProvider>
+            <SubscriptionValidationProvider>
+              <SpotifyProvider>
+                {children}
+              </SpotifyProvider>
+            </SubscriptionValidationProvider>
           </AuthProvider>
         </ApolloWrapper>
       </body>

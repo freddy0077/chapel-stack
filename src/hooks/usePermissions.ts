@@ -1,4 +1,4 @@
-import { useAuth } from '@/lib/auth/authContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMemo } from 'react';
 
 // Define role constants for consistency

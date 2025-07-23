@@ -7,7 +7,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import { useTransactionsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useQuery, gql, useMutation, useApolloClient } from '@apollo/client';

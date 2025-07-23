@@ -1,5 +1,4 @@
-// import { useAuth } from '@/app/graphql/hooks';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { useMemo } from 'react';
 

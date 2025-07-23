@@ -5,7 +5,8 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useSmallGroupMutations, SmallGroupStatus } from '../../../../graphql/hooks/useSmallGroups';
 import { useQuery } from '@apollo/client';
 import { GET_BRANCHES } from '@/graphql/queries/branchQueries';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -16,11 +17,11 @@ interface CreateGroupModalProps {
 
 export default function CreateGroupModal({ isOpen, setIsOpen, branchId: propBranchId, afterCreate }: CreateGroupModalProps) {
   const { user } = useAuth();
+  const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const branchId = user?.primaryRole === "super_admin" ? selectedBranchId : (propBranchId || (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined));
+  const branchId = user?.primaryRole === "super_admin" ? selectedBranchId : (propBranchId || defaultBranchId);
 
   // Fetch branches for super admin
-  const organisationId = user?.organisationId;
   const { data: branchesData } = useQuery(GET_BRANCHES, {
     variables: { filter: organisationId ? { organisationId } : undefined },
     skip: user?.primaryRole !== "super_admin"

@@ -61,7 +61,7 @@ export default function LoginSuccessPage() {
           console.log('🔍 Determining role from roles array:', user.roles);
           
           // Define role priority (higher index = higher priority)
-          const rolePriority = ['member', 'volunteer', 'content_manager', 'finance_manager', 'ministry_leader', 'pastor', 'branch_admin', 'super_admin'];
+          const rolePriority = ['member', 'volunteer', 'content_manager', 'finance_manager', 'ministry_leader', 'pastor', 'branch_admin', 'subscription_manager', 'super_admin'];
           
           let highestRoleIndex = -1;
           let highestRole = 'member';
@@ -73,8 +73,10 @@ export default function LoginSuccessPage() {
             // Handle role being a string or an object
             if (typeof role === 'string') {
               roleName = role.toLowerCase().replace(/\s+/g, '_');
+              console.log('🔍 Processing string role:', role, '-> normalized:', roleName);
             } else if (role && typeof role === 'object' && role.name) {
               roleName = role.name.toLowerCase().replace(/\s+/g, '_');
+              console.log('🔍 Processing object role with name:', role.name, '-> normalized:', roleName);
             } else if (role && typeof role === 'object') {
               // Try to extract role from alternative properties
               const potentialProps = ['role', 'title', 'type', 'id'] as const;
@@ -83,28 +85,38 @@ export default function LoginSuccessPage() {
                   const value = role[prop];
                   if (typeof value === 'string') {
                     roleName = value.toLowerCase().replace(/\s+/g, '_');
+                    console.log('🔍 Processing object role with', prop, ':', value, '-> normalized:', roleName);
                     break;
                   }
                 }
               }
               
-              if (!roleName) return; // Skip this role if we couldn't extract a name
+              if (!roleName) {
+                console.log('⚠️ Could not extract role name from object:', role);
+                return; // Skip this role if we couldn't extract a name
+              }
             } else {
+              console.log('⚠️ Skipping unrecognized role format:', role);
               return; // Skip this role if it's not in a recognizable format
             }
             
             const roleIndex = rolePriority.indexOf(roleName);
+            console.log('🔍 Role', roleName, 'has priority index:', roleIndex, '(current highest:', highestRoleIndex, ')');
+            
             if (roleIndex > highestRoleIndex) {
               highestRoleIndex = roleIndex;
               highestRole = roleName;
+              console.log('✅ New highest role:', highestRole, 'with index:', highestRoleIndex);
             }
           });
           
-          console.log('🎯 Determined highest role:', highestRole);
+          console.log('🎯 Final determined highest role:', highestRole);
+          console.log('🎯 Role priority array:', rolePriority);
           
           // Save the determined role for future use
           localStorage.setItem('primaryRole', highestRole);
           const dashboardUrl = getDashboardRouteForRole(highestRole);
+          console.log('🎯 Dashboard URL for role', highestRole, ':', dashboardUrl);
           localStorage.setItem('redirectPath', dashboardUrl);
           
           return dashboardUrl;
@@ -123,6 +135,8 @@ export default function LoginSuccessPage() {
       switch(role) {
         case 'super_admin':
           return '/dashboard';
+        case 'subscription_manager':
+          return '/dashboard/subscription-manager';
         case 'branch_admin':
           return '/dashboard/branch';
         case 'pastor':

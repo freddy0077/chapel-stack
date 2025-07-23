@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { GET_MESSAGE_STATS } from '../queries/messageQueries';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useMessageStats() {
   const { user } = useAuth();

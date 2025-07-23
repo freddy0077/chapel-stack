@@ -20,7 +20,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import NewEventModal from "../../../components/NewEventModal";
 import { Card, Select, SelectItem, Button, Badge, Text, Grid, Metric } from "@tremor/react";
 import { useFilteredEvents } from "@/graphql/hooks/useFilteredEvents";
-import { useOrganizationBranchFilter } from "@/hooks";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import { Event } from "@/graphql/types/event";
 import Loading from "@/components/ui/Loading";
 import { usePermissions } from '@/hooks/usePermissions';
@@ -81,7 +81,7 @@ function CalendarContent() {
     userBranches: user?.userBranches,
     firstBranch: user?.userBranches?.[0],
     branchId: user?.userBranches?.[0]?.branch?.id,
-    orgBranchFilter: useOrganizationBranchFilter()
+    orgBranchFilter: useOrganisationBranch()
   });
 
   // State for current date and filter selections
@@ -91,19 +91,17 @@ function CalendarContent() {
   const [selectedLocation, setSelectedLocation] = useState("all");
 
   // Get all events to extract branch and location data
-  const orgBranchFilter = useOrganizationBranchFilter();
+  const orgBranchFilter = useOrganisationBranch();
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
 
   // Get branchId from user data
-  const userBranchId = user?.userBranches?.[0]?.branch?.id;
+  const userBranchId = orgBranchFilter.branchId;
   
   // Decide which filter to use for API: prioritize branchId if available, otherwise use organisationId
   const apiFilter = userBranchId
     ? { branchId: userBranchId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined }
     : { organisationId: orgBranchFilter.organisationId, startDate: firstDayOfMonth, endDate: lastDayOfMonth, category: selectedType !== "all" ? selectedType : undefined };
-
-  console.log('API Filter:', apiFilter);
 
   // Use the correct filtered events hook
   const { events, loading, error, refetch } = useFilteredEvents(apiFilter);

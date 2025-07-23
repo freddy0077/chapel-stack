@@ -15,7 +15,7 @@ import {
 } from '@/graphql/types/onboardingTypes';
 import { OnboardingProgress } from '@/graphql/types/onboardingTypes';
 import { ChurchProfile, saveModulePreferences } from '../ModulePreferences';
-import { useAuth } from '@/lib/auth/authContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Custom hook for managing onboarding state

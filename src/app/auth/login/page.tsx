@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/lib/auth/authContext";
+import { useAuth } from "@/contexts/AuthContext";
 import LoginForm from "../components/LoginForm";
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { login, authLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -17,57 +17,24 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const result = await login(email, password, rememberMe);
+      const result = await login(email, password);
 
-      if (result.success && result.redirectTo) {
+      if (result.success) {
         setSuccessMessage("Login successful! Redirecting...");
-        console.log("Login successful, taking control of navigation");
-        
-        // Force navigation from the login page component
-        try {
-          // Store success info in localStorage
-          localStorage.setItem('login_success', 'true');
-          localStorage.setItem('redirect_to', result.redirectTo);
-          console.log('🔵 Stored navigation data in localStorage');
-          
-          // Force navigation with multiple methods
-          console.log('🔶 Direct navigation attempt from login page');
-          
-          // Method 1: Direct replacement (won't add to history)
-          window.location.replace(result.redirectTo);
-          
-          // Method 2: Timeout as backup (will only run if Method 1 fails)
-          setTimeout(() => {
-            if (window.location.pathname.includes('/auth/login')) {
-              console.log('⏱️ Fallback navigation from login page');
-              window.location.replace(result.redirectTo);
-            }
-          }, 1000);
-        } catch (e) {
-          console.error('Navigation error:', e);
-          // Last resort
-          router.push(result.redirectTo);
-        }
-      } else if (result.requiresMFA) {
-        setSuccessMessage("MFA verification required.");
-        // Redirect to MFA page, passing email in query params
-        router.push(`/mfa-verification?email=${encodeURIComponent(email)}`);
-      } else if (result.error) {
-        setError(result.error);
-        setIsSubmitting(false);
+        // The useAuth hook will handle the redirect automatically
       } else {
-        setError('An unknown error occurred during login');
-        setIsSubmitting(false);
+        setError(result.error || "Login failed. Please try again.");
       }
     } catch (err) {
-      console.error("Login submission error:", err);
-      setError("We're having trouble connecting to our servers. Please try again in a moment.");
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   // Show loading spinner while checking authentication state
-  if (authLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-tr from-indigo-900 via-indigo-800 to-indigo-700">
         <div className="flex flex-col items-center">

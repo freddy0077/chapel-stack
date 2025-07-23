@@ -13,7 +13,9 @@ import {
   ShieldCheckIcon,
   DevicePhoneMobileIcon,
   GlobeAltIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  BoltIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { Button, Card, Title, Text, Badge } from '@tremor/react';
@@ -71,6 +73,13 @@ export const availableModules = [
         title: 'Group Management',
         description: 'Create and manage small groups and ministries',
         icon: UserGroupIcon,
+        required: false
+      },
+      {
+        id: 'pastoral-care',
+        title: 'Pastoral Care',
+        description: 'Manage pastoral care and support for members',
+        icon: HeartIcon,
         required: false
       }
     ]
@@ -147,6 +156,13 @@ export const availableModules = [
         title: 'Security & Access Control',
         description: 'Role-based permissions and audit logging',
         icon: ShieldCheckIcon,
+        required: false
+      },
+      {
+        id: 'workflows',
+        title: 'Workflow Automation',
+        description: 'Automate church management tasks with intelligent workflows',
+        icon: BoltIcon,
         required: false
       }
     ]

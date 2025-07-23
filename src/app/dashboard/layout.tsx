@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import DynamicNavigation from "@/components/navigation/DynamicNavigation";
 import { loadModulePreferences } from "@/components/onboarding/ModulePreferences";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth/authContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // This layout will check if onboarding is completed and use dynamic navigation based on selected modules
 export default function DashboardLayout({
@@ -18,19 +18,26 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuth();
   
-  // Helper: check if user is super admin
-  const isSuperAdmin = user && Array.isArray(user.roles)
-    ? user.roles.some((role: unknown) => {
-        if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
-        if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
-        return false;
-      })
-    : false;
+  // Helper: check if user is super admin - MEMOIZED to prevent infinite loops
+  const isSuperAdmin = useMemo(() => {
+    return user && Array.isArray(user.roles)
+      ? user.roles.some((role: unknown) => {
+          if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
+          if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
+          return false;
+        })
+      : false;
+  }, [user?.roles]);
 
-  // Check authentication and onboarding status when component mounts
+  // Check authentication and onboarding status when component mounts - SIMPLIFIED
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    let isMounted = true;
+    
+    const checkAuth = () => {
+      if (!isMounted) return;
+      
       console.log('[DashboardLayout] Pathname:', pathname);
+      
       // First check if user is authenticated
       if (!isAuthenticated) {
         console.log('[DashboardLayout] Not authenticated, redirecting to /auth/login');
@@ -46,21 +53,39 @@ export default function DashboardLayout({
         return;
       }
       
-      // Only check onboarding status for SUPER_ADMIN
-      const { isOnboardingCompleted } = loadModulePreferences();
-      console.log('[DashboardLayout] Onboarding completed?', isOnboardingCompleted);
-      
-      if (isSuperAdmin && !isOnboardingCompleted) {
-        console.log('[DashboardLayout] SUPER_ADMIN onboarding not completed, redirecting to /onboarding');
-        router.push('/onboarding');
-      } else {
+      // For subscription manager and other non-super-admin pages, skip onboarding check
+      if (pathname && pathname.startsWith('/dashboard/subscription-manager')) {
+        console.log('[DashboardLayout] Subscription manager page detected, skipping onboarding check');
         setIsOnboardingCompleted(true);
+        setIsCheckingAuth(false);
+        return;
       }
       
+      // Only check onboarding status for SUPER_ADMIN on main dashboard
+      if (isSuperAdmin && pathname === '/dashboard') {
+        const { isOnboardingCompleted } = loadModulePreferences();
+        console.log('[DashboardLayout] Onboarding completed?', isOnboardingCompleted);
+        
+        if (!isOnboardingCompleted) {
+          console.log('[DashboardLayout] SUPER_ADMIN onboarding not completed, redirecting to /onboarding');
+          router.push('/onboarding');
+          return;
+        }
+      }
+      
+      setIsOnboardingCompleted(true);
       setIsCheckingAuth(false);
+    };
+
+    if (typeof window !== 'undefined') {
+      checkAuth();
     }
-  }, [router, isAuthenticated, pathname, isSuperAdmin]);
-  
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependencies to run only once
+
   // If authentication or onboarding check is still in progress, show loading state
   if (isCheckingAuth || !isOnboardingCompleted) {
     return (

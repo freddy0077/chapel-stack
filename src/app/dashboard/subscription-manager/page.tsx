@@ -1,0 +1,156 @@
+'use client';
+
+import { useState } from 'react';
+import { Tab } from '@headlessui/react';
+import { 
+  BuildingOfficeIcon, 
+  CreditCardIcon, 
+  BanknotesIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon,
+  RectangleStackIcon
+} from '@heroicons/react/24/outline';
+import { RoleRoute } from '@/components/auth/RoleRoute';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { classNames } from './utils/formatters';
+
+// Tab components (to be implemented)
+import OrganizationsManagement from './components/OrganizationsManagement';
+import SubscriptionsManagement from './components/SubscriptionsManagement';
+import PaymentsManagement from './components/PaymentsManagement';
+import ExpiredOrganizationsManagement from './components/ExpiredOrganizationsManagement';
+import PlansManagement from './components/PlansManagement';
+
+// Move tabs array outside component to prevent recreation on every render
+const TABS = [
+  {
+    name: 'Organizations',
+    icon: BuildingOfficeIcon,
+    component: OrganizationsManagement,
+    description: 'Manage organizations and their subscription status'
+  },
+  {
+    name: 'Expired Organizations',
+    icon: ExclamationTriangleIcon,
+    component: ExpiredOrganizationsManagement,
+    description: 'Handle expired organization renewals and manual interventions'
+  },
+  {
+    name: 'Plans',
+    icon: RectangleStackIcon,
+    component: PlansManagement,
+    description: 'Create and manage subscription plans'
+  },
+  {
+    name: 'Subscriptions',
+    icon: CreditCardIcon,
+    component: SubscriptionsManagement,
+    description: 'Create, update, and manage subscriptions'
+  },
+  {
+    name: 'Payments',
+    icon: BanknotesIcon,
+    component: PaymentsManagement,
+    description: 'Monitor payments, handle failures, and process refunds'
+  }
+];
+
+function SubscriptionManagerContent() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Subscription Manager
+                </h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage organizations, subscriptions, and payments across the platform
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button variant="outline" size="sm">
+                  <ChartBarIcon className="h-4 w-4 mr-2" />
+                  Analytics
+                </Button>
+                <Button variant="default" size="sm">
+                  Export Data
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
+          {/* Tab Navigation */}
+          <div className="mb-8">
+            <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20 p-1">
+              {TABS.map((tab, index) => (
+                <Tab
+                  key={tab.name}
+                  className={({ selected }) =>
+                    classNames(
+                      'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
+                      'ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2',
+                      selected
+                        ? 'bg-white text-blue-700 shadow'
+                        : 'text-blue-100 hover:bg-white/[0.12] hover:text-white'
+                    )
+                  }
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <tab.icon className="h-5 w-5" />
+                    <span>{tab.name}</span>
+                  </div>
+                </Tab>
+              ))}
+            </Tab.List>
+            
+            {/* Tab Description */}
+            <div className="mt-4">
+              <Card className="bg-blue-50 border-blue-200">
+                <div className="p-4">
+                  <p className="text-sm text-blue-700">
+                    {TABS[selectedIndex].description}
+                  </p>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Tab Panels */}
+          <Tab.Panels>
+            {TABS.map((tab, index) => (
+              <Tab.Panel
+                key={index}
+                className={classNames(
+                  'rounded-xl bg-white p-3',
+                  'ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2'
+                )}
+              >
+                <tab.component />
+              </Tab.Panel>
+            ))}
+          </Tab.Panels>
+        </Tab.Group>
+      </div>
+    </div>
+  );
+}
+
+export default function SubscriptionManagerPage() {
+  return (
+    <RoleRoute allowedRoles={['SUBSCRIPTION_MANAGER']}>
+      <SubscriptionManagerContent />
+    </RoleRoute>
+  );
+}

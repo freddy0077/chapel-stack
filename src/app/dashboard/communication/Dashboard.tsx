@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMessageStats } from '@/graphql/hooks/useMessageStats';
 import { useMessages } from '@/graphql/hooks/useMessages';
-import { useAuth } from '@/graphql/hooks/useAuth';
-import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { format, subDays } from 'date-fns';
 import { Fragment } from 'react';
 
@@ -185,7 +185,7 @@ const Modal = ({ open, onClose, children }: { open: boolean, onClose: () => void
 
 export default function CommunicationDashboard({ onCompose, onInbox }: { onCompose: () => void, onInbox: () => void }) {
   const { user } = useAuth();
-  const { organisationId, branchId } = useOrganizationBranchFilter();
+  const { organisationId, branchId } = useOrganisationBranch();
   const { stats, loading: statsLoading } = useMessageStats();
   
   // Filter state for messages

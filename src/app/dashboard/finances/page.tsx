@@ -7,7 +7,8 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import { useTransactionsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useQuery, gql, useMutation, useApolloClient } from '@apollo/client';
@@ -210,7 +211,7 @@ function FinancialHealthIndicator({ balance, monthlyExpenses }: { balance: numbe
 
 export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?: string } = {}) {
   const { user } = useAuth();
-  const organisationId = user?.organisationId;
+  const { organisationId } = useOrganisationBranch();
   const { branches, loading: branchesLoading, error: branchesError } = useBranches({ organisationId });
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [activeTab, setActiveTab] = useState("all");

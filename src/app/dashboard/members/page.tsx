@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { 
   useMembers, 
   MemberStatus, 
@@ -25,11 +26,14 @@ import EmptyState from "./components/EmptyState";
 import Pagination from "./components/Pagination";
 import AddMemberModal from "./components/AddMemberModal";
 import MemberDetailsModal from "./components/MemberDetailsModal";
+import MemberReports from "./components/MemberReports";
 
 import {
   ArrowPathIcon,
   FunnelIcon,
-  XMarkIcon
+  XMarkIcon,
+  UserGroupIcon,
+  ChartBarIcon
 } from "@heroicons/react/24/outline";
 
 import DashboardHeader from '@/components/DashboardHeader';
@@ -54,8 +58,10 @@ export default function MembersRedesigned() {
   };
 
   const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'members' | 'reports'>('members');
   const { user } = useAuth();
-  console.log("User from Members page:", user?.organisationId);
+  const { organisationId, branchId } = useOrganisationBranch();
+  console.log("User from Members page:", organisationId);
   
   // Get organization/branch filter based on user role
   const orgBranchFilter = useOrganizationBranchFilter();
@@ -224,216 +230,267 @@ export default function MembersRedesigned() {
   }, [refetch, memberStatsRefetch]);
 
   return (
-    <>
-      <DashboardHeader
-        title="Members Dashboard"
-        subtitle="Manage and explore all church members"
-      />
-      <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
-      {/* Header section */}
-      <PageHeader 
-        title="Church Members" 
-        description="Manage your church membership with comprehensive tools and insights"
-
-      />
-
-      {/* Statistics Cards */}
-      {statsLoading ? (
-        <div className="mt-6 text-center">
-          <p className="text-gray-500">Loading statistics...</p>
-        </div>
-      ) : statsError ? (
-        <div className="mt-6 text-center">
-          <p className="text-red-500">Error loading statistics</p>
-        </div>
-      ) : memberStats ? (
-        <MembersStats 
-          totalMembers={memberStats.totalMembers}
-          activeMembers={memberStats.activeMembers}
-          inactiveMembers={memberStats.inactiveMembers}
-          newMembersInPeriod={memberStats.newMembersInPeriod}
-          visitorsInPeriod={memberStats.visitorsInPeriod}
+    <div className="min-h-screen bg-gray-50">
+      <DashboardHeader />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <PageHeader 
+          title="Members Dashboard"
+          subtitle="Manage and explore all church members"
         />
-      ) : null}
 
-      {/* Search and filters section */}
-      <div className="mt-6 bg-white shadow-sm rounded-lg p-4 border border-gray-200">
-        <div className="sm:flex sm:items-center sm:justify-between flex-wrap gap-4">
-          <div className="flex-grow max-w-md">
-            <SearchBar 
-              value={searchTerm} 
-              onChange={handleSearch} 
-              placeholder="Search by name, email, or phone..."
-            />
-          </div>
-          
-          <div className="flex flex-wrap gap-2 items-center">
-            <FilterButton 
-              onFilterChange={handleFilterChange} 
-              activeFilters={activeFilters} 
-            />
-            <ExportButton members={displayMembers} />
+        {/* Tab Navigation */}
+        <div className="mt-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('members')}
+                className={`${
+                  activeTab === 'members'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
+              >
+                <UserGroupIcon className="h-5 w-5 mr-2" />
+                Members
+                {!loading && (
+                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs font-medium">
+                    {totalCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`${
+                  activeTab === 'reports'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
+              >
+                <ChartBarIcon className="h-5 w-5 mr-2" />
+                Reports
+              </button>
+            </nav>
           </div>
         </div>
 
-        {/* Active filters display */}
-        {Object.keys(activeFilters).length > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-sm text-gray-500 flex items-center">
-              <FunnelIcon className="h-4 w-4 mr-1" /> Active filters:
-            </span>
-            
-            {Object.entries(activeFilters).map(([category, values]) => (
-              values.map(value => (
-                <span
-                  key={`${category}-${value}`}
-                  className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
-                >
-                  {`${category}: ${value}`}
+        {/* Tab Content */}
+        {activeTab === 'members' && (
+          <>
+            {/* Statistics Cards */}
+            {statsLoading ? (
+              <div className="mt-6 text-center">
+                <p className="text-gray-500">Loading statistics...</p>
+              </div>
+            ) : statsError ? (
+              <div className="mt-6 text-center">
+                <p className="text-red-500">Error loading statistics</p>
+              </div>
+            ) : memberStats ? (
+              <MembersStats 
+                totalMembers={memberStats.totalMembers}
+                activeMembers={memberStats.activeMembers}
+                inactiveMembers={memberStats.inactiveMembers}
+                newMembersInPeriod={memberStats.newMembersInPeriod}
+                visitorsInPeriod={memberStats.visitorsInPeriod}
+              />
+            ) : null}
+
+            {/* Search and filters section */}
+            <div className="mt-6 bg-white shadow-sm rounded-lg p-4 border border-gray-200">
+              <div className="sm:flex sm:items-center sm:justify-between flex-wrap gap-4">
+                <div className="flex-grow max-w-md">
+                  <SearchBar 
+                    value={searchTerm} 
+                    onChange={handleSearch} 
+                    placeholder="Search by name, email, or phone..."
+                  />
+                </div>
+                
+                <div className="flex flex-wrap gap-2 items-center">
+                  <FilterButton 
+                    onFilterChange={handleFilterChange} 
+                    activeFilters={activeFilters} 
+                  />
+                  <ExportButton members={displayMembers} />
+                </div>
+              </div>
+
+              {/* Active filters display */}
+              {Object.keys(activeFilters).length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-gray-500 flex items-center">
+                    <FunnelIcon className="h-4 w-4 mr-1" /> Active filters:
+                  </span>
+                  
+                  {Object.entries(activeFilters).map(([category, values]) => (
+                    values.map(value => (
+                      <span
+                        key={`${category}-${value}`}
+                        className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
+                      >
+                        {`${category}: ${value}`}
+                        <button
+                          type="button"
+                          className="ml-1 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:bg-indigo-500 focus:text-white focus:outline-none"
+                          onClick={() => {
+                            const updatedFilters = { ...activeFilters };
+                            updatedFilters[category] = updatedFilters[category].filter(v => v !== value);
+                            if (updatedFilters[category].length === 0) {
+                              delete updatedFilters[category];
+                            }
+                            handleFilterChange(updatedFilters);
+                          }}
+                        >
+                          <span className="sr-only">Remove filter for {value}</span>
+                          <XMarkIcon className="h-3 w-3" aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))
+                  ))}
+                  
                   <button
                     type="button"
-                    className="ml-1 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:bg-indigo-500 focus:text-white focus:outline-none"
-                    onClick={() => {
-                      const updatedFilters = { ...activeFilters };
-                      updatedFilters[category] = updatedFilters[category].filter(v => v !== value);
-                      if (updatedFilters[category].length === 0) {
-                        delete updatedFilters[category];
-                      }
-                      handleFilterChange(updatedFilters);
-                    }}
+                    onClick={resetFilters}
+                    className="text-xs font-medium text-gray-700 hover:text-indigo-600"
                   >
-                    <span className="sr-only">Remove filter for {value}</span>
-                    <XMarkIcon className="h-3 w-3" aria-hidden="true" />
+                    Clear all
                   </button>
-                </span>
-              ))
-            ))}
+                </div>
+              )}
+            </div>
+
+            {/* Status information */}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Showing <span className="font-medium text-gray-900">{displayMembers.length}</span> of <span className="font-medium text-gray-900">{totalCount || 0}</span> {(totalCount || 0) === 1 ? 'member' : 'members'}
+                {Object.keys(activeFilters).length > 0 && ' with applied filters'}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAddMemberOpen(true)}
+                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  + Add Member
+                </button>
+                {/* Refresh button */}
+                <button 
+                  onClick={refreshData} 
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={isRefreshing}
+                >
+                  <ArrowPathIcon className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                </button>
+              </div>
+            </div>
             
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="text-xs font-medium text-gray-700 hover:text-indigo-600"
-            >
-              Clear all
-            </button>
-          </div>
+            {/* Loading state */}
+            {(loading || isPageChanging) && !isRefreshing && <LoadingState />}
+            
+            {/* Error state */}
+            {error && (
+              <div className="mt-8 text-red-500 flex items-center justify-center p-4 bg-red-50 rounded-lg">
+                <p>Error loading members: {error.message}</p>
+              </div>
+            )}
+            
+            {/* Empty state */}
+            {!loading && !isRefreshing && displayMembers.length === 0 && (
+              <EmptyState onResetFilters={resetFilters} />
+            )}
+            
+            {/* Members card grid view */}
+            {!loading && displayMembers.length > 0 && (
+              <div className="mt-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
+                  {displayMembers.map((member) => (
+                    <div key={member.id} className="">
+                      {/* Card UI for each member */}
+                      <div className="bg-white rounded-2xl shadow-lg border border-indigo-50 p-6 flex flex-col items-center hover:shadow-xl transition group">
+                        {/* Profile image or initials */}
+                        {member.profileImage ? (
+                          <img
+                            src={member.profileImage}
+                            alt={member.name}
+                            className="h-20 w-20 rounded-full object-cover border-4 border-indigo-100 mb-3 shadow"
+                          />
+                        ) : (
+                          <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-700 mb-3 shadow">
+                            {member.name.split(' ').map(n => n[0]).join('').substring(0,2)}
+                          </div>
+                        )}
+                        <div className="text-lg font-semibold text-indigo-900 group-hover:text-indigo-700 text-center">{member.name}</div>
+                        <div className="text-xs text-gray-500 mb-2 text-center">{member.branch}</div>
+                        <div className="flex flex-col items-center gap-1 mb-2">
+                          <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-medium ${member.status === 'Active' ? 'bg-green-100 text-green-700' : member.status === 'Inactive' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-50 text-indigo-700'}`}>{member.status}</span>
+                          <span className="text-xs text-gray-400">Member since {member.memberSince}</span>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          {member.email && (
+                            <a href={`mailto:${member.email}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Email</a>
+                          )}
+                          {member.phone && (
+                            <a href={`tel:${member.phone}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Call</a>
+                          )}
+                          <button
+                            className="text-sm text-indigo-600 hover:text-indigo-900 underline ml-2"
+                            onClick={() => openMemberModal(member.id)}
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {!loading && displayMembers.length > 0 && (
+              <div className="mt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount || 0}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={async (page) => {
+                    if (page === currentPage) return;
+                    setIsPageChanging(true);
+                    setCurrentPage(page);
+                    await refetch({
+                      skip: (page - 1) * itemsPerPage,
+                      take: itemsPerPage,
+                      ...(getGraphQLFilters() || {})
+                    });
+                    setIsPageChanging(false);
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'reports' && (
+          <MemberReports className="mt-6" />
         )}
       </div>
 
-      {/* Status information */}
-      <div className="mt-4 flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          Showing <span className="font-medium text-gray-900">{displayMembers.length}</span> of <span className="font-medium text-gray-900">{totalCount || 0}</span> {(totalCount || 0) === 1 ? 'member' : 'members'}
-          {Object.keys(activeFilters).length > 0 && ' with applied filters'}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setAddMemberOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            + Add Member
-          </button>
-          {/* Refresh button */}
-          <button 
-            onClick={refreshData} 
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            disabled={isRefreshing}
-          >
-            <ArrowPathIcon className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-          </button>
-        </div>
-      </div>
+      {/* Modals */}
+      <AddMemberModal 
+        isOpen={addMemberOpen} 
+        onClose={() => setAddMemberOpen(false)} 
+        onMemberAdded={refreshData} 
+      />
       
-      {/* Loading state */}
-      {(loading || isPageChanging) && !isRefreshing && <LoadingState />}
-      
-      {/* Error state */}
-      {error && (
-        <div className="mt-8 text-red-500 flex items-center justify-center p-4 bg-red-50 rounded-lg">
-          <p>Error loading members: {error.message}</p>
-        </div>
-      )}
-      
-      {/* Empty state */}
-      {!loading && !isRefreshing && displayMembers.length === 0 && (
-        <EmptyState onResetFilters={resetFilters} />
-      )}
-      
-      {/* Members card grid view */}
-      {!loading && displayMembers.length > 0 && (
-        <div className="mt-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
-            {displayMembers.map((member) => (
-              <div key={member.id} className="">
-                {/* Card UI for each member */}
-                <div className="bg-white rounded-2xl shadow-lg border border-indigo-50 p-6 flex flex-col items-center hover:shadow-xl transition group">
-                  {/* Profile image or initials */}
-                  {member.profileImage ? (
-                    <img
-                      src={member.profileImage}
-                      alt={member.name}
-                      className="h-20 w-20 rounded-full object-cover border-4 border-indigo-100 mb-3 shadow"
-                    />
-                  ) : (
-                    <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-700 mb-3 shadow">
-                      {member.name.split(' ').map(n => n[0]).join('').substring(0,2)}
-                    </div>
-                  )}
-                  <div className="text-lg font-semibold text-indigo-900 group-hover:text-indigo-700 text-center">{member.name}</div>
-                  <div className="text-xs text-gray-500 mb-2 text-center">{member.branch}</div>
-                  <div className="flex flex-col items-center gap-1 mb-2">
-                    <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-medium ${member.status === 'Active' ? 'bg-green-100 text-green-700' : member.status === 'Inactive' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-50 text-indigo-700'}`}>{member.status}</span>
-                    <span className="text-xs text-gray-400">Member since {member.memberSince}</span>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    {member.email && (
-                      <a href={`mailto:${member.email}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Email</a>
-                    )}
-                    {member.phone && (
-                      <a href={`tel:${member.phone}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Call</a>
-                    )}
-                    <button
-                      className="text-sm text-indigo-600 hover:text-indigo-900 underline ml-2"
-                      onClick={() => openMemberModal(member.id)}
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Pagination */}
-      {!loading && displayMembers.length > 0 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalItems={totalCount || 0}
-            itemsPerPage={itemsPerPage}
-            onPageChange={async (page) => {
-              if (page === currentPage) return;
-              setIsPageChanging(true);
-              setCurrentPage(page);
-              await refetch({
-                skip: (page - 1) * itemsPerPage,
-                take: itemsPerPage,
-                ...(getGraphQLFilters() || {})
-              });
-              setIsPageChanging(false);
-            }}
-          />
-        </div>
-      )}
       {selectedMemberId && (
-        <MemberDetailsModal memberId={selectedMemberId} onClose={closeMemberModal} />
+        <MemberDetailsModal 
+          memberId={selectedMemberId} 
+          onClose={closeMemberModal} 
+        />
       )}
-      <AddMemberModal isOpen={addMemberOpen} onClose={() => setAddMemberOpen(false)} onMemberAdded={refreshData} />
     </div>
-    </>
   );
 }
 

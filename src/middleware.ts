@@ -1,104 +1,66 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// This function can be marked `async` if using `await` inside
+// Simplified middleware for role-based authentication
 export function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const path = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
   
-  console.log(`🛡️ Middleware processing path: ${path}`);
+  console.log(`🛡️ Middleware processing path: ${pathname}`);
   
-  // Define public paths that don't require authentication
-  const publicPaths = [
-    '/auth/login',
-    '/auth/login',
-    '/auth/register',
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    '/auth/login', 
+    '/auth/register', 
     '/auth/forgot-password',
     '/auth/reset-password',
-    '/auth/mfa-verification'
+    '/auth/mfa-verification',
+    '/test-auth-persistence' // Allow debug page
   ];
   
-  const isPublicPath = publicPaths.some(publicPath => 
-    path === publicPath || path.startsWith(`${publicPath}/`)
-  );
+  if (publicRoutes.includes(pathname)) {
+    console.log(`✅ Public route allowed: ${pathname}`);
+    return NextResponse.next();
+  }
   
-  // Check if user is authenticated by looking for the REFRESH token cookie
-  const refreshToken = request.cookies.get('refreshToken')?.value;
-  const isAuthenticated = !!refreshToken;
+  // Check for auth token in multiple places
+  const cookieToken = request.cookies.get('authToken')?.value;
+  const headerToken = request.headers.get('authorization')?.replace('Bearer ', '');
+  const token = cookieToken || headerToken;
   
-  console.log(`🔐 Auth check for ${path} - isPublic: ${isPublicPath}, isAuthenticated: ${isAuthenticated} (based on refreshToken)`);
-  
-  // Log cookie information for debugging
-  console.log(`🍪 Cookies in request:`, 
-    Object.fromEntries(
-      Array.from(request.cookies.getAll()).map(cookie => [cookie.name, cookie.value ? 'Present' : 'Empty'])
-    )
-  );
-  
-  // Get user data to check role-based access (if available)
-  const userJson = request.cookies.get('user')?.value;
-  let user = null;
-  if (userJson) {
-    try {
-      user = JSON.parse(userJson);
-      console.log(`👤 User data found: ${user?.id}, has redirectPath: ${!!user?.redirectPath}`);
-    } catch (e) {
-      console.error('❌ Error parsing user JSON in middleware:', e);
+  if (!token) {
+    console.log(`🔀 No token found, redirecting to login from: ${pathname}`);
+    console.log(`🔍 Cookie token: ${cookieToken ? 'present' : 'missing'}`);
+    console.log(`🔍 Header token: ${headerToken ? 'present' : 'missing'}`);
+    
+    // Add a small delay for client-side auth restoration on hard refresh
+    if (request.headers.get('sec-fetch-mode') === 'navigate') {
+      console.log('🔄 Navigation request detected, allowing brief auth restoration window');
+      // For navigation requests (hard refresh), be more lenient
+      // The client-side auth will handle the redirect if truly unauthenticated
     }
-  }
-  
-  // Onboarding enforcement for SUPER_ADMIN
-  const onboardingDeferred = request.cookies.get('onboardingDeferred')?.value === 'true';
-  console.log(`[Middleware] Onboarding deferred cookie value: ${request.cookies.get('onboardingDeferred')?.value}, Parsed as: ${onboardingDeferred}`);
-
-  const isSuperAdmin = user?.roles?.some((role: unknown) => {
-    if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
-    if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
-    return false;
-  });
-  // Only enforce onboarding on dashboard/admin paths, not onboarding itself or public paths
-  const isOnboardingPath = path.startsWith('/onboarding');
-  // FIX: Only enforce onboarding redirect for SUPER_ADMIN, never for branch_admin or other roles
-  if (isSuperAdmin && !onboardingDeferred && !isOnboardingPath && (path.startsWith('/dashboard') || path.startsWith('/admin'))) {
-    console.log(`[Middleware] Decision: Redirecting SUPER_ADMIN to /onboarding.`);
-    return NextResponse.redirect(new URL('/onboarding', request.url));
-  }
-  // FIX: Prevent onboarding redirect loop for non-super-admins (branch_admin, etc.)
-  // If NOT super admin, NEVER redirect to onboarding, allow dashboard/admin access
-  if (!isSuperAdmin && (path.startsWith('/dashboard') || path.startsWith('/admin'))) {
-    console.log(`[Middleware] Decision: Allowing non-SUPER_ADMIN access to dashboard/admin paths.`);
-  }
-  
-  // Redirect logic now re-enabled
-  if (isPublicPath && isAuthenticated && publicPaths.includes(path)) {
-    // Only redirect if the path is an exact known public path (not for all unmatched routes)
-    const redirectPath = user?.redirectPath || '/dashboard';
-    console.log(`🔀 Redirecting authenticated user from public path to: ${redirectPath}`);
-    return NextResponse.redirect(new URL(redirectPath, request.url));
-  }
-  
-  // Only redirect to login for main dashboard and protected paths
-  const isProtectedPath = path.startsWith('/dashboard') || path.startsWith('/admin');
-  
-  if (isProtectedPath && !isAuthenticated) {
-    console.log(`🔀 Redirecting unauthenticated user from protected path to login`);
+    
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
-
-  console.log(`[Middleware] Decision: Allowing access to ${path}`);
-  console.log(`✅ Middleware allowing access to: ${path}`);
+  
+  // For now, let client-side handle role-based routing
+  // Could add JWT verification here for additional security
+  console.log(`✅ Token found, allowing access to: ${pathname}`);
   return NextResponse.next();
 }
 
-// Configure middleware to run only on the specified paths
 export const config = {
   matcher: [
-    // Only run middleware on these specific paths
-    '/dashboard/:path*',
-    '/admin/:path*',
-    '/auth/:path*',
-    '/auth/login',
-    '/logout',
-    '/' // Homepage
+    '/dashboard/:path*', 
+    '/admin/:path*', 
+    '/organizations/:path*',
+    '/members/:path*',
+    '/finances/:path*',
+    '/attendance/:path*',
+    '/pastoral-care/:path*',
+    '/sacraments/:path*',
+    '/groups/:path*',
+    '/events/:path*',
+    '/communication/:path*',
+    '/reports/:path*'
   ]
 };
