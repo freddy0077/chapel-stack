@@ -6,14 +6,15 @@ import { ArrowLeftIcon, DocumentArrowUpIcon, CheckCircleIcon, UserIcon } from "@
 import { useRouter } from "next/navigation";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useCreateFirstCommunionRecord } from "@/graphql/hooks/useCreateFirstCommunionRecord";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 import { useDebounce } from "@/hooks/useDebounce";
 
 export default function NewCommunionRecord() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";

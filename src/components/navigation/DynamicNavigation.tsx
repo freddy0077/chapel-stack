@@ -5,7 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { usePermissions } from '@/hooks/usePermissions';
 import { useModulePreferences } from '@/hooks/useModulePreferences';
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -152,14 +152,14 @@ const fullNavigation = [
     category: "Operations",
     items: [
       { 
-        name: "Branches", 
-        href: "/dashboard/branches", 
-        icon: HomeIcon, 
+        name: "Branches",
+        href: "/dashboard/branches",
+        icon: HomeIcon,
         badge: null,
-        moduleId: "multi-branch" 
+        moduleId: "multi-branch"
       },
-      { 
-        name: "Finances", 
+      {
+        name: "Finances",
         href: "/dashboard/finances", 
         icon: CurrencyDollarIcon, 
         badge: null,
@@ -199,6 +199,25 @@ const fullNavigation = [
         icon: CreditCardIcon, 
         badge: null,
         moduleId: "subscription-manager" 
+      },
+    ]
+  },
+  {
+    category: "Administration",
+    items: [
+      { 
+        name: "Branches", 
+        href: "/dashboard/branches", 
+        icon: GlobeAltIcon, 
+        badge: null,
+        moduleId: "branches" 
+      },
+      { 
+        name: "Staff", 
+        href: "/admin/staff", 
+        icon: ShieldCheckIcon, 
+        badge: null,
+        moduleId: "staff" 
       },
     ]
   },
@@ -282,7 +301,8 @@ const fullNavigation = [
 
 export default function DynamicNavigation({ children }: { children: React.ReactNode }) {
   // Get user data from authentication context
-  const { user, logout } = useAuth();
+  const { state, logout } = useAuth();
+  const user = state.user;
   const { canCustomizeModules } = usePermissions();
   const { enabledModules } = useModulePreferences();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -293,6 +313,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
 
   useEffect(() => {
     const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
+    console.log("User role:", user);
 
     // Use our new role-based navigation configuration
     const roleBasedNavigation = getUserNavigation(userRole, enabledModules);
@@ -334,7 +355,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   const getUserInitials = () => {
     if (!user?.name) return 'U';
     
-    const nameParts = user.name.split(' ');
+    const nameParts = user.firstName.split(' ');
     if (nameParts.length >= 2) {
       return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
     }
@@ -342,7 +363,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   };
   
   const getUserDisplayName = () => {
-    return user?.name || 'User';
+    return user?.firstName || 'User';
   };
   
   const getUserEmail = () => {
@@ -350,6 +371,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   };
   
   const getUserRole = () => {
+    console.log("User role:", user?.primaryRole);
     const role = user?.primaryRole || 'member';
     // Convert snake_case to Title Case, e.g. 'super_admin' → 'Super Admin'
     return role

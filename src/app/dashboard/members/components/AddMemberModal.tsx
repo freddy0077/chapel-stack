@@ -7,8 +7,9 @@ import { CREATE_MEMBER } from "@/graphql/queries/memberQueries";
 import { GET_BRANCHES } from "@/graphql/queries/branchQueries";
 import { CheckCircleIcon, XMarkIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { humanizeError } from "@/utils/humanizeError";
+import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
 
 // Define family member type
 type FamilyMember = {
@@ -26,12 +27,13 @@ interface AddMemberModalProps {
 
 export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMemberModalProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   console.log("User from AddMemberModal:", user);
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const branchId = user?.primaryRole === "super_admin" ? selectedBranchId : (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined);
-  const organisationId = user?.organisationId;
+  const { organisationId, branchId } = useOrganisationBranch();
+  console.log("Branch ID:", branchId);
   console.log("Organisation ID:", organisationId);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: "",
@@ -88,7 +90,7 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
     if (!formData.status) errors.status = "Status is required";
     if (!formData.membershipDate) errors.membershipDate = "Membership date is required";
     // For super admin, branch must be selected
-    if (user?.primaryRole === "super_admin" && !branchId) errors.branchId = "Branch is required";
+    if (user?.primaryRole === "super_admin" && !selectedBranchId) errors.branchId = "Branch is required";
     // Format checks
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = "Please enter a valid email address";
@@ -154,7 +156,7 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
             userId: formData.userId || undefined,
             spouseId: formData.spouseId || undefined,
             parentId: formData.parentId || undefined,
-            branchId: branchId,
+            branchId: user?.primaryRole === "super_admin" ? selectedBranchId : branchId,
             organisationId: organisationId,
           }
         }

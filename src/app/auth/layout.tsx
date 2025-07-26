@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { AuthProvider } from "../context/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContextEnhanced";
 
 interface AuthLayoutProps {
   children: ReactNode;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import Loading from "@/components/ui/Loading";
 import { ExclamationTriangleIcon, CalendarIcon, UserGroupIcon, GiftIcon, ArrowRightIcon, UserIcon, ChatBubbleBottomCenterTextIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";

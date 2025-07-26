@@ -7,7 +7,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import { useTransactionsQuery } from '@/graphql/hooks/useTransactionQueries';
@@ -210,8 +210,9 @@ function FinancialHealthIndicator({ balance, monthlyExpenses }: { balance: numbe
 }
 
 export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?: string } = {}) {
-  const { user } = useAuth();
-  const { organisationId } = useOrganisationBranch();
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const { branches, loading: branchesLoading, error: branchesError } = useBranches({ organisationId });
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [activeTab, setActiveTab] = useState("all");
@@ -229,6 +230,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   });
 
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   const [transactionForm, setTransactionForm] = useState({
     type: '',
@@ -245,7 +247,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   });
 
   const [memberSearch, setMemberSearch] = useState('');
-  const branchId = selectedBranchId || user?.userBranches?.[0]?.branch?.id;
+  const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
+  const branchId = isSuperAdmin ? selectedBranchId : (selectedBranchId || defaultBranchId);
 
   const [addFundOpen, setAddFundOpen] = useState(false);
   const [fundsRefreshKey, setFundsRefreshKey] = useState(0);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, DocumentArrowUpIcon, PhotoIcon, CheckCircleIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useCreateMatrimonyRecord } from "@/graphql/hooks/useCreateMatrimonyRecord";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
@@ -60,7 +60,8 @@ export default function NewMarriageRecord() {
   const [memberSearch2, setMemberSearch2] = useState("");
   const [showDropdown2, setShowDropdown2] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";

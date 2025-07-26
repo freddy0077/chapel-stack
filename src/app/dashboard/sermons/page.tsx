@@ -28,7 +28,7 @@ import { HeartIcon as SolidHeartIcon, BookmarkIcon as SolidBookmarkIcon, PlayIco
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
 import { useSermons, useGetSpeakers, useGetSeries, useCategories, useCreateSermon, useUpdateSermon, useDeleteSermon, SermonEntity } from '@/graphql/hooks/useSermon';
@@ -354,7 +354,8 @@ export default function SermonsPage() {
   const [isSeriesManagerOpen, setIsSeriesManagerOpen] = useState(false);
 
   // Hooks
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { canCreate, canEdit, canDelete } = usePermissions();
   const { organizationId, branchId } = useOrganizationBranchFilter();
 

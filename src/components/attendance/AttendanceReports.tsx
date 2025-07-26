@@ -23,7 +23,7 @@ import {
   formatNumber,
   formatPercentage,
 } from '../../graphql/hooks/useAttendanceReports';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { toast } from 'react-hot-toast';
 
 interface AttendanceReportsProps {

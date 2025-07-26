@@ -13,7 +13,7 @@ import { useEventMutations, useBranches, useRooms, useVolunteerRoles } from "@/g
 import { EventType, CreateEventInput } from "@/graphql/types/event";
 import { useEventTemplates, useEventTemplate } from "@/graphql/hooks/useEventTemplates";
 import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 // No date-fns imports needed for now
 
 // Types mapped from backend schema

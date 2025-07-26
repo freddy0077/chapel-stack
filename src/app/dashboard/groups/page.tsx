@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import {
   useFilteredSmallGroups,
@@ -24,7 +24,8 @@ import Pagination from './components/Pagination';
 import DashboardHeader from '@/components/DashboardHeader';
 
 export default function Groups() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   
   // Get organization/branch filter based on user role
   const orgBranchFilter = useOrganisationBranch();

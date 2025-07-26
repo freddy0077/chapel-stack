@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 export default function AuthTestPage() {
   const { login, logout, user, isAuthenticated, isLoading, primaryRole } = useAuth();

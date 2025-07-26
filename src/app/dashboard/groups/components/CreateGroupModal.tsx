@@ -5,7 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useSmallGroupMutations, SmallGroupStatus } from '../../../../graphql/hooks/useSmallGroups';
 import { useQuery } from '@apollo/client';
 import { GET_BRANCHES } from '@/graphql/queries/branchQueries';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 
 interface CreateGroupModalProps {

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeftIcon, DocumentArrowUpIcon, UserIcon, TagIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCreateBaptismRecord } from "@/graphql/hooks/useCreateBaptismRecord";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
@@ -24,7 +24,8 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function NewBaptismRecord() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";

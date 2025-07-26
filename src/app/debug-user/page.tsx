@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DebugUserPage() {

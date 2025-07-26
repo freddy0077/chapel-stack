@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { 
   useMembers, 
@@ -16,7 +16,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useOrganizationBranchFilter } from '@/hooks';
 
 // Import our custom components
-import PageHeader from "./components/PageHeader";
 import SearchBar from "./components/SearchBar";
 import { FilterButton } from "./components/AdvancedFilters";
 import ExportButton from "./components/ExportButton";
@@ -59,7 +58,8 @@ export default function MembersRedesigned() {
 
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'reports'>('members');
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId, branchId } = useOrganisationBranch();
   console.log("User from Members page:", organisationId);
   
@@ -230,16 +230,14 @@ export default function MembersRedesigned() {
   }, [refetch, memberStatsRefetch]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <DashboardHeader
+        title="Members"
+        subtitle="Manage and explore all church members"
+        icon={<UserGroupIcon className="h-10 w-10 text-white" />}
+      />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <PageHeader 
-          title="Members Dashboard"
-          subtitle="Manage and explore all church members"
-        />
-
         {/* Tab Navigation */}
         <div className="mt-6">
           <div className="border-b border-gray-200">

@@ -19,7 +19,7 @@ import DashboardHeader from '@/components/DashboardHeader';
 
 import { useQuery } from '@apollo/client';
 import { GET_SECURITY_OVERVIEW } from '@/graphql/queries/userQueries';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -27,7 +27,8 @@ function classNames(...classes: string[]) {
 
 export default function SecurityAdministration() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const organisationId = user?.organisationId;
 
   const { data: securityData, loading: securityLoading } = useQuery(GET_SECURITY_OVERVIEW, {

@@ -6,13 +6,14 @@ import { ArrowLeftIcon, DocumentArrowUpIcon, CheckCircleIcon, UserIcon } from "@
 import { useRouter } from "next/navigation";
 import { useSearchMembers } from "@/graphql/hooks/useSearchMembers";
 import { useCreateConfirmationRecord } from "@/graphql/hooks/useCreateConfirmationRecord";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
 export default function NewConfirmationRecord() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";

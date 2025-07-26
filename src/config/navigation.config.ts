@@ -15,6 +15,7 @@ import {
   BoltIcon,
   HeartIcon,
   BuildingOfficeIcon,
+  MicrophoneIcon,
 } from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
@@ -59,8 +60,6 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
     {
       category: "Community",
       items: [
-        { name: "Members", href: "/dashboard/members", icon: UsersIcon, moduleId: "members" },
-        { name: "Groups", href: "/dashboard/groups", icon: UserGroupIcon, moduleId: "groups" },
         { name: "Events", href: "/dashboard/calendar", icon: CalendarIcon, moduleId: "events" },
       ]
     },
@@ -70,7 +69,6 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
         { name: "Finances", href: "/dashboard/finances", icon: CurrencyDollarIcon, moduleId: "finances" },
         { name: "Attendance", href: "/dashboard/attendance", icon: DocumentTextIcon, moduleId: "attendance" },
         { name: "Communication", href: "/dashboard/communication", icon: ChatBubbleLeftRightIcon, moduleId: "communication" },
-        { name: "Reports", href: "/dashboard/reports", icon: ChartBarIcon, moduleId: "reports" },
         { name: "Workflows", href: "/dashboard/workflows", icon: BoltIcon, moduleId: "workflows" },
       ]
     },
@@ -92,7 +90,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
     {
       category: "Administration",
       items: [
-        { name: "Branches", href: "/admin/branches", icon: GlobeAltIcon, moduleId: "branches" },
+        { name: "Branches", href: "/dashboard/branches", icon: GlobeAltIcon, moduleId: "branches" },
         { name: "Staff", href: "/admin/staff", icon: ShieldCheckIcon, moduleId: "staff" },
         { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, moduleId: "settings" },
       ]
@@ -103,23 +101,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
     {
       category: "Main",
       items: [
-        { name: "Dashboard", href: "/dashboard/subscription", icon: HomeIcon, moduleId: "dashboard" },
-      ]
-    },
-    {
-      category: "Subscription Management",
-      items: [
-        { name: "Organizations", href: "/subscriptions/organisations", icon: BuildingOfficeIcon, moduleId: "subscription_organizations" },
-        { name: "Billing", href: "/subscriptions/billing", icon: CurrencyDollarIcon, moduleId: "subscription_billing" },
-        { name: "Analytics", href: "/subscriptions/analytics", icon: ChartBarIcon, moduleId: "subscription_analytics" },
-        { name: "Plans", href: "/subscriptions/plans", icon: DocumentTextIcon, moduleId: "subscription_plans" },
-      ]
-    },
-    {
-      category: "Operations",
-      items: [
-        { name: "Reports", href: "/subscriptions/reports", icon: ChartBarIcon, moduleId: "subscription_reports" },
-        { name: "Support", href: "/subscriptions/support", icon: ChatBubbleLeftRightIcon, moduleId: "subscription_support" },
+        { name: "Subscription Dashboard", href: "/dashboard/subscription-manager", icon: HomeIcon, moduleId: "subscription_dashboard" },
       ]
     }
   ],
@@ -152,6 +134,8 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
       items: [
         { name: "Pastoral Care", href: "/dashboard/pastoral-care", icon: HeartIcon, moduleId: "pastoral_care" },
         { name: "Sacraments", href: "/dashboard/sacraments", icon: PhotoIcon, moduleId: "sacraments" },
+        { name: "Sermons", href: "/dashboard/sermons", icon: MicrophoneIcon, moduleId: "sermons" },
+        { name: "Branch Finances", href: "/dashboard/branch-finances", icon: CurrencyDollarIcon, moduleId: "finances" },
       ]
     }
   ],
@@ -177,7 +161,6 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
         { name: "Finances", href: "/dashboard/finances", icon: CurrencyDollarIcon, moduleId: "finances" },
         { name: "Attendance", href: "/dashboard/attendance", icon: DocumentTextIcon, moduleId: "attendance" },
         { name: "Communication", href: "/dashboard/communication", icon: ChatBubbleLeftRightIcon, moduleId: "communication" },
-        { name: "Reports", href: "/dashboard/reports", icon: ChartBarIcon, moduleId: "reports" },
       ]
     },
     {
@@ -199,7 +182,6 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
       category: "Financial Management",
       items: [
         { name: "Finances", href: "/finances", icon: CurrencyDollarIcon, moduleId: "finances" },
-        { name: "Reports", href: "/finances/reports", icon: ChartBarIcon, moduleId: "reports" },
         { name: "Budgets", href: "/finances/budgets", icon: DocumentTextIcon, moduleId: "budgets" },
         { name: "Donations", href: "/finances/donations", icon: HeartIcon, moduleId: "donations" },
       ]

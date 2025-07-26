@@ -12,7 +12,32 @@ export const CREATE_EVENT = gql`
       startDate
       endDate
       location
+      category
       branchId
+      organisationId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to create a new recurring event
+ */
+export const CREATE_RECURRING_EVENT = gql`
+  mutation CreateRecurringEvent($input: CreateEventInput!) {
+    createRecurringEvent(input: $input) {
+      id
+      title
+      description
+      startDate
+      endDate
+      location
+      category
+      branchId
+      organisationId
+      createdAt
+      updatedAt
     }
   }
 `;

@@ -16,7 +16,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useAttendanceAnalytics } from '@/graphql/hooks/useAttendanceAnalytics';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 
 // Register ChartJS components

@@ -10,14 +10,15 @@ import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 import { AdminTools } from "@/components/dashboard/AdminTools";
 import { SuperAdminSubscriptionManagement } from "@/components/dashboard/SuperAdminSubscriptionManagement";
 import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useQuery } from "@apollo/client";
 import { GET_SUPER_ADMIN_DASHBOARD } from "@/graphql/queries/dashboardQueries";
 import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
 
 export default function SuperAdminDashboard() {
   const { organisationId } = useOrganisationBranch();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   
   // Debug authentication state
   console.log("🔍 Debug Authentication State:");

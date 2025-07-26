@@ -5,9 +5,10 @@ import { Dialog } from "@headlessui/react";
 import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { useEventMutations } from "@/graphql/hooks/useEvents";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 
 interface NewEventModalProps {
   open: boolean;
@@ -23,36 +24,38 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
     startDate: "",
     endDate: "",
     location: "",
+    isRecurring: false,
+    recurrenceType: "WEEKLY",
+    recurrenceInterval: 1,
+    recurrenceEndDate: "",
+    recurrenceDaysOfWeek: [] as string[],
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 
-  const { createEvent } = useEventMutations();
-  const { user } = useAuth();
+  const { createEvent, createRecurringEvent } = useEventMutations();
+  const { state } = useAuth();
+  const user = state.user;
   const filter = useOrganizationBranchFilter();
+  const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
 
   // For SUPER_ADMIN, fetch branches for dropdown
   const { branches, loading: branchesLoading } = useFilteredBranches(
-    user?.primaryRole === "super_admin" ? { organisationId: filter.organisationId } : undefined
+    user?.primaryRole === "super_admin" ? { organisationId } : undefined
   );
 
-  // Determine branchId for event creation
-  const branchId = user?.primaryRole === "super_admin"
-    ? selectedBranchId
-    : user?.userBranches && user.userBranches.length > 0
-      ? user.userBranches[0].branch.id
-      : undefined;
-
-  // Always get organisationId
-  const organisationId = user?.organisationId || (user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.organisationId : undefined);
+  // Determine branchId for event creation - super admin can select, others use default
+  const eventBranchId = user?.primaryRole === "super_admin" 
+    ? selectedBranchId || defaultBranchId 
+    : defaultBranchId;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      if (!branchId) {
+      if (!eventBranchId) {
         setError("No branch selected or available for this user.");
         setSubmitting(false);
         return;
@@ -64,10 +67,38 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
       }
       const input = {
         ...form,
-        branchId,
+        branchId: eventBranchId,
         organisationId
       };
-      await createEvent(input);
+      
+      console.log('Form data:', form);
+      console.log('Input being sent:', input);
+      
+      if (form.isRecurring) {
+        const recurringInput = {
+          ...input,
+          recurrenceType: form.recurrenceType,
+          recurrenceInterval: form.recurrenceInterval,
+          recurrenceEndDate: form.recurrenceEndDate,
+          recurrenceDaysOfWeek: form.recurrenceDaysOfWeek,
+        };
+        console.log('Recurring input:', recurringInput);
+        try {
+          const result = await createRecurringEvent(recurringInput);
+          console.log('Recurring event creation result:', result);
+        } catch (error) {
+          console.error('Error creating recurring event:', error);
+          throw error;
+        }
+      } else {
+        try {
+          const result = await createEvent(input);
+          console.log('Single event creation result:', result);
+        } catch (error) {
+          console.error('Error creating single event:', error);
+          throw error;
+        }
+      }
       setSubmitting(false);
       onClose();
       if (onEventCreated) onEventCreated();
@@ -182,6 +213,88 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
                 />
               </div>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Recurring Event</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="isRecurring"
+                  name="isRecurring"
+                  type="checkbox"
+                  checked={form.isRecurring}
+                  onChange={e => setForm(f => ({ ...f, isRecurring: e.target.checked }))}
+                  className="rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
+                <span>Is this event recurring?</span>
+              </div>
+            </div>
+            {form.isRecurring && (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Recurrence Type</label>
+                <select
+                  id="recurrenceType"
+                  name="recurrenceType"
+                  value={form.recurrenceType}
+                  onChange={e => setForm(f => ({ ...f, recurrenceType: e.target.value }))}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                >
+                  <option value="WEEKLY">Weekly</option>
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="YEARLY">Yearly</option>
+                </select>
+              </div>
+            )}
+            {form.isRecurring && (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Recurrence Interval</label>
+                <input
+                  id="recurrenceInterval"
+                  name="recurrenceInterval"
+                  type="number"
+                  value={form.recurrenceInterval}
+                  onChange={e => setForm(f => ({ ...f, recurrenceInterval: parseInt(e.target.value) }))}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
+              </div>
+            )}
+            {form.isRecurring && (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Recurrence End Date</label>
+                <input
+                  id="recurrenceEndDate"
+                  name="recurrenceEndDate"
+                  type="date"
+                  value={form.recurrenceEndDate}
+                  onChange={e => setForm(f => ({ ...f, recurrenceEndDate: e.target.value }))}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
+              </div>
+            )}
+            {form.isRecurring && (
+              <div>
+                <label className="block text-sm font-medium text-indigo-800 mb-1">Recurrence Days of Week</label>
+                <div className="flex flex-wrap gap-2">
+                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
+                    <div key={day} className="flex items-center gap-2">
+                      <input
+                        id={day}
+                        name={day}
+                        type="checkbox"
+                        checked={form.recurrenceDaysOfWeek.includes(day)}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setForm(f => ({ ...f, recurrenceDaysOfWeek: [...f.recurrenceDaysOfWeek, day] }));
+                          } else {
+                            setForm(f => ({ ...f, recurrenceDaysOfWeek: f.recurrenceDaysOfWeek.filter(d => d !== day) }));
+                          }
+                        }}
+                        className="rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                      />
+                      <span>{day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {user?.primaryRole === "super_admin" ? (
               <div>
                 <label className="block text-sm font-medium text-indigo-800 mb-1">Branch<span className="text-red-500">*</span></label>
@@ -220,7 +333,7 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : (
-                  "Create Event"
+                  form.isRecurring ? "Create Recurring Event" : "Create Event"
                 )}
               </Button>
             </div>

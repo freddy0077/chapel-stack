@@ -9,7 +9,10 @@ import { BranchFinancesSummary } from "@/components/dashboard/BranchFinancesSumm
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
-import { useAuth } from "@/contexts/AuthContext";
+import { BranchAnnouncements } from "@/components/dashboard/BranchAnnouncements";
+import { FinancialBreakdown } from "@/components/dashboard/FinancialBreakdown";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import BranchFinanceStats from "@/components/BranchFinanceStats";
 import { useQuery as useApolloQuery } from "@apollo/client";
 
@@ -52,8 +55,9 @@ const BRANCH_DASHBOARD_QUERY = gql`
 
 export default function BranchDashboardPage() {
   // Replace with actual branchId from context/auth/router
-  const {user} = useAuth();
-  const branchId = user?.userBranches?.[0]?.branch?.id;
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId } = useOrganisationBranch();
   const userName = user?.firstName || user?.lastName;
 
   const { data, loading, error } = useQuery(BRANCH_DASHBOARD_QUERY, {
@@ -72,8 +76,8 @@ export default function BranchDashboardPage() {
       }
     }
   `, {
-    variables: { organisationId: user?.organisationId, branchId },
-    skip: !user?.organisationId || !branchId,
+    variables: { organisationId, branchId },
+    skip: !organisationId || !branchId,
   });
 
   if (loading) {
@@ -109,16 +113,18 @@ export default function BranchDashboardPage() {
             memberStats={branchDashboard.memberStats}
             attendanceStats={branchDashboard.attendanceStats}
             financeStats={branchDashboard.financeStats}
+            sacramentStats={branchDashboard.sacramentStats}
             activityStats={branchDashboard.activityStats}
           />
           {/* Add more widgets as needed, e.g. finances, events, etc. */}
           {/*<BranchFinancesSummary financeStats={branchDashboard.financeStats} />*/}
           {/* BranchFinanceStats: Real-time branch and fund stats */}
           <BranchFinanceStats
-            organisationId={user?.organisationId}
+            organisationId={organisationId}
             branchId={branchId}
             funds={fundsData?.funds || []}
           />
+          <FinancialBreakdown financeStats={branchDashboard.financeStats} />
           {/* Recent Events Section */}
           <section className="my-8">
             <h2 className="text-2xl font-bold text-blue-800 mb-4">Recent Events</h2>
@@ -139,6 +145,7 @@ export default function BranchDashboardPage() {
           </section>
           <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
           {/*<BranchPerformance />*/}
+          <BranchAnnouncements branchAnnouncements={branchDashboard.branchAnnouncements} />
           <BranchAdminTools branchInfo={branchDashboard.branchInfo} />
         </main>
       </div>

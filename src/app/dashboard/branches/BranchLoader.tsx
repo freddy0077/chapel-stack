@@ -2,7 +2,7 @@
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { Branch } from "@/graphql/hooks/useBranches";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface BranchLoaderProps {
   children: (

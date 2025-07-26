@@ -56,7 +56,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { 
   GET_WORKFLOW_TEMPLATES, 
@@ -147,7 +147,8 @@ const WORKFLOW_SUGGESTIONS = [
 ];
 
 export default function WorkflowsPage() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId, branchId, hasAccess } = useOrganisationBranch();
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<WorkflowTemplate | null>(null);

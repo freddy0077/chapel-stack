@@ -32,8 +32,8 @@ const loggerLink = new ApolloLink((operation, forward) => {
 
 // Simplified authentication link for new auth system
 const authLink = new ApolloLink((operation, forward) => {
-  // Get the authentication token from local storage
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  // Get the authentication token from the enhanced auth storage
+  const token = typeof window !== 'undefined' ? localStorage.getItem('chapel_access_token') : null;
   
   // Add the authorization header to the operation
   operation.setContext(({ headers = {} }) => ({
@@ -62,11 +62,11 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
       if (message.includes('Unauthorized') || message.includes('Token')) {
         console.log('Authentication error detected, clearing token');
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('authToken');
+          localStorage.removeItem('chapel_access_token');
           localStorage.removeItem('userData');
           // Clear auth cookie
           if (typeof document !== 'undefined') {
-            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'chapel_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           }
           
           // Only redirect if not already on login page to prevent loops
@@ -87,11 +87,11 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     if ('statusCode' in networkError && networkError.statusCode === 401) {
       console.log('401 error detected, clearing token');
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('chapel_access_token');
         localStorage.removeItem('userData');
         // Clear auth cookie
         if (typeof document !== 'undefined') {
-          document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          document.cookie = 'chapel_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         }
         
         // Only redirect if not already on login page to prevent loops

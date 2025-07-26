@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useContributionMutations } from "../../../../../graphql/hooks/useContributionMutations";
 import { useFinanceReferenceData } from "../../../../../graphql/hooks/useFinanceReferenceData";
-import { useAuth } from "../../../../../graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import Link from "next/link";
 import {
   CurrencyDollarIcon,

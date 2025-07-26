@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useExpenseReferenceData } from "../../../../../graphql/hooks/useExpenseReferenceData";
 import { useExpenseMutations } from "../../../../../graphql/hooks/useExpenseMutations";
-import { useAuth } from "../../../../../graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useBudgetReferenceData } from "../../../../../graphql/hooks/useBudgetReferenceData";
 import { useFinanceReferenceData } from "../../../../../graphql/hooks/useFinanceReferenceData";
 import {
@@ -211,45 +211,6 @@ export default function NewExpense() {
               {/* Description */}
               <div className="md:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium text-indigo-800 mb-1">Description <span className="text-red-500">*</span></label>
-                <input
-                  type="number"
-                  name="amount"
-                  id="amount"
-                  min="0.01"
-                  step="0.01"
-                  required
-                  value={expenseData.amount}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  placeholder="0.00"
-                />
-              </div>
-              {/* Date Paid */}
-              <div>
-                <label
-                  htmlFor="date"
-                  className="block text-sm font-medium text-indigo-800 mb-1"
-                >
-                  Date Paid <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  id="date"
-                  required
-                  value={expenseData.date}
-                  onChange={handleInputChange}
-                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                />
-              </div>
-              {/* Description */}
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-indigo-800 mb-1"
-                >
-                  Description <span className="text-red-500">*</span>
-                </label>
                 <input
                   type="text"
                   name="description"

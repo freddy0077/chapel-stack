@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useOrganizationSubscriptionManagement } from '@/hooks/subscription/useOrganizationSubscription';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,

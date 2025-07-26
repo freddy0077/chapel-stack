@@ -7,7 +7,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
 import { useTransactionsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useQuery, gql, useMutation, useApolloClient } from '@apollo/client';
@@ -16,6 +16,7 @@ import { useFinanceReferenceData } from '@/graphql/hooks/useFinanceReferenceData
 import { useTransactionStatsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useBranchEvents } from '@/hooks/useBranchEvents';
 import { EXPORT_TRANSACTIONS } from '@/graphql/queries/exportTransactionQueries';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 
 // Simple Modal component
 function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
@@ -208,42 +209,31 @@ function FinancialHealthIndicator({ balance, monthlyExpenses }: { balance: numbe
 }
 
 export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?: string } = {}) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
 
   const [openModal, setOpenModal] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   const [modalForm, setModalForm] = useState({
     amount: '',
     date: new Date().toISOString().split('T')[0],
     note: '',
-    contributionTypeId: '',
+    category: '',
     fundId: '',
-    paymentMethodId: '',
-  });
-
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
-
-  const [transactionForm, setTransactionForm] = useState({
-    type: '',
-    amount: '',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    fundId: '',
-    paymentMethodId: '',
-    reference: '',
-    contributionTypeId: '', // Only for CONTRIBUTION
-    eventId: '', // Only for Offering contribution type
-    batchMode: false,
+    memberId: '',
     batchEvents: [],
   });
 
   const [memberSearch, setMemberSearch] = useState('');
-  const organisationId = user?.organisationId;
 
-  const branchId = selectedBranch || user?.userBranches?.[0]?.branch?.id;
+  // For SUPER_ADMIN, only use selected branch from filter, not user's default branch
+  const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
+  const branchId = isSuperAdmin ? selectedBranch : (selectedBranch || defaultBranchId);
 
   const [addFundOpen, setAddFundOpen] = useState(false);
   const [fundsRefreshKey, setFundsRefreshKey] = useState(0);
@@ -361,10 +351,10 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   }, [transactionsData, searchQuery]);
 
   useEffect(() => {
-    if (transactionForm.type !== 'CONTRIBUTION' && transactionForm.contributionTypeId) {
-      setTransactionForm(f => ({ ...f, contributionTypeId: '' }));
+    if (modalForm.type !== 'CONTRIBUTION' && modalForm.contributionTypeId) {
+      setModalForm(f => ({ ...f, contributionTypeId: '' }));
     }
-  }, [transactionForm.type]);
+  }, [modalForm.type]);
 
   const { createTransaction, loading: creating, error: createError } = useTransactionMutations();
 
@@ -399,13 +389,13 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
     e.preventDefault();
     
     // Handle batch mode for offerings
-    if (transactionForm.type === 'CONTRIBUTION' && 
-        transactionForm.contributionTypeId && 
-        contributionTypes?.find((ct: any) => ct.id === transactionForm.contributionTypeId)?.name === 'Offering' &&
-        transactionForm.batchMode) {
+    if (modalForm.type === 'CONTRIBUTION' && 
+        modalForm.contributionTypeId && 
+        contributionTypes?.find((ct: any) => ct.id === modalForm.contributionTypeId)?.name === 'Offering' &&
+        modalForm.batchMode) {
       
       // Filter only included events with valid amounts
-      const batchItems = (transactionForm.batchEvents || [])
+      const batchItems = (modalForm.batchEvents || [])
         .filter(item => item.included && item.amount && !isNaN(Number(item.amount)) && Number(item.amount) > 0);
       
       if (batchItems.length === 0) {
@@ -419,17 +409,17 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
           const input = {
             branchId,
             organisationId,
-            fundId: transactionForm.fundId || null,
+            fundId: modalForm.fundId || null,
             userId: user.id,
             type: 'CONTRIBUTION' as 'CONTRIBUTION',
             amount: parseFloat(item.amount),
-            date: transactionForm.date,
-            description: transactionForm.description || `Offering for event`,
-            reference: transactionForm.reference || null,
+            date: modalForm.date,
+            description: modalForm.description || `Offering for event`,
+            reference: modalForm.reference || null,
             eventId: item.eventId, // Move eventId to top-level
             metadata: {
-              contributionTypeId: transactionForm.contributionTypeId,
-              paymentMethodId: transactionForm.paymentMethodId || null,
+              contributionTypeId: modalForm.contributionTypeId,
+              paymentMethodId: modalForm.paymentMethodId || null,
             },
           };
           
@@ -444,7 +434,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
         handleCloseTransactionModal();
         
         // Reset form
-        setTransactionForm({
+        setModalForm({
           type: '',
           amount: '',
           date: new Date().toISOString().split('T')[0],
@@ -475,14 +465,14 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
     const input = {
       branchId,
       organisationId,
-      fundId: transactionForm.fundId || null,
+      fundId: modalForm.fundId || null,
       userId: user.id,
-      type: (transactionForm.type as 'CONTRIBUTION' | 'EXPENSE' | 'TRANSFER' | 'FUND_ALLOCATION'),
-      amount: parseFloat(transactionForm.amount),
-      date: transactionForm.date,
-      description: transactionForm.description,
-      reference: transactionForm.reference || null,
-      eventId: transactionForm.eventId, // Move eventId to top-level
+      type: (modalForm.type as 'CONTRIBUTION' | 'EXPENSE' | 'TRANSFER' | 'FUND_ALLOCATION'),
+      amount: parseFloat(modalForm.amount),
+      date: modalForm.date,
+      description: modalForm.description,
+      reference: modalForm.reference || null,
+      eventId: modalForm.eventId, // Move eventId to top-level
       metadata: {},
     };
     // Double-check type is present
@@ -490,19 +480,19 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
       alert('Transaction type is required.');
       return;
     }
-    if (transactionForm.type === 'CONTRIBUTION') {
+    if (modalForm.type === 'CONTRIBUTION') {
       input.metadata = {
-        contributionTypeId: transactionForm.contributionTypeId,
-        paymentMethodId: transactionForm.paymentMethodId || null,
+        contributionTypeId: modalForm.contributionTypeId,
+        paymentMethodId: modalForm.paymentMethodId || null,
         memberId: selectedMemberId,
         // Remove eventId from metadata as it's now at top-level
-        // eventId: transactionForm.eventId, // Add event ID for Offering contribution type
+        // eventId: modalForm.eventId, // Add event ID for Offering contribution type
         // Add more fields as needed (e.g., isAnonymous)
       };
     } else {
       // For other transaction types, include paymentMethodId in metadata if present
-      if (transactionForm.paymentMethodId) {
-        input.metadata.paymentMethodId = transactionForm.paymentMethodId;
+      if (modalForm.paymentMethodId) {
+        input.metadata.paymentMethodId = modalForm.paymentMethodId;
       }
     }
 
@@ -520,7 +510,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
       refetch();
       handleCloseTransactionModal();
       // Reset form
-      setTransactionForm({
+      setModalForm({
         type: '',
         amount: '',
         date: new Date().toISOString().split('T')[0],
@@ -746,7 +736,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   <option value="">All Events</option>
                   {events && events.length > 0 ? (
                     events.map((event: any) => (
-                      <option key={event.id} value={event.id}>{event.title}</option>
+                      <option key={event.id} value={event.id}>{event.title} ({new Date(event.startDate).toLocaleDateString()})</option>
                     ))
                   ) : (
                     <option disabled>{eventsLoading ? 'Loading events...' : 'No events available'}</option>
@@ -1175,8 +1165,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 <select
                   required
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.type}
-                  onChange={e => setTransactionForm(f => ({ ...f, type: e.target.value }))}
+                  value={modalForm.type}
+                  onChange={e => setModalForm(f => ({ ...f, type: e.target.value }))}
                 >
                   <option value="">Select type</option>
                   <option value="CONTRIBUTION">Contribution</option>
@@ -1184,19 +1174,19 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   <option value="TRANSFER">Transfer</option>
                   <option value="FUND_ALLOCATION">Fund Allocation</option>
                 </select>
-                {!transactionForm.type && (
+                {!modalForm.type && (
                   <div className="text-red-500 text-xs mt-1">Transaction type is required.</div>
                 )}
               </div>
               {/* Show Contribution Type dropdown if type is CONTRIBUTION */}
-              {transactionForm.type === 'CONTRIBUTION' && (
+              {modalForm.type === 'CONTRIBUTION' && (
                 <div>
                   <label className="block text-sm font-medium text-indigo-800 mb-1">Contribution Type <span className="text-red-500">*</span></label>
                   <select
                     required
                     className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={transactionForm.contributionTypeId}
-                    onChange={e => setTransactionForm(f => ({ ...f, contributionTypeId: e.target.value }))}
+                    value={modalForm.contributionTypeId}
+                    onChange={e => setModalForm(f => ({ ...f, contributionTypeId: e.target.value }))}
                   >
                     <option value="">{refDataLoading ? 'Loading...' : 'Select contribution type'}</option>
                     {contributionTypes?.map((ct: any) => (
@@ -1206,9 +1196,9 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 </div>
               )}
               {/* Member search for CONTRIBUTION type when not event-based offering */}
-              {transactionForm.type === 'CONTRIBUTION' && 
-               transactionForm.contributionTypeId && 
-               contributionTypes?.find((ct: any) => ct.id === transactionForm.contributionTypeId)?.name !== 'Offering' && (
+              {modalForm.type === 'CONTRIBUTION' && 
+               modalForm.contributionTypeId && 
+               contributionTypes?.find((ct: any) => ct.id === modalForm.contributionTypeId)?.name !== 'Offering' && (
                 <div className="mb-4">
                   <label htmlFor="memberSearch" className="block text-sm font-medium text-indigo-800 mb-1">Member <span className="text-red-500">*</span></label>
                   <input
@@ -1250,9 +1240,9 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 </div>
               )}
               {/* Event selection for Offering contribution type */}
-              {transactionForm.type === 'CONTRIBUTION' && 
-               transactionForm.contributionTypeId && 
-               contributionTypes?.find((ct: any) => ct.id === transactionForm.contributionTypeId)?.name === 'Offering' && (
+              {modalForm.type === 'CONTRIBUTION' && 
+               modalForm.contributionTypeId && 
+               contributionTypes?.find((ct: any) => ct.id === modalForm.contributionTypeId)?.name === 'Offering' && (
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">
                     <label htmlFor="eventSelect" className="block text-sm font-medium text-indigo-800">Event <span className="text-red-500">*</span></label>
@@ -1260,22 +1250,22 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                       <input
                         type="checkbox"
                         id="batchMode"
-                        checked={transactionForm.batchMode}
-                        onChange={e => setTransactionForm(f => ({ ...f, batchMode: e.target.checked, eventId: '' }))}
+                        checked={modalForm.batchMode}
+                        onChange={e => setModalForm(f => ({ ...f, batchMode: e.target.checked, eventId: '' }))}
                         className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                       <label htmlFor="batchMode" className="text-sm text-gray-600">Batch Mode</label>
                     </div>
                   </div>
                   
-                  {!transactionForm.batchMode ? (
+                  {!modalForm.batchMode ? (
                     // Single event selection
                     <select
                       id="eventSelect"
                       required
                       className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                      value={transactionForm.eventId || ''}
-                      onChange={e => setTransactionForm(f => ({ ...f, eventId: e.target.value }))}
+                      value={modalForm.eventId || ''}
+                      onChange={e => setModalForm(f => ({ ...f, eventId: e.target.value }))}
                     >
                       <option value="">{eventsLoading ? 'Loading events...' : 'Select event'}</option>
                       {events?.map((event: any) => (
@@ -1311,10 +1301,10 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    value={transactionForm.batchEvents?.find(e => e.eventId === event.id)?.amount || ''}
+                                    value={modalForm.batchEvents?.find(e => e.eventId === event.id)?.amount || ''}
                                     onChange={e => {
                                       const value = e.target.value;
-                                      setTransactionForm(f => {
+                                      setModalForm(f => {
                                         const updatedBatch = [...(f.batchEvents || [])];
                                         const existingIdx = updatedBatch.findIndex(item => item.eventId === event.id);
                                         
@@ -1342,10 +1332,10 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                                 <td className="px-3 py-2 text-center">
                                   <input
                                     type="checkbox"
-                                    checked={!!transactionForm.batchEvents?.find(e => e.eventId === event.id)?.included}
+                                    checked={!!modalForm.batchEvents?.find(e => e.eventId === event.id)?.included}
                                     onChange={e => {
                                       const checked = e.target.checked;
-                                      setTransactionForm(f => {
+                                      setModalForm(f => {
                                         const updatedBatch = [...(f.batchEvents || [])];
                                         const existingIdx = updatedBatch.findIndex(item => item.eventId === event.id);
                                         const amount = existingIdx >= 0 ? updatedBatch[existingIdx].amount : '';
@@ -1377,10 +1367,10 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
               )}
               
               {/* Hide amount field in batch mode */}
-              {!(transactionForm.type === 'CONTRIBUTION' && 
-                 transactionForm.contributionTypeId && 
-                 contributionTypes?.find((ct: any) => ct.id === transactionForm.contributionTypeId)?.name === 'Offering' && 
-                 transactionForm.batchMode) && (
+              {!(modalForm.type === 'CONTRIBUTION' && 
+                 modalForm.contributionTypeId && 
+                 contributionTypes?.find((ct: any) => ct.id === modalForm.contributionTypeId)?.name === 'Offering' && 
+                 modalForm.batchMode) && (
                 <div>
                   <label className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
                   <input
@@ -1389,8 +1379,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                     step="0.01"
                     required
                     className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                    value={transactionForm.amount}
-                    onChange={e => setTransactionForm(f => ({ ...f, amount: e.target.value }))}
+                    value={modalForm.amount}
+                    onChange={e => setModalForm(f => ({ ...f, amount: e.target.value }))}
                     placeholder="0.00"
                   />
                 </div>
@@ -1401,8 +1391,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                   type="date"
                   required
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.date}
-                  onChange={e => setTransactionForm(f => ({ ...f, date: e.target.value }))}
+                  value={modalForm.date}
+                  onChange={e => setModalForm(f => ({ ...f, date: e.target.value }))}
                 />
               </div>
               <div>
@@ -1410,8 +1400,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 <input
                   type="text"
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.description}
-                  onChange={e => setTransactionForm(f => ({ ...f, description: e.target.value }))}
+                  value={modalForm.description}
+                  onChange={e => setModalForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Description"
                 />
               </div>
@@ -1419,8 +1409,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 <label className="block text-sm font-medium text-indigo-800 mb-1">Fund</label>
                 <select
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.fundId}
-                  onChange={e => setTransactionForm(f => ({ ...f, fundId: e.target.value }))}
+                  value={modalForm.fundId}
+                  onChange={e => setModalForm(f => ({ ...f, fundId: e.target.value }))}
                 >
                   <option value="">Select fund</option>
                   {funds?.map((fund: any) => (
@@ -1432,8 +1422,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 <label className="block text-sm font-medium text-indigo-800 mb-1">Payment Method</label>
                 <select
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.paymentMethodId}
-                  onChange={e => setTransactionForm(f => ({ ...f, paymentMethodId: e.target.value }))}
+                  value={modalForm.paymentMethodId}
+                  onChange={e => setModalForm(f => ({ ...f, paymentMethodId: e.target.value }))}
                 >
                   <option value="">Select payment method</option>
                   {paymentMethods?.map((pm: any) => (
@@ -1446,8 +1436,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                 <input
                   type="text"
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  value={transactionForm.reference}
-                  onChange={e => setTransactionForm(f => ({ ...f, reference: e.target.value }))}
+                  value={modalForm.reference}
+                  onChange={e => setModalForm(f => ({ ...f, reference: e.target.value }))}
                   placeholder="Reference number"
                 />
               </div>

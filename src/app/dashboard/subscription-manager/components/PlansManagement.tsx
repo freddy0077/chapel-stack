@@ -9,12 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 import { 
   GET_SUBSCRIPTION_PLANS, 
   CREATE_SUBSCRIPTION_PLAN, 
   UPDATE_SUBSCRIPTION_PLAN,
   DELETE_SUBSCRIPTION_PLAN 
 } from '@/graphql/subscription-management';
+import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
 
 interface PlanFormData {
   name: string;
@@ -52,6 +54,7 @@ export default function PlansManagement() {
     variables: { filter: { isActive: undefined } }, // Get all plans (active and inactive)
   });
 
+  const { organisationId } = useOrganisationBranch();
   const [createPlan, { loading: createLoading }] = useMutation(CREATE_SUBSCRIPTION_PLAN, {
     onCompleted: () => {
       setShowCreateModal(false);
@@ -123,6 +126,7 @@ export default function PlansManagement() {
     const planData = {
       ...formData,
       features: formData.features.filter(f => f.trim() !== ''),
+      organisationId,
     };
 
     if (editingPlan) {

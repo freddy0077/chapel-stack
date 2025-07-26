@@ -3,7 +3,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { getUserNavigation } from '@/utils/navigation.utils';
 import { NavigationCategory } from './NavigationCategory';
 import { useModulePreferences } from '@/hooks/useModulePreferences';

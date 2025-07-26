@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { User, UserRole, Branch } from '@/lib/auth/types';
 import { useMutation } from '@apollo/client';
 import { CREATE_USERS_WITH_ROLE } from '@/graphql/mutations/userMutations';
-import { useAuth } from "@/graphql/hooks/useAuth";
-
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 // Mock data for the user list
 const mockUsers: User[] = [
@@ -345,11 +344,7 @@ export default function UserManagement() {
                   <div>
                     <p className="text-xs text-gray-500">Status</p>
                     <p className="text-sm">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        selectedUser.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${selectedUser.isActive ? 'green' : 'red'}-100 text-${selectedUser.isActive ? 'green' : 'red'}-800`}>
                         {selectedUser.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </p>

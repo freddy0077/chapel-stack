@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useCreateBaptismRecord } from "@/graphql/hooks/useCreateBaptismRecord";
 import { useCreateConfirmationRecord } from "@/graphql/hooks/useCreateConfirmationRecord";
 import { useCreateFirstCommunionRecord } from "@/graphql/hooks/useCreateFirstCommunionRecord";
 import { useCreateMatrimonyRecord } from "@/graphql/hooks/useCreateMatrimonyRecord";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import {
   CalendarIcon,
   UserIcon,
@@ -21,8 +22,9 @@ const SACRAMENT_OPTIONS = [
 ];
 
 export default function AddToSacraments({ memberId, onSuccess }: { memberId: string; onSuccess?: () => void }) {
-  const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId } = useOrganisationBranch();
 
   const [sacramentType, setSacramentType] = useState("");
   const [dateOfSacrament, setDateOfSacrament] = useState("");

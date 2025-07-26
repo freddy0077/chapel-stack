@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { ALL_MESSAGES_QUERY, GET_MESSAGE_BY_ID } from '../queries/messageQueries';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganizationBranchFilter } from './useOrganizationBranchFilter';
 
 export interface MessageFilterInput {

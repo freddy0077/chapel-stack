@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ChatBubbleLeftEllipsisIcon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon, FunnelIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import NewPrayerRequestModal from "./NewPrayerRequestModal";
 import DashboardHeader from "@/components/DashboardHeader";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { usePrayerRequests } from "@/graphql/hooks/usePrayerRequests";
 import { format } from "date-fns";
 import { useOrganizationBranchFilter } from "@/hooks";

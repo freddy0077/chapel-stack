@@ -29,7 +29,7 @@ import {
 import { AttendanceEvent, AttendanceRecord, Member } from "@/app/dashboard/attendance/types";
 import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
 import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 function CardScannerApp() {
   const [isOnline, setIsOnline] = useState<boolean>(true);

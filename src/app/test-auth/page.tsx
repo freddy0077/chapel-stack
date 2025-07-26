@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function TestAuthPage() {
@@ -57,7 +57,7 @@ export default function TestAuthPage() {
                   <p><strong>Default Route:</strong> {defaultRoute || 'N/A'}</p>
                   <p><strong>Allowed Dashboards:</strong></p>
                   <ul className="list-disc list-inside ml-4">
-                    {allowedDashboards.map(dashboard => (
+                    {(allowedDashboards || []).map(dashboard => (
                       <li key={dashboard}>{dashboard}</li>
                     ))}
                   </ul>

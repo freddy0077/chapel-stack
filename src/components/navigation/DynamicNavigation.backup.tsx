@@ -5,7 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { usePermissions } from '@/hooks/usePermissions';
 import { useModulePreferences } from '@/hooks/useModulePreferences';
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { useDashboardData, DashboardType, useUserDashboardPreference } from "@/hooks/useDashboardData";
 import Link from "next/link";

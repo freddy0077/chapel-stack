@@ -3,7 +3,7 @@
 import { Fragment, useState } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronDownIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 export default function BranchSwitcher() {
   const { availableBranches, currentBranch, setCurrentBranch } = useAuth();

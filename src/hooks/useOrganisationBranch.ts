@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 /**
  * Custom hook to centralize organisationId and branchId logic
  * This eliminates the need to define these values repeatedly across components
  */
 export function useOrganisationBranch() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
 
   const values = useMemo(() => {
     if (!user) {

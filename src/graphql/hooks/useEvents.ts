@@ -13,6 +13,7 @@ import {
   CREATE_EVENT,
   UPDATE_EVENT,
   DELETE_EVENT,
+  CREATE_RECURRING_EVENT,
   CREATE_EVENT_REGISTRATION,
   CHECK_IN_ATTENDEE,
   CHECK_OUT_ATTENDEE,
@@ -132,6 +133,10 @@ export const useEventMutations = () => {
     refetchQueries: [{ query: GET_EVENTS }]
   });
 
+  const [createRecurringEvent, { loading: createRecurringLoading, error: createRecurringError }] = useMutation(CREATE_RECURRING_EVENT, {
+    refetchQueries: [{ query: GET_EVENTS }]
+  });
+
   const handleCreateEvent = async (input: CreateEventInput) => {
     try {
       const { data } = await createEvent({ variables: { input } });
@@ -162,12 +167,23 @@ export const useEventMutations = () => {
     }
   };
 
+  const handleCreateRecurringEvent = async (input: CreateEventInput) => {
+    try {
+      const { data } = await createRecurringEvent({ variables: { input } });
+      return data.createRecurringEvent;
+    } catch (error) {
+      console.error('Error creating recurring event:', error);
+      throw error;
+    }
+  };
+
   return {
     createEvent: handleCreateEvent,
     updateEvent: handleUpdateEvent,
     deleteEvent: handleDeleteEvent,
-    loading: createLoading || updateLoading || deleteLoading,
-    error: createError || updateError || deleteError
+    createRecurringEvent: handleCreateRecurringEvent,
+    loading: createLoading || updateLoading || deleteLoading || createRecurringLoading,
+    error: createError || updateError || deleteError || createRecurringError
   };
 };
 

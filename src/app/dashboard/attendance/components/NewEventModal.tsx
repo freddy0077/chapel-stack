@@ -5,7 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface NewEventModalProps {
   isOpen: boolean;

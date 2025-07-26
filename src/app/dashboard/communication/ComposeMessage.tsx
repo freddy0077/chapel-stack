@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import RecipientSelector from './RecipientSelector';
 import { useSendEmail, useSendSms, useSendNotification } from '@/graphql/hooks/useSendMessage';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import Link from 'next/link';
@@ -123,7 +123,8 @@ const CHANNELS = [
 ];
 
 export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId, branchId } = useOrganisationBranch();
   const [selectedChannels, setSelectedChannels] = useState<string[]>(['email']);
   const [subject, setSubject] = useState('');

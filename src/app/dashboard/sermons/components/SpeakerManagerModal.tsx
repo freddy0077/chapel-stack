@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useGetSpeakers, useCreateSpeaker, useUpdateSpeaker, useDeleteSpeaker, SpeakerEntity } from '@/graphql/hooks/useSermon';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 interface SpeakerManagerModalProps {
   open: boolean;
@@ -36,7 +36,8 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
     imageUrl: ''
   });
 
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { data: speakersData, loading: speakersLoading, refetch: refetchSpeakers } = useGetSpeakers();
   const [createSpeaker, { loading: createLoading }] = useCreateSpeaker();
   const [updateSpeaker, { loading: updateLoading }] = useUpdateSpeaker();

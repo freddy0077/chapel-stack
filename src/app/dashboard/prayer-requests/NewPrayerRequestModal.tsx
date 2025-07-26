@@ -5,8 +5,9 @@ import { Fragment } from "react";
 import { ChatBubbleLeftEllipsisIcon, XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_PRAYER_REQUEST } from "@/graphql/mutations/prayer-requests";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import toast from "react-hot-toast";
 import { GET_MEMBERS } from "@/graphql/queries/members";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -18,7 +19,9 @@ interface NewPrayerRequestModalProps {
 }
 
 export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewPrayerRequestModalProps) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const { canManagePrayerRequests } = usePermissions();
   const [requestText, setRequestText] = useState("");
   const [touched, setTouched] = useState(false);
@@ -32,8 +35,7 @@ export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewP
   }, [user?.member?.id, canManagePrayerRequests]);
 
   const isSuperAdmin = user?.primaryRole === 'super_admin';
-  const [selectedBranchId, setSelectedBranchId] = useState(user?.userBranches?.[0]?.branch?.id || '');
-  const organisationId = user?.organisationId;
+  const [selectedBranchId, setSelectedBranchId] = useState(defaultBranchId || '');
   
   // Fetch branches for super_admins only
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
@@ -111,8 +113,8 @@ export default function NewPrayerRequestModal({ open, onClose, onSuccess }: NewP
         data: {
           memberId: memberId,
           requestText: requestText.trim(),
-          branchId: isSuperAdmin ? selectedBranchId : user?.userBranches?.[0]?.branch?.id,
-          organisationId: user?.organisationId,
+          branchId: isSuperAdmin ? selectedBranchId : defaultBranchId,
+          organisationId: organisationId,
         },
       },
     });

@@ -34,8 +34,9 @@ export default function BranchMembersPanel({ branchId }: BranchMembersPanelProps
   const filter = useOrganizationBranchFilter();
 
   // Clean filter object to remove any undefined values or string "undefined"
+  // Also remove branchId from filter since we want to use the parameter branchId
   const cleanFilter = Object.entries(filter).reduce((acc, [key, value]) => {
-    if (value !== undefined && value !== "undefined" && value !== null) {
+    if (value !== undefined && value !== "undefined" && value !== null && key !== 'branchId') {
       acc[key] = value;
     }
     return acc;
@@ -44,11 +45,11 @@ export default function BranchMembersPanel({ branchId }: BranchMembersPanelProps
   // Query members data
   const { data, loading, error, refetch } = useQuery(GET_MEMBERS_LIST, {
     variables: {
-      branchId,
+      branchId, // Use the parameter branchId, not the one from filter
       skip: page * pageSize,
       take: pageSize,
       search: searchTerm || undefined,
-      ...cleanFilter, // Include organization ID if available
+      ...cleanFilter, // Include organization ID but exclude branchId from filter
     },
     fetchPolicy: "cache-and-network",
   });

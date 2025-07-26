@@ -1,7 +1,7 @@
 "use client";
 import { useFilteredSacramentStats, SacramentStats } from "@/graphql/hooks/useFilteredSacramentStats";
 import { useOrganizationBranchFilter } from "@/hooks";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface SacramentStatsLoaderProps {
   period?: string;

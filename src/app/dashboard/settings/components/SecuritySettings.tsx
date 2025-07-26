@@ -6,6 +6,7 @@ import { CheckIcon, ExclamationTriangleIcon, KeyIcon, ShieldCheckIcon, LockClose
 import { useSettings } from '@/graphql/hooks/useSettings';
 import { useMutation } from '@apollo/client';
 import { gql } from 'graphql-tag';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 const UPDATE_LOGIN_ALERTS = gql`
   mutation updateLoginAlerts($enabled: Boolean!) {
@@ -46,6 +47,7 @@ const DISABLE_TWO_FACTOR = gql`
 export default function SecuritySettings() {
   // Use global settings for security preferences
   const { data, refetch } = useSettings();
+  const { user } = useAuth();
   const [updateLoginAlerts] = useMutation(UPDATE_LOGIN_ALERTS);
   const [updateSessionTimeout] = useMutation(UPDATE_SESSION_TIMEOUT);
   const [enableTwoFactor] = useMutation(ENABLE_TWO_FACTOR);
@@ -152,10 +154,18 @@ export default function SecuritySettings() {
 
   const handleEnableTwoFactor = async () => {
     try {
-      await enableTwoFactor({ variables: { input: {} } });
+      // Provide the correct fields as required by the GraphQL schema
+      await enableTwoFactor({ 
+        variables: { 
+          input: { 
+            method: 'APP', // Default to app-based 2FA
+            password: currentPassword || '', // Use current password from state
+          } 
+        } 
+      });
       setTwoFactorEnabled(true);
-    } catch {
-      // Removed unused error variable
+    } catch (error) {
+      console.error('Failed to enable two-factor authentication:', error);
     }
   };
 

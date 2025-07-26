@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useMemo } from 'react';
 
 // Define role constants for consistency
@@ -21,7 +21,8 @@ const ROLES = {
  * - `canCustomizeModules`: True if the user can customize modules (SUPER_ADMIN only).
  */
 export const usePermissions = () => {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const role = useMemo(() => user?.primaryRole?.toUpperCase(), [user?.primaryRole]);
 
   const isSuperAdmin = useMemo(() => role === ROLES.SUPER_ADMIN, [role]);

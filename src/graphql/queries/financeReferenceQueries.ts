@@ -1,15 +1,12 @@
 import { gql } from "@apollo/client";
 
 export const GET_FUNDS = gql`
-  query GetFunds($branchId: ID) {
-    funds(branchId: $branchId) {
+  query GetFunds($organisationId: String!, $branchId: String) {
+    funds(organisationId: $organisationId, branchId: $branchId) {
       id
       name
       description
-      isActive
       branchId
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -20,8 +17,6 @@ export const GET_CONTRIBUTION_TYPES = gql`
       id
       name
       description
-      isActive
-      branchId
     }
   }
 `;
@@ -32,8 +27,6 @@ export const GET_PAYMENT_METHODS = gql`
       id
       name
       description
-      isActive
-      organisationId
     }
   }
 `;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { getUserNavigation } from '@/utils/navigation.utils';
 import { NavigationCategory } from './NavigationCategory';
 import { useModulePreferences } from '@/hooks/useModulePreferences';

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { 
   CreditCardIcon, 
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GET_ORGANIZATION_SUBSCRIPTION_STATUS, GET_SUBSCRIPTION_PLANS } from '@/graphql/subscription-management';
 import { useCreateOrganizationSubscription } from '@/hooks/subscription/useOrganizationSubscription';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 interface SuperAdminSubscriptionManagementProps {
   organizationId: string;

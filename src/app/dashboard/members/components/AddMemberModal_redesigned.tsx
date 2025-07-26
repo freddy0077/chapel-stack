@@ -1,10 +1,13 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { CREATE_MEMBER } from "@/graphql/queries/memberQueries";
 import { CheckCircleIcon, XMarkIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 
 // Define family member type
  type FamilyMember = {
@@ -21,6 +24,26 @@ interface AddMemberModalProps {
 
 export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
   const router = useRouter();
+  const { user } = useAuth();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const organisationId = user?.organisationId || orgIdFromFilter;
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  
+  // Improved branch selection logic
+  const branchId = useMemo(() => {
+    if (isSuperAdmin) {
+      return selectedBranchId;
+    } else {
+      // For non-super admin users, try to get branch from filter, user's branches, or first available branch
+      return branchIdFromFilter || 
+             user?.userBranches?.[0]?.branch?.id || 
+             user?.branchId ||
+             branches?.[0]?.id;
+    }
+  }, [isSuperAdmin, selectedBranchId, branchIdFromFilter, user, branches]);
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: "",
@@ -56,6 +79,14 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
     }
     if (formData.phone && !/^[\d\+\-\(\)\s]+$/.test(formData.phone)) {
       errors.phone = "Please enter a valid phone number";
+    }
+    // Branch validation for super admin users
+    if (isSuperAdmin && !selectedBranchId) {
+      errors.branch = "Please select a branch for this member";
+    }
+    // General branch validation - ensure we have a valid branchId
+    if (!branchId) {
+      errors.general = "No branch selected or available for this user";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -102,6 +133,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         maritalStatus: formData.maritalStatus || undefined,
         joinDate: formData.joinDate || undefined,
         membershipStatus: formData.status || "ACTIVE",
+        branchId: branchId,
+        organisationId: organisationId,
         Address_Member_addressIdToAddress: {
           create: {
             street1: formData.address || "",
@@ -192,6 +225,35 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                     </div>
                   </div>
                 </section>
+
+                {/* Branch Selection (Super Admin only) */}
+                {isSuperAdmin && (
+                  <section className="mt-8">
+                    <h3 className="font-semibold text-gray-900 mb-2">Branch Assignment</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Branch <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={selectedBranchId}
+                        onChange={(e) => setSelectedBranchId(e.target.value)}
+                        className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
+                        required
+                      >
+                        <option value="">Select a branch...</option>
+                        {branches.map((branch) => (
+                          <option key={branch.id} value={branch.id}>
+                            {branch.name}
+                          </option>
+                        ))}
+                      </select>
+                      {!selectedBranchId && isSuperAdmin && (
+                        <p className="mt-1 text-xs text-red-600">Please select a branch for this member</p>
+                      )}
+                    </div>
+                  </section>
+                )}
+
                 {/* Contact & Address Info */}
                 <section className="mt-8">
                   <h3 className="font-semibold text-gray-900 mb-2">Contact & Address</h3>

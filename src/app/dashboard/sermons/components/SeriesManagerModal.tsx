@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useGetSeries, useCreateSeries, useUpdateSeries, useDeleteSeries, SeriesEntity } from '@/graphql/hooks/useSermon';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 interface SeriesManagerModalProps {
   open: boolean;
@@ -38,7 +38,8 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
   const [createSeries, { loading: createLoading }] = useCreateSeries();
   const [updateSeries, { loading: updateLoading }] = useUpdateSeries();
   const [deleteSeries, { loading: deleteLoading }] = useDeleteSeries();
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
 
   const mutationLoading = createLoading || updateLoading || deleteLoading;
   const series = seriesData?.series || [];

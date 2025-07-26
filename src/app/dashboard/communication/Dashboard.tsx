@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMessageStats } from '@/graphql/hooks/useMessageStats';
 import { useMessages } from '@/graphql/hooks/useMessages';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { format, subDays } from 'date-fns';
 import { Fragment } from 'react';

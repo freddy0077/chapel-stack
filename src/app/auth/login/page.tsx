@@ -1,29 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import LoginForm from "../components/LoginForm";
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (email: string, password: string, rememberMe: boolean) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const result = await login(email, password);
+      // Pass credentials as an object as expected by the enhanced auth context
+      const result = await login({
+        email,
+        password,
+        rememberMe
+      });
 
       if (result.success) {
         setSuccessMessage("Login successful! Redirecting...");
-        // The useAuth hook will handle the redirect automatically
+        
+        // Debug: Check what we got from login
+        console.log('🔍 Login result:', result);
+        console.log('🔍 User data:', result.user);
+        console.log('🔍 User roles:', result.user?.roles);
+        console.log('🔍 User primaryRole:', result.user?.primaryRole);
+        
+        // Simple role-based redirect - no complex logic needed
+        const userRole = result.user?.primaryRole || result.user?.roles?.[0];
+        let redirectUrl = '/dashboard';
+        
+        console.log('🔍 Determined user role:', userRole);
+        
+        // Map roles to their dashboard URLs
+        switch (userRole) {
+          case 'SUBSCRIPTION_MANAGER':
+            redirectUrl = '/dashboard/subscription-manager';
+            break;
+          case 'SUPER_ADMIN':
+            redirectUrl = '/dashboard/super-admin';
+            break;
+          case 'BRANCH_ADMIN':
+            redirectUrl = '/dashboard/branch';
+            break;
+          case 'FINANCE_MANAGER':
+            redirectUrl = '/dashboard/finances';
+            break;
+          case 'PASTORAL_STAFF':
+            redirectUrl = '/dashboard/pastoral-care';
+            break;
+          default:
+            redirectUrl = '/dashboard';
+        }
+        
+        console.log(`🔀 Redirecting ${userRole} to: ${redirectUrl}`);
+        
+        // Simple redirect using Next.js router
+        setTimeout(() => {
+          console.log('🚀 Executing redirect...');
+          window.location.href = redirectUrl;
+          // router.push(redirectUrl);
+        }, 1000); // Small delay to show success message
       } else {
-        setError(result.error || "Login failed. Please try again.");
+        // Extract error message from error object or use fallback
+        const errorMessage = result.error?.message || result.error || "Login failed. Please try again.";
+        setError(typeof errorMessage === 'string' ? errorMessage : "Login failed. Please try again.");
       }
     } catch (err) {
       console.error("Login error:", err);

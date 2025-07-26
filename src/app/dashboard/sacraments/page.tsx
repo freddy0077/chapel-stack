@@ -12,7 +12,13 @@ import {
   PlusIcon,
   CalendarIcon,
   DocumentTextIcon,
-  ClockIcon,
+  SparklesIcon,
+  HeartIcon,
+  GiftIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  EyeIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, Transition } from "@headlessui/react";
 import { SacramentStatsLoader } from "./SacramentStatsLoader";
@@ -21,241 +27,440 @@ import { UpcomingAnniversariesLoader } from "./UpcomingAnniversariesLoader";
 // Placeholder components for each sacrament tab
 import { BaptismRecordsLoader } from "./BaptismRecordsLoader";
 import type { BaptismRecord } from "@/graphql/hooks/useBaptismRecords";
+import { CommunionRecordsLoader } from "./CommunionRecordsLoader";
+import type { CommunionRecord } from "@/graphql/hooks/useCommunionRecords";
+import { ConfirmationRecordsLoader } from "./ConfirmationRecordsLoader";
+import type { ConfirmationRecord } from "@/graphql/hooks/useConfirmationRecords";
+import { MarriageRecordsLoader } from "./MarriageRecordsLoader";
+import type { MarriageRecord } from "@/graphql/hooks/useMarriageRecords";
+import DashboardHeader from "@/components/DashboardHeader";
 
-const BaptismRecords = () => (
+// Import modal components
+import CreateBaptismModal from "./components/CreateBaptismModal";
+import CreateCommunionModal from "./components/CreateCommunionModal";
+import CreateConfirmationModal from "./components/CreateConfirmationModal";
+import CreateMarriageModal from "./components/CreateMarriageModal";
+
+const BaptismRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   <BaptismRecordsLoader>
     {(records: BaptismRecord[], loading: boolean, error: unknown) => (
-      <div>
-        <h3 className="text-lg font-medium mb-4">Baptism Records</h3>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <SparklesIcon className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Baptism Records</h3>
+                <p className="text-sm text-gray-600">Sacred initiation into faith</p>
+              </div>
+            </div>
+            <div className="bg-blue-100 px-3 py-1 rounded-full">
+              <span className="text-blue-800 font-medium text-sm">{records.length} Records</span>
+            </div>
+          </div>
+        </div>
+        
         {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <svg className="animate-spin h-8 w-8 text-indigo-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
+          <div className="flex justify-center items-center h-48">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
+              <SparklesIcon className="h-6 w-6 text-blue-600 absolute top-3 left-3" />
+            </div>
           </div>
         ) : error ? (
-          <div className="text-red-600 font-semibold text-center py-4">Failed to load baptism records.</div>
+          <div className="p-8 text-center">
+            <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
+              <DocumentTextIcon className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-semibold">Failed to load baptism records</p>
+            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+          </div>
         ) : records.length === 0 ? (
-          <div className="py-4 text-center text-gray-500">No baptism records found.</div>
+          <div className="p-12 text-center">
+            <div className="bg-blue-50 p-4 rounded-full inline-flex mb-4">
+              <SparklesIcon className="h-12 w-12 text-blue-400" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Baptism Records</h4>
+            <p className="text-gray-500 mb-6">Start by adding your first baptism record</p>
+            <button
+              onClick={onOpenModal}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Baptism Record
+            </button>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Officiant</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {records.map((rec) => (
-  <tr key={rec.id}>
-    <td className="px-4 py-2 whitespace-nowrap">{rec.memberId}</td>
-    <td className="px-4 py-2 whitespace-nowrap">{new Date(rec.dateOfSacrament).toLocaleDateString()}</td>
-    <td className="px-4 py-2 whitespace-nowrap">{rec.officiantName}</td>
-    <td className="px-4 py-2 whitespace-nowrap">{rec.locationOfSacrament}</td>
-    <td className="px-4 py-2 whitespace-nowrap">
-      {rec.certificateUrl ? (
-        <a href={rec.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">View</a>
-      ) : (
-        <span className="text-gray-400">—</span>
-      )}
-    </td>
-    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(rec.createdAt).toLocaleDateString()}</td>
-  </tr>
-))}
-              </tbody>
-            </table>
+          <div className="overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {records.map((rec) => (
+                <div key={rec.id} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="bg-blue-100 p-2 rounded-lg group-hover:bg-blue-200 transition-colors">
+                      <SparklesIcon className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full font-medium">
+                      {new Date(rec.dateOfSacrament).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.officiantName}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.locationOfSacrament}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    {rec.certificateUrl ? (
+                      <a 
+                        href={rec.certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
+                        Certificate
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No certificate</span>
+                    )}
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
     )}
   </BaptismRecordsLoader>
 );
-import { CommunionRecordsLoader } from "./CommunionRecordsLoader";
-import type { CommunionRecord } from "@/graphql/hooks/useCommunionRecords";
 
-const CommunionRecords = () => (
+const CommunionRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   <CommunionRecordsLoader>
     {(records: CommunionRecord[], loading: boolean, error: unknown) => (
-      <div>
-        <h3 className="text-lg font-medium mb-4">First Communion Records</h3>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-amber-100 p-2 rounded-lg">
+                <GiftIcon className="h-6 w-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">First Communion Records</h3>
+                <p className="text-sm text-gray-600">First reception of the Eucharist</p>
+              </div>
+            </div>
+            <div className="bg-amber-100 px-3 py-1 rounded-full">
+              <span className="text-amber-800 font-medium text-sm">{records.length} Records</span>
+            </div>
+          </div>
+        </div>
+        
         {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <svg className="animate-spin h-8 w-8 text-indigo-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
+          <div className="flex justify-center items-center h-48">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin"></div>
+              <GiftIcon className="h-6 w-6 text-amber-600 absolute top-3 left-3" />
+            </div>
           </div>
         ) : error ? (
-          <div className="text-red-600 font-semibold text-center py-4">Failed to load communion records.</div>
+          <div className="p-8 text-center">
+            <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
+              <DocumentTextIcon className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-semibold">Failed to load communion records</p>
+            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+          </div>
         ) : records.length === 0 ? (
-          <div className="py-4 text-center text-gray-500">No communion records found.</div>
+          <div className="p-12 text-center">
+            <div className="bg-amber-50 p-4 rounded-full inline-flex mb-4">
+              <GiftIcon className="h-12 w-12 text-amber-400" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Communion Records</h4>
+            <p className="text-gray-500 mb-6">Start by adding your first communion record</p>
+            <button
+              onClick={onOpenModal}
+              className="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Communion Record
+            </button>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Officiant</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {records.map((rec) => (
-                  <tr key={rec.id}>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.memberId}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{new Date(rec.dateOfSacrament).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.officiantName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.locationOfSacrament}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {rec.certificateUrl ? (
-                        <a href={rec.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">View</a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(rec.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {records.map((rec) => (
+                <div key={rec.id} className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-100 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="bg-amber-100 p-2 rounded-lg group-hover:bg-amber-200 transition-colors">
+                      <GiftIcon className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded-full font-medium">
+                      {new Date(rec.dateOfSacrament).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.officiantName}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.locationOfSacrament}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    {rec.certificateUrl ? (
+                      <a 
+                        href={rec.certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center text-amber-600 hover:text-amber-800 text-sm font-medium"
+                      >
+                        <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
+                        Certificate
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No certificate</span>
+                    )}
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
     )}
   </CommunionRecordsLoader>
 );
-import { ConfirmationRecordsLoader } from "./ConfirmationRecordsLoader";
-import type { ConfirmationRecord } from "@/graphql/hooks/useConfirmationRecords";
 
-const ConfirmationRecords = () => (
+const ConfirmationRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   <ConfirmationRecordsLoader>
     {(records: ConfirmationRecord[], loading: boolean, error: unknown) => (
-      <div>
-        <h3 className="text-lg font-medium mb-4">Confirmation Records</h3>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <HeartIcon className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Confirmation Records</h3>
+                <p className="text-sm text-gray-600">Strengthening of faith through the Spirit</p>
+              </div>
+            </div>
+            <div className="bg-purple-100 px-3 py-1 rounded-full">
+              <span className="text-purple-800 font-medium text-sm">{records.length} Records</span>
+            </div>
+          </div>
+        </div>
+        
         {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <svg className="animate-spin h-8 w-8 text-indigo-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
+          <div className="flex justify-center items-center h-48">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin"></div>
+              <HeartIcon className="h-6 w-6 text-purple-600 absolute top-3 left-3" />
+            </div>
           </div>
         ) : error ? (
-          <div className="text-red-600 font-semibold text-center py-4">Failed to load confirmation records.</div>
+          <div className="p-8 text-center">
+            <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
+              <DocumentTextIcon className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-semibold">Failed to load confirmation records</p>
+            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+          </div>
         ) : records.length === 0 ? (
-          <div className="py-4 text-center text-gray-500">No confirmation records found.</div>
+          <div className="p-12 text-center">
+            <div className="bg-purple-50 p-4 rounded-full inline-flex mb-4">
+              <HeartIcon className="h-12 w-12 text-purple-400" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Confirmation Records</h4>
+            <p className="text-gray-500 mb-6">Start by adding your first confirmation record</p>
+            <button
+              onClick={onOpenModal}
+              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Confirmation Record
+            </button>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Officiant</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {records.map((rec) => (
-                  <tr key={rec.id}>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.memberId}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{new Date(rec.dateOfSacrament).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.officiantName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.locationOfSacrament}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {rec.certificateUrl ? (
-                        <a href={rec.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">View</a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(rec.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {records.map((rec) => (
+                <div key={rec.id} className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="bg-purple-100 p-2 rounded-lg group-hover:bg-purple-200 transition-colors">
+                      <HeartIcon className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full font-medium">
+                      {new Date(rec.dateOfSacrament).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.officiantName}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.locationOfSacrament}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    {rec.certificateUrl ? (
+                      <a 
+                        href={rec.certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium"
+                      >
+                        <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
+                        Certificate
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No certificate</span>
+                    )}
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
     )}
   </ConfirmationRecordsLoader>
 );
-import { MarriageRecordsLoader } from "./MarriageRecordsLoader";
-import type { MarriageRecord } from "@/graphql/hooks/useMarriageRecords";
-import DashboardHeader from "@/components/DashboardHeader";
 
-const MarriageRecords = () => (
+const MarriageRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   <MarriageRecordsLoader>
     {(records: MarriageRecord[], loading: boolean, error: unknown) => (
-      <div>
-        <h3 className="text-lg font-medium mb-4">Marriage Records</h3>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-rose-100 p-2 rounded-lg">
+                <HeartIcon className="h-6 w-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Marriage Records</h3>
+                <p className="text-sm text-gray-600">Sacred union blessed by God</p>
+              </div>
+            </div>
+            <div className="bg-rose-100 px-3 py-1 rounded-full">
+              <span className="text-rose-800 font-medium text-sm">{records.length} Records</span>
+            </div>
+          </div>
+        </div>
+        
         {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <svg className="animate-spin h-8 w-8 text-indigo-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
+          <div className="flex justify-center items-center h-48">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin"></div>
+              <HeartIcon className="h-6 w-6 text-rose-600 absolute top-3 left-3" />
+            </div>
           </div>
         ) : error ? (
-          <div className="text-red-600 font-semibold text-center py-4">Failed to load marriage records.</div>
+          <div className="p-8 text-center">
+            <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
+              <DocumentTextIcon className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-red-600 font-semibold">Failed to load marriage records</p>
+            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+          </div>
         ) : records.length === 0 ? (
-          <div className="py-4 text-center text-gray-500">No marriage records found.</div>
+          <div className="p-12 text-center">
+            <div className="bg-rose-50 p-4 rounded-full inline-flex mb-4">
+              <HeartIcon className="h-12 w-12 text-rose-400" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Marriage Records</h4>
+            <p className="text-gray-500 mb-6">Start by adding your first marriage record</p>
+            <button
+              onClick={onOpenModal}
+              className="inline-flex items-center px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Marriage Record
+            </button>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Officiant</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Witness 1</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Witness 2</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate #</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {records.map((rec) => (
-                  <tr key={rec.id}>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.memberId}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{new Date(rec.dateOfSacrament).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.officiantName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.locationOfSacrament}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.witness1Name || '—'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.witness2Name || '—'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.certificateNumber || '—'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {rec.certificateUrl ? (
-                        <a href={rec.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">View</a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.notes || '—'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{new Date(rec.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {records.map((rec) => (
+                <div key={rec.id} className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6 border border-rose-100 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="bg-rose-100 p-2 rounded-lg group-hover:bg-rose-200 transition-colors">
+                      <HeartIcon className="h-5 w-5 text-rose-600" />
+                    </div>
+                    <span className="text-xs text-rose-600 bg-rose-100 px-2 py-1 rounded-full font-medium">
+                      {new Date(rec.dateOfSacrament).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.officiantName}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{rec.locationOfSacrament}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    {rec.certificateUrl ? (
+                      <a 
+                        href={rec.certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center text-rose-600 hover:text-rose-800 text-sm font-medium"
+                      >
+                        <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
+                        Certificate
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No certificate</span>
+                    )}
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
     )}
   </MarriageRecordsLoader>
 );
+
 const AnniversaryTracker = () => (
   <div className="text-center py-8">
     <h3 className="text-lg font-medium">Anniversary Tracker</h3>
@@ -324,394 +529,266 @@ function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function SacramentsPage() {
   const [, setActiveTab] = useState("overview");
+  const [isBaptismModalOpen, setIsBaptismModalOpen] = useState(false);
+  const [isCommunionModalOpen, setIsCommunionModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isMarriageModalOpen, setIsMarriageModalOpen] = useState(false);
+
+  const handleModalSuccess = () => {
+    // Optionally trigger a refetch of data here
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white pb-16 overflow-visible">
-      {/* Wrapping DashboardHeader in relative z-20 to ensure dropdown menu is visible above all content */}
-      <div className="relative z-20">
-        <DashboardHeader
-          title="Sacraments"
-          subtitle="Track and manage all sacramental records and spiritual milestones"
-          action={
-            <div className="mt-6 sm:mt-0 flex flex-wrap gap-3 justify-start sm:justify-end">
-              <Menu as="div" className="relative inline-block text-left">
-                <div>
-                  <Menu.Button className="inline-flex w-full justify-center rounded-md bg-white/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200">
-                    <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-600" aria-hidden="true" />
-                    New Record
-                    <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
-                  </Menu.Button>
-                </div>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div className="py-1">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <Link
-                            href="/dashboard/sacraments/baptism/new"
-                            className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                          >
-                            New Baptism Record
-                          </Link>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <Link
-                            href="/dashboard/sacraments/communion/new"
-                            className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                          >
-                            New First Communion Record
-                          </Link>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <Link
-                            href="/dashboard/sacraments/confirmation/new"
-                            className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                          >
-                            New Confirmation Record
-                          </Link>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <Link
-                            href="/dashboard/sacraments/marriage/new"
-                            className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                          >
-                            New Marriage Record
-                          </Link>
-                        )}
-                      </Menu.Item>
-                    </div>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
-            </div>
-          }
-        />
-      </div>
-   
-      {/* Header */}
-      {/* <div className="rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 shadow-lg px-8 py-8 mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Sacramental Records</h1>
-          <p className="mt-2 text-base text-indigo-100">Track and manage all sacramental records and spiritual milestones</p>
-        </div>
-        <div className="mt-6 sm:mt-0 flex flex-wrap gap-3 justify-start sm:justify-end">
-          <Menu as="div" className="relative inline-block text-left">
-            <div>
-              <Menu.Button className="inline-flex w-full justify-center rounded-md bg-white/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200">
-                <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-600" aria-hidden="true" />
-                New Record
-                <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
-              </Menu.Button>
-            </div>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/sacraments/baptism/new"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        New Baptism Record
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/sacraments/communion/new"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        New First Communion Record
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/sacraments/confirmation/new"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        New Confirmation Record
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/sacraments/marriage/new"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        New Marriage Record
-                      </Link>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-          <Menu as="div" className="relative inline-block text-left">
-            <div>
-              <Menu.Button className="inline-flex w-full justify-center rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-indigo-700 shadow hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200">
-                <CalendarIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
-                Anniversaries
-              </Menu.Button>
-            </div>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        href="/dashboard/sacraments/anniversaries"
-                        className={`${active ? "bg-indigo-50 text-indigo-900" : "text-gray-700"} block px-4 py-2 text-sm rounded-md`}
-                      >
-                        Anniversary Tracker
-                      </Link>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        </div>
-      </div> */}
-    
-
-      <div className="bg-white/90 rounded-2xl shadow-xl ring-1 ring-indigo-100">
-        <Tabs defaultValue="overview" onValueChange={setActiveTab} className="w-full">
-          <div className="px-4 border-b border-indigo-100">
-            <TabsList className="flex items-center space-x-6">
-              <TabsTrigger
-                value="overview"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <DashboardHeader
+        title="Sacraments"
+        subtitle="Track and manage all sacramental records and spiritual milestones"
+        icon={<SparklesIcon className="h-10 w-10 text-white" />}
+        action={
+          <div className="mt-6 sm:mt-0 flex flex-wrap gap-3 justify-start sm:justify-end">
+            <Menu as="div" className="relative inline-block text-left">
+              <div>
+                <Menu.Button className="inline-flex w-full justify-center rounded-lg bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-indigo-700 shadow-lg hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200 transition-all duration-200">
+                  <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-600" aria-hidden="true" />
+                  New Record
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
+                </Menu.Button>
+              </div>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
               >
-                Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="baptism"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
-              >
-                Baptism
-              </TabsTrigger>
-              <TabsTrigger
-                value="communion"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
-              >
-                First Communion
-              </TabsTrigger>
-              <TabsTrigger
-                value="confirmation"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
-              >
-                Confirmation
-              </TabsTrigger>
-              <TabsTrigger
-                value="marriage"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
-              >
-                Marriage
-              </TabsTrigger>
-              <TabsTrigger
-                value="anniversaries"
-                className="py-4 px-1 border-b-2 transition-colors hover:text-indigo-600 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 data-[state=inactive]:border-transparent text-base font-semibold tracking-tight"
-              >
-                Anniversary Tracker
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="overview" className="p-6">
-            <SacramentStatsLoader period="last12months">
-              {(stats, loading, error) => (
-                <>
-                  {loading ? (
-                    <div className="flex justify-center items-center h-32">
-                      <svg className="animate-spin h-8 w-8 text-indigo-600" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                    </div>
-                  ) : error ? (
-                    <div className="text-red-600 font-semibold text-center py-4">Failed to load sacrament stats.</div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                      {stats.map((stat, index) => {
-                        let icon = DocumentTextIcon;
-                        let iconColor = "bg-blue-500";
-                        if (stat.sacramentType === "BAPTISM") { icon = DocumentTextIcon; iconColor = "bg-blue-500"; }
-                        else if (stat.sacramentType === "COMMUNION") { icon = DocumentTextIcon; iconColor = "bg-green-500"; }
-                        else if (stat.sacramentType === "CONFIRMATION") { icon = DocumentTextIcon; iconColor = "bg-purple-500"; }
-                        else if (stat.sacramentType === "MARRIAGE") { icon = DocumentTextIcon; iconColor = "bg-pink-500"; }
-                        else if (stat.sacramentType === "ANNIVERSARY") { icon = CalendarIcon; iconColor = "bg-amber-500"; }
-                        else if (stat.sacramentType === "CERTIFICATE") { icon = ClockIcon; iconColor = "bg-orange-500"; }
-                        return (
-                          <StatsCard
-                            key={index}
-                            title={stat.sacramentType.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                            value={stat.count}
-                            description={stat.period || 'Last 12 months'.replace("'", "&apos;")}
-                            trend={stat.trend}
-                            percentage={stat.percentage}
-                            icon={icon}
-                            iconColor={iconColor}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </SacramentStatsLoader>
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Recent Activity Card */}
-              {/*<div className="overflow-hidden rounded-lg bg-white shadow">*/}
-              {/*  <div className="p-6">*/}
-              {/*    <h3 className="text-base font-semibold leading-6 text-gray-900">Recent Activity</h3>*/}
-              {/*    <div className="mt-2 divide-y divide-gray-200">*/}
-              {/*      <div className="py-4">*/}
-              {/*        <div className="flex items-center">*/}
-              {/*          <div className="flex-shrink-0 bg-blue-100 rounded-full p-1">*/}
-              {/*            <DocumentTextIcon className="h-5 w-5 text-blue-600" aria-hidden="true" />*/}
-              {/*          </div>*/}
-              {/*          <div className="ml-4">*/}
-              {/*            <p className="text-sm font-medium text-gray-900">New baptism record added</p>*/}
-              {/*            <p className="text-sm text-gray-500">Emma Wilson&apos;s baptism recorded by Pastor Thomas</p>*/}
-              {/*            <p className="mt-1 text-xs text-gray-500">Today at 9:42 AM</p>*/}
-              {/*          </div>*/}
-              {/*        </div>*/}
-              {/*      </div>*/}
-              {/*      <div className="py-4">*/}
-              {/*        <div className="flex items-center">*/}
-              {/*          <div className="flex-shrink-0 bg-green-100 rounded-full p-1">*/}
-              {/*            <DocumentTextIcon className="h-5 w-5 text-green-600" aria-hidden="true" />*/}
-              {/*          </div>*/}
-              {/*          <div className="ml-4">*/}
-              {/*            <p className="text-sm font-medium text-gray-900">First Communion record added</p>*/}
-              {/*            <p className="text-sm text-gray-500">Noah Martinez received first communion</p>*/}
-              {/*            <p className="mt-1 text-xs text-gray-500">Yesterday at 2:15 PM</p>*/}
-              {/*          </div>*/}
-              {/*        </div>*/}
-              {/*      </div>*/}
-              {/*      <div className="py-4">*/}
-              {/*        <div className="flex items-center">*/}
-              {/*          <div className="flex-shrink-0 bg-pink-100 rounded-full p-1">*/}
-              {/*            <DocumentTextIcon className="h-5 w-5 text-pink-600" aria-hidden="true" />*/}
-              {/*          </div>*/}
-              {/*          <div className="ml-4">*/}
-              {/*            <p className="text-sm font-medium text-gray-900">Marriage certificate uploaded</p>*/}
-              {/*            <p className="text-sm text-gray-500">Michael &amp; Sarah Johnson&apos;s marriage certificate</p>*/}
-              {/*            <p className="mt-1 text-xs text-gray-500">2 days ago</p>*/}
-              {/*          </div>*/}
-              {/*        </div>*/}
-              {/*      </div>*/}
-              {/*    </div>*/}
-              {/*    <div className="mt-6">*/}
-              {/*      <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">*/}
-              {/*        View all activity*/}
-              {/*        <span aria-hidden="true"> &rarr;</span>*/}
-              {/*      </a>*/}
-              {/*    </div>*/}
-              {/*  </div>*/}
-              {/*</div>*/}
-              <div className="overflow-hidden rounded-lg bg-white shadow">
-                <div className="p-6">
-                  <h3 className="text-base font-semibold leading-6 text-gray-900">Upcoming Anniversaries</h3>
-                  <div className="mt-2 divide-y divide-gray-200">
-                    <UpcomingAnniversariesLoader limit={5}>
-                      {(anniversaries, loading, error) => (
-                        loading ? (
-                          <div className="flex justify-center items-center h-20">
-                            <svg className="animate-spin h-6 w-6 text-indigo-600" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                            </svg>
-                          </div>
-                        ) : error ? (
-                          <div className="text-red-600 font-semibold text-center py-4">Failed to load anniversaries.</div>
-                        ) : anniversaries.length === 0 ? (
-                          <div className="py-4 text-center text-gray-500">No upcoming anniversaries.</div>
-                        ) : (
-                          anniversaries.map((a, i) => (
-                            <div className="py-4" key={i}>
-                              <div className="flex items-center">
-                                <div className={`flex-shrink-0 rounded-full p-1 ${a.isSpecial ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                                  <CalendarIcon className={`h-5 w-5 ${a.isSpecial ? 'text-amber-600' : 'text-blue-600'}`} aria-hidden="true" />
-                                </div>
-                                <div className="ml-4">
-                                  <p className="text-sm font-medium text-gray-900">{a.name}</p>
-                                  <p className="text-sm text-gray-500">
-                                    {a.anniversaryType || a.sacramentType} Anniversary
-                                    {a.isSpecial && (
-                                      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 ml-2">Special</span>
-                                    )}
-                                  </p>
-                                  <p className="mt-1 text-xs text-gray-500">{a.timeUntil}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        )
+                <Menu.Items className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none backdrop-blur-sm">
+                  <div className="py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setIsBaptismModalOpen(true)}
+                          className={`${active ? "bg-blue-50 text-blue-900" : "text-gray-700"} flex items-center px-4 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
+                        >
+                          <SparklesIcon className="h-4 w-4 mr-3 text-blue-600" />
+                          New Baptism Record
+                        </button>
                       )}
-                    </UpcomingAnniversariesLoader>
-                    <div className="mt-6">
-                      <Link href="/dashboard/sacraments/anniversaries" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                        View all anniversaries
-                        <span aria-hidden="true"> &rarr;</span>
-                      </Link>
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setIsCommunionModalOpen(true)}
+                          className={`${active ? "bg-amber-50 text-amber-900" : "text-gray-700"} flex items-center px-4 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
+                        >
+                          <GiftIcon className="h-4 w-4 mr-3 text-amber-600" />
+                          New First Communion Record
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setIsConfirmationModalOpen(true)}
+                          className={`${active ? "bg-purple-50 text-purple-900" : "text-gray-700"} flex items-center px-4 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
+                        >
+                          <HeartIcon className="h-4 w-4 mr-3 text-purple-600" />
+                          New Confirmation Record
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setIsMarriageModalOpen(true)}
+                          className={`${active ? "bg-rose-50 text-rose-900" : "text-gray-700"} flex items-center px-4 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
+                        >
+                          <HeartIcon className="h-4 w-4 mr-3 text-rose-600" />
+                          New Marriage Record
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+          </div>
+        }
+      />
+   
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Statistics Overview */}
+        <div className="mb-8">
+          <SacramentStatsLoader period="all">
+            {(stats: any[], loading: boolean, error: unknown) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard
+                  title="Total Baptisms"
+                  value={stats.find(s => s.type === 'BAPTISM')?.count || 0}
+                  description="Sacred initiations"
+                  icon={SparklesIcon}
+                  iconColor="text-blue-600"
+                  trend="up"
+                  percentage={12}
+                />
+                <StatsCard
+                  title="First Communions"
+                  value={stats.find(s => s.type === 'EUCHARIST_FIRST_COMMUNION')?.count || 0}
+                  description="First Eucharist receptions"
+                  icon={GiftIcon}
+                  iconColor="text-amber-600"
+                  trend="up"
+                  percentage={8}
+                />
+                <StatsCard
+                  title="Confirmations"
+                  value={stats.find(s => s.type === 'CONFIRMATION')?.count || 0}
+                  description="Faith strengthened"
+                  icon={HeartIcon}
+                  iconColor="text-purple-600"
+                  trend="neutral"
+                />
+                <StatsCard
+                  title="Marriages"
+                  value={stats.find(s => s.type === 'MARRIAGE')?.count || 0}
+                  description="Sacred unions"
+                  icon={HeartIcon}
+                  iconColor="text-rose-600"
+                  trend="up"
+                  percentage={5}
+                />
+              </div>
+            )}
+          </SacramentStatsLoader>
+        </div>
+
+        {/* Upcoming Anniversaries */}
+        <div className="mb-8">
+          <UpcomingAnniversariesLoader>
+            {(anniversaries: any[], loading: boolean, error: unknown) => (
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-indigo-100 p-2 rounded-lg">
+                        <CalendarIcon className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Upcoming Anniversaries</h3>
+                        <p className="text-sm text-gray-600">Celebrate spiritual milestones</p>
+                      </div>
                     </div>
+                    <Link 
+                      href="/dashboard/sacraments/anniversaries"
+                      className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
+                    >
+                      View All
+                      <ChartBarIcon className="h-4 w-4 ml-1" />
+                    </Link>
                   </div>
                 </div>
+                
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+                  </div>
+                ) : anniversaries.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <CalendarIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p>No upcoming anniversaries</p>
+                  </div>
+                ) : (
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      {anniversaries.slice(0, 5).map((anniversary, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-indigo-100 p-2 rounded-full">
+                              <CalendarIcon className="h-4 w-4 text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{anniversary.memberName}</p>
+                              <p className="text-sm text-gray-600">{anniversary.sacramentType} Anniversary</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">{anniversary.anniversaryDate}</p>
+                            <p className="text-xs text-gray-500">{anniversary.yearsAgo} years</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </TabsContent>
+            )}
+          </UpcomingAnniversariesLoader>
+        </div>
 
-          <TabsContent value="baptism" className="p-6">
-            <BaptismRecords />
+        {/* Sacrament Records Tabs */}
+        <Tabs defaultValue="baptism" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/50 backdrop-blur-sm rounded-xl p-1">
+            <TabsTrigger value="baptism" className="flex items-center space-x-2 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
+              <SparklesIcon className="h-4 w-4" />
+              <span>Baptism</span>
+            </TabsTrigger>
+            <TabsTrigger value="communion" className="flex items-center space-x-2 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700">
+              <GiftIcon className="h-4 w-4" />
+              <span>Communion</span>
+            </TabsTrigger>
+            <TabsTrigger value="confirmation" className="flex items-center space-x-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
+              <HeartIcon className="h-4 w-4" />
+              <span>Confirmation</span>
+            </TabsTrigger>
+            <TabsTrigger value="marriage" className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700">
+              <HeartIcon className="h-4 w-4" />
+              <span>Marriage</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="baptism">
+            <BaptismRecords onOpenModal={() => setIsBaptismModalOpen(true)} />
           </TabsContent>
-          <TabsContent value="communion" className="p-6">
-            <CommunionRecords />
+          <TabsContent value="communion">
+            <CommunionRecords onOpenModal={() => setIsCommunionModalOpen(true)} />
           </TabsContent>
-          <TabsContent value="confirmation" className="p-6">
-            <ConfirmationRecords />
+          <TabsContent value="confirmation">
+            <ConfirmationRecords onOpenModal={() => setIsConfirmationModalOpen(true)} />
           </TabsContent>
-          <TabsContent value="marriage" className="p-6">
-            <MarriageRecords />
-          </TabsContent>
-          <TabsContent value="anniversaries" className="p-6">
-            <AnniversaryTracker />
+          <TabsContent value="marriage">
+            <MarriageRecords onOpenModal={() => setIsMarriageModalOpen(true)} />
           </TabsContent>
         </Tabs>
       </div>
+      {isBaptismModalOpen && (
+        <CreateBaptismModal
+          isOpen={isBaptismModalOpen}
+          onClose={() => setIsBaptismModalOpen(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
+      {isCommunionModalOpen && (
+        <CreateCommunionModal
+          isOpen={isCommunionModalOpen}
+          onClose={() => setIsCommunionModalOpen(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
+      {isConfirmationModalOpen && (
+        <CreateConfirmationModal
+          isOpen={isConfirmationModalOpen}
+          onClose={() => setIsConfirmationModalOpen(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
+      {isMarriageModalOpen && (
+        <CreateMarriageModal
+          isOpen={isMarriageModalOpen}
+          onClose={() => setIsMarriageModalOpen(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
     </div>
   );
 }

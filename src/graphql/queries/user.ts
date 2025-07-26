@@ -8,7 +8,13 @@ export const ME_QUERY = gql`
       email
       firstName
       lastName
+      phoneNumber
       isActive
+      isEmailVerified
+      lastLoginAt
+      createdAt
+      updatedAt
+      organisationId
       roles {
         id
         name
@@ -20,11 +26,27 @@ export const ME_QUERY = gql`
         branch {
           id
           name
+          organisation {
+            id
+            name
+          }
         }
         role {
           id
           name
         }
+      }
+      member {
+        id
+        firstName
+        lastName
+        profileImageUrl
+        status
+      }
+      primaryRole
+      branch {
+        id
+        name
       }
     }
   }

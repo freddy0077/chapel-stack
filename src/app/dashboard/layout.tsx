@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import DynamicNavigation from "@/components/navigation/DynamicNavigation";
-import { loadModulePreferences } from "@/components/onboarding/ModulePreferences";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 // This layout will check if onboarding is completed and use dynamic navigation based on selected modules
 export default function DashboardLayout({
@@ -16,7 +15,8 @@ export default function DashboardLayout({
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuth();
+  const { state, user } = useAuth();
+  const { isLoading, isHydrated, isAuthenticated } = state;
   
   // Helper: check if user is super admin - MEMOIZED to prevent infinite loops
   const isSuperAdmin = useMemo(() => {
@@ -29,25 +29,22 @@ export default function DashboardLayout({
       : false;
   }, [user?.roles]);
 
-  // Check authentication and onboarding status when component mounts - SIMPLIFIED
   useEffect(() => {
     let isMounted = true;
     
     const checkAuth = () => {
-      if (!isMounted) return;
-      
-      console.log('[DashboardLayout] Pathname:', pathname);
-      
-      // First check if user is authenticated
-      if (!isAuthenticated) {
-        console.log('[DashboardLayout] Not authenticated, redirecting to /auth/login');
-        router.push('/auth/login');
+      if (!isMounted) {
         return;
       }
       
+      // Wait for authentication context to be fully initialized
+      if (isLoading || !isHydrated) {
+        setIsCheckingAuth(true); // Keep checking state active
+        return;
+      }
+
       // Always allow access to all /dashboard/settings and subpages
       if (pathname && (pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings/'))) {
-        console.log('[DashboardLayout] Settings page detected, skipping onboarding check');
         setIsOnboardingCompleted(true);
         setIsCheckingAuth(false);
         return;
@@ -60,19 +57,7 @@ export default function DashboardLayout({
         setIsCheckingAuth(false);
         return;
       }
-      
-      // Only check onboarding status for SUPER_ADMIN on main dashboard
-      if (isSuperAdmin && pathname === '/dashboard') {
-        const { isOnboardingCompleted } = loadModulePreferences();
-        console.log('[DashboardLayout] Onboarding completed?', isOnboardingCompleted);
-        
-        if (!isOnboardingCompleted) {
-          console.log('[DashboardLayout] SUPER_ADMIN onboarding not completed, redirecting to /onboarding');
-          router.push('/onboarding');
-          return;
-        }
-      }
-      
+
       setIsOnboardingCompleted(true);
       setIsCheckingAuth(false);
     };
@@ -84,10 +69,11 @@ export default function DashboardLayout({
     return () => {
       isMounted = false;
     };
-  }, []); // Empty dependencies to run only once
+  }, [isLoading, isHydrated, isAuthenticated, user, pathname, router, isSuperAdmin]); // Run when auth state changes
 
+  console.log("CHECKING AUTH:", isCheckingAuth);
   // If authentication or onboarding check is still in progress, show loading state
-  if (isCheckingAuth || !isOnboardingCompleted) {
+  if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">

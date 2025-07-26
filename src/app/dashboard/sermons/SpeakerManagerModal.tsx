@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useGetSpeakers } from '@/graphql/hooks/useSermon';
 import { useSpeakerMutations } from '@/graphql/hooks/useSpeakerMutations';
 import { XMarkIcon, PencilIcon, TrashIcon, PlusIcon, UserIcon } from "@heroicons/react/24/outline";
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 // Speaker Form Modal (for create/edit within the manager)
 const SpeakerFormModal = ({ open, onClose, onSubmit, initialData, isSaving }) => {

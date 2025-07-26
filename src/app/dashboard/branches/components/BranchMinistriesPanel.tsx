@@ -33,8 +33,9 @@ export default function BranchMinistriesPanel({ branchId }: BranchMinistriesPane
   const filter = useOrganizationBranchFilter();
 
   // Clean filter object to remove any undefined values or string "undefined"
+  // Also remove branchId from filter since we want to use the parameter branchId
   const cleanFilter = Object.entries(filter).reduce((acc, [key, value]) => {
-    if (value !== undefined && value !== "undefined" && value !== null) {
+    if (value !== undefined && value !== "undefined" && value !== null && key !== 'branchId') {
       acc[key] = value;
     }
     return acc;
@@ -44,8 +45,8 @@ export default function BranchMinistriesPanel({ branchId }: BranchMinistriesPane
   const { data, loading, error, refetch } = useQuery(LIST_MINISTRIES, {
     variables: {
       filters: {
-        branchId,
-        ...cleanFilter, // Include organization ID if available
+        branchId, // Use the parameter branchId, not the one from filter
+        ...cleanFilter, // Include organization ID but exclude branchId from filter
       },
     },
     fetchPolicy: "cache-and-network",

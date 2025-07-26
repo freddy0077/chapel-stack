@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { AttendanceEvent } from '../types';
 import { useFilteredAttendanceSessions } from '../../../../graphql/hooks/useAttendance';
 import { useProcessCardScan, getCurrentBranchFromAuthUser } from '../../../../graphql/hooks/useAttendance';
-import { useAuth } from '../../../../graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganizationBranchFilter } from '@/hooks';
 
 interface CardScanningStationProps {

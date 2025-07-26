@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { PlusCircleIcon, MagnifyingGlassIcon, UsersIcon } from "@heroicons/react/24/outline";
 import DashboardHeader from "@/components/DashboardHeader";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import type { Ministry, MinistryMember } from "@/types/ministry";
 import { MinistryType } from "@/types/ministry";
@@ -57,7 +57,8 @@ function MinistryDetailsModal({ ministryId, onClose }: { ministryId: string; onC
 }
 
 function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCreate }: { onClose: () => void; onSuccess: () => void; branchId: string; afterCreate?: () => void }) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId } = useOrganisationBranch();
   const { isSuperAdmin } = usePermissions();
   const [selectedBranchId, setSelectedBranchId] = useState<string>(propBranchId || "");
@@ -218,7 +219,8 @@ function AddMinistryModal({ onClose, onSuccess, branchId: propBranchId, afterCre
 }
 
 export default function Ministries() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const orgBranchFilter = useOrganizationBranchFilter();
   const isSuperAdmin = user?.primaryRole === "super_admin";
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");

@@ -307,7 +307,7 @@ function UserRoleEditor({
               type="button"
               onClick={addBranchAccess}
               disabled={!selectedBranchId}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
             >
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
               Add Branch
@@ -361,7 +361,7 @@ function UserRoleEditor({
 // New User Modal Component (with backend mutation)
 import { useMutation } from '@apollo/client';
 import { CREATE_USERS_WITH_ROLE } from '@/graphql/mutations/userMutations';
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 function NewUserModal({ open, onClose, onCreate }: { open: boolean; onClose: () => void; onCreate: (user: any) => void }) {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', roleName: 'MEMBER' });

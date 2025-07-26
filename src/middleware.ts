@@ -14,7 +14,9 @@ export function middleware(request: NextRequest) {
     '/auth/forgot-password',
     '/auth/reset-password',
     '/auth/mfa-verification',
-    '/test-auth-persistence' // Allow debug page
+    '/test-auth-persistence', // Allow debug page
+    '/test-auth', // Allow test auth page
+    '/test-login' // Allow test login page
   ];
   
   if (publicRoutes.includes(pathname)) {
@@ -25,26 +27,35 @@ export function middleware(request: NextRequest) {
   // Check for auth token in multiple places
   const cookieToken = request.cookies.get('authToken')?.value;
   const headerToken = request.headers.get('authorization')?.replace('Bearer ', '');
-  const token = cookieToken || headerToken;
+  const accessToken = request.cookies.get('chapel_auth_token')?.value;
+  const token = cookieToken || headerToken || accessToken;
+  
+  console.log('🔍 Middleware token check:', {
+    cookieToken: cookieToken ? 'present' : 'missing',
+    headerToken: headerToken ? 'present' : 'missing', 
+    accessToken: accessToken ? 'present' : 'missing',
+    finalToken: token ? 'found' : 'not found',
+    pathname: pathname
+  });
   
   if (!token) {
     console.log(`🔀 No token found, redirecting to login from: ${pathname}`);
     console.log(`🔍 Cookie token: ${cookieToken ? 'present' : 'missing'}`);
     console.log(`🔍 Header token: ${headerToken ? 'present' : 'missing'}`);
-    
-    // Add a small delay for client-side auth restoration on hard refresh
-    if (request.headers.get('sec-fetch-mode') === 'navigate') {
-      console.log('🔄 Navigation request detected, allowing brief auth restoration window');
-      // For navigation requests (hard refresh), be more lenient
-      // The client-side auth will handle the redirect if truly unauthenticated
-    }
+    console.log(`🔍 Access token: ${accessToken ? 'present' : 'missing'}`);
+    console.log(`🔀 Redirecting to login page with URL: ${new URL('/auth/login', request.url)}`);
+    console.log(`🔀 Request URL: ${request.url}`);
+    console.log(`🔀 Request headers: ${JSON.stringify(request.headers)}`);
+    console.log(`🔀 Request cookies: ${JSON.stringify(request.cookies)}`);
     
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
   
-  // For now, let client-side handle role-based routing
-  // Could add JWT verification here for additional security
+  // Token found, allow access
   console.log(`✅ Token found, allowing access to: ${pathname}`);
+  console.log(`✅ Request URL: ${request.url}`);
+  console.log(`✅ Request headers: ${JSON.stringify(request.headers)}`);
+  console.log(`✅ Request cookies: ${JSON.stringify(request.cookies)}`);
   return NextResponse.next();
 }
 
@@ -55,12 +66,8 @@ export const config = {
     '/organizations/:path*',
     '/members/:path*',
     '/finances/:path*',
-    '/attendance/:path*',
-    '/pastoral-care/:path*',
-    '/sacraments/:path*',
-    '/groups/:path*',
-    '/events/:path*',
-    '/communication/:path*',
-    '/reports/:path*'
-  ]
+    '/reports/:path*',
+    '/settings/:path*',
+    '/subscriptions/:path*'
+  ],
 };

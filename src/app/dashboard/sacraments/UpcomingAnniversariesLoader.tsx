@@ -1,6 +1,6 @@
 "use client";
 import { useUpcomingSacramentAnniversaries, UpcomingSacramentAnniversary } from "@/graphql/hooks/useUpcomingSacramentAnniversaries";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 interface UpcomingAnniversariesLoaderProps {
   limit?: number;

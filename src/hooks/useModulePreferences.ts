@@ -19,6 +19,7 @@ export function useModulePreferences() {
       'communication',
       'pastoral_care',
       'sacraments',
+      'sermons',
       'reports',
       'settings',
       'organizations',
@@ -31,7 +32,9 @@ export function useModulePreferences() {
       'budgets',
       'donations',
       'profile',
-      'contributions'
+      'contributions',
+      'branches',
+      'staff'
     ];
 
     setEnabledModules(defaultModules);

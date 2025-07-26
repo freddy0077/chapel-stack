@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client";
 import { GET_BAPTISM_RECORDS } from "@/graphql/queries/sacramentalRecordsQueries";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export interface BaptismRecord {
   id: string;

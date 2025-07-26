@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { RoleRoute } from '@/components/auth/RoleRoute';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

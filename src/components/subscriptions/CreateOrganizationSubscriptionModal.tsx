@@ -9,7 +9,7 @@ import { Alert } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCreateOrganizationSubscription } from '@/hooks/subscription/useOrganizationSubscription';
 import { useSubscriptionPlans } from '@/hooks/subscription/useCreateSubscription';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import {
   BuildingOfficeIcon,
   CreditCardIcon,

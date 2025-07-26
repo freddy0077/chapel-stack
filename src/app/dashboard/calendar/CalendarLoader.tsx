@@ -2,7 +2,7 @@
 import { useFilteredEvents } from "@/graphql/hooks/useFilteredEvents";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { Event } from "@/graphql/types/event";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface CalendarLoaderProps {
   children: (

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import { useAuth } from '@/graphql/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganizationBranchFilter } from '@/hooks';
 import {
   useGenerateMemberReport,
@@ -36,7 +36,8 @@ interface MemberReportsProps {
 }
 
 const MemberReports: React.FC<MemberReportsProps> = ({ className = '' }) => {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const orgBranchFilter = useOrganizationBranchFilter();
   const { generateReport, loading: reportLoading, error: reportError } = useGenerateMemberReport();
   const { memberStats, loading: statsLoading } = useMemberStats(

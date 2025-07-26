@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 
 import { useMemo } from 'react';
 
@@ -16,7 +16,8 @@ export interface OrganizationBranchFilter {
  * For all other users, it will return a filter with branchId
  */
 export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   
   return useMemo(() => {
     const filter: OrganizationBranchFilter = {};
@@ -31,8 +32,10 @@ export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
       filter.organisationId = String(user.organisationId);
       console.log('SUPER_ADMIN with organisationId detected - using organisationId:', user.organisationId);
     } else {
-      // For all other users, filter by branchId
-      filter.organisationId = String(user?.organisationId);
+      // For all other users, filter by branchId and only include organisationId if it's valid
+      if (user?.organisationId) {
+        filter.organisationId = String(user.organisationId);
+      }
       filter.branchId = defaultBranchId;
     }
     

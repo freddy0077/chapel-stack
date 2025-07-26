@@ -33,7 +33,7 @@ import { useMember } from "@/graphql/hooks/useMember";
 import { useAllSmallGroups, useSmallGroupMutations, SmallGroupMemberRole, SmallGroupMemberStatus } from "@/graphql/hooks/useSmallGroups";
 import { gql } from "@apollo/client";
 import { useProcessCardScan, useFilteredAttendanceSessions } from "@/graphql/hooks/useAttendance";
-import { useAuth } from "@/graphql/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useOrganizationBranchFilter } from '@/graphql/hooks/useOrganizationBranchFilter';
 import { useFilteredSmallGroups } from '@/graphql/hooks/useSmallGroups';
 import AddToSacraments from './AddToSacraments';
@@ -79,7 +79,8 @@ interface AddToAttendanceProps {
 }
 
 function AddToAttendance({ memberId, rfidCardId, onSuccess }: AddToAttendanceProps) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const orgBranchFilter = useOrganizationBranchFilter();
   const { sessions, loading: sessionsLoading } = useFilteredAttendanceSessions(orgBranchFilter);
   const { processCardScan, loading: adding, error } = useProcessCardScan();
@@ -141,7 +142,8 @@ interface MemberDetailsModalProps {
 }
 
 export default function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProps) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const orgBranchFilter = useOrganizationBranchFilter();
   const { member, loading, error, refetch } = useMember(memberId);
   const { isBranchAdmin, isPastoral } = usePermissions();
@@ -1452,7 +1454,8 @@ interface AddToMinistryProps {
 }
 
 function AddToMinistry({ memberId, onSuccess }: AddToMinistryProps) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   // Filter ministries by organisation for super admins, by branch for others
   const orgId = user?.organisationId;
   const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0]?.branch?.id : undefined;

@@ -78,16 +78,18 @@ export default function BranchUserRolesPanel({
     }
   }, [shouldRefetchUsers, refetch, onRefetchComplete]);
 
-  // Filter users based on search term
+  // Filter users based on search term and exclude users with SUBSCRIPTION_MANAGER role
   const filteredUsers = users.filter(user => 
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    !user.roles.includes('SUBSCRIPTION_MANAGER') && // Exclude subscription manager users
+    (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     user.email?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Filter all users for the add user modal
+  // Filter all users for the add user modal (also exclude subscription managers)
   const allUsers = allUsersData?.users?.items || [];
   const filteredAllUsers = allUsers.filter(user => 
     !users.some(branchUser => branchUser.id === user.id) && // Only show users not already in the branch
+    !user.roles?.includes('SUBSCRIPTION_MANAGER') && // Exclude subscription manager users
     (user.firstName?.toLowerCase().includes(newUserSearchTerm.toLowerCase()) ||
      user.lastName?.toLowerCase().includes(newUserSearchTerm.toLowerCase()) ||
      user.email?.toLowerCase().includes(newUserSearchTerm.toLowerCase()))
