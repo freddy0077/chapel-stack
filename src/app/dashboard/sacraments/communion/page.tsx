@@ -14,7 +14,7 @@ import {
   EyeIcon
 } from "@heroicons/react/24/outline";
 import { GiftIcon as GiftIconSolid } from "@heroicons/react/24/solid";
-import { DashboardHeader } from "@/components/ui/DashboardHeader";
+import DashboardHeader from "@/components/DashboardHeader";
 import { useFilteredCommunionRecords } from "@/graphql/hooks/useFilteredSacramentalRecords";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { format } from "date-fns";

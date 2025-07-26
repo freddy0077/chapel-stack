@@ -14,7 +14,7 @@ import {
   EyeIcon
 } from "@heroicons/react/24/outline";
 import { SparklesIcon as SparklesIconSolid } from "@heroicons/react/24/solid";
-import { DashboardHeader } from "@/components/ui/DashboardHeader";
+import DashboardHeader from "@/components/DashboardHeader";
 import { useFilteredBaptismRecords } from "@/graphql/hooks/useFilteredSacramentalRecords";
 import { useOrganizationBranchFilter } from "@/hooks";
 import { format } from "date-fns";
