@@ -54,7 +54,6 @@ export default function PlansManagement() {
     variables: { filter: { isActive: undefined } }, // Get all plans (active and inactive)
   });
 
-  const { organisationId } = useOrganisationBranch();
   const [createPlan, { loading: createLoading }] = useMutation(CREATE_SUBSCRIPTION_PLAN, {
     onCompleted: () => {
       setShowCreateModal(false);
@@ -126,7 +125,6 @@ export default function PlansManagement() {
     const planData = {
       ...formData,
       features: formData.features.filter(f => f.trim() !== ''),
-      organisationId,
     };
 
     if (editingPlan) {
