@@ -23,14 +23,12 @@ export default function LoginSuccessPage() {
         // Check for a pre-stored redirect path (set by useAuth and authContext)
         const redirectPath = localStorage.getItem('redirectPath');
         if (redirectPath) {
-          console.log('🔄 Using pre-stored redirect path:', redirectPath);
           return redirectPath;
         }
         
         // Check for a primary role in localStorage (set by authContext)
         const primaryRole = localStorage.getItem('primaryRole');
         if (primaryRole) {
-          console.log('🏅 Using stored primary role:', primaryRole);
           return getDashboardRouteForRole(primaryRole);
         }
         
@@ -42,23 +40,19 @@ export default function LoginSuccessPage() {
         }
         
         const user = JSON.parse(userData);
-        console.log('👤 User data found:', user);
         
         // First check if there's a redirectPath already determined during login
         if (user.redirectPath) {
-          console.log('🔄 Using pre-determined redirect path from user object:', user.redirectPath);
           return user.redirectPath;
         }
         
         // Get primary role if available in user object
         if (user.primaryRole) {
-          console.log('🏅 Primary role found in user object:', user.primaryRole);
           return getDashboardRouteForRole(user.primaryRole);
         }
         
         // If no primaryRole in user object, try to determine it from roles array
         if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
-          console.log('🔍 Determining role from roles array:', user.roles);
           
           // Define role priority (higher index = higher priority)
           const rolePriority = ['member', 'volunteer', 'content_manager', 'finance_manager', 'ministry_leader', 'pastor', 'branch_admin', 'subscription_manager', 'super_admin'];
@@ -73,10 +67,8 @@ export default function LoginSuccessPage() {
             // Handle role being a string or an object
             if (typeof role === 'string') {
               roleName = role.toLowerCase().replace(/\s+/g, '_');
-              console.log('🔍 Processing string role:', role, '-> normalized:', roleName);
             } else if (role && typeof role === 'object' && role.name) {
               roleName = role.name.toLowerCase().replace(/\s+/g, '_');
-              console.log('🔍 Processing object role with name:', role.name, '-> normalized:', roleName);
             } else if (role && typeof role === 'object') {
               // Try to extract role from alternative properties
               const potentialProps = ['role', 'title', 'type', 'id'] as const;
@@ -85,44 +77,35 @@ export default function LoginSuccessPage() {
                   const value = role[prop];
                   if (typeof value === 'string') {
                     roleName = value.toLowerCase().replace(/\s+/g, '_');
-                    console.log('🔍 Processing object role with', prop, ':', value, '-> normalized:', roleName);
                     break;
                   }
                 }
               }
               
               if (!roleName) {
-                console.log('⚠️ Could not extract role name from object:', role);
                 return; // Skip this role if we couldn't extract a name
               }
             } else {
-              console.log('⚠️ Skipping unrecognized role format:', role);
               return; // Skip this role if it's not in a recognizable format
             }
             
             const roleIndex = rolePriority.indexOf(roleName);
-            console.log('🔍 Role', roleName, 'has priority index:', roleIndex, '(current highest:', highestRoleIndex, ')');
             
             if (roleIndex > highestRoleIndex) {
               highestRoleIndex = roleIndex;
               highestRole = roleName;
-              console.log('✅ New highest role:', highestRole, 'with index:', highestRoleIndex);
             }
           });
           
-          console.log('🎯 Final determined highest role:', highestRole);
-          console.log('🎯 Role priority array:', rolePriority);
           
           // Save the determined role for future use
           localStorage.setItem('primaryRole', highestRole);
           const dashboardUrl = getDashboardRouteForRole(highestRole);
-          console.log('🎯 Dashboard URL for role', highestRole, ':', dashboardUrl);
           localStorage.setItem('redirectPath', dashboardUrl);
           
           return dashboardUrl;
         }
         
-        console.log('⚠️ No role information found, defaulting to member dashboard');
         return '/dashboard';
       } catch (error) {
         console.error('❌ Error determining dashboard:', error);
@@ -166,7 +149,6 @@ export default function LoginSuccessPage() {
       setSecondsLeft(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          console.log('🚀 Redirecting to:', targetDashboard);
           router.push(targetDashboard);
           return 0;
         }

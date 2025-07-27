@@ -112,18 +112,13 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
         ...defaultConfig,
       };
 
-      console.log('Generating report with input:', reportInput);
-      console.log('Selected format:', format);
 
       const report = await generateReport(reportInput, user?.email || 'user');
       
-      console.log('Report response:', report);
-      console.log('Download URL:', report?.downloadUrl);
       
       if (report) {
         // Handle download based on the backend response
         if (report.downloadUrl) {
-          console.log('Using backend download URL:', report.downloadUrl);
           // Backend provided a download URL - use it directly
           const link = document.createElement('a');
           link.href = report.downloadUrl;
@@ -147,7 +142,6 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
           link.click();
           document.body.removeChild(link);
         } else {
-          console.log('No download URL provided, falling back to JSON');
           // Fallback for JSON format - create downloadable file
           const dataStr = JSON.stringify(report, null, 2);
           const blob = new Blob([dataStr], { type: 'application/json' });

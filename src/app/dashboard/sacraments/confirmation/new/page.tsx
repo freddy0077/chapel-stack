@@ -19,7 +19,6 @@ export default function NewConfirmationRecord() {
   const isSuperAdmin = user?.primaryRole === "super_admin";
   // Only use orgIdFromFilter for super admins. For all others, always use user's organisationId
   const organisationId = isSuperAdmin ? orgIdFromFilter : user?.organisationId;
-  console.log('NewConfirmationRecord - user:', user);
   const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
   const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);

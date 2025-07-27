@@ -1,6 +1,7 @@
 import React from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { SmallGroupStatus } from '../../../../graphql/hooks/useSmallGroups';
+import { getGroupTypeOptions } from '@/utils/groupTypes';
 
 interface GroupFiltersProps {
   searchTerm: string;
@@ -46,11 +47,11 @@ export default function GroupFilters({
           onChange={(e) => setSelectedType(e.target.value as string | 'ALL')}
         >
           <option value="ALL">All Types</option>
-          <option value="CELL">Cell Group</option>
-          <option value="BIBLE_STUDY">Bible Study</option>
-          <option value="MINISTRY">Ministry</option>
-          <option value="COMMITTEE">Committee</option>
-          <option value="OTHER">Other</option>
+          {getGroupTypeOptions().map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
         </select>
         <select
           id="status-filter"

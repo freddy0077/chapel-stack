@@ -66,16 +66,6 @@ export const useSubscriptionValidation = (
     fetchPolicy: 'cache-and-network',
   });
 
-  console.log('🔍 GraphQL Query Debug:', {
-    organizationId,
-    skipValidation,
-    loading,
-    error,
-    data,
-    hasData: !!data?.organizationSubscriptionStatus,
-    authToken: typeof window !== 'undefined' ? localStorage.getItem('authToken') : 'SSR'
-  });
-
   useEffect(() => {
     if (shouldSkipValidation) {
       setValidationResult({

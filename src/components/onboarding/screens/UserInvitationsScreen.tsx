@@ -95,13 +95,11 @@ const UserInvitationsScreen: React.FC<UserInvitationsScreenProps> = ({ onNext, o
       roleName: inv.role,
     }));
     try {
-      console.log('Inviting users:', users);
       if (!organisationId) {
         setError('Organisation ID not found.');
         return;
       }
       const resp = await createUsersWithRole({ variables: { input: { users, organisationId } } });
-      console.log('Mutation response:', resp);
       saveOnboardingStepData('UserInvitations', invitees);
       setSuccess('Invitations sent!');
       setTimeout(() => {

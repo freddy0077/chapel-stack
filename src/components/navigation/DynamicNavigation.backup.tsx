@@ -452,7 +452,6 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
     };
   }, [profileDropdownOpen]);
 
-  console.log("Auth user:", user);
   // Helper functions to get user information
   const getUserInitials = () => {
     if (!user?.name) return 'U';

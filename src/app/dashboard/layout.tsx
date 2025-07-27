@@ -52,7 +52,6 @@ export default function DashboardLayout({
       
       // For subscription manager and other non-super-admin pages, skip onboarding check
       if (pathname && pathname.startsWith('/dashboard/subscription-manager')) {
-        console.log('[DashboardLayout] Subscription manager page detected, skipping onboarding check');
         setIsOnboardingCompleted(true);
         setIsCheckingAuth(false);
         return;
@@ -71,7 +70,6 @@ export default function DashboardLayout({
     };
   }, [isLoading, isHydrated, isAuthenticated, user, pathname, router, isSuperAdmin]); // Run when auth state changes
 
-  console.log("CHECKING AUTH:", isCheckingAuth);
   // If authentication or onboarding check is still in progress, show loading state
   if (isCheckingAuth) {
     return (

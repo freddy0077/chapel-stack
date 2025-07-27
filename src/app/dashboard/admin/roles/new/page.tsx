@@ -157,14 +157,7 @@ export default function CreateRolePage() {
   
   const handleCreateRole = () => {
     // In a real application, this would send data to a server
-    console.log({
-      name: roleName,
-      description: roleDescription,
-      permissions: selectedPermissions,
-      accessLevel,
-      regions: selectedRegions,
-      branches: selectedBranches
-    });
+    // Removed console.log for performance
     
     alert('Role created successfully');
     // Then redirect to roles list page

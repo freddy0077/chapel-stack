@@ -61,7 +61,6 @@ export class SSRHydrationManager {
    */
   private async performHydration(): Promise<HydrationState> {
     try {
-      console.log('🚀 Starting SSR hydration...');
 
       // Check if we're in the browser
       if (typeof window === 'undefined') {
@@ -82,7 +81,6 @@ export class SSRHydrationManager {
       const storedTokens = authStorage.getTokens();
       const storedUser = authStorage.getUser();
 
-      console.log('💾 Hydration storage check:', {
         hasTokens: !!storedTokens,
         hasUser: !!storedUser,
         sessionExpired: authStorage.isSessionExpired(),
@@ -91,7 +89,6 @@ export class SSRHydrationManager {
 
       // Check if session is expired
       if (authStorage.isSessionExpired()) {
-        console.log('⏰ Session expired during hydration');
         authStorage.clear();
         
         return {
@@ -106,7 +103,6 @@ export class SSRHydrationManager {
 
       // Check if refresh token is expired
       if (storedTokens && authStorage.isRefreshTokenExpired()) {
-        console.log('🔄 Refresh token expired during hydration');
         authStorage.clear();
         
         return {
@@ -121,7 +117,6 @@ export class SSRHydrationManager {
 
       // Validate stored data integrity
       if (storedTokens && !this.validateTokenIntegrity(storedTokens)) {
-        console.log('❌ Invalid token data during hydration');
         authStorage.clear();
         
         return {
@@ -135,7 +130,6 @@ export class SSRHydrationManager {
       }
 
       if (storedUser && !this.validateUserIntegrity(storedUser)) {
-        console.log('❌ Invalid user data during hydration');
         authStorage.clear();
         
         return {
@@ -148,7 +142,6 @@ export class SSRHydrationManager {
         };
       }
 
-      console.log('✅ SSR hydration completed successfully');
 
       return {
         isHydrated: true,

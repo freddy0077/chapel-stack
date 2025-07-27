@@ -317,9 +317,7 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
             }
           }
         );
-        console.log('subscriptionResponse', subscriptionResponse);
         if (subscriptionResponse?.id) {
-          console.log('Subscription created successfully:', subscriptionResponse);
           onSuccess();
           onClose();
         } else {

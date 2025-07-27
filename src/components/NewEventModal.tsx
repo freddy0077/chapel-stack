@@ -71,8 +71,6 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
         organisationId
       };
       
-      console.log('Form data:', form);
-      console.log('Input being sent:', input);
       
       if (form.isRecurring) {
         const recurringInput = {
@@ -82,10 +80,8 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
           recurrenceEndDate: form.recurrenceEndDate,
           recurrenceDaysOfWeek: form.recurrenceDaysOfWeek,
         };
-        console.log('Recurring input:', recurringInput);
         try {
           const result = await createRecurringEvent(recurringInput);
-          console.log('Recurring event creation result:', result);
         } catch (error) {
           console.error('Error creating recurring event:', error);
           throw error;
@@ -93,7 +89,6 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
       } else {
         try {
           const result = await createEvent(input);
-          console.log('Single event creation result:', result);
         } catch (error) {
           console.error('Error creating single event:', error);
           throw error;

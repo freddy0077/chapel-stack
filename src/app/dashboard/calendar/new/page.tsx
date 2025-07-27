@@ -207,8 +207,6 @@ export default function CreateEvent() {
   // Initialize with template data if a template is selected
   useEffect(() => {
     if (templateId && template) {
-      console.log(`Loading template with ID: ${templateId}`);
-      console.log("Template found:", template);
       setTemplateApplied(true);
       
       // Set event data from API template
@@ -463,10 +461,8 @@ export default function CreateEvent() {
     
     try {
       const input = prepareEventData();
-      console.log("Submitting event data:", input);
       
       const result = await createEvent(input);
-      console.log("Event created:", result);
       
       setApiSuccess(true);
       // Redirect after short delay to show success message

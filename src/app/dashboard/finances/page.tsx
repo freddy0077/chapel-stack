@@ -594,9 +594,6 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   const { events, loading: eventsLoading, refetch: refetchEvents } = useBranchEvents(branchId, organisationId);
 
   // Debug events data
-  console.log('Events from hook:', events);
-  console.log('Branch ID:', branchId);
-  console.log('Organisation ID:', organisationId);
 
   // Refetch events when branch or organisation changes
   useEffect(() => {

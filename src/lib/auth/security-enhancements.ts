@@ -187,7 +187,6 @@ export class SecureCookieManager {
 
     try {
       document.cookie = cookieString;
-      console.log(`🍪 Secure cookie set: ${name}`);
     } catch (error) {
       console.error('Failed to set secure cookie:', error);
     }
@@ -226,7 +225,6 @@ export class SecureCookieManager {
 
     try {
       document.cookie = cookieString;
-      console.log(`🗑️ Cookie deleted: ${name}`);
     } catch (error) {
       console.error('Failed to delete cookie:', error);
     }
@@ -495,7 +493,6 @@ export class SessionSecurityManager {
       );
     }
 
-    console.log('🔒 Session security initialized for user:', user.email);
   }
 }
 

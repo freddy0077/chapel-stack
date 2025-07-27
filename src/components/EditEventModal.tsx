@@ -36,7 +36,6 @@ export default function EditEventModal({ open, onClose, event, onEventUpdated }:
   const [error, setError] = useState<string | null>(null);
   const { updateEvent } = useEventMutations();
 
-  console.log("Event to edit:", event);
   useEffect(() => {
     // Helper to format ISO string to YYYY-MM-DD
     const formatDate = (iso: string) => iso ? iso.split('T')[0] : "";

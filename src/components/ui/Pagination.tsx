@@ -83,8 +83,14 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   const visiblePages = getVisiblePages();
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+  
+  // Ensure all values are valid numbers to prevent NaN errors
+  const safeCurrentPage = Number(currentPage) || 1;
+  const safeItemsPerPage = Number(itemsPerPage) || 10;
+  const safeTotalItems = Number(totalItems) || 0;
+  
+  const startItem = safeTotalItems === 0 ? 0 : (safeCurrentPage - 1) * safeItemsPerPage + 1;
+  const endItem = safeTotalItems === 0 ? 0 : Math.min(safeCurrentPage * safeItemsPerPage, safeTotalItems);
 
   if (totalPages <= 1 && !showInfo) {
     return null;
@@ -116,7 +122,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <div className={`text-gray-700 font-medium ${classes.text}`}>
           Showing <span className="font-bold text-gray-900">{startItem}</span> to{' '}
           <span className="font-bold text-gray-900">{endItem}</span> of{' '}
-          <span className="font-bold text-gray-900">{totalItems}</span> results
+          <span className="font-bold text-gray-900">{safeTotalItems}</span> results
         </div>
       )}
 
@@ -126,7 +132,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* First page */}
           <button
             onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
+            disabled={safeCurrentPage === 1}
             className={`${classes.button} border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-sm`}
             title="First page"
           >
@@ -135,8 +141,8 @@ const Pagination: React.FC<PaginationProps> = ({
 
           {/* Previous page */}
           <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(safeCurrentPage - 1)}
+            disabled={safeCurrentPage === 1}
             className={`${classes.button} border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-sm`}
             title="Previous page"
           >
@@ -152,7 +158,7 @@ const Pagination: React.FC<PaginationProps> = ({
                 <button
                   onClick={() => onPageChange(page as number)}
                   className={`${classes.button} border rounded-lg transition-all duration-200 font-medium ${
-                    currentPage === page
+                    safeCurrentPage === page
                       ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105'
                       : 'border-gray-300 hover:bg-gray-50 hover:shadow-sm'
                   }`}
@@ -165,8 +171,8 @@ const Pagination: React.FC<PaginationProps> = ({
 
           {/* Next page */}
           <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(safeCurrentPage + 1)}
+            disabled={safeCurrentPage === totalPages}
             className={`${classes.button} border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-sm`}
             title="Next page"
           >
@@ -176,7 +182,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Last page */}
           <button
             onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
+            disabled={safeCurrentPage === totalPages}
             className={`${classes.button} border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-sm`}
             title="Last page"
           >

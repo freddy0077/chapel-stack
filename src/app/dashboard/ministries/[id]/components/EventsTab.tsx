@@ -16,7 +16,6 @@ const useAuth = () => {
     hasPermission: (permission: string) => {
       // For demo purposes, just return true to show admin controls
       // In a real implementation, this would check against the user's actual permissions
-      console.log(`Checking permission: ${permission}`);
       return true;
     }
   };
@@ -136,7 +135,6 @@ export default function EventsTab({ ministryId }: EventsTabProps) {
         setLoading(false);
         
         // Audit logging integration
-        console.log(`[AUDIT] User viewed events for ministry ${ministryId}`);
       }, 600);
     };
     
@@ -304,7 +302,6 @@ export default function EventsTab({ ministryId }: EventsTabProps) {
                               className="inline-flex items-center px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200"
                               onClick={() => {
                                 // Would open event details in real implementation
-                                console.log(`[AUDIT] User viewed details of event ${event.id}`);
                               }}
                             >
                               View Details
@@ -314,7 +311,6 @@ export default function EventsTab({ ministryId }: EventsTabProps) {
                               className="inline-flex items-center px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                               onClick={() => {
                                 // Would edit event in real implementation
-                                console.log(`[AUDIT] User initiated edit of event ${event.id}`);
                               }}
                             >
                               Edit

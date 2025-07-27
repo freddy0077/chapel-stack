@@ -7,14 +7,6 @@ import { useOrganizationBranchFilter } from "@/hooks";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 
-interface NewEventModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreate: (event: NewEventInput) => void;
-  loading?: boolean;
-  error?: string;
-}
-
 export interface NewEventInput {
   name: string;
   description?: string;
@@ -27,6 +19,15 @@ export interface NewEventInput {
   branchId?: string;
 }
 
+interface NewEventModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (event: NewEventInput) => void;
+  loading?: boolean;
+  error?: string;
+  mode?: 'event' | 'session';
+}
+
 const EVENT_TYPES = [
   { value: "REGULAR_SERVICE", label: "Regular Service" },
   { value: "SPECIAL_EVENT", label: "Special Event" },
@@ -35,7 +36,7 @@ const EVENT_TYPES = [
   { value: "OTHER", label: "Other" },
 ];
 
-export default function NewEventModal({ isOpen, onClose, onCreate, loading, error }: NewEventModalProps) {
+export default function NewEventModal({ isOpen, onClose, onCreate, loading, error, mode = 'event' }: NewEventModalProps) {
   const { user } = useAuth();
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
   const [form, setForm] = useState<Omit<NewEventInput, 'organisationId' | 'branchId'>>({
@@ -50,20 +51,36 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
   const [localError, setLocalError] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 
+  // Check if user data is loaded
+  const isUserLoaded = user && user.id;
+  
   // Branch selection logic
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isSuperAdmin = user?.primaryRole === "SUPER_ADMIN";
   const organisationId = orgIdFromFilter;
 
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
     isSuperAdmin ? { organisationId } : undefined
   );
 
-  // Determine branchId for event creation
+  // Determine branchId for event creation - use branchIdFromFilter first, then fallback to user branches
   const branchId = isSuperAdmin
     ? selectedBranchId
-    : user?.userBranches && user.userBranches.length > 0
-      ? user.userBranches[0].branch.id
-      : undefined;
+    : branchIdFromFilter || (user?.userBranches && user.userBranches.length > 0
+        ? user.userBranches[0].branch.id
+        : undefined);
+
+  // Get branch name for display - simplified logic
+  let branchName = "";
+  
+  if (isSuperAdmin) {
+    // For super admin, show selected branch from dropdown
+    branchName = branches.find(b => b.id === selectedBranchId)?.name || "";
+  } else {
+    // For regular users, show their current branch
+    if (isUserLoaded && user?.userBranches && user.userBranches.length > 0) {
+      branchName = user.userBranches[0].branch.name || "";
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -118,7 +135,7 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                 <div className="flex items-center justify-between mb-4">
                   <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                     <CalendarIcon className="inline-block w-6 h-6 text-indigo-500 mr-2" />
-                    Create New Attendance Event
+                    {mode === 'event' ? 'Create New Attendance Event' : 'Create New Attendance Session'}
                   </Dialog.Title>
                   <button
                     type="button"
@@ -152,10 +169,25 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
                       <input
                         type="text"
-                        value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+                        value={
+                          !isUserLoaded 
+                            ? "Loading user data..." 
+                            : branchName || "No branch assigned"
+                        }
                         className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
                         disabled
+                        placeholder="Your branch will appear here"
                       />
+                      {!isUserLoaded && (
+                        <p className="mt-1 text-xs text-blue-500">
+                          Loading user information...
+                        </p>
+                      )}
+                      {isUserLoaded && !branchName && (
+                        <p className="mt-1 text-xs text-red-500">
+                          No branch assigned to your account. Please contact your administrator.
+                        </p>
+                      )}
                     </div>
                   )}
                   <div>
@@ -264,7 +296,7 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       className="inline-flex items-center px-4 py-2 rounded-md border border-transparent bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none disabled:opacity-60"
                       disabled={loading}
                     >
-                      {loading ? "Creating..." : "Create Event"}
+                      {loading ? "Creating..." : mode === 'event' ? 'Create Event' : 'Create Session'}
                     </button>
                   </div>
                 </form>

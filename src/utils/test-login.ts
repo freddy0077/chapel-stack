@@ -49,7 +49,6 @@ export async function testValidLogin(config: LoginTestConfig): Promise<TestResul
   const startTime = Date.now();
   
   try {
-    console.log('🧪 Testing valid login for:', config.email);
     
     const apolloClient = createTestApolloClient(config.apiUrl);
     const authService = new AuthApiService(apolloClient);
@@ -104,7 +103,6 @@ export async function testInvalidLogin(): Promise<TestResult> {
   const startTime = Date.now();
   
   try {
-    console.log('🧪 Testing invalid login credentials');
     
     const apolloClient = createTestApolloClient();
     const authService = new AuthApiService(apolloClient);
@@ -152,7 +150,6 @@ export async function testEmptyCredentials(): Promise<TestResult> {
   const startTime = Date.now();
   
   try {
-    console.log('🧪 Testing empty credentials');
     
     const apolloClient = createTestApolloClient();
     const authService = new AuthApiService(apolloClient);
@@ -197,43 +194,28 @@ export async function testEmptyCredentials(): Promise<TestResult> {
  * Run all login tests
  */
 export async function runAllLoginTests(config: LoginTestConfig): Promise<TestResult[]> {
-  console.log('🚀 Starting comprehensive login test suite...');
-  console.log('===============================================');
   
   const results: TestResult[] = [];
   
   // Test 1: Valid Login
-  console.log('\n1️⃣ Running valid login test...');
   const validLoginResult = await testValidLogin(config);
   results.push(validLoginResult);
-  console.log(`   ${validLoginResult.success ? '✅' : '❌'} ${validLoginResult.message} (${validLoginResult.duration}ms)`);
   
   // Test 2: Invalid Login
-  console.log('\n2️⃣ Running invalid login test...');
   const invalidLoginResult = await testInvalidLogin();
   results.push(invalidLoginResult);
-  console.log(`   ${invalidLoginResult.success ? '✅' : '❌'} ${invalidLoginResult.message} (${invalidLoginResult.duration}ms)`);
   
   // Test 3: Empty Credentials
-  console.log('\n3️⃣ Running empty credentials test...');
   const emptyCredentialsResult = await testEmptyCredentials();
   results.push(emptyCredentialsResult);
-  console.log(`   ${emptyCredentialsResult.success ? '✅' : '❌'} ${emptyCredentialsResult.message} (${emptyCredentialsResult.duration}ms)`);
   
   // Summary
   const passedTests = results.filter(r => r.success).length;
   const totalTests = results.length;
   
-  console.log('\n📊 Test Results Summary:');
-  console.log('========================');
-  console.log(`✅ Passed: ${passedTests}/${totalTests}`);
-  console.log(`❌ Failed: ${totalTests - passedTests}/${totalTests}`);
-  console.log(`⏱️  Total Duration: ${results.reduce((sum, r) => sum + r.duration, 0)}ms`);
   
   if (passedTests === totalTests) {
-    console.log('\n🎉 All login tests passed! Authentication system is working correctly.');
   } else {
-    console.log('\n⚠️  Some tests failed. Please check the authentication system.');
   }
   
   return results;
@@ -257,7 +239,6 @@ export async function quickLoginTest() {
     password: 'password123'
   };
   
-  console.log('🔍 Running quick login test with default credentials...');
   return await runAllLoginTests(defaultConfig);
 }
 

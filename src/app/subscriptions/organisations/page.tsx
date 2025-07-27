@@ -504,7 +504,6 @@ export default function SubscriptionOrganisationsPage() {
           isOpen={showCreateSubscriptionModal}
           onClose={() => setShowCreateSubscriptionModal(false)}
           onSuccess={(subscription) => {
-            console.log('Subscription created successfully:', subscription);
             // Refresh organizations data
             refetch();
             setShowCreateSubscriptionModal(false);

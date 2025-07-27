@@ -28,16 +28,11 @@ export default function LoginPage() {
         setSuccessMessage("Login successful! Redirecting...");
         
         // Debug: Check what we got from login
-        console.log('🔍 Login result:', result);
-        console.log('🔍 User data:', result.user);
-        console.log('🔍 User roles:', result.user?.roles);
-        console.log('🔍 User primaryRole:', result.user?.primaryRole);
         
         // Simple role-based redirect - no complex logic needed
         const userRole = result.user?.primaryRole || result.user?.roles?.[0];
         let redirectUrl = '/dashboard';
         
-        console.log('🔍 Determined user role:', userRole);
         
         // Map roles to their dashboard URLs
         switch (userRole) {
@@ -60,11 +55,9 @@ export default function LoginPage() {
             redirectUrl = '/dashboard';
         }
         
-        console.log(`🔀 Redirecting ${userRole} to: ${redirectUrl}`);
         
         // Simple redirect using Next.js router
         setTimeout(() => {
-          console.log('🚀 Executing redirect...');
           window.location.href = redirectUrl;
           // router.push(redirectUrl);
         }, 1000); // Small delay to show success message

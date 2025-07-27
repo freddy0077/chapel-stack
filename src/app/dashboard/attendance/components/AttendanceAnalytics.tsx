@@ -105,7 +105,6 @@ export default function AttendanceAnalytics() {
   }), [branchId, organisationId, startDateStr, endDateStr, period, statsTypes]);
 
   // Debug: Log the computed date strings to verify ISO format
-  console.log('attendance analytics input', { startDateStr, endDateStr, analyticsInput });
 
   const { analytics, loading, error } = useAttendanceAnalytics(analyticsInput, !branchId && !organisationId);
 

@@ -17,7 +17,6 @@ export function useBranchEvents(branchId?: string, organisationId?: string) {
   const hasValidParams = branchId || organisationId;
   
   // Debug parameters
-  console.log('useBranchEvents params:', { branchId, organisationId, hasValidParams });
   
   const { data, loading, error, refetch } = useQuery(GET_BRANCH_EVENTS, {
     variables: {
@@ -28,13 +27,7 @@ export function useBranchEvents(branchId?: string, organisationId?: string) {
     fetchPolicy: 'network-only', // Force network fetch to ensure fresh data
   });
   
-  // Debug query results
-  console.log('useBranchEvents result:', { 
-    hasData: !!data, 
-    events: data?.events || [], 
-    loading, 
-    hasError: !!error 
-  });
+  // Removed console.log for performance
 
   return {
     events: data?.events || [],

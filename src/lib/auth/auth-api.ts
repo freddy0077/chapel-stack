@@ -240,11 +240,10 @@ export class AuthApiService {
    * Process user data from GraphQL response
    */
   private processUserData(userData: any): AuthUser {
-    console.log('🔄 Processing user data in processUserData method...');
-    console.log('🔄 Input userData:', userData);
-    console.log('🔄 Input userData.organisationId:', userData?.organisationId);
-    console.log('🔄 typeof userData.organisationId:', typeof userData?.organisationId);
-    
+    if (!userData) {
+      throw new Error('User data is required');
+    }
+
     const primaryRole = this.getPrimaryRole(userData);
     
     // Extract the primary branch from userBranches with proper null safety
@@ -278,10 +277,6 @@ export class AuthApiService {
       branch: primaryBranch,
       permissions: [], // TODO: Add permissions from backend
     };
-    
-    console.log('🔄 Processed user result:', processedUser);
-    console.log('🔄 Processed user organisationId:', processedUser.organisationId);
-    console.log('🔄 typeof processed organisationId:', typeof processedUser.organisationId);
     
     return processedUser;
   }
@@ -369,7 +364,6 @@ export class AuthApiService {
    */
   async login(credentials: LoginCredentials): Promise<LoginResult> {
     try {
-      console.log('🔐 Starting login process for:', credentials.email);
 
       const response = await this.apolloClient.mutate({
         mutation: LOGIN_MUTATION,
@@ -389,20 +383,9 @@ export class AuthApiService {
       const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, user: userData } = response.data.login;
 
       // Debug: Log the raw response data
-      console.log('🔍 Raw GraphQL login response:', response.data.login);
-      console.log('🔍 Raw user data from backend:', userData);
-      console.log('🔍 User data organisationId:', userData?.organisationId);
-      console.log('🔍 User data userBranches:', userData?.userBranches);
       if (userData?.userBranches && userData.userBranches.length > 0) {
-        console.log('🔍 First userBranch:', userData.userBranches[0]);
-        console.log('🔍 First branch object:', userData.userBranches[0]?.branch);
-        console.log('🔍 First branch organisationId:', userData.userBranches[0]?.branch?.organisationId);
-        console.log('🔍 Branch keys:', Object.keys(userData.userBranches[0]?.branch || {}));
       }
       const user = this.processUserData(userData);
-      console.log('🔍 Processed user data:', user);
-      console.log('🔍 Processed user organisationId:', user?.organisationId);
-      console.log('🔍 Processed user userBranches:', user?.userBranches);
       
       const tokens = this.createTokens({ 
         accessToken, 
@@ -411,7 +394,6 @@ export class AuthApiService {
         refreshTokenExpiresAt 
       });
 
-      console.log('✅ Login successful for user:', user.email);
 
       return {
         success: true,
@@ -464,7 +446,6 @@ export class AuthApiService {
   private async performTokenRefresh(): Promise<RefreshResult> {
     try {
       this.refreshAttempts++;
-      console.log('🔄 Attempting token refresh, attempt:', this.refreshAttempts);
 
       const currentTokens = authStorage.getTokens();
       if (!currentTokens?.refreshToken) {
@@ -494,7 +475,6 @@ export class AuthApiService {
       // Reset refresh attempts on success
       this.refreshAttempts = 0;
 
-      console.log('✅ Token refresh successful');
 
       return {
         success: true,
@@ -516,7 +496,6 @@ export class AuthApiService {
    */
   async getCurrentUser(): Promise<{ user: AuthUser | null; error: AuthError | null }> {
     try {
-      console.log('👤 Fetching current user data');
 
       const response = await this.apolloClient.query({
         query: GET_CURRENT_USER_QUERY,
@@ -533,7 +512,6 @@ export class AuthApiService {
       }
 
       const user = this.processUserData(response.data.me);
-      console.log('✅ Current user data retrieved:', user.email);
 
       return { user, error: null };
 
@@ -552,7 +530,6 @@ export class AuthApiService {
    */
   async logout(everywhere: boolean = false): Promise<{ success: boolean; error?: AuthError }> {
     try {
-      console.log('🚪 Logging out user, everywhere:', everywhere);
 
       await this.apolloClient.mutate({
         mutation: LOGOUT_MUTATION,
@@ -563,7 +540,6 @@ export class AuthApiService {
       // Clear Apollo cache
       await this.apolloClient.clearStore();
 
-      console.log('✅ Logout successful');
 
       return { success: true };
 
@@ -585,7 +561,6 @@ export class AuthApiService {
    */
   async requestPasswordReset(email: string): Promise<boolean> {
     try {
-      console.log('📧 Requesting password reset for:', email);
 
       const response = await this.apolloClient.mutate({
         mutation: REQUEST_PASSWORD_RESET_MUTATION,
@@ -597,7 +572,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ Password reset requested successfully');
       return response.data.requestPasswordReset.success;
 
     } catch (error) {
@@ -611,7 +585,6 @@ export class AuthApiService {
    */
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
     try {
-      console.log('🔑 Resetting password with token');
 
       const response = await this.apolloClient.mutate({
         mutation: RESET_PASSWORD_MUTATION,
@@ -623,7 +596,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ Password reset successful');
       return response.data.resetPassword.success;
 
     } catch (error) {
@@ -637,7 +609,6 @@ export class AuthApiService {
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
     try {
-      console.log('🔐 Changing password');
 
       const response = await this.apolloClient.mutate({
         mutation: CHANGE_PASSWORD_MUTATION,
@@ -649,7 +620,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ Password changed successfully');
       return response.data.changePassword.success;
 
     } catch (error) {
@@ -663,7 +633,6 @@ export class AuthApiService {
    */
   async verifyEmail(token: string): Promise<boolean> {
     try {
-      console.log('📧 Verifying email with token');
 
       const response = await this.apolloClient.mutate({
         mutation: VERIFY_EMAIL_MUTATION,
@@ -675,7 +644,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ Email verified successfully');
       return response.data.verifyEmail.success;
 
     } catch (error) {
@@ -689,7 +657,6 @@ export class AuthApiService {
    */
   async enableMFA(): Promise<{ qrCode: string; backupCodes: string[] }> {
     try {
-      console.log('🔐 Enabling MFA');
 
       const response = await this.apolloClient.mutate({
         mutation: ENABLE_MFA_MUTATION,
@@ -700,7 +667,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ MFA enabled successfully');
       return response.data.enableMFA;
 
     } catch (error) {
@@ -714,7 +680,6 @@ export class AuthApiService {
    */
   async disableMFA(password: string): Promise<boolean> {
     try {
-      console.log('🔐 Disabling MFA');
 
       const response = await this.apolloClient.mutate({
         mutation: DISABLE_MFA_MUTATION,
@@ -726,7 +691,6 @@ export class AuthApiService {
         throw response.errors[0];
       }
 
-      console.log('✅ MFA disabled successfully');
       return response.data.disableMFA.success;
 
     } catch (error) {
@@ -740,7 +704,6 @@ export class AuthApiService {
    */
   async verifyMFA(token: string, code: string): Promise<LoginResult> {
     try {
-      console.log('🔐 Verifying MFA code');
 
       const response = await this.apolloClient.mutate({
         mutation: VERIFY_MFA_MUTATION,
@@ -756,7 +719,6 @@ export class AuthApiService {
       const user = this.processUserData(userData);
       const tokens = this.createTokens({ accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt });
 
-      console.log('✅ MFA verification successful');
 
       return {
         success: true,

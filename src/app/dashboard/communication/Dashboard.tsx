@@ -344,7 +344,6 @@ export default function CommunicationDashboard({ onCompose, onInbox }: { onCompo
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = (msg: any) => {
     // Debug: Log the original message object
-    console.log('Original message object:', msg);
     
     // Create a copy of the message to avoid reference issues
     const messageWithType = {
@@ -366,7 +365,6 @@ export default function CommunicationDashboard({ onCompose, onInbox }: { onCompo
     };
     
     // Debug: Log the processed message object
-    console.log('Processed message for modal:', messageWithType);
     
     setSelectedMessage(messageWithType);
     setModalOpen(true);

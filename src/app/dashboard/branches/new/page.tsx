@@ -99,7 +99,6 @@ export default function NewBranchPage() {
     
     try {
       const { data } = await createBranch({ variables: { input } });
-      console.log("Data from createBranch mutation: ",data);
       if (data) {
         setBranchId(data.createBranch.id);
         setPrimarySaved(true);

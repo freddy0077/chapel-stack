@@ -60,7 +60,6 @@ export const OrganizationSubscriptionDashboard: React.FC<OrganizationSubscriptio
   const handleLifecycleCheck = async () => {
     try {
       const result = await triggerLifecycleCheck();
-      console.log('Lifecycle check result:', result);
       // Refresh data after lifecycle check
       await refreshAll();
     } catch (error) {

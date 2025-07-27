@@ -19,7 +19,6 @@ export default function TestFormComponent() {
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    console.log(`Field ${name} changed to: ${value}`);
     
     setFormData(prev => ({
       ...prev,
@@ -29,7 +28,6 @@ export default function TestFormComponent() {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting data:', formData);
     setSubmittedData(formData);
   };
   

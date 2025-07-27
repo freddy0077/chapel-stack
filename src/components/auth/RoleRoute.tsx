@@ -23,38 +23,26 @@ export function RoleRoute({
   const pathname = usePathname();
   
   useEffect(() => {
-    console.log('🛡️ RoleRoute check:', {
-      isLoading,
-      isHydrated,
-      isAuthenticated,
-      userRole: user?.primaryRole,
-      pathname,
-      requiredRole,
-      allowedRoles
-    });
+    // Removed console.log for performance
     
     // Wait for authentication context to be fully initialized
     if (isLoading || !isHydrated) {
-      console.log('🔄 RoleRoute waiting for auth context to initialize...');
       return;
     }
     
     if (!isAuthenticated) {
-      console.log('🔒 Not authenticated, redirecting to login');
       router.push('/auth/login');
       return;
     }
     
     // Check role access
     if (requiredRole && user?.primaryRole !== requiredRole) {
-      console.log('🚫 Required role not met, redirecting');
       const defaultRoute = getDefaultRoute();
       router.push(fallbackRoute || defaultRoute || '/dashboard');
       return;
     }
     
     if (allowedRoles && !allowedRoles.includes(user?.primaryRole || '')) {
-      console.log('🚫 Role not in allowed roles, redirecting');
       const defaultRoute = getDefaultRoute();
       router.push(fallbackRoute || defaultRoute || '/dashboard');
       return;
@@ -62,13 +50,11 @@ export function RoleRoute({
     
     // Check route access
     if (!canAccessRoute(pathname)) {
-      console.log('🚫 Route access denied, redirecting');
       const defaultRoute = getDefaultRoute();
       router.push(fallbackRoute || defaultRoute || '/dashboard');
       return;
     }
     
-    console.log('✅ RoleRoute access granted');
   }, [isAuthenticated, isLoading, isHydrated, user, pathname, requiredRole, allowedRoles, fallbackRoute, canAccessRoute, getDefaultRoute, router]);
   
   // Show loading state while authentication is being checked

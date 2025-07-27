@@ -6,11 +6,11 @@ import {
 } from '@apollo/client';
 import { createUploadLink } from 'apollo-upload-client';
 import { onError } from '@apollo/client/link/error';
+import { setContext } from '@apollo/client/link/context';
+import { createHttpLink } from '@apollo/client';
 
 // Define the backend GraphQL API endpoint
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/graphql';
-
-console.log('Apollo Client - Using API URL:', API_URL);
 
 // Create a single HTTP link with file upload support
 const uploadLink = createUploadLink({
@@ -21,46 +21,33 @@ const uploadLink = createUploadLink({
   },
 });
 
-// Debug middleware
-const loggerLink = new ApolloLink((operation, forward) => {
-  console.log(`[GraphQL Request]: ${operation.operationName}`, operation.variables);
-  return forward(operation).map((result) => {
-    console.log(`[GraphQL Response]: ${operation.operationName}`, result);
-    return result;
-  });
-});
-
 // Simplified authentication link for new auth system
-const authLink = new ApolloLink((operation, forward) => {
-  // Get the authentication token from the enhanced auth storage
+const isDev = process.env.NODE_ENV === 'development';
+
+const authLink = setContext((operation, { headers }) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('chapel_access_token') : null;
   
-  // Add the authorization header to the operation
-  operation.setContext(({ headers = {} }) => ({
+  // Reduced logging - only for critical operations
+  if (isDev && operation.operationName && ['login', 'refreshToken'].includes(operation.operationName)) {
+  }
+
+  return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  }));
-
-  return forward(operation);
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  };
 });
 
 // Simplified error handling - no automatic token refresh
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
-  console.log('Apollo Client Error:', {
-    graphQLErrors,
-    networkError,
-    operation: operation.operationName
-  });
 
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
-      console.error(`GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`);
+      // Removed console.error for performance
       
       // Handle authentication errors - but don't redirect immediately to avoid loops
       if (message.includes('Unauthorized') || message.includes('Token')) {
-        console.log('Authentication error detected, clearing token');
         if (typeof window !== 'undefined') {
           localStorage.removeItem('chapel_access_token');
           localStorage.removeItem('userData');
@@ -81,11 +68,10 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
   }
 
   if (networkError) {
-    console.error(`Network error: ${networkError}`);
+    // Removed console.error for performance
     
     // Handle 401 errors - but don't redirect immediately to avoid loops
     if ('statusCode' in networkError && networkError.statusCode === 401) {
-      console.log('401 error detected, clearing token');
       if (typeof window !== 'undefined') {
         localStorage.removeItem('chapel_access_token');
         localStorage.removeItem('userData');
@@ -108,7 +94,6 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 // Create the Apollo Client
 const client = new ApolloClient({
   link: from([
-    loggerLink,
     errorLink,
     authLink,
     uploadLink,

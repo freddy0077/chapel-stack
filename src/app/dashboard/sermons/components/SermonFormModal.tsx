@@ -95,7 +95,6 @@ export function SermonFormModal({
       setUploadProgress(prev => ({ ...prev, [stateKey]: 0 }));
       setUploadErrors(prev => ({ ...prev, [type]: '' }));
       
-      console.log(`Starting upload for ${type} (stateKey: ${stateKey})`);
       
       // Determine media type based on file type
       let mediaType = 'DOCUMENT';
@@ -133,10 +132,8 @@ export function SermonFormModal({
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
           const percentComplete = Math.round((event.loaded / event.total) * 100);
-          console.log(`Upload progress for ${type} (stateKey: ${stateKey}):`, percentComplete + '%');
           setUploadProgress(prev => {
             const newProgress = { ...prev, [stateKey]: percentComplete };
-            console.log('Updated progress state:', newProgress);
             return newProgress;
           });
         }
@@ -144,7 +141,6 @@ export function SermonFormModal({
       
       // Send the request
       xhr.open('POST', '/api/proxy-upload');
-      console.log(`Starting upload for ${type}:`, file.name);
       
       // Fallback progress simulation in case XMLHttpRequest progress doesn't work
       let progressInterval: NodeJS.Timeout;
@@ -157,7 +153,6 @@ export function SermonFormModal({
           if (simulatedProgress > 90) simulatedProgress = 90;
           setUploadProgress(prev => {
             const newProgress = { ...prev, [stateKey]: Math.round(simulatedProgress) };
-            console.log('Simulated progress state:', newProgress);
             return newProgress;
           });
         }
@@ -180,7 +175,6 @@ export function SermonFormModal({
           const fileUrl = data.getPresignedUploadUrl.fileUrl;
           setForm(prev => ({ ...prev, [type]: fileUrl }));
           setUploadProgress(prev => ({ ...prev, [stateKey]: 100 }));
-          console.log(`Upload completed for ${type}:`, fileUrl);
           if (onUploadComplete) {
             onUploadComplete(type, fileUrl);
           }

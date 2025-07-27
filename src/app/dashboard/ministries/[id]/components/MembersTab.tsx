@@ -21,7 +21,6 @@ const useAuth = () => {
     hasPermission: (permission: string) => {
       // For demo purposes, just return true to show admin controls
       // In a real implementation, this would check against the user's actual permissions
-      console.log(`[AUDIT] Permission check: ${permission}`);
       return true;
     }
   };
@@ -174,7 +173,6 @@ export default function MembersTab({ ministryId }: MembersTabProps) {
     ));
     
     // Log action for audit trail (connects with Security & Access Control)
-    console.log(`[AUDIT] User changed status of member ${memberId} to ${newStatus} in ministry ${ministryId}`);
     
     // Close member details modal if open
     if (selectedMember?.id === memberId) {
@@ -246,7 +244,6 @@ export default function MembersTab({ ministryId }: MembersTabProps) {
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 onClick={() => {
                   // Log this action in the audit system
-                  console.log(`[AUDIT] User initiated add member action for ministry ${ministryId}`);
                   // In a real implementation, this would open a modal form
                   alert('Add member functionality will be implemented in a future update');
                 }}

@@ -181,7 +181,6 @@ export default function AddTeamMemberPage() {
     try {
       // In a real application, you would make an API call here
       // For now, we'll simulate a successful submission
-      console.log("Adding team member:", formData);
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));

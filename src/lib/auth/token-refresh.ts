@@ -56,7 +56,6 @@ export class TokenRefreshManager {
   async refreshToken(): Promise<RefreshResult> {
     // Prevent multiple concurrent refresh attempts
     if (this.refreshPromise) {
-      console.log('🔄 Token refresh already in progress, waiting...');
       return this.refreshPromise;
     }
 
@@ -107,16 +106,13 @@ export class TokenRefreshManager {
     }
 
     try {
-      console.log('🔄 Performing token refresh...');
       const result = await this.authApi.refreshToken();
 
       if (result.success && result.tokens) {
         // Update stored tokens
         const rememberMe = authStorage.getRememberMe();
         authStorage.setTokens(result.tokens, rememberMe);
-        console.log('✅ Token refresh successful');
       } else {
-        console.log('❌ Token refresh failed:', result.error);
       }
 
       return result;
@@ -170,13 +166,11 @@ export function createAuthLink(): ApolloLink {
     // Check if token needs refresh before making request
     const tokens = authStorage.getTokens();
     if (tokens && tokenRefreshManager.needsRefresh(tokens)) {
-      console.log('🔄 Token needs refresh before request');
       const refreshResult = await tokenRefreshManager.refreshToken();
       
       if (refreshResult.success && refreshResult.tokens) {
         token = refreshResult.tokens.accessToken;
       } else {
-        console.log('❌ Failed to refresh token before request');
         // Continue with existing token, let error handler deal with it
       }
     }
@@ -198,13 +192,11 @@ export function createAuthLink(): ApolloLink {
         
         // Handle token expiration
         if (extensions?.code === 'UNAUTHENTICATED' || extensions?.code === 'TOKEN_EXPIRED') {
-          console.log('🔄 Token expired, attempting refresh...');
           
           return new Promise((resolve, reject) => {
             tokenRefreshManager.refreshToken()
               .then((refreshResult) => {
                 if (refreshResult.success && refreshResult.tokens) {
-                  console.log('✅ Token refreshed, retrying request');
                   
                   // Update the authorization header
                   operation.setContext({
@@ -217,7 +209,6 @@ export function createAuthLink(): ApolloLink {
                   // Retry the request
                   resolve(forward(operation));
                 } else {
-                  console.log('❌ Token refresh failed, redirecting to login');
                   
                   // Clear auth data and redirect to login
                   authStorage.clear();
@@ -247,7 +238,6 @@ export function createAuthLink(): ApolloLink {
         
         // Handle other authentication errors
         if (extensions?.code === 'FORBIDDEN') {
-          console.log('🚫 Access forbidden');
           // Handle forbidden access (maybe redirect to unauthorized page)
         }
       }
@@ -261,14 +251,11 @@ export function createAuthLink(): ApolloLink {
       if ('statusCode' in networkError) {
         switch (networkError.statusCode) {
           case 401:
-            console.log('🔄 401 Unauthorized, attempting token refresh...');
             // Similar to GraphQL error handling above
             break;
           case 403:
-            console.log('🚫 403 Forbidden');
             break;
           case 500:
-            console.log('🔥 500 Server Error');
             break;
         }
       }
@@ -309,7 +296,6 @@ export function setupTokenRefreshInterval(intervalMinutes: number = 1): () => vo
     const tokens = authStorage.getTokens();
     
     if (tokens && tokenRefreshManager.needsRefresh(tokens, 5)) {
-      console.log('⏰ Automatic token refresh triggered');
       await tokenRefreshManager.refreshToken();
     }
   }, intervalMinutes * 60 * 1000);

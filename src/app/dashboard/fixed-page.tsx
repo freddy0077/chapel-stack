@@ -91,7 +91,6 @@ export default function Dashboard() {
   useEffect(() => {
     // Use the user directly from auth context
     if (authUser) {
-      console.log('📋 Setting user from auth context:', authUser);
       const userObj = {
         id: authUser.id,
         email: authUser.email,
@@ -163,7 +162,6 @@ export default function Dashboard() {
         dashboardType: dashboardType,
         branchId: selectedBranchId
       });
-      console.log('✅ Dashboard layout saved');
     } catch (error) {
       console.error('❌ Error saving dashboard layout:', error);
     }

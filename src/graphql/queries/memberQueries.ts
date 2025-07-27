@@ -212,6 +212,11 @@ export const GET_MEMBER = gql`
       lastName
       email
       phoneNumber
+      address
+      city
+      state
+      postalCode
+      country
       status
       profileImageUrl
       gender

@@ -19,7 +19,6 @@ const useAuth = () => {
     hasPermission: (permission: string) => {
       // For demo purposes, just return true to show admin controls
       // In a real implementation, this would check against the user's actual permissions
-      console.log(`[AUDIT] Permission check: ${permission}`);
       return true;
     },
     user: {
@@ -247,7 +246,6 @@ export default function VolunteerRecognitionEventsPage() {
         setLoading(false);
         
         // Audit logging integration
-        console.log('[AUDIT] User viewed volunteer recognition events');
       }, 600);
     };
     
@@ -321,7 +319,6 @@ export default function VolunteerRecognitionEventsPage() {
                 type="button"
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 onClick={() => {
-                  console.log('[AUDIT] User initiated creating new recognition event');
                   alert('Create new recognition event - Feature coming soon');
                 }}
               >
@@ -511,7 +508,6 @@ export default function VolunteerRecognitionEventsPage() {
                       type="button"
                       className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
                       onClick={() => {
-                        console.log(`[AUDIT] User viewed details for event: ${event.id}`);
                         alert(`View details for: ${event.title}`);
                       }}
                     >
@@ -523,7 +519,6 @@ export default function VolunteerRecognitionEventsPage() {
                         type="button"
                         className="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
                         onClick={() => {
-                          console.log(`[AUDIT] User initiated editing event: ${event.id}`);
                           alert(`Edit event: ${event.title}`);
                         }}
                       >
@@ -551,7 +546,6 @@ export default function VolunteerRecognitionEventsPage() {
                 type="button"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
                 onClick={() => {
-                  console.log('[AUDIT] User initiated creating new recognition event');
                   alert('Create new recognition event - Feature coming soon');
                 }}
               >

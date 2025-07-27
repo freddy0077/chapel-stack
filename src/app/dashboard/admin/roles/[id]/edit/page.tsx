@@ -288,17 +288,9 @@ export default function EditRolePage() {
   
   const handleSaveRole = () => {
     // In a real application, this would send data to a server
-    console.log({
-      id: roleId,
-      name: roleName,
-      description: roleDescription,
-      permissions: selectedPermissions.length,
-      selectedPermissions,
-      accessLevel,
-      regions: selectedRegions,
-      branches: selectedBranches.map(id => mockBranches.find(b => b.id === id)?.name).filter(Boolean)
-    });
+    // Removed console.log for performance
     
+    // Show success message
     alert('Role updated successfully');
     router.push('/dashboard/admin/roles');
   };

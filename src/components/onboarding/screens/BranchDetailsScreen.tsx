@@ -167,7 +167,6 @@ const BranchDetailsScreen: React.FC<BranchDetailsScreenProps> = ({
       const newBranches = prev.map((b, i) =>
         i === idx ? { ...b, [field]: value } : b
       );
-      console.log('setBranches', newBranches);
       return newBranches;
     });
   };

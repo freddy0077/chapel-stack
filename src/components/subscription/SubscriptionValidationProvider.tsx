@@ -43,19 +43,12 @@ export const SubscriptionValidationProvider: React.FC<SubscriptionValidationProv
   // Skip all processing during SSR/build time
   const isSSR = typeof window === 'undefined';
   
+  const isDev = process.env.NODE_ENV === 'development';
+
   // Only log and process user data on the client side
   if (!isSSR) {
-    console.log("User from SubscriptionValidationProvider", user);
-    console.log("🔍 User Loading State:", {
-      isAuthenticated,
-      hasUser: !!user,
-      userId: user?.id,
-      organisationId: user?.organisationId,
-      primaryRole: user?.primaryRole,
-      userBranches: user?.userBranches,
-      isUserFullyLoaded,
-      authToken: !!authToken
-    });
+    if (isDev) {
+    }
   }
 
   // Get user's organization and role - fix property access to match useAuth structure
@@ -84,22 +77,10 @@ export const SubscriptionValidationProvider: React.FC<SubscriptionValidationProv
     if (isAuthenticated && user && user.id && user.organisationId && authToken) {
       // Add a small delay to ensure user data is fully loaded AND auth token is stored
       const timer = setTimeout(() => {
-        if (!isSSR) {
-          console.log("Setting user as fully loaded", { user, organizationId, userRole, hasAuthToken: !!authToken });
-        }
         setIsUserFullyLoaded(true);
       }, 1000); // Increased delay to ensure user data is stable
       return () => clearTimeout(timer);
     } else {
-      if (!isSSR) {
-        console.log("User not fully loaded yet", { 
-          isAuthenticated, 
-          user: !!user, 
-          userId: user?.id, 
-          orgId: user?.organisationId,
-          hasAuthToken: !!authToken
-        });
-      }
       setIsUserFullyLoaded(false);
     }
   }, [isAuthenticated, user?.id, user?.organisationId, authToken]); // Now properly tracking authToken
@@ -121,20 +102,6 @@ export const SubscriptionValidationProvider: React.FC<SubscriptionValidationProv
 
   // Show validation modal on login if subscription is invalid
   useEffect(() => {
-    if (!isSSR) {
-      console.log('🔍 Subscription Validation Debug:', {
-        canRunValidation,
-        shouldSkipValidation,
-        loading,
-        hasShownModalForSession,
-        requiresAction: validationResult.requiresAction,
-        validationResult,
-        organizationId,
-        userRole,
-        isUserFullyLoaded,
-        DISABLE_SUBSCRIPTION_VALIDATION
-      });
-    }
 
     if (
       canRunValidation &&
@@ -143,15 +110,6 @@ export const SubscriptionValidationProvider: React.FC<SubscriptionValidationProv
       !hasShownModalForSession &&
       validationResult.requiresAction
     ) {
-      if (!isSSR) {
-        console.log('✅ Showing subscription validation modal', {
-          canRunValidation,
-          shouldSkipValidation,
-          loading,
-          hasShownModalForSession,
-          requiresAction: validationResult.requiresAction,
-        });
-      }
       setIsValidationModalOpen(true);
       setHasShownModalForSession(true);
     }

@@ -6,7 +6,6 @@ import { useAdminRoles } from '@/graphql/hooks/useAdminRoles';
 
 export default function RoleManagement() {
   const { roles, loading, error } = useAdminRoles();
-  console.log("🚀 ~ file: RoleManagement.tsx:14 ~ RoleManagement ~ roles:", roles)
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 

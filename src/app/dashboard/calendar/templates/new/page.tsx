@@ -185,7 +185,6 @@ export default function CreateEventTemplate() {
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("handleSubmit called");
     setHasSubmitted(true);
     setValidationError(null);
     if (!templateData.title.trim()) {
@@ -206,9 +205,7 @@ export default function CreateEventTemplate() {
     };
     
     try {
-      console.log("Submitting template data:", formattedData);
       const result = await createTemplate(formattedData);
-      console.log("Template created:", result);
       setSuccessMessage("Event template created successfully!");
       
       // Redirect after a short delay to show success message

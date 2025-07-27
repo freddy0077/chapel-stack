@@ -30,7 +30,6 @@ export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
     // For SUPER_ADMIN with organisationId, filter by organisation instead of branch
     if (user?.primaryRole === 'super_admin' && user?.organisationId) {
       filter.organisationId = String(user.organisationId);
-      console.log('SUPER_ADMIN with organisationId detected - using organisationId:', user.organisationId);
     } else {
       // For all other users, filter by branchId and only include organisationId if it's valid
       if (user?.organisationId) {

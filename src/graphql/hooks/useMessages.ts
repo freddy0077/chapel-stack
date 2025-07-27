@@ -52,12 +52,10 @@ export function useMessages(filter: MessageFilterInput) {
   // Only add properties that have actual values (not empty strings)
   if (effectiveOrgId && effectiveOrgId.trim() !== '') {
     queryFilter.organisationId = effectiveOrgId;
-    console.log(`Using organisationId: ${effectiveOrgId}`);
   }
   
   if (effectiveBranchId && effectiveBranchId.trim() !== '') {
     queryFilter.branchId = effectiveBranchId;
-    console.log(`Using branchId: ${effectiveBranchId}`);
   }
   
   // Add other filter properties
@@ -65,7 +63,6 @@ export function useMessages(filter: MessageFilterInput) {
   if (filter.startDate) queryFilter.startDate = filter.startDate;
   if (filter.endDate) queryFilter.endDate = filter.endDate;
   
-  console.log('Final useMessages filter:', queryFilter);
   
   const { data, loading, error, refetch } = useQuery(ALL_MESSAGES_QUERY, {
     variables: { filter: queryFilter },

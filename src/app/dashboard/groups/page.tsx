@@ -53,19 +53,17 @@ export default function Groups() {
     status: selectedStatus !== 'ALL' ? selectedStatus : undefined,
   }), [orgBranchFilter.branchId, orgBranchFilter.organisationId, searchTerm, selectedType, selectedStatus]);
 
-  console.log('Applying group filters:', filters);
 
-  // Fetch filtered groups - skip the query when no valid filter is available
+  // Fetch filtered groups - don't skip the query, let backend handle empty filters
   const { smallGroups, loading, error, refetch } = useFilteredSmallGroups(
     filters, 
-    !orgBranchFilter.branchId && !orgBranchFilter.organisationId
+    false // Always run the query, let backend filter appropriately
   );
   
   // Save refetch for after create
   if (groupRefetch !== refetch) setGroupRefetch(() => refetch);
 
   // Log query results for debugging
-  console.log('Query results:', { smallGroups, loading, error });
 
   // Pagination calculations
   const totalGroups = smallGroups?.length || 0;

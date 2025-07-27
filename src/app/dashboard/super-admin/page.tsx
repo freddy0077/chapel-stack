@@ -21,11 +21,6 @@ export default function SuperAdminDashboard() {
   const user = state.user;
   
   // Debug authentication state
-  console.log("🔍 Debug Authentication State:");
-  console.log("   User from useAuth:", user);
-  console.log("   localStorage authToken:", localStorage.getItem('authToken')?.substring(0, 20) + '...');
-  console.log("   localStorage userData:", localStorage.getItem('userData'));
-  console.log("   Organisation ID from filter:", organisationId);
   
   const { data, loading, error } = useQuery(GET_SUPER_ADMIN_DASHBOARD, {
     variables: { organisationId },

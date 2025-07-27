@@ -72,20 +72,12 @@ function ResetPasswordForm() {
         return;
       }
 
-      console.log('Submitting reset password with:', {
-        token,
-        passwordLength: values.password?.length,
-        hasPassword: !!values.password
-      });
-
       const result = await resetPassword({
         variables: {
           token,
           newPassword: values.password,
         },
       });
-
-      console.log('Reset password result:', result);
 
       if (result.data?.resetPassword) {
         setSuccess(true);

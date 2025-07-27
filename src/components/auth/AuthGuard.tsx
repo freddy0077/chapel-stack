@@ -16,7 +16,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      console.log('AuthGuard: Not authenticated, redirecting to login.');
       router.push('/auth/login');
     }
   }, [isAuthenticated, isLoading, router]);

@@ -101,11 +101,6 @@ export default function AddFamilyRelationship({ memberId, onSuccess }: AddFamily
   // Debug logging to help diagnose search issues
   useEffect(() => {
     if (searchTerm && searchTerm.length > 2) {
-      console.log('Search term:', searchTerm);
-      console.log('Organisation ID:', organisationId);
-      console.log('Branch ID:', branchId);
-      console.log('Search results:', members);
-      console.log('Filtered members:', filteredMembers);
     }
   }, [searchTerm, members, organisationId, branchId]);
 

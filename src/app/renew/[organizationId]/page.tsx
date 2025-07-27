@@ -132,7 +132,6 @@ export default function OrganizationRenewalPage() {
         },
         // On successful payment
         async (response: any) => {
-          console.log('Payment successful:', response);
           
           try {
             // Verify payment and create subscription
@@ -155,7 +154,6 @@ export default function OrganizationRenewalPage() {
         },
         // On payment cancelled
         () => {
-          console.log('Payment cancelled by user');
           setErrorMessage('Payment was cancelled. Please try again.');
         }
       );

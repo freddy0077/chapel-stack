@@ -7,6 +7,7 @@ import { useQuery } from '@apollo/client';
 import { GET_BRANCHES } from '@/graphql/queries/branchQueries';
 import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import { getGroupTypeOptions } from '@/utils/groupTypes';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -154,13 +155,11 @@ export default function CreateGroupModal({ isOpen, setIsOpen, branchId: propBran
                     required
                     className="mt-1 block w-full border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white/70 shadow-sm"
                   >
-                    <option value="BIBLE_STUDY">Bible Study</option>
-                    <option value="PRAYER">Prayer</option>
-                    <option value="INTEREST_BASED">Interest-based</option>
-                    <option value="DISCIPLESHIP">Discipleship</option>
-                    <option value="SUPPORT">Support</option>
-                    <option value="FELLOWSHIP">Fellowship</option>
-                    <option value="OTHER">Other</option>
+                    {getGroupTypeOptions().map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-span-1 md:col-span-2">

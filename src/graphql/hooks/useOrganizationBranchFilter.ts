@@ -12,18 +12,6 @@ export const useOrganizationBranchFilter = () => {
   const organisationIdFromQuery = searchParams.get('organisationId');
   const branchIdFromQuery = searchParams.get('branchId');
 
-  console.log('🏢 useOrganizationBranchFilter - User data:', {
-    user: user ? {
-      id: user.id,
-      email: user.email,
-      primaryRole: user.primaryRole,
-      organisationId: user.organisationId,
-      userBranches: user.userBranches?.length || 0
-    } : null,
-    organisationIdFromQuery,
-    branchIdFromQuery
-  });
-
   let organisationId = '';
   let branchId = '';
 
@@ -37,8 +25,6 @@ export const useOrganizationBranchFilter = () => {
     organisationId = user?.organisationId || '';
     branchId = branchIdFromQuery || user?.userBranches?.[0]?.branch?.id || '';
   }
-
-  console.log('🏢 useOrganizationBranchFilter - Result:', { organisationId, branchId });
 
   return { organisationId, branchId };
 };

@@ -267,7 +267,6 @@ export default function MessageModal({ isOpen, onClose, memberName, memberEmail,
     
     // Simulate sending a message
     setTimeout(() => {
-      console.log("Message data:", messageData);
       
       // Add to message history if not scheduled
       if (!isScheduled) {

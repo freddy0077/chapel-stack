@@ -313,7 +313,6 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
 
   useEffect(() => {
     const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
-    console.log("User role:", user);
 
     // Use our new role-based navigation configuration
     const roleBasedNavigation = getUserNavigation(userRole, enabledModules);
@@ -350,7 +349,6 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
     };
   }, [profileDropdownOpen]);
 
-  console.log("Auth user:", user);
   // Helper functions to get user information
   const getUserInitials = () => {
     if (!user?.name) return 'U';
@@ -371,7 +369,6 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   };
   
   const getUserRole = () => {
-    console.log("User role:", user?.primaryRole);
     const role = user?.primaryRole || 'member';
     // Convert snake_case to Title Case, e.g. 'super_admin' → 'Super Admin'
     return role

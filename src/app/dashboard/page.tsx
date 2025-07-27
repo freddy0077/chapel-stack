@@ -18,7 +18,6 @@ export default function DashboardPage() {
   });
   const dashboard = data?.superAdminDashboardData;
 
-  console.log("dashboard data:", dashboard?.financialOverview?.topGivingBranches);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex">
       {/* Sidebar */}

@@ -57,8 +57,8 @@ export default function TakeAttendancePage() {
   const { attendanceRecords: sessionAttendanceRecords } = useAttendanceRecordsForSession({ 
     sessionId: selectedSessionId || '' 
   });
-  const { attendanceRecords: eventAttendanceRecords } = useAttendanceRecordsForEvent({ 
-    eventId: selectedEventId || '' 
+  const { attendanceRecords: eventAttendanceRecords, refetch: refetchEventAttendance } = useAttendanceRecordsForEvent({ 
+    eventId: selectedEventId || undefined 
   });
 
   const attendanceRecords = attendanceType === 'session' ? sessionAttendanceRecords : eventAttendanceRecords;
@@ -96,6 +96,26 @@ export default function TakeAttendancePage() {
     setSuccess(false);
   };
 
+  // Handle event selection change
+  const handleEventChange = (eventId: string) => {
+    setSelectedEventId(eventId);
+    setAttendance({});
+    setError(null);
+    setSuccess(false);
+    // Refetch attendance records for the new event
+    if (eventId && refetchEventAttendance) {
+      refetchEventAttendance();
+    }
+  };
+
+  // Handle session selection change
+  const handleSessionChange = (sessionId: string) => {
+    setSelectedSessionId(sessionId);
+    setAttendance({});
+    setError(null);
+    setSuccess(false);
+  };
+
   // Save attendance for all checked members
   const handleSave = async () => {
     const selectedId = attendanceType === 'session' ? selectedSessionId : selectedEventId;
@@ -106,13 +126,27 @@ export default function TakeAttendancePage() {
     setSuccess(false);
     
     try {
+      // Get current attendance records and ensure they're loaded
+      const currentRecords = attendanceRecords || [];
+      
       // Prevent marking attendance for members already marked
-      const alreadyMarkedIds = new Set((attendanceRecords || []).map(r => r.member?.id));
+      const alreadyMarkedIds = new Set(currentRecords.map((r: any) => r.member?.id).filter(Boolean));
+      
       const toMark = Object.entries(attendance)
-        .filter(([memberId, present]) => present && !alreadyMarkedIds.has(memberId));
+        .filter(([memberId, present]) => {
+          const isPresent = present === true;
+          const isAlreadyMarked = alreadyMarkedIds.has(memberId);
+          return isPresent && !isAlreadyMarked;
+        });
+      
       
       if (toMark.length === 0) {
-        setError(`All selected members have already been marked for this ${attendanceType}.`);
+        const selectedCount = Object.values(attendance).filter(Boolean).length;
+        if (selectedCount > 0) {
+          setError(`All selected members have already been marked for this ${attendanceType}.`);
+        } else {
+          setError(`Please select members to mark attendance for.`);
+        }
         setSaving(false);
         return;
       }
@@ -125,9 +159,19 @@ export default function TakeAttendancePage() {
       );
       
       await Promise.all(promises);
+      
+      // Refetch attendance records after successful save
+      if (attendanceType === 'event' && refetchEventAttendance) {
+        await refetchEventAttendance();
+      }
+      
       setSuccess(true);
       setAttendance({}); // Clear selections after successful save
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setSuccess(false), 3000);
     } catch (e: any) {
+      console.error('Error saving attendance:', e);
       setError(e.message || "Failed to save attendance");
     } finally {
       setSaving(false);
@@ -162,6 +206,25 @@ export default function TakeAttendancePage() {
             Back to Attendance
           </Link>
         </div>
+
+        {/* Current Selection Info */}
+        {getCurrentSelection() && (
+          <div className="px-8 py-4 bg-indigo-50 border-b border-indigo-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-indigo-700">Selected {attendanceType}:</p>
+                <p className="text-base text-indigo-900 font-semibold">{getCurrentSelection()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-indigo-700">Attendance Summary:</p>
+                <p className="text-base text-indigo-900">
+                  <span className="font-semibold">{(attendanceRecords || []).length}</span> already present, 
+                  <span className="font-semibold ml-1">{Object.values(attendance).filter(Boolean).length}</span> newly selected
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Attendance Type Selector */}
         <div className="px-8 py-6 border-b border-gray-100 bg-white/80">
@@ -199,7 +262,7 @@ export default function TakeAttendancePage() {
             <select
               className="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-base px-3 py-2"
               value={selectedSessionId || ''}
-              onChange={e => setSelectedSessionId(e.target.value)}
+              onChange={e => handleSessionChange(e.target.value)}
             >
               <option value="">-- Choose a session --</option>
               {sessions.map((s: any) => (
@@ -212,7 +275,7 @@ export default function TakeAttendancePage() {
             <select
               className="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-base px-3 py-2"
               value={selectedEventId || ''}
-              onChange={e => setSelectedEventId(e.target.value)}
+              onChange={e => handleEventChange(e.target.value)}
             >
               <option value="">-- Choose an event --</option>
               {events.map((e: any) => (
@@ -241,26 +304,49 @@ export default function TakeAttendancePage() {
             <div className="flex items-center justify-center py-8 text-gray-400 text-lg">Loading members...</div>
           ) : (
             <ul className="divide-y divide-gray-100 max-h-[52vh] overflow-y-auto rounded-lg border border-gray-100 bg-white/60">
-              {filteredMembers.map((member: any) => (
-                <li key={member.id} className="flex items-center px-4 py-3 hover:bg-indigo-50 transition">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-indigo-600 rounded mr-4 focus:ring-indigo-500"
-                    checked={!!attendance[member.id]}
-                    onChange={() => toggleAttendance(member.id)}
-                    disabled={saving || (attendanceRecords || []).some(r => r.member?.id === member.id)}
-                  />
-                  <div className="flex-1 flex items-center gap-2">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-lg">
-                      {member.firstName?.[0] || ''}{member.lastName?.[0] || ''}
+              {filteredMembers.map((member: any) => {
+                const isAlreadyMarked = (attendanceRecords || []).some((r: any) => r.member?.id === member.id);
+                const isCurrentlySelected = !!attendance[member.id];
+                
+                return (
+                  <li key={member.id} className={`flex items-center px-4 py-3 transition ${
+                    isAlreadyMarked 
+                      ? 'bg-green-50 border-l-4 border-green-400' 
+                      : 'hover:bg-indigo-50'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-indigo-600 rounded mr-4 focus:ring-indigo-500 disabled:opacity-50"
+                      checked={isCurrentlySelected}
+                      onChange={() => toggleAttendance(member.id)}
+                      disabled={saving || isAlreadyMarked}
+                      title={isAlreadyMarked ? 'Attendance already marked for this member' : 'Mark attendance for this member'}
+                    />
+                    <div className="flex-1 flex items-center gap-2">
+                      <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-semibold text-lg ${
+                        isAlreadyMarked 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-indigo-100 text-indigo-700'
+                      }`}>
+                        {member.firstName?.[0] || ''}{member.lastName?.[0] || ''}
+                      </div>
+                      <span className={`font-medium text-base ${
+                        isAlreadyMarked ? 'text-green-900' : 'text-gray-900'
+                      }`}>
+                        {member.firstName} {member.lastName}
+                      </span>
+                      {isAlreadyMarked && (
+                        <div className="flex items-center gap-1">
+                          <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-green-600 text-sm font-medium">Already Present</span>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-gray-900 font-medium text-base">{member.firstName} {member.lastName}</span>
-                    {(attendanceRecords || []).some(r => r.member?.id === member.id) && (
-                      <span className="text-green-600 text-sm font-medium">✓ Present</span>
-                    )}
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

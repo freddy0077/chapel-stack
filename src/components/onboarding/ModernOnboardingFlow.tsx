@@ -303,7 +303,6 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
     }
   };
 
-  console.log('ModernOnboardingFlow branches', branches);
 
   return (
     <div className="min-h-screen bg-gray-50">

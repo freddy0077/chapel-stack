@@ -31,15 +31,12 @@ const ChurchProfileScreen = ({
   
   // Log the initial state for debugging
   useEffect(() => {
-    console.log('ChurchProfileScreen mounted with profile:', churchProfile);
-    console.log('Initial localProfile state:', localProfile);
   }, [churchProfile, localProfile]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     // Log the field change for debugging
-    console.log(`Field ${name} changed to:`, value);
     
     // Update local state
     const updatedProfile = {
@@ -53,7 +50,6 @@ const ChurchProfileScreen = ({
     // This ensures parent always has the latest values
     setChurchProfile(updatedProfile);
     
-    console.log('Updated local profile:', updatedProfile);
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -67,7 +63,6 @@ const ChurchProfileScreen = ({
     }
     
     // Log what's being submitted for debugging
-    console.log('Submitting final church profile:', localProfile);
     
     // Ensure parent component has the latest state
     setChurchProfile({
@@ -81,7 +76,6 @@ const ChurchProfileScreen = ({
     // Wait for React to process the state update
     setTimeout(() => {
       // Log one more time to verify final state
-      console.log('Profile submitted to parent, proceeding with:', localProfile);
       onNext();
     }, 100);
   };

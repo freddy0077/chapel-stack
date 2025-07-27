@@ -54,7 +54,6 @@ function CardScannerApp() {
   // Define syncPendingScans with useCallback to avoid dependency issues
   const syncPendingScans = useCallback(async () => {
     // In a real app, this would send pending scans to the server
-    console.log("Syncing pending scans:", pendingScans);
     
     // Mock successful sync
     setPendingScans([]);

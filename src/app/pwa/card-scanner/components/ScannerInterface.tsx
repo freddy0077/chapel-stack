@@ -53,7 +53,6 @@ export default function ScannerInterface({
       ndef.addEventListener("error", () => {
         setErrorMessage("Error reading NFC card. Please try again.");
       });
-      console.log("NFC scanning initialized");
     } catch (error: any) {
       if (error && error.name === "NotAllowedError") {
         setErrorMessage("NFC access was denied. Please allow NFC permissions in your browser.");

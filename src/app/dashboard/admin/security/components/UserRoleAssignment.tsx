@@ -44,7 +44,6 @@ function UserRoleEditor({
   onCancel: () => void;
 }) {
 
-  console.log("user from admin", user);
 
   const [accessList, setAccessList] = useState<UserBranchAccess[]>(
     (user?.userBranches ?? []).map(access => ({ ...access }))

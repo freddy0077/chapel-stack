@@ -8,38 +8,21 @@ export default function DebugAuthPage() {
   const user = state.user;
 
   useEffect(() => {
-    console.log("=== DEBUG AUTH PAGE ===");
-    console.log("Full auth state:", state);
-    console.log("User object:", user);
-    console.log("User organisationId:", user?.organisationId);
-    console.log("User type:", typeof user?.organisationId);
     
     // Check userBranches structure
-    console.log("User branches:", user?.userBranches);
     if (user?.userBranches && user.userBranches.length > 0) {
-      console.log("First branch:", user.userBranches[0]);
-      console.log("First branch.branch:", user.userBranches[0].branch);
-      console.log("First branch.branch.organisationId:", user.userBranches[0].branch?.organisationId);
-      console.log("Branch keys:", Object.keys(user.userBranches[0].branch || {}));
     }
     
     // Check localStorage directly
     if (typeof window !== 'undefined') {
       const storedUserData = localStorage.getItem('chapel_user_data');
-      console.log("Raw localStorage user data:", storedUserData);
       
       if (storedUserData) {
         try {
           const parsedUser = JSON.parse(storedUserData);
-          console.log("Parsed user from localStorage:", parsedUser);
-          console.log("Parsed user organisationId:", parsedUser.organisationId);
-          console.log("Parsed user keys:", Object.keys(parsedUser));
           
           // Check userBranches in localStorage
           if (parsedUser.userBranches && parsedUser.userBranches.length > 0) {
-            console.log("Stored first branch:", parsedUser.userBranches[0]);
-            console.log("Stored first branch.branch:", parsedUser.userBranches[0].branch);
-            console.log("Stored branch organisationId:", parsedUser.userBranches[0].branch?.organisationId);
           }
         } catch (error) {
           console.error("Error parsing user data:", error);
@@ -49,10 +32,8 @@ export default function DebugAuthPage() {
       // Check all localStorage keys related to chapel
       const allKeys = Object.keys(localStorage);
       const chapelKeys = allKeys.filter(key => key.includes('chapel'));
-      console.log("All chapel localStorage keys:", chapelKeys);
       
       chapelKeys.forEach(key => {
-        console.log(`${key}:`, localStorage.getItem(key));
       });
     }
   }, [state, user]);

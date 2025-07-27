@@ -260,8 +260,6 @@ describe('Login Functionality', () => {
  */
 describe('Login Integration Test', () => {
   test('should demonstrate login flow', async () => {
-    console.log('🧪 Login Integration Test');
-    console.log('========================');
     
     // Test credentials
     const testCredentials = {
@@ -269,8 +267,6 @@ describe('Login Integration Test', () => {
       password: 'TestPassword123!'
     };
 
-    console.log('📧 Test Email:', testCredentials.email);
-    console.log('🔑 Password Length:', testCredentials.password.length);
     
     // Mock the login process
     const mockResult = {
@@ -296,7 +292,6 @@ describe('Login Integration Test', () => {
       }
     };
 
-    console.log('✅ Mock Login Result:', {
       success: mockResult.success,
       userEmail: mockResult.user.email,
       userName: mockResult.user.name,
@@ -310,6 +305,5 @@ describe('Login Integration Test', () => {
     expect(mockResult.tokens.accessToken).toBeDefined();
     expect(mockResult.tokens.refreshToken).toBeDefined();
     
-    console.log('🎉 Login integration test completed successfully!');
   });
 });

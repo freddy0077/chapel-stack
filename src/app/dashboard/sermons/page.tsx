@@ -483,7 +483,6 @@ export default function SermonsPage() {
 
   // Event handlers
   const handleOpenFormModal = (sermon?: SermonEntity) => {
-    console.log('handleOpenFormModal called with:', sermon); // Debug log
     if (sermon && sermon.id) {
       // Edit mode - editing an existing sermon
       setEditingSermon(sermon);
@@ -513,10 +512,6 @@ export default function SermonsPage() {
   };
 
   const handleSubmitSermon = async (data: any) => {
-    console.log('handleSubmitSermon called with data:', data);
-    console.log('editingSermon state:', editingSermon);
-    console.log('editingSermon truthy check:', !!editingSermon);
-    console.log('editingSermon && editingSermon.id check:', !!(editingSermon && editingSermon.id));
     
     try {
       const submissionData = {
@@ -525,7 +520,6 @@ export default function SermonsPage() {
         organisationId: user?.userBranches?.[0]?.branch?.organisation?.id,
       };
       
-      console.log('Final submission data:', submissionData);
       
       if (isEditMode) {
         await updateSermon({ variables: { updateSermonInput: submissionData } });

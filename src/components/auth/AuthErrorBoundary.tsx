@@ -122,12 +122,10 @@ export class AuthErrorBoundary extends Component<Props, State> {
    */
   private handleRetry = () => {
     if (this.retryCount >= this.maxRetries) {
-      console.log('🔄 Maximum retry attempts reached');
       return;
     }
 
     this.retryCount++;
-    console.log(`🔄 Retrying authentication operation (attempt ${this.retryCount}/${this.maxRetries})`);
 
     this.setState({
       hasError: false,
@@ -152,7 +150,6 @@ export class AuthErrorBoundary extends Component<Props, State> {
    * Clear authentication data and redirect to login
    */
   private handleClearAuth = () => {
-    console.log('🧹 Clearing authentication data due to error');
     authStorage.clear();
     
     if (typeof window !== 'undefined') {
@@ -387,17 +384,14 @@ export function useAuthErrorHandler() {
 
       case 'NETWORK_ERROR':
         // Show network error message
-        console.log('🌐 Network error, user should check connection');
         break;
 
       case 'RATE_LIMITED':
         // Show rate limit message
-        console.log('⏰ Rate limited, user should wait before retrying');
         break;
 
       default:
         // Generic error handling
-        console.log('⚠️ Generic error, showing user-friendly message');
     }
 
     return userMessage;

@@ -184,7 +184,6 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
                         variant="outline"
                         onClick={() => {
                           // TODO: Implement execution details modal
-                          console.log('View execution details:', execution.id);
                         }}
                       >
                         <Eye className="h-4 w-4" />

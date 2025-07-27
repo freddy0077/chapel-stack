@@ -91,64 +91,40 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
    */
   const initializeAuth = useCallback(async () => {
     try {
-      console.log('🚀 Initializing authentication state...');
       dispatch({ type: AuthActionType.SET_LOADING, payload: true });
 
       // Check if session is expired due to inactivity
       if (storage.isSessionExpired()) {
-        console.log('⏰ Session expired due to inactivity');
         await handleLogout({ redirect: '/auth/login' });
         return;
       }
 
-      // Get stored tokens and user data
       const storedTokens = storage.getTokens();
       const storedUser = storage.getUser();
       const sessionId = storage.getSessionId() || AuthUtils.generateSessionId();
 
-      console.log('💾 Storage state:', {
-        hasTokens: !!storedTokens,
-        hasUser: !!storedUser,
-        sessionId,
-      });
-      
       // Debug: Check localStorage directly
       if (typeof window !== 'undefined') {
         const accessToken = localStorage.getItem('chapel_access_token');
         const refreshToken = localStorage.getItem('chapel_refresh_token');
         const userData = localStorage.getItem('chapel_user_data');
-        console.log('🔍 Direct localStorage check:', {
-          accessToken: accessToken ? 'present' : 'missing',
-          refreshToken: refreshToken ? 'present' : 'missing',
-          userData: userData ? 'present' : 'missing'
-        });
       }
 
       // If no tokens, user is not authenticated
       if (!storedTokens) {
-        console.log('🔓 No stored tokens found');
         dispatch({ type: AuthActionType.SET_HYDRATED });
         return;
       }
 
       // Check if refresh token is expired
       if (storage.isRefreshTokenExpired()) {
-        console.log('🔄 Refresh token expired, clearing auth state');
-        
         // Debug: Check token expiry details
         const tokens = storage.getTokens();
         if (tokens) {
-          console.log('🔍 Token expiry debug:', {
-            currentTime: Date.now(),
-            currentTimeReadable: new Date().toISOString(),
-            refreshExpiresAt: tokens.refreshExpiresAt,
-            refreshExpiresAtReadable: tokens.refreshExpiresAt ? new Date(tokens.refreshExpiresAt).toISOString() : 'undefined',
-            timeUntilExpiry: tokens.refreshExpiresAt ? tokens.refreshExpiresAt - Date.now() : 'N/A',
-            isExpired: tokens.refreshExpiresAt ? Date.now() >= tokens.refreshExpiresAt : 'N/A'
-          });
         }
         
         storage.clear();
+        dispatch({ type: AuthActionType.LOGOUT });
         dispatch({ type: AuthActionType.SET_HYDRATED });
         return;
       }
@@ -168,11 +144,9 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
 
       // Check if token needs refresh
       if (storage.needsTokenRefresh()) {
-        console.log('🔄 Token needs refresh, attempting refresh...');
         const refreshResult = await handleTokenRefresh();
         
         if (!refreshResult.success) {
-          console.log('❌ Token refresh failed, clearing auth state');
           storage.clear();
           dispatch({ type: AuthActionType.LOGOUT });
           dispatch({ type: AuthActionType.SET_HYDRATED });
@@ -186,7 +160,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
           const { user: currentUser, error } = await authApi.getCurrentUser();
           
           if (error) {
-            console.log('❌ Failed to verify current user:', error);
             if (!error.recoverable) {
               storage.clear();
               dispatch({ type: AuthActionType.LOGOUT });
@@ -194,21 +167,17 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
           } else if (currentUser) {
             // Update user data if different
             if (JSON.stringify(currentUser) !== JSON.stringify(storedUser)) {
-              console.log('👤 Updating user data from server');
               dispatch({ type: AuthActionType.SET_USER, payload: currentUser });
               storage.setUser(currentUser);
             }
           }
         } catch (error) {
-          console.log('⚠️ Could not verify user with server, using cached data');
         }
       }
 
-      console.log('✅ Authentication initialization complete');
       dispatch({ type: AuthActionType.SET_HYDRATED });
 
     } catch (error) {
-      console.error('❌ Authentication initialization failed:', error);
       dispatch({ 
         type: AuthActionType.SET_ERROR, 
         payload: AuthUtils.createAuthError(
@@ -231,8 +200,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       const result = await authApi.refreshToken();
       
       if (result.success && result.tokens) {
-        console.log('✅ Token refresh successful');
-        
         // Update stored tokens
         const rememberMe = storage.getRememberMe();
         storage.setTokens(result.tokens, rememberMe);
@@ -243,7 +210,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         // Reset API refresh attempts
         authApi.resetRefreshAttempts();
       } else {
-        console.log('❌ Token refresh failed:', result.error);
         dispatch({ type: AuthActionType.SET_ERROR, payload: result.error });
       }
       
@@ -251,8 +217,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       return result;
       
     } catch (error) {
-      console.error('❌ Token refresh error:', error);
-      
       const authError = AuthUtils.createAuthError(
         'REFRESH_ERROR',
         'Failed to refresh authentication token',
@@ -271,40 +235,19 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
    */
   const handleLogin = useCallback(async (credentials: LoginCredentials): Promise<LoginResult> => {
     try {
-      console.log('🔐 Starting login process...');
       dispatch({ type: AuthActionType.SET_LOADING, payload: true });
       dispatch({ type: AuthActionType.CLEAR_ERROR });
 
       const result = await authApi.login(credentials);
 
       if (result.success && result.user && result.tokens) {
-        console.log('✅ Login successful - redirect will be handled by login page');
-        console.log('🔍 Login result from API:', result);
-        console.log('🔍 User data from API:', result.user);
-        console.log('🔍 User organisationId from API:', result.user?.organisationId);
-        console.log('🔍 User userBranches from API:', result.user?.userBranches);
-
         // Store authentication data
         const rememberMe = credentials.rememberMe || false;
-        console.log('💾 Storing tokens and user data...');
         storage.setTokens(result.tokens, rememberMe);
         storage.setUser(result.user);
         storage.setSessionId(AuthUtils.generateSessionId());
         
-        // Verify storage worked
-        const storedTokens = storage.getTokens();
-        const storedUser = storage.getUser();
-        console.log('✅ Storage verification:', {
-          tokensStored: !!storedTokens,
-          userStored: !!storedUser,
-          accessToken: storedTokens?.accessToken ? 'present' : 'missing',
-          refreshToken: storedTokens?.refreshToken ? 'present' : 'missing'
-        });
-        console.log('🔍 Stored user data:', storedUser);
-        console.log('🔍 Stored user organisationId:', storedUser?.organisationId);
-
         // Update state
-        console.log('🔄 Dispatching SET_USER action with:', result.user);
         dispatch({ type: AuthActionType.SET_USER, payload: result.user });
         dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
 
@@ -316,13 +259,9 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         // Setup automatic token refresh
         setupTokenRefresh();
 
-        console.log('✅ Login successful - redirect will be handled by login page');
-
       } else if (result.requiresMFA) {
-        console.log('🔐 MFA required');
         // MFA handling will be done by the calling component
       } else {
-        console.log('❌ Login failed:', result.error);
         dispatch({ type: AuthActionType.SET_ERROR, payload: result.error });
       }
 
@@ -330,8 +269,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       return result;
 
     } catch (error) {
-      console.error('❌ Login error:', error);
-      
       const authError = AuthUtils.createAuthError(
         'LOGIN_ERROR',
         'Login failed due to an unexpected error',
@@ -350,7 +287,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
    */
   const handleLogout = useCallback(async (options: LogoutOptions = {}): Promise<void> => {
     try {
-      console.log('🚪 Starting logout process...');
       dispatch({ type: AuthActionType.SET_LOADING, payload: true });
 
       // Call server logout
@@ -379,8 +315,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         activityIntervalRef.current = undefined;
       }
 
-      console.log('✅ Logout successful');
-
       // Redirect if specified
       if (options.redirect) {
         router.replace(options.redirect);
@@ -389,8 +323,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       }
 
     } catch (error) {
-      console.error('❌ Logout error:', error);
-      
       // Even if server logout fails, clear local data
       storage.clear();
       dispatch({ type: AuthActionType.LOGOUT });
@@ -419,7 +351,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     // Check for token refresh every minute
     refreshIntervalRef.current = setInterval(async () => {
       if (storage.needsTokenRefresh() && !state.isRefreshing) {
-        console.log('⏰ Automatic token refresh triggered');
         await handleTokenRefresh();
       }
     }, 60 * 1000); // Check every minute
@@ -477,7 +408,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     const handleTokenChanged = (data: any) => {
       if (!data.newValue && state.isAuthenticated) {
         // Token was removed, logout
-        console.log('🔄 Token removed in another tab, logging out');
         dispatch({ type: AuthActionType.LOGOUT });
       }
     };
@@ -485,7 +415,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     const handleUserChanged = (data: any) => {
       if (data.newValue && state.isAuthenticated) {
         // User data updated in another tab
-        console.log('🔄 User data updated in another tab');
         dispatch({ type: AuthActionType.SET_USER, payload: data.newValue });
       }
     };
@@ -679,7 +608,6 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
  */
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  console.log('useAuth called', context);
   
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

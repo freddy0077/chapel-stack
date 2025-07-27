@@ -10,6 +10,8 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { humanizeError } from "@/utils/humanizeError";
 import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
+import { getGhanaRegionOptions } from "@/utils/ghanaRegions";
+import { getGhanaCountryOptions } from "@/utils/ghanaCountry";
 
 // Define family member type
 type FamilyMember = {
@@ -29,10 +31,7 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
   const router = useRouter();
   const { state } = useAuth();
   const user = state.user;
-  console.log("User from AddMemberModal:", user);
   const { organisationId, branchId } = useOrganisationBranch();
-  console.log("Branch ID:", branchId);
-  console.log("Organisation ID:", organisationId);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -80,7 +79,7 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
     if (!formData.lastName.trim()) errors.lastName = "Last name is required";
     if (!formData.email.trim()) errors.email = "Email is required";
     if (!formData.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
-    if (!formData.address.trim()) errors.address = "Address is required";
+    if (!formData.address.trim()) errors.address = "Street address is required";
     if (!formData.city.trim()) errors.city = "City is required";
     if (!formData.state.trim()) errors.state = "Region is required";
     if (!formData.country.trim()) errors.country = "Country is required";
@@ -163,6 +162,42 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
       });
       setShowSuccessNotification(true);
       toast.success("Member added successfully!");
+      
+      // Reset form after successful submission
+      setFormData({
+        firstName: "",
+        lastName: "",
+        middleName: "",
+        email: "",
+        phoneNumber: "",
+        address: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
+        dateOfBirth: "",
+        gender: "",
+        maritalStatus: "",
+        occupation: "",
+        employerName: "",
+        status: "ACTIVE",
+        membershipDate: "",
+        baptismDate: "",
+        confirmationDate: "",
+        customFields: "",
+        privacySettings: "",
+        notes: "",
+        userId: "",
+        spouseId: "",
+        parentId: ""
+      });
+      setFamilyMembers([]);
+      setFormErrors({});
+      setSelectedBranchId("");
+      
+      // Reset button state to allow immediate reuse
+      setIsSubmitting(false);
+      
       setTimeout(() => {
         setShowSuccessNotification(false);
         onClose();
@@ -305,8 +340,15 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
                       {renderError("phoneNumber")}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Address<span className="text-red-500">*</span></label>
-                      <input name="address" value={formData.address} onChange={handleChange} className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" required />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Street Address<span className="text-red-500">*</span></label>
+                      <input 
+                        name="address" 
+                        value={formData.address} 
+                        onChange={handleChange} 
+                        className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" 
+                        placeholder="Enter street address"
+                        required 
+                      />
                       {renderError("address")}
                     </div>
                     <div>
@@ -316,7 +358,20 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Region<span className="text-red-500">*</span></label>
-                      <input name="state" value={formData.state} onChange={handleChange} className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" required />
+                      <select 
+                        name="state" 
+                        value={formData.state} 
+                        onChange={handleChange} 
+                        className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" 
+                        required
+                      >
+                        <option value="">Select a region</option>
+                        {getGhanaRegionOptions().map((region) => (
+                          <option key={region.value} value={region.value}>
+                            {region.label}
+                          </option>
+                        ))}
+                      </select>
                       {renderError("state")}
                     </div>
                     <div>
@@ -326,7 +381,20 @@ export default function AddMemberModal({ isOpen, onClose, onMemberAdded }: AddMe
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Country<span className="text-red-500">*</span></label>
-                      <input name="country" value={formData.country} onChange={handleChange} className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" required />
+                      <select 
+                        name="country" 
+                        value={formData.country} 
+                        onChange={handleChange} 
+                        className="block w-full rounded-full border border-gray-200 py-2 px-4 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-base shadow-sm" 
+                        required
+                      >
+                        <option value="">Select a country</option>
+                        {getGhanaCountryOptions().map((country) => (
+                          <option key={country.value} value={country.value}>
+                            {country.label}
+                          </option>
+                        ))}
+                      </select>
                       {renderError("country")}
                     </div>
                   </div>

@@ -67,11 +67,7 @@ export default function ExpiredOrganizationsManagement() {
   const plans = plansData?.subscriptionPlans || [];
 
   // Debug logging to check organization data
-  console.log('🔍 Debug - Organizations data:', organizations);
-  console.log('🔍 Debug - Number of organizations:', organizations.length);
   if (organizations.length > 0) {
-    console.log('🔍 Debug - First organization:', organizations[0]);
-    console.log('🔍 Debug - First organization ID:', organizations[0]?.id);
   }
 
   // Filter expired organizations
@@ -112,10 +108,8 @@ export default function ExpiredOrganizationsManagement() {
   };
 
   const generateRenewalLink = (orgId: string) => {
-    console.log('🔍 Debug - Generating renewal link for orgId:', orgId);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const link = `${baseUrl}/renew/${orgId}`;
-    console.log('🔍 Debug - Generated renewal link:', link);
     setRenewalLink(link);
     setShowRenewalLinkModal(true);
   };

@@ -90,7 +90,6 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
 
       // Ready
       newPlayer.addListener('ready', ({ device_id }) => {
-        console.log('Spotify Web Playback SDK ready with Device ID:', device_id);
         setDeviceId(device_id);
         setPlayerReady(true);
         setPlayer(newPlayer);
@@ -98,7 +97,6 @@ export default function SpotifyPlayer({ trackUri, showControls = true }: Spotify
 
       // Not Ready
       newPlayer.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
         setPlayerReady(false);
       });
 

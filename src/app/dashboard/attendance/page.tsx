@@ -55,6 +55,7 @@ export default function AttendanceDashboard() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'event' | 'session'>('event');
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [detailsModalSessionId, setDetailsModalSessionId] = useState<string | null>(null);
   const [detailsModalSessionName, setDetailsModalSessionName] = useState<string>("");
@@ -93,14 +94,24 @@ export default function AttendanceDashboard() {
     }
   });
 
-  // Handler for creating a new event
+  // Handler for creating a new event or session
   const handleCreateNewEvent = async (event: NewEventInput) => {
     setCreatingEvent(true);
     setCreateError(null);
 
-    if (orgBranchFilter.branchId && !orgBranchFilter.organisationId) {
+    // Ensure we have proper branchId and organisationId
+    const branchId = event.branchId || orgBranchFilter.branchId;
+    const organisationId = event.organisationId || orgBranchFilter.organisationId;
+
+    if (!branchId) {
       setCreatingEvent(false);
-      setCreateError("No branch or organization selected. Cannot create attendance event.");
+      setCreateError("No branch selected. Cannot create attendance session.");
+      return;
+    }
+
+    if (!organisationId) {
+      setCreatingEvent(false);
+      setCreateError("No organization found. Cannot create attendance session.");
       return;
     }
 
@@ -114,17 +125,10 @@ export default function AttendanceDashboard() {
         date: startDateTime,
         startTime: startDateTime,
         endTime: endDateTime,
+        branchId,
+        organisationId,
       };
 
-      if (orgBranchFilter.branchId) {
-        input.branchId = orgBranchFilter.branchId;
-      }
-
-      if (orgBranchFilter.organisationId) {
-        input.organisationId = orgBranchFilter.organisationId;
-      } else {
-        delete input.organisationId;
-      }
 
       await createAttendanceSession({
         variables: { input },
@@ -132,10 +136,14 @@ export default function AttendanceDashboard() {
 
       setCreatingEvent(false);
       setIsNewEventModalOpen(false);
+      setModalMode('event'); // Reset mode
       if (refetch) refetch();
+      
+      // Show success message
     } catch (err: any) {
+      console.error('Error creating attendance session:', err);
       setCreatingEvent(false);
-      setCreateError(err?.message || "Failed to create event.");
+      setCreateError(err?.message || `Failed to create ${modalMode === 'session' ? 'session' : 'event'}.`);
     }
   };
 
@@ -394,13 +402,27 @@ export default function AttendanceDashboard() {
                   Take Attendance
                 </Link>
 
-                <button
-                  onClick={() => setIsNewEventModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  New Session
-                </button>
+                {/*<button*/}
+                {/*  onClick={() => {*/}
+                {/*    setModalMode('session');*/}
+                {/*    setIsNewEventModalOpen(true);*/}
+                {/*  }}*/}
+                {/*  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"*/}
+                {/*>*/}
+                {/*  <PlusIcon className="h-5 w-5" />*/}
+                {/*  New Session*/}
+                {/*</button>*/}
+
+                {/*<button*/}
+                {/*  onClick={() => {*/}
+                {/*    setModalMode('event');*/}
+                {/*    setIsNewEventModalOpen(true);*/}
+                {/*  }}*/}
+                {/*  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"*/}
+                {/*>*/}
+                {/*  <PlusIcon className="h-5 w-5" />*/}
+                {/*  New Event*/}
+                {/*</button>*/}
 
                 <button
                   onClick={() => setIsDownloadModalOpen(true)}
@@ -421,15 +443,12 @@ export default function AttendanceDashboard() {
               error={null}
               onViewRecord={(record) => {
                 // Handle view record action
-                console.log('View record:', record);
               }}
               onEditRecord={(record) => {
                 // Handle edit record action
-                console.log('Edit record:', record);
               }}
               onDeleteRecord={(record) => {
                 // Handle delete record action
-                console.log('Delete record:', record);
               }}
               viewMode={viewMode === "grid" ? "cards" : "table"}
               className="space-y-6"
@@ -446,7 +465,10 @@ export default function AttendanceDashboard() {
                   : "Get started by creating a new session or event."}
               </p>
               <button
-                onClick={() => setIsNewEventModalOpen(true)}
+                onClick={() => {
+                  setModalMode('session');
+                  setIsNewEventModalOpen(true);
+                }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <PlusIcon className="h-5 w-5" />
@@ -650,9 +672,10 @@ export default function AttendanceDashboard() {
         <NewEventModal
           isOpen={isNewEventModalOpen}
           onClose={() => setIsNewEventModalOpen(false)}
-          onSubmit={handleCreateNewEvent}
+          onCreate={handleCreateNewEvent}
           loading={creatingEvent}
           error={createError}
+          mode={modalMode}
         />
 
         <AttendanceSessionDetailsModal

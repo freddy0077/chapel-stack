@@ -146,20 +146,17 @@ export const useOnboardingState = ({ branchId, onComplete }: { branchId: string 
         if (savedModules) {
           try {
             const parsedModules = JSON.parse(savedModules);
-            console.log('Restoring modules from local storage:', parsedModules);
             setSelectedModules(parsedModules);
           } catch (err) {
             console.error('Failed to parse saved modules:', err);
           }
         } else {
-          console.log('No saved modules found in local storage');
         }
         
         // If the current step is past MODULE_QUICK_START, we know the user has completed this step
         const moduleQuickStartIndex = backendStepToLocalIndex(OnboardingStep.MODULE_QUICK_START);
         const currentStepIndex = backendStepToLocalIndex(backendStep);
         if (currentStepIndex > moduleQuickStartIndex) {
-          console.log('User has completed module selection step');
         }
       }
     } catch (err) {
@@ -248,7 +245,6 @@ export const useOnboardingState = ({ branchId, onComplete }: { branchId: string 
         const storageKey = `onboarding_modules_${branchId}`;
         try {
           localStorage.setItem(storageKey, JSON.stringify(selectedModules));
-          console.log('Saved selected modules to local storage:', selectedModules);
         } catch (err) {
           console.error('Failed to save modules to local storage:', err);
         }
@@ -276,7 +272,6 @@ export const useOnboardingState = ({ branchId, onComplete }: { branchId: string 
       ) {
         try {
           localStorage.setItem('onboardingAdminBranchId', response.data.completeOnboardingStep.branchId);
-          console.log('Stored branchId for admin setup:', response.data.completeOnboardingStep.branchId);
         } catch (err) {
           console.error('Failed to store branchId for admin setup:', err);
         }

@@ -61,7 +61,6 @@ export default function MembersRedesigned() {
   const { state } = useAuth();
   const user = state.user;
   const { organisationId, branchId } = useOrganisationBranch();
-  console.log("User from Members page:", organisationId);
   
   // Get organization/branch filter based on user role
   const orgBranchFilter = useOrganizationBranchFilter();
