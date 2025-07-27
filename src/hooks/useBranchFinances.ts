@@ -34,11 +34,11 @@ const GET_FINANCIAL_DATA = gql`
       id
       name
     }
-    contributionTypes(organisationId: $organisationId) {
+    contributionTypes {
       id
       name
     }
-    paymentMethods(organisationId: $organisationId) {
+    paymentMethods {
       id
       name
     }

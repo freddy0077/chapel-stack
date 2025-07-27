@@ -6,14 +6,10 @@ export function useFinanceReferenceData(organisationId: string, branchId?: strin
     variables: { organisationId, branchId }, 
     skip: !organisationId 
   });
-  const { data: typesData, loading: typesLoading, error: typesError } = useQuery(GET_CONTRIBUTION_TYPES, {
-    variables: { organisationId, branchId },
-    skip: !organisationId
-  });
-  const { data: methodsData, loading: methodsLoading, error: methodsError } = useQuery(GET_PAYMENT_METHODS, {
-    variables: { organisationId },
-    skip: !organisationId
-  });
+  
+  // Contribution types and payment methods are now global (no filtering by org/branch)
+  const { data: typesData, loading: typesLoading, error: typesError } = useQuery(GET_CONTRIBUTION_TYPES);
+  const { data: methodsData, loading: methodsLoading, error: methodsError } = useQuery(GET_PAYMENT_METHODS);
 
   return {
     funds: fundsData?.funds ?? [],

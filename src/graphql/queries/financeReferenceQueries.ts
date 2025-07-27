@@ -12,8 +12,8 @@ export const GET_FUNDS = gql`
 `;
 
 export const GET_CONTRIBUTION_TYPES = gql`
-  query GetContributionTypes($organisationId: String, $branchId: String) {
-    contributionTypes(organisationId: $organisationId, branchId: $branchId) {
+  query GetContributionTypes {
+    contributionTypes {
       id
       name
       description
@@ -22,8 +22,8 @@ export const GET_CONTRIBUTION_TYPES = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query GetPaymentMethods($organisationId: String) {
-    paymentMethods(organisationId: $organisationId) {
+  query GetPaymentMethods {
+    paymentMethods {
       id
       name
       description

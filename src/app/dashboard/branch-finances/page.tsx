@@ -592,7 +592,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
     }
   }, [branchId, organisationId, refetchEvents]);
 
-  const { contributionTypes, paymentMethods, loading: refDataLoading } = useFinanceReferenceData(organisationId);
+  const { contributionTypes, paymentMethods, loading: refDataLoading } = useFinanceReferenceData();
 
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
