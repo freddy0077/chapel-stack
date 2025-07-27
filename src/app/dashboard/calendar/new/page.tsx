@@ -114,6 +114,7 @@ export default function CreateEvent() {
     recurringFrequency: "weekly",
     recurringInterval: 1,
     recurringDays: [0], // Sunday by default
+    recurringEndDate: "", // Add missing field
     resources: [""],
     volunteerRoles: [{ role: "", count: 1 }],
     expectedAttendees: 0
@@ -407,23 +408,45 @@ export default function CreateEvent() {
     const endDateTime = formFields.date && formFields.endTime
       ? new Date(`${formFields.date}T${formFields.endTime}`).toISOString()
       : new Date(new Date(startDateTime).getTime() + 3600000).toISOString();
-    let recurrencePattern = "";
-    if (eventData.isRecurring) {
-      recurrencePattern = `${formFields.recurringFrequency}:${formFields.recurringInterval}:${formFields.recurringDays.join(',')}`;
-    }
-    const base = {
+    
+    const base: any = {
       title: eventData.title || "",
       description: eventData.description || "",
       type: eventData.type || EventType.OTHER,
       startDateTime,
       endDateTime,
       location: eventData.location || "",
-      isRecurring: eventData.isRecurring || false,
-      recurrencePattern: eventData.isRecurring ? recurrencePattern : undefined,
       capacity: eventData.capacity || 0,
       registrationRequired: eventData.registrationRequired || false,
       registrationDeadline: eventData.registrationDeadline,
     };
+
+    // Only include recurring fields if the event is actually recurring
+    if (eventData.isRecurring) {
+      const recurrencePattern = `${formFields.recurringFrequency}:${formFields.recurringInterval}:${formFields.recurringDays.join(',')}`;
+      
+      // Map frontend recurring fields to backend format
+      const recurringFields = {
+        isRecurring: true,
+        recurrenceType: formFields.recurringFrequency.toUpperCase() as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
+        recurrenceInterval: formFields.recurringInterval,
+        recurrenceEndDate: formFields.recurringEndDate && formFields.recurringEndDate.trim() ? new Date(formFields.recurringEndDate).toISOString() : undefined,
+        recurrenceDaysOfWeek: formFields.recurringDays.map(day => {
+          const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+          return days[day];
+        }),
+        recurrencePattern: recurrencePattern,
+      };
+      
+      // Only include fields that have values - improved filtering
+      Object.keys(recurringFields).forEach(key => {
+        const value = recurringFields[key];
+        if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
+          base[key] = value;
+        }
+      });
+    }
+
     // Prefer branchId if present, else organisationId for super_admin
     if (orgBranchFilter.branchId) {
       return { ...base, branchId: orgBranchFilter.branchId };

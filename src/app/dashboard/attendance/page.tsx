@@ -24,6 +24,7 @@ import {
 import AttendanceReportModal from "./components/AttendanceReportModal";
 import NewEventModal, { NewEventInput } from "./components/NewEventModal";
 import AttendanceSessionDetailsModal from "./components/AttendanceSessionDetailsModal";
+import PaginatedAttendanceRecords from "./components/PaginatedAttendanceRecords";
 import AttendanceReportDownloadModal from "@/components/attendance/AttendanceReportDownloadModal";
 import { useFilteredAttendanceSessions, useAllAttendanceRecords } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
@@ -31,6 +32,8 @@ import { useMutation, useQuery, gql } from "@apollo/client";
 import { CREATE_ATTENDANCE_SESSION } from "@/graphql/queries/attendanceQueries";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useOrganizationBranchFilter } from '@/hooks';
+import Pagination from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 
 // Query to get events for the dashboard with correct parameter types
 const GET_EVENTS = gql`
@@ -48,7 +51,7 @@ const GET_EVENTS = gql`
 
 export default function AttendanceDashboard() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
-  const [activeTab, setActiveTab] = useState<"sessions" | "events" | "all">("all");
+  const [activeTab, setActiveTab] = useState<"sessions" | "events" | "all" | "records">("all");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
@@ -136,63 +139,57 @@ export default function AttendanceDashboard() {
     }
   };
 
-  // Combine sessions and events for unified display
+  // Combined data for sessions and events with pagination
   const combinedItems = useMemo(() => {
-    const sessionItems = sessions.map((session: any) => ({
+    const sessionItems = sessions.map((session) => ({
       id: session.id,
-      title: session.name || "Attendance Session",
-      type: "session",
-      category: session.type || "other",
-      date: session.startTime ? new Date(session.startTime) : new Date(session.date || ""),
-      startTime: session.startTime,
-      endTime: session.endTime,
+      title: session.name,
+      type: "session" as const,
+      date: new Date(session.date),
       location: session.location,
-      attendanceCount: attendanceRecords.filter(r => r.session?.id === session.id).length,
-      raw: session,
+      category: session.category,
+      attendanceCount: session.attendanceRecords?.length || 0,
     }));
 
-    const eventItems = events.map((event: any) => ({
+    const eventItems = events.map((event) => ({
       id: event.id,
       title: event.title,
-      type: "event",
-      category: event.category || "other",
+      type: "event" as const,
       date: new Date(event.startDate),
-      startTime: event.startDate,
-      endTime: event.endDate,
       location: event.location,
-      attendanceCount: attendanceRecords.filter(r => r.event?.id === event.id).length,
-      raw: event,
+      category: event.category,
+      attendanceCount: 0, // Events don't have direct attendance count in this query
     }));
 
     return [...sessionItems, ...eventItems];
-  }, [sessions, events, attendanceRecords]);
+  }, [sessions, events]);
 
-  // Filter items based on active tab and search/filter criteria
+  // Filter items based on active tab, search, and filters
   const filteredItems = useMemo(() => {
-    return combinedItems
-      .filter(item => {
-        // Tab filtering
-        if (activeTab === "sessions" && item.type !== "session") return false;
-        if (activeTab === "events" && item.type !== "event") return false;
-        
-        // Search filtering
-        if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-        
-        // Type filtering
-        if (filterType && item.category !== filterType) return false;
-        
-        // Date range filtering
-        if (dateRange.start && dateRange.end) {
-          const itemDate = item.date;
-          const startDate = new Date(dateRange.start);
-          const endDate = new Date(dateRange.end);
-          if (itemDate < startDate || itemDate > endDate) return false;
-        }
-        
-        return true;
-      })
-      .sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [combinedItems, activeTab, searchTerm, filterType, dateRange]);
+    return combinedItems.filter((item) => {
+      // Tab filtering
+      if (activeTab === "sessions" && item.type !== "session") return false;
+      if (activeTab === "events" && item.type !== "event") return false;
+      
+      // Search filtering
+      if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      
+      // Date range filtering
+      if (dateRange.start && item.date < new Date(dateRange.start)) return false;
+      if (dateRange.end && item.date > new Date(dateRange.end)) return false;
+      
+      // Type filtering
+      if (filterType && item.category !== filterType) return false;
+      
+      return true;
+    });
+  }, [combinedItems, activeTab, searchTerm, dateRange, filterType]);
+
+  // Pagination for sessions and events
+  const pagination = usePagination(filteredItems, {
+    initialItemsPerPage: 12,
+    totalItems: filteredItems.length,
+  });
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -338,6 +335,16 @@ export default function AttendanceDashboard() {
                   >
                     Events ({stats.totalEvents})
                   </button>
+                  <button
+                    onClick={() => setActiveTab("records")}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeTab === "records"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    Records ({stats.totalAttendees})
+                  </button>
                 </div>
 
                 {/* Search */}
@@ -407,7 +414,27 @@ export default function AttendanceDashboard() {
           </div>
 
           {/* Content Display */}
-          {filteredItems.length === 0 ? (
+          {activeTab === "records" ? (
+            <PaginatedAttendanceRecords
+              records={attendanceRecords}
+              loading={false}
+              error={null}
+              onViewRecord={(record) => {
+                // Handle view record action
+                console.log('View record:', record);
+              }}
+              onEditRecord={(record) => {
+                // Handle edit record action
+                console.log('Edit record:', record);
+              }}
+              onDeleteRecord={(record) => {
+                // Handle delete record action
+                console.log('Delete record:', record);
+              }}
+              viewMode={viewMode === "grid" ? "cards" : "table"}
+              className="space-y-6"
+            />
+          ) : filteredItems.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
               <div className="text-gray-400 mb-4">
                 <CalendarIcon className="h-16 w-16 mx-auto" />
@@ -427,153 +454,186 @@ export default function AttendanceDashboard() {
               </button>
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map((item) => (
-                <div key={`${item.type}-${item.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.type === "session" 
-                              ? "bg-blue-100 text-blue-800" 
-                              : "bg-purple-100 text-purple-800"
-                          }`}>
-                            {item.type === "session" ? "Session" : "Event"}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {item.category}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {item.title}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-500 mb-2">
-                          <CalendarIcon className="h-4 w-4 mr-1" />
-                          {item.date.toLocaleDateString()}
-                        </div>
-                        {item.location && (
-                          <div className="flex items-center text-sm text-gray-500 mb-2">
-                            <MapPinIcon className="h-4 w-4 mr-1" />
-                            {item.location}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pagination.paginatedData.map((item) => (
+                  <div key={`${item.type}-${item.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              item.type === "session" 
+                                ? "bg-blue-100 text-blue-800" 
+                                : "bg-purple-100 text-purple-800"
+                            }`}>
+                              {item.type === "session" ? "Session" : "Event"}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {item.category}
+                            </span>
                           </div>
-                        )}
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {item.title}
+                          </h3>
+                          <div className="flex items-center text-sm text-gray-500 mb-2">
+                            <CalendarIcon className="h-4 w-4 mr-1" />
+                            {item.date.toLocaleDateString()}
+                          </div>
+                          {item.location && (
+                            <div className="flex items-center text-sm text-gray-500 mb-2">
+                              <MapPinIcon className="h-4 w-4 mr-1" />
+                              {item.location}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <UsersIcon className="h-4 w-4 mr-1" />
-                        {item.attendanceCount} attendees
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (item.type === "session") {
-                              setDetailsModalSessionId(item.id);
-                              setDetailsModalSessionName(item.title);
-                              setDetailsModalOpen(true);
-                            }
-                          }}
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                          title="View Details"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </button>
-                        <Link
-                          href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
-                          className="p-2 text-indigo-400 hover:text-indigo-600 transition-colors"
-                          title="Take Attendance"
-                        >
-                          <CheckIcon className="h-4 w-4" />
-                        </Link>
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <UsersIcon className="h-4 w-4 mr-1" />
+                          {item.attendanceCount} attendees
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              if (item.type === "session") {
+                                setDetailsModalSessionId(item.id);
+                                setDetailsModalSessionName(item.title);
+                                setDetailsModalOpen(true);
+                              }
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                            title="View Details"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                          </button>
+                          <Link
+                            href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
+                            className="p-2 text-indigo-400 hover:text-indigo-600 transition-colors"
+                            title="Take Attendance"
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              
+              {/* Pagination for Grid View */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.totalItems}
+                  itemsPerPage={pagination.itemsPerPage}
+                  onPageChange={pagination.goToPage}
+                  onItemsPerPageChange={pagination.setItemsPerPage}
+                  showItemsPerPage={true}
+                  showInfo={true}
+                />
+              </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Location
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Attendance
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredItems.map((item) => (
-                      <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{item.title}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.type === "session" 
-                              ? "bg-blue-100 text-blue-800" 
-                              : "bg-purple-100 text-purple-800"
-                          }`}>
-                            {item.type === "session" ? "Session" : "Event"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {item.date.toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {item.location || "—"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {item.attendanceCount} attendees
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            {item.type === "session" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Location
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Attendees
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {pagination.paginatedData.map((item) => (
+                        <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{item.title}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              item.type === "session" 
+                                ? "bg-blue-100 text-blue-800" 
+                                : "bg-purple-100 text-purple-800"
+                            }`}>
+                              {item.type === "session" ? "Session" : "Event"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {item.date.toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {item.location || "—"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {item.attendanceCount}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => {
-                                  setDetailsModalSessionId(item.id);
-                                  setDetailsModalSessionName(item.title);
-                                  setDetailsModalOpen(true);
+                                  if (item.type === "session") {
+                                    setDetailsModalSessionId(item.id);
+                                    setDetailsModalSessionName(item.title);
+                                    setDetailsModalOpen(true);
+                                  }
                                 }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-indigo-600 hover:text-indigo-900 p-1 rounded transition-colors"
                                 title="View Details"
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </button>
-                            )}
-                            <Link
-                              href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
-                              className="text-indigo-600 hover:text-indigo-900 transition-colors"
-                              title="Take Attendance"
-                            >
-                              <CheckIcon className="h-4 w-4" />
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                              <Link
+                                href={`/dashboard/attendance/take?${item.type}Id=${item.id}`}
+                                className="text-green-600 hover:text-green-900 p-1 rounded transition-colors"
+                                title="Take Attendance"
+                              >
+                                <CheckIcon className="h-4 w-4" />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Pagination for Table View */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.totalItems}
+                  itemsPerPage={pagination.itemsPerPage}
+                  onPageChange={pagination.goToPage}
+                  onItemsPerPageChange={pagination.setItemsPerPage}
+                  showItemsPerPage={true}
+                  showInfo={true}
+                />
               </div>
             </div>
           )}
+          <Pagination pagination={pagination} />
         </div>
 
         {/* Modals */}
