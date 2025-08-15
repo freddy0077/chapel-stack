@@ -454,6 +454,15 @@ export interface MemberListProps {
 export type {
   Member,
   MemberFilters,
+  FilterOption,
+  FilterGroup,
+  CommunicationPreferences,
+  ViewMode,
+  BulkActionType,
+  SortField,
+  SortDirection,
+  SortConfig,
+  PaginationInfo,
   MemberStatistics,
   CreateMemberInput,
   UpdateMemberInput,
@@ -461,22 +470,8 @@ export type {
   MemberSearchParams,
   MemberQueryResult,
   MemberUIState,
-  MemberCardProps,
-  MemberListProps,
   ModalProps,
   MemberModalProps,
-  PaginationInfo,
-  SortConfig,
-  CommunicationPreferences
-};
-
-export {
-  Gender,
-  MaritalStatus,
-  MembershipStatus,
-  MemberStatus,
-  MembershipType,
-  PrivacyLevel,
-  ViewMode,
-  BulkActionType
+  MemberCardProps,
+  MemberListProps,
 };
