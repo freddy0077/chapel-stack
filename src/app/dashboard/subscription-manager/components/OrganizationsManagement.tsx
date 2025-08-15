@@ -11,16 +11,249 @@ import {
   TrashIcon,
   BuildingOfficeIcon,
   ExclamationTriangleIcon,
-  CreditCardIcon
+  CreditCardIcon,
+  ChevronDownIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+  ArrowPathIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  UserGroupIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getOrganizationStatusBadgeColor, formatDate } from '../utils/formatters';
 import CreateOrganizationModal from './CreateOrganizationModal';
 import { GET_SUBSCRIPTION_ORGANIZATIONS } from '@/graphql/subscription-management';
 import { useCreateOrganizationSubscription } from '@/hooks/subscription/useOrganizationSubscription';
+
+// Modern Filter Component
+function ModernFilters({ 
+  searchTerm, 
+  setSearchTerm, 
+  statusFilter, 
+  setStatusFilter, 
+  subscriptionFilter, 
+  setSubscriptionFilter,
+  onRefresh,
+  loading 
+}: {
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  statusFilter: string;
+  setStatusFilter: (value: string) => void;
+  subscriptionFilter: string;
+  setSubscriptionFilter: (value: string) => void;
+  onRefresh: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search organizations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Organization Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="suspended">Suspended</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Subscription Filter */}
+          <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Subscription Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subscriptions</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="trial">Trial</SelectItem>
+              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={loading}
+            className="flex items-center space-x-2"
+          >
+            <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modern Organization Card Component
+function OrganizationCard({ 
+  organization, 
+  onCreateSubscription, 
+  renewalLoading, 
+  renewalOrgId 
+}: {
+  organization: any;
+  onCreateSubscription: (orgId: string) => void;
+  renewalLoading: boolean;
+  renewalOrgId: string | null;
+}) {
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
+      case 'suspended':
+        return <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />;
+      case 'cancelled':
+        return <XCircleIcon className="h-5 w-5 text-red-500" />;
+      default:
+        return <ClockIcon className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const getSubscriptionStatusBadge = (subscription: any) => {
+    if (!subscription) {
+      return <Badge variant="secondary">No Subscription</Badge>;
+    }
+
+    switch (subscription.status?.toLowerCase()) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case 'trial':
+        return <Badge className="bg-blue-100 text-blue-800">Trial</Badge>;
+      case 'expired':
+        return <Badge className="bg-red-100 text-red-800">Expired</Badge>;
+      case 'cancelled':
+        return <Badge className="bg-gray-100 text-gray-800">Cancelled</Badge>;
+      default:
+        return <Badge variant="secondary">{subscription.status}</Badge>;
+    }
+  };
+
+  return (
+    <Card className="p-6 hover:shadow-lg transition-all duration-200 border-l-4 border-l-indigo-500">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          {/* Organization Header */}
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <BuildingOfficeIcon className="h-6 w-6 text-indigo-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{organization.name}</h3>
+              <div className="flex items-center space-x-2 mt-1">
+                {getStatusIcon(organization.status)}
+                <span className="text-sm text-gray-600">
+                  {organization.status || 'Unknown'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Organization Details */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="text-sm font-medium text-gray-900">{organization.email || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Phone</p>
+              <p className="text-sm font-medium text-gray-900">{organization.phoneNumber || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Created</p>
+              <p className="text-sm font-medium text-gray-900">
+                {organization.createdAt ? formatDate(organization.createdAt) : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Members</p>
+              <div className="flex items-center space-x-1">
+                <UserGroupIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-sm font-medium text-gray-900">
+                  {organization.memberCount || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Subscription Status */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <CreditCardIcon className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-900">Subscription Status</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  {getSubscriptionStatusBadge(organization.subscription)}
+                  {organization.subscription?.plan && (
+                    <span className="text-xs text-gray-500">
+                      ({organization.subscription.plan.name})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Subscription Actions */}
+            <div className="flex items-center space-x-2">
+              {!organization.subscription ? (
+                <Button
+                  size="sm"
+                  onClick={() => onCreateSubscription(organization.id)}
+                  disabled={renewalLoading && renewalOrgId === organization.id}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {renewalLoading && renewalOrgId === organization.id ? (
+                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <PlusIcon className="h-4 w-4" />
+                  )}
+                  <span className="ml-1">Create</span>
+                </Button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm">
+                    <EyeIcon className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function OrganizationsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +261,7 @@ export default function OrganizationsManagement() {
   const [subscriptionFilter, setSubscriptionFilter] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [renewalOrgId, setRenewalOrgId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Hook for creating/renewing subscriptions
   const { createOrganizationSubscription, loading: renewalLoading } = useCreateOrganizationSubscription();
@@ -48,248 +282,169 @@ export default function OrganizationsManagement() {
   const filteredOrganizations = useMemo(() => {
     return organizations.filter((org: any) => {
       const matchesSearch = org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           org.email?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || org.status === statusFilter;
-      const matchesSubscription = subscriptionFilter === 'all' || org.subscription?.status === subscriptionFilter;
+        org.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || org.status?.toLowerCase() === statusFilter;
+      
+      const matchesSubscription = subscriptionFilter === 'all' || 
+        (subscriptionFilter === 'active' && org.subscription?.status === 'ACTIVE') ||
+        (subscriptionFilter === 'trial' && org.subscription?.status === 'TRIALING') ||
+        (subscriptionFilter === 'expired' && (!org.subscription || org.subscription?.status === 'EXPIRED')) ||
+        (subscriptionFilter === 'cancelled' && org.subscription?.status === 'CANCELLED');
+
       return matchesSearch && matchesStatus && matchesSubscription;
     });
   }, [organizations, searchTerm, statusFilter, subscriptionFilter]);
 
+  const handleCreateSubscription = async (organizationId: string) => {
+    setRenewalOrgId(organizationId);
+    try {
+      // This would typically open a modal or navigate to subscription creation
+      console.log('Creating subscription for organization:', organizationId);
+      // await createOrganizationSubscription(organizationId, planId, options);
+      // refetch();
+    } catch (error) {
+      console.error('Failed to create subscription:', error);
+    } finally {
+      setRenewalOrgId(null);
+    }
+  };
+
+  const handleRefresh = () => {
+    refetch();
+  };
+
+  if (error) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">
+          <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading organizations</h3>
+          <p className="mt-1 text-sm text-gray-500">{error.message}</p>
+          <Button onClick={handleRefresh} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div className="flex flex-1 items-center space-x-4">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search organizations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Organizations Management</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Manage {organizations.length} organizations and their subscription status
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="h-8 w-8 p-0"
+            >
+              <Squares2X2Icon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8 w-8 p-0"
+            >
+              <ListBulletIcon className="h-4 w-4" />
+            </Button>
           </div>
           
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="all">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="SUSPENDED">Suspended</option>
-            <option value="TRIAL">Trial</option>
-          </select>
-
-          {/* Subscription Filter */}
-          <select
-            value={subscriptionFilter}
-            onChange={(e) => setSubscriptionFilter(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="all">All Subscriptions</option>
-            <option value="ACTIVE">Active</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="TRIAL">Trial</option>
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <FunnelIcon className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-          <Button variant="default" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+          <Button onClick={() => setIsCreateModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700">
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Organization
           </Button>
         </div>
       </div>
 
-      {/* Organizations Table */}
-      <Card>
-        <div className="overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Organization
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subscription
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Members
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Renewal Date
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrganizations.map((org: any) => (
-                <tr key={org.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {org.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {org.email}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge className={getOrganizationStatusBadgeColor(org.status)}>
-                      {org.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {org.subscription?.planName || 'No Plan'}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        <Badge className={getOrganizationStatusBadgeColor(org.subscription?.status || 'INACTIVE')}>
-                          {org.subscription?.status || 'NO_SUBSCRIPTION'}
-                        </Badge>
-                        {org.subscription?.status === 'EXPIRED' && (
-                          <Button variant="ghost" size="sm" onClick={() => setRenewalOrgId(org.id)}>
-                            <CreditCardIcon className="h-4 w-4 mr-2" />
-                            Renew
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {org._count?.members || 0}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(org.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {org.subscription?.currentPeriodEnd ? formatDate(org.subscription.currentPeriodEnd) : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <EyeIcon className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <PencilIcon className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600">
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Filters */}
+      <ModernFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        subscriptionFilter={subscriptionFilter}
+        setSubscriptionFilter={setSubscriptionFilter}
+        onRefresh={handleRefresh}
+        loading={loading}
+      />
 
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-              <span className="ml-2 text-gray-600">Loading organizations...</span>
-            </div>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <p className="text-red-600 mb-2">Failed to load organizations</p>
-                <Button variant="outline" size="sm" onClick={() => refetch()}>
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Retry
-                </Button>
+      {/* Organizations Grid/List */}
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="p-6">
+              <div className="animate-pulse">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-8 bg-gray-200 rounded"></div>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!loading && !error && filteredOrganizations.length === 0 && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <BuildingOfficeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">No organizations found</p>
-                <p className="text-sm text-gray-500">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters' 
-                    : 'Create your first organization to get started'
-                  }
-                </p>
-              </div>
-            </div>
-          )}
+            </Card>
+          ))}
         </div>
-      </Card>
+      ) : filteredOrganizations.length === 0 ? (
+        <Card className="p-12">
+          <div className="text-center">
+            <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No organizations found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm || statusFilter !== 'all' || subscriptionFilter !== 'all'
+                ? 'Try adjusting your search criteria.'
+                : 'Get started by creating a new organization.'}
+            </p>
+            {!searchTerm && statusFilter === 'all' && subscriptionFilter === 'all' && (
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)} 
+                className="mt-4 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Add Organization
+              </Button>
+            )}
+          </div>
+        </Card>
+      ) : (
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'space-y-4'}>
+          {filteredOrganizations.map((organization: any) => (
+            <OrganizationCard
+              key={organization.id}
+              organization={organization}
+              onCreateSubscription={handleCreateSubscription}
+              renewalLoading={renewalLoading}
+              renewalOrgId={renewalOrgId}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Create Organization Modal */}
-      <CreateOrganizationModal 
+      <CreateOrganizationModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => {
-          refetch(); // Refresh organizations list after successful creation
           setIsCreateModalOpen(false);
+          refetch();
         }}
       />
-
-      {/* Renewal Modal */}
-      {renewalOrgId && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
-                </div>
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                    Renew Organization Subscription
-                  </h3>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Are you sure you want to renew the subscription for {filteredOrganizations.find(org => org.id === renewalOrgId)?.name}?
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <Button variant="default" size="sm" onClick={() => {
-                createOrganizationSubscription({
-                  variables: {
-                    organizationId: renewalOrgId,
-                  },
-                });
-                setRenewalOrgId(null);
-              }}>
-                <CreditCardIcon className="h-4 w-4 mr-2" />
-                Renew
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setRenewalOrgId(null)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -14,6 +14,12 @@ export const CREATE_MEMBER = gql`
         id
         name
       }
+      customFields
+      memberId
+      memberIdGeneratedAt
+      cardIssued
+      cardIssuedAt
+      cardType
       createdAt
     }
   }
@@ -31,6 +37,12 @@ export const UPDATE_MEMBER = gql`
       phoneNumber
       address
       status
+      customFields
+      memberId
+      memberIdGeneratedAt
+      cardIssued
+      cardIssuedAt
+      cardType
       updatedAt
     }
   }
@@ -117,7 +129,12 @@ export const ASSIGN_RFID_CARD_TO_MEMBER = gql`
       statusChangeReason
       profileImageUrl
       notes
-      rfidCardId
+      memberId
+      customFields
+      memberIdGeneratedAt
+      cardIssued
+      cardIssuedAt
+      cardType
       branch {
         id
         name

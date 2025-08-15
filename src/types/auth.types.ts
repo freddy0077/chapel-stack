@@ -39,9 +39,35 @@ export interface UserBranch {
 export interface Member {
   id: string;
   firstName: string;
+  middleName?: string;
   lastName: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  maritalStatus?: string;
+  occupation?: string;
+  employerName?: string;
+  status: string;
+  membershipDate?: string;
+  baptismDate?: string;
+  confirmationDate?: string;
   profileImageUrl?: string;
-  status?: string;
+  branchId?: string;
+  organisationId?: string;
+  spouseId?: string;
+  parentId?: string;
+  rfidCardId?: string;
+  customFields?: any;
+  privacySettings?: any;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LoginResult {

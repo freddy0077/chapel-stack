@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
  */
 export const CREATE_EVENT = gql`
   mutation CreateEvent($input: CreateEventInput!) {
-    createEvent(input: $input) {
+    createEvent(createEventInput: $input) {
       id
       title
       description
@@ -13,6 +13,21 @@ export const CREATE_EVENT = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
       organisationId
       createdAt
@@ -26,7 +41,7 @@ export const CREATE_EVENT = gql`
  */
 export const CREATE_RECURRING_EVENT = gql`
   mutation CreateRecurringEvent($input: CreateEventInput!) {
-    createRecurringEvent(input: $input) {
+    createRecurringEvent(createEventInput: $input) {
       id
       title
       description
@@ -34,6 +49,21 @@ export const CREATE_RECURRING_EVENT = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
       organisationId
       createdAt
@@ -46,8 +76,8 @@ export const CREATE_RECURRING_EVENT = gql`
  * Mutation to update an existing event
  */
 export const UPDATE_EVENT = gql`
-  mutation UpdateEvent($input: UpdateEventInput!) {
-    updateEvent(input: $input) {
+  mutation UpdateEvent($updateEventInput: UpdateEventInput!) {
+    updateEvent(updateEventInput: $updateEventInput) {
       id
       title
       description
@@ -55,9 +85,25 @@ export const UPDATE_EVENT = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
-      createdBy
-      updatedBy
+      organisationId
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -67,7 +113,7 @@ export const UPDATE_EVENT = gql`
  */
 export const DELETE_EVENT = gql`
   mutation DeleteEvent($id: ID!) {
-    deleteEvent(id: $id) {
+    removeEvent(id: $id) {
       id
       title
     }
@@ -78,21 +124,281 @@ export const DELETE_EVENT = gql`
  * Mutation to create a new event registration
  */
 export const CREATE_EVENT_REGISTRATION = gql`
-  mutation CreateEventRegistration($input: CreateEventRegistrationInput!) {
-    createEventRegistration(input: $input) {
+  mutation CreateEventRegistration($createEventRegistrationInput: CreateEventRegistrationInput!) {
+    createEventRegistration(createEventRegistrationInput: $createEventRegistrationInput) {
       id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      guestName
+      guestEmail
+      guestPhone
       status
       registrationDate
+      numberOfGuests
+      specialRequests
+      registrationSource
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to update an event registration
+ */
+export const UPDATE_EVENT_REGISTRATION = gql`
+  mutation UpdateEventRegistration($updateEventRegistrationInput: UpdateEventRegistrationInput!) {
+    updateEventRegistration(updateEventRegistrationInput: $updateEventRegistrationInput) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      approvalStatus
+      approvedBy
+      approvalDate
+      rejectionReason
+      registrationSource
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to delete an event registration
+ */
+export const DELETE_EVENT_REGISTRATION = gql`
+  mutation DeleteEventRegistration($id: ID!) {
+    removeEventRegistration(id: $id) {
+      id
+      eventId
+      memberId
+    }
+  }
+`;
+
+/**
+ * Mutation to create a new event RSVP
+ */
+export const CREATE_EVENT_RSVP = gql`
+  mutation CreateEventRSVP($createEventRSVPInput: CreateEventRSVPInput!) {
+    createEventRSVP(createEventRSVPInput: $createEventRSVPInput) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      rsvpDate
+      numberOfGuests
+      message
+      rsvpSource
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to update an event RSVP
+ */
+export const UPDATE_EVENT_RSVP = gql`
+  mutation UpdateEventRSVP($updateEventRSVPInput: UpdateEventRSVPInput!) {
+    updateEventRSVP(updateEventRSVPInput: $updateEventRSVPInput) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      rsvpDate
+      numberOfGuests
+      message
+      rsvpSource
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to delete an event RSVP
+ */
+export const DELETE_EVENT_RSVP = gql`
+  mutation DeleteEventRSVP($id: ID!) {
+    removeEventRSVP(id: $id) {
+      id
+      eventId
+      memberId
+    }
+  }
+`;
+
+/**
+ * Query to get event registrations
+ */
+export const GET_EVENT_REGISTRATIONS = gql`
+  query GetEventRegistrations($filter: EventRegistrationFilterInput) {
+    eventRegistrations(filter: $filter) {
+      id
+      eventId
+      memberId
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      notes
+      numberOfGuests
+      specialRequests
+      checkInTime
+      checkOutTime
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+      }
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to check in an event registration
+ */
+export const CHECK_IN_EVENT_REGISTRATION = gql`
+  mutation CheckInEventRegistration($input: CheckInEventRegistrationInput!) {
+    checkInEventRegistration(input: $input) {
+      id
+      eventId
+      memberId
+      status
+      checkInTime
       notes
       event {
         id
         title
+        startDate
       }
       member {
         id
         firstName
         lastName
       }
+    }
+  }
+`;
+
+/**
+ * Mutation to check out an event registration
+ */
+export const CHECK_OUT_EVENT_REGISTRATION = gql`
+  mutation CheckOutEventRegistration($input: CheckOutEventRegistrationInput!) {
+    checkOutEventRegistration(input: $input) {
+      id
+      eventId
+      memberId
+      status
+      checkInTime
+      checkOutTime
+      notes
+      event {
+        id
+        title
+        startDate
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`;
+
+/**
+ * Mutation to remove an event registration
+ */
+export const REMOVE_EVENT_REGISTRATION = gql`
+  mutation RemoveEventRegistration($id: ID!) {
+    removeEventRegistration(id: $id) {
+      id
+      status
+    }
+  }
+`;
+
+/**
+ * Query to get event registration stats
+ */
+export const GET_EVENT_REGISTRATION_STATS = gql`
+  query GetEventRegistrationStats($eventId: ID!) {
+    eventRegistrationStats(eventId: $eventId)
+  }
+`;
+
+/**
+ * Mutation to promote registrations from waitlist
+ */
+export const PROMOTE_FROM_WAITLIST = gql`
+  mutation PromoteFromWaitlist($eventId: ID!) {
+    promoteFromWaitlist(eventId: $eventId) {
+      id
+      status
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      guestName
+      guestEmail
     }
   }
 `;
@@ -138,17 +444,6 @@ export const CHECK_OUT_ATTENDEE = gql`
         firstName
         lastName
       }
-    }
-  }
-`;
-
-/**
- * Mutation to delete an event registration
- */
-export const DELETE_EVENT_REGISTRATION = gql`
-  mutation DeleteEventRegistration($id: ID!) {
-    deleteEventRegistration(id: $id) {
-      id
     }
   }
 `;

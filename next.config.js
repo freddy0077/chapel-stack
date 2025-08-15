@@ -1,8 +1,12 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['images.unsplash.com', 'placehold.co', 'via.placeholder.com', 'example.com'],
+    domains: ['images.unsplash.com', 'placehold.co', 'via.placeholder.com', 'example.com', 'chapelstack-bucket.s3.eu-west-1.amazonaws.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -24,6 +28,11 @@ const nextConfig = {
         hostname: 'example.com',
         pathname: '**',
       },
+      {
+        protocol: 'https',
+        hostname: 'chapelstack-bucket.s3.eu-west-1.amazonaws.com',
+        pathname: '**',
+      },
     ],
   },
   typescript: {
@@ -31,4 +40,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

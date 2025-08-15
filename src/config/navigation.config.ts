@@ -16,6 +16,7 @@ import {
   HeartIcon,
   BuildingOfficeIcon,
   MicrophoneIcon,
+  UserMinusIcon,
 } from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
@@ -133,6 +134,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
       category: "Ministry",
       items: [
         { name: "Pastoral Care", href: "/dashboard/pastoral-care", icon: HeartIcon, moduleId: "pastoral_care" },
+        { name: "Death Register", href: "/dashboard/death-register", icon: UserMinusIcon, moduleId: "pastoral_care" },
         { name: "Sacraments", href: "/dashboard/sacraments", icon: PhotoIcon, moduleId: "sacraments" },
         { name: "Sermons", href: "/dashboard/sermons", icon: MicrophoneIcon, moduleId: "sermons" },
         { name: "Branch Finances", href: "/dashboard/branch-finances", icon: CurrencyDollarIcon, moduleId: "finances" },

@@ -17,6 +17,7 @@ import { useTransactionStatsQuery } from '@/graphql/hooks/useTransactionQueries'
 import { useBranchEvents } from '@/hooks/useBranchEvents';
 import { EXPORT_TRANSACTIONS } from '@/graphql/queries/exportTransactionQueries';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import { FundMappingConfiguration } from '@/components/finance/FundMappingConfiguration';
 
 // Simple Modal component
 function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
@@ -1001,6 +1002,11 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
           ) : organisationId && (
             <FundBalances organisationId={organisationId} funds={funds} />
           )}
+        </div>
+
+        {/* Fund Mapping Configuration Section */}
+        <div className="mb-8">
+          <FundMappingConfiguration />
         </div>
 
         {/* TRANSACTIONS TABLE */}

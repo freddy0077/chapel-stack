@@ -2,13 +2,25 @@
 
 import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { CalendarIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { 
+  CalendarIcon, 
+  XMarkIcon, 
+  ClockIcon,
+  MapPinIcon,
+  UserGroupIcon,
+  TagIcon,
+  DocumentTextIcon,
+  Cog6ToothIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon
+} from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { useEventMutations } from "@/graphql/hooks/useEvents";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useFilteredBranches } from "@/graphql/hooks/useFilteredBranches";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import EventTypeIcon from "./events/EventTypeIcon";
 
 interface NewEventModalProps {
   open: boolean;
@@ -21,9 +33,13 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
     title: "",
     description: "",
     category: "SERVICE",
+    eventType: "SERVICE",
     startDate: "",
     endDate: "",
     location: "",
+    requiresRegistration: false,
+    maxAttendees: "",
+    registrationDeadline: "",
     isRecurring: false,
     recurrenceType: "WEEKLY",
     recurrenceInterval: 1,
@@ -68,7 +84,9 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
       const input = {
         ...form,
         branchId: eventBranchId,
-        organisationId
+        organisationId,
+        maxAttendees: form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
+        registrationDeadline: form.registrationDeadline || undefined,
       };
       
       
@@ -170,17 +188,77 @@ export default function NewEventModal({ open, onClose, onEventCreated }: NewEven
                 </select>
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-indigo-800 mb-1">Location</label>
-                <input
-                  id="location"
-                  name="location"
-                  type="text"
-                  value={form.location}
-                  onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                <label htmlFor="eventType" className="block text-sm font-medium text-indigo-800 mb-1">Event Type</label>
+                <select
+                  id="eventType"
+                  name="eventType"
+                  value={form.eventType}
+                  onChange={e => setForm(f => ({ ...f, eventType: e.target.value }))}
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
-                  placeholder="e.g. Main Sanctuary"
+                  required
+                >
+                  <option value="SERVICE">Service</option>
+                  <option value="MEETING">Meeting</option>
+                  <option value="CONFERENCE">Conference</option>
+                  <option value="WORKSHOP">Workshop</option>
+                  <option value="RETREAT">Retreat</option>
+                  <option value="OUTREACH">Outreach</option>
+                  <option value="SOCIAL">Social</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Requires Registration</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="requiresRegistration"
+                  name="requiresRegistration"
+                  type="checkbox"
+                  checked={form.requiresRegistration}
+                  onChange={e => setForm(f => ({ ...f, requiresRegistration: e.target.checked }))}
+                  className="rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
+                <span>Does this event require registration?</span>
+              </div>
+            </div>
+            {form.requiresRegistration && (
+              <div>
+                <label htmlFor="maxAttendees" className="block text-sm font-medium text-indigo-800 mb-1">Max Attendees</label>
+                <input
+                  id="maxAttendees"
+                  name="maxAttendees"
+                  type="number"
+                  value={form.maxAttendees}
+                  onChange={e => setForm(f => ({ ...f, maxAttendees: e.target.value }))}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                 />
               </div>
+            )}
+            {form.requiresRegistration && (
+              <div>
+                <label htmlFor="registrationDeadline" className="block text-sm font-medium text-indigo-800 mb-1">Registration Deadline</label>
+                <input
+                  id="registrationDeadline"
+                  name="registrationDeadline"
+                  type="date"
+                  value={form.registrationDeadline}
+                  onChange={e => setForm(f => ({ ...f, registrationDeadline: e.target.value }))}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
+              </div>
+            )}
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-indigo-800 mb-1">Location</label>
+              <input
+                id="location"
+                name="location"
+                type="text"
+                value={form.location}
+                onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                placeholder="e.g. Main Sanctuary"
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

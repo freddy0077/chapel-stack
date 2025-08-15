@@ -57,8 +57,10 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    groomName: "",
-    brideName: "",
+    groomId: "", 
+    groomName: "", 
+    brideId: "", 
+    brideName: "", 
     marriageDate: "",
     location: "",
     officiant: "",
@@ -75,8 +77,10 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        groomName: "",
-        brideName: "",
+        groomId: "", 
+        groomName: "", 
+        brideId: "", 
+        brideName: "", 
         marriageDate: "",
         location: "",
         officiant: "",
@@ -113,8 +117,8 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
     setErrorMessage(null);
 
     // Basic validation
-    if (!formData.groomName || !formData.brideName) {
-      setErrorMessage("Both groom and bride names are required.");
+    if (!formData.groomId || !formData.brideId) {
+      setErrorMessage("Both groom and bride IDs are required.");
       setIsSubmitting(false);
       return;
     }
@@ -138,7 +142,7 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
       const result = await createMatrimonyRecord({
         variables: {
           input: {
-            memberId: formData.groomName, // Note: This should be updated to use actual member IDs
+            memberId: formData.groomId, 
             sacramentType: "MATRIMONY",
             dateOfSacrament: new Date(formData.marriageDate),
             locationOfSacrament: formData.location,
@@ -257,7 +261,46 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Groom's Name <span className="text-red-500">*</span>
+                          Groom's ID <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            type="text"
+                            name="groomId"
+                            value={formData.groomId}
+                            onChange={handleChange}
+                            placeholder="Groom's ID"
+                            className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Bride's ID <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            type="text"
+                            name="brideId"
+                            value={formData.brideId}
+                            onChange={handleChange}
+                            placeholder="Bride's ID"
+                            className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Groom and Bride Names */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Groom's Name
                         </label>
                         <div className="relative">
                           <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -268,14 +311,13 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
                             onChange={handleChange}
                             placeholder="Full name of the groom"
                             className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
-                            required
                           />
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bride's Name <span className="text-red-500">*</span>
+                          Bride's Name
                         </label>
                         <div className="relative">
                           <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -286,7 +328,6 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
                             onChange={handleChange}
                             placeholder="Full name of the bride"
                             className="pl-10 w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
-                            required
                           />
                         </div>
                       </div>

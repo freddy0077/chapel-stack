@@ -120,12 +120,25 @@ export default function CreateConfirmationModal({ isOpen, onClose, onSuccess }: 
   };
 
   const handleMemberSelect = (member: any) => {
+    // Ensure we're using the correct UUID field
+    const memberId = member.id; // This should be the UUID from the database
+    
+    // Validate that it's a proper UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    
+    if (!uuidRegex.test(memberId)) {
+      console.error('Invalid member ID format:', memberId);
+      setErrorMessage('Invalid member ID format. Please try selecting the member again.');
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      memberId: member.id
+      memberId: memberId
     }));
     setMemberSearch(`${member.firstName} ${member.lastName}`);
     setShowDropdown(false);
+    setErrorMessage(null); // Clear any previous errors
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

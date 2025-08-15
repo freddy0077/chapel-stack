@@ -1,177 +1,376 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { EllipsisVerticalIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
-import { Menu, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
-import MessageModal from "./MessageModal";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  CalendarIcon,
+  MapPinIcon,
+  EllipsisVerticalIcon,
+  EyeIcon,
+  PencilIcon,
+  CreditCardIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
+import { Member, ViewMode, MembershipStatus } from '../types/member.types';
 
-type MemberProps = {
-  id: string | number;
-  name: string;
-  email?: string;
-  phone?: string;
-  status: string;
-  memberSince: string;
-  index: number;
-  branch?: string;
-};
+interface MemberCardProps {
+  member: Member;
+  selected?: boolean;
+  onSelect?: (memberId: string) => void;
+  onEdit?: (member: Member) => void;
+  onView?: (member: Member) => void;
+  viewMode?: ViewMode;
+  showActions?: boolean;
+  compact?: boolean;
+}
 
-const colors = [
-  "bg-pink-600",
-  "bg-purple-600",
-  "bg-yellow-500",
-  "bg-green-500",
-  "bg-blue-500",
-  "bg-indigo-500",
-  "bg-red-500",
-  "bg-teal-500"
-];
+const MemberCard: React.FC<MemberCardProps> = ({
+  member,
+  selected = false,
+  onSelect,
+  onEdit,
+  onView,
+  viewMode = 'card',
+  showActions = true,
+  compact = false
+}) => {
+  const [showMenu, setShowMenu] = useState(false);
 
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map(part => part[0])
-    .join("")
-    .toUpperCase()
-    .substring(0, 2);
-};
+  // Get member's full name
+  const fullName = [member.firstName, member.middleName, member.lastName]
+    .filter(Boolean)
+    .join(' ');
 
-export default function MemberCard({ id, name, email, phone, status, memberSince, index, branch }: MemberProps) {
-  const colorIndex = index % colors.length;
-  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`relative h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-full ${colors[colorIndex]} text-white font-medium text-lg`}>
-              {getInitials(name)}
-              <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-white ${
-                status === 'Active' ? 'bg-green-500' : 'bg-red-500'
-              }`}></span>
+  // Base display name prefers preferredName over constructed full name
+  const baseDisplayName = member.preferredName || fullName;
+  // If title exists, always prepend it to the display name
+  const displayName = member.title ? `${member.title} ${baseDisplayName}` : baseDisplayName;
+
+  // Get status color and label
+  const getStatusInfo = (status: MembershipStatus) => {
+    const statusMap = {
+      [MembershipStatus.VISITOR]: { color: 'bg-blue-100 text-blue-800', label: 'Visitor' },
+      [MembershipStatus.REGULAR_ATTENDEE]: { color: 'bg-green-100 text-green-800', label: 'Regular Attendee' },
+      [MembershipStatus.MEMBER]: { color: 'bg-purple-100 text-purple-800', label: 'Member' },
+      [MembershipStatus.ACTIVE_MEMBER]: { color: 'bg-green-100 text-green-800', label: 'Active Member' },
+      [MembershipStatus.INACTIVE_MEMBER]: { color: 'bg-gray-100 text-gray-800', label: 'Inactive Member' },
+      [MembershipStatus.TRANSFERRED]: { color: 'bg-orange-100 text-orange-800', label: 'Transferred' },
+      [MembershipStatus.DECEASED]: { color: 'bg-red-100 text-red-800', label: 'Deceased' }
+    };
+    return statusMap[status] || statusMap[MembershipStatus.VISITOR];
+  };
+
+  const statusInfo = getStatusInfo(member.membershipStatus || MembershipStatus.VISITOR);
+
+  // Calculate age if date of birth is available
+  const getAge = (dateOfBirth?: Date) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const age = getAge(member.dateOfBirth);
+
+  // Handle selection
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.(member.id);
+  };
+
+  // Handle card click
+  const handleCardClick = () => {
+    onView?.(member);
+  };
+
+  // Handle menu actions
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    onEdit?.(member);
+  };
+
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    onView?.(member);
+  };
+
+  // Different layouts based on view mode
+  if (viewMode === 'list') {
+    return (
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer ${
+          selected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+        }`}
+        onClick={handleCardClick}
+      >
+        <div className="p-4">
+          <div className="flex items-center space-x-4">
+            {/* Selection Checkbox */}
+            {onSelect && (
+              <div className="flex-shrink-0">
+                <button
+                  onClick={handleSelect}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                    selected
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  {selected && <CheckCircleIcon className="w-3 h-3" />}
+                </button>
+              </div>
+            )}
+
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              {member.profileImageUrl ? (
+                <img
+                  src={member.profileImageUrl}
+                  alt={displayName}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-lg">
+                    {member.firstName.charAt(0)}{member.lastName?.charAt(0)}
+                  </span>
+                </div>
+              )}
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Member since {memberSince}</p>
+
+            {/* Member Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                  {displayName}
+                </h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                  {statusInfo.label}
+                </span>
+                {member.memberId && (
+                  <div className="flex items-center space-x-1" title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || 'Unknown'}` : ''}`}>
+                    <CreditCardIcon className={`w-4 h-4 ${member.cardIssued ? 'text-green-600' : 'text-blue-600'}`} />
+                    <span className="text-xs text-gray-600 font-mono">{member.memberId}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
+                {member.email && (
+                  <div className="flex items-center space-x-1">
+                    <EnvelopeIcon className="w-4 h-4" />
+                    <span className="truncate">{member.email}</span>
+                  </div>
+                )}
+                {member.phoneNumber && (
+                  <div className="flex items-center space-x-1">
+                    <PhoneIcon className="w-4 h-4" />
+                    <span>{member.phoneNumber}</span>
+                  </div>
+                )}
+                {age && (
+                  <div className="flex items-center space-x-1">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span>{age} years</span>
+                  </div>
+                )}
+                {member.memberId && member.cardIssued && (
+                  <div className="flex items-center space-x-1" title={`Card issued: ${member.cardIssuedAt ? new Date(member.cardIssuedAt).toLocaleDateString() : 'Unknown'}`}>
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      {member.cardType || 'Card'} Issued
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Actions Menu */}
+            {showActions && (
+              <div className="flex-shrink-0 relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMenu(!showMenu);
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <EllipsisVerticalIcon className="w-5 h-5" />
+                </button>
+
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={handleView}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                        <span>View Details</span>
+                      </button>
+                      <button
+                        onClick={handleEdit}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                        <span>Edit Member</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          
-          <Menu as="div" className="relative">
-            <Menu.Button className="-m-2 p-2 rounded-full hover:bg-gray-100">
-              <EllipsisVerticalIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-                <Menu.Item>
-                  {({ active }) => (
-                    <Link
-                      href={`/dashboard/members/${id}`}
-                      className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                    >
-                      View profile
-                    </Link>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <Link
-                      href={`/dashboard/members/${id}/edit`}
-                      className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                    >
-                      Edit details
-                    </Link>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <a
-                      href="#"
-                      className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                    >
-                      Send email
-                    </a>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <a
-                      href="#"
-                      className={`${active ? 'bg-red-50' : ''} block px-4 py-2 text-sm text-red-700`}
-                    >
-                      Delete member
-                    </a>
-                  )}
-                </Menu.Item>
-              </Menu.Items>
-            </Transition>
-          </Menu>
         </div>
-        
-        <div className="space-y-2">
-          {email && (
-            <div className="flex items-center text-sm">
-              <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-              <a href={`mailto:${email}`} className="text-gray-600 hover:text-indigo-600 truncate">{email}</a>
-            </div>
-          )}
-          {phone && (
-            <div className="flex items-center text-sm">
-              <PhoneIcon className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-              <a href={`tel:${phone}`} className="text-gray-600 hover:text-indigo-600">{phone}</a>
-            </div>
-          )}
-          {branch && (
-            <div className="flex items-center text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              <span className="text-gray-600">{branch}</span>
-            </div>
-          )}
-        </div>
-        
-        <div className="mt-4 flex justify-between items-center">
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {status}
-          </span>
-          
-          <div className="flex gap-2">
-            <button 
-              type="button"
-              onClick={() => setIsMessageModalOpen(true)}
-              className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+      </motion.div>
+    );
+  }
+
+  // Card view (default)
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${
+        selected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+      }`}
+      onClick={handleCardClick}
+    >
+      {/* Header with selection and menu */}
+      <div className="p-4 pb-0">
+        <div className="flex items-center justify-between">
+          {onSelect && (
+            <button
+              onClick={handleSelect}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                selected
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'border-gray-300 hover:border-blue-400'
+              }`}
             >
-              Message
+              {selected && <CheckCircleIcon className="w-3 h-3" />}
             </button>
-            <Link
-              href={`/dashboard/members/${id}`}
-              className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              View
-            </Link>
+          )}
+
+          {showActions && (
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(!showMenu);
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <EllipsisVerticalIcon className="w-4 h-4" />
+              </button>
+
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-10">
+                  <div className="py-1">
+                    <button
+                      onClick={handleView}
+                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <EyeIcon className="w-4 h-4" />
+                      <span>View Details</span>
+                    </button>
+                    <button
+                      onClick={handleEdit}
+                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                      <span>Edit Member</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Avatar and Name */}
+      <div className="px-4 pb-4">
+        <div className="flex flex-col items-center text-center">
+          {member.profileImageUrl ? (
+            <img
+              src={member.profileImageUrl}
+              alt={displayName}
+              className="w-20 h-20 rounded-full object-cover mb-3"
+            />
+          ) : (
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mb-3">
+              <span className="text-white font-semibold text-2xl">
+                {member.firstName.charAt(0)}{member.lastName?.charAt(0)}
+              </span>
+            </div>
+          )}
+
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            {displayName}
+          </h3>
+
+          <div className="flex items-center space-x-2 mb-3">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+              {statusInfo.label}
+            </span>
+            {member.memberId && (
+              <div className="flex items-center space-x-1" title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || 'Unknown'}` : ''}`}>
+                <CreditCardIcon className={`w-4 h-4 ${member.cardIssued ? 'text-green-600' : 'text-blue-600'}`} />
+                <span className="text-xs text-gray-600 font-mono">{member.memberId}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Contact Info */}
+          <div className="space-y-2 text-sm text-gray-600 w-full">
+            {member.email && (
+              <div className="flex items-center space-x-2">
+                <EnvelopeIcon className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{member.email}</span>
+              </div>
+            )}
+            {member.phoneNumber && (
+              <div className="flex items-center space-x-2">
+                <PhoneIcon className="w-4 h-4 flex-shrink-0" />
+                <span>{member.phoneNumber}</span>
+              </div>
+            )}
+            {age && (
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                <span>{age} years old</span>
+              </div>
+            )}
+            {(member.city || member.state) && (
+              <div className="flex items-center space-x-2">
+                <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {[member.city, member.state].filter(Boolean).join(', ')}
+                </span>
+              </div>
+            )}
+            {member.memberId && member.cardIssued && (
+              <div className="flex items-center space-x-2">
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                  {member.cardType || 'Card'} Issued
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      
-      {/* Message Modal */}
-      <MessageModal 
-        isOpen={isMessageModalOpen} 
-        onClose={() => setIsMessageModalOpen(false)}
-        memberName={name}
-        memberEmail={email || ''}
-      />
-    </div>
+    </motion.div>
   );
-}
+};
+
+export default MemberCard;

@@ -81,7 +81,7 @@ export const CREATE_CONTRIBUTION = gql`
         notes
         branchId
         spouseId
-        rfidCardId
+        memberId
         createdAt
         updatedAt
       }

@@ -26,6 +26,7 @@ import {
   BoltIcon,
   HeartIcon,
   CreditCardIcon,
+  UserMinusIcon,
 } from "@heroicons/react/24/outline";
 
 import { isModuleEnabled } from '../onboarding/ModulePreferences';
@@ -89,6 +90,13 @@ const fullNavigation = [
         name: "Pastoral Care",
         href: "/dashboard/pastoral-care",
         icon: HeartIcon,
+        badge: null,
+        moduleId: "pastoral-care"
+      },
+      {
+        name: "Death Register",
+        href: "/dashboard/death-register",
+        icon: UserMinusIcon,
         badge: null,
         moduleId: "pastoral-care"
       },

@@ -3,33 +3,59 @@
  */
 
 /**
- * Possible types of church events
+ * Enhanced event types matching backend EventType enum
  */
 export enum EventType {
-  SERVICE = 'SERVICE',
-  MEETING = 'MEETING',
+  WORSHIP_SERVICE = 'WORSHIP_SERVICE',
+  WEDDING = 'WEDDING',
+  FUNERAL = 'FUNERAL',
+  BAPTISM = 'BAPTISM',
+  GRADUATION = 'GRADUATION',
   CONFERENCE = 'CONFERENCE',
   WORKSHOP = 'WORKSHOP',
   RETREAT = 'RETREAT',
-  OUTREACH = 'OUTREACH',
-  SOCIAL = 'SOCIAL',
-  YOUTH = 'YOUTH',
-  PRAYER = 'PRAYER',
+  FELLOWSHIP = 'FELLOWSHIP',
+  YOUTH_EVENT = 'YOUTH_EVENT',
+  CHILDREN_EVENT = 'CHILDREN_EVENT',
+  PRAYER_MEETING = 'PRAYER_MEETING',
   BIBLE_STUDY = 'BIBLE_STUDY',
-  MUSIC = 'MUSIC',
-  CHILDREN = 'CHILDREN',
+  COMMUNITY_SERVICE = 'COMMUNITY_SERVICE',
+  FUNDRAISER = 'FUNDRAISER',
+  CELEBRATION = 'CELEBRATION',
+  MEETING = 'MEETING',
   OTHER = 'OTHER',
 }
 
 /**
- * Status values for events and registrations
+ * Event status values matching backend EventStatus enum
  */
-export enum Status {
-  ACTIVE = 'ACTIVE',
-  PENDING = 'PENDING',
+export enum EventStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
-  DRAFT = 'DRAFT',
+}
+
+/**
+ * RSVP status values matching backend RSVPStatus enum
+ */
+export enum RSVPStatus {
+  YES = 'YES',
+  NO = 'NO',
+  MAYBE = 'MAYBE',
+  PENDING = 'PENDING',
+}
+
+/**
+ * Event registration status values
+ */
+export enum EventRegistrationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  ATTENDING = 'ATTENDING',
+  NOT_ATTENDING = 'NOT_ATTENDING',
+  CANCELLED = 'CANCELLED',
 }
 
 /**
@@ -61,27 +87,99 @@ export interface Event {
   title: string;
   description?: string;
   startDate: string | Date;
-  endDate: string | Date;
+  endDate?: string | Date;
   location?: string;
   category?: string;
   branchId?: string;
+  organisationId?: string;
   createdBy?: string;
   updatedBy?: string;
-}
+  createdAt: string | Date;
+  updatedAt: string | Date;
 
+  // Enhanced event fields
+  eventType: EventType;
+  status: EventStatus;
+  capacity?: number;
+  registrationRequired: boolean;
+  registrationDeadline?: string | Date;
+  isPublic: boolean;
+  requiresApproval: boolean;
+  eventImageUrl?: string;
+  tags?: string[];
+  organizerName?: string;
+  organizerEmail?: string;
+  organizerPhone?: string;
+  isFree: boolean;
+  ticketPrice?: number;
+  currency?: string;
+
+  // Relations
+  branch?: Branch;
+  attendanceRecords?: any[];
+  eventRegistrations?: EventRegistration[];
+  eventRSVPs?: EventRSVP[];
+}
 
 /**
  * Event Registration interface
  */
 export interface EventRegistration {
   id: string;
-  event: Event;
-  member: Member;
-  status: Status;
-  registrationDate?: string | Date;
-  checkInTime?: string | Date;
-  checkOutTime?: string | Date;
+  eventId: string;
+  event?: Event;
+  memberId?: string;
+  member?: Member;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  status: EventRegistrationStatus;
+  registrationDate: string | Date;
+  numberOfGuests: number;
+  specialRequests?: string;
+
+  // Payment info (for paid events)
+  amountPaid?: number;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  transactionId?: string;
+
+  // Approval workflow
+  approvalStatus?: string;
+  approvedBy?: string;
+  approvalDate?: string | Date;
+  rejectionReason?: string;
+
+  // Metadata
+  registrationSource?: string;
   notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+/**
+ * Event RSVP interface for simple yes/no/maybe responses
+ */
+export interface EventRSVP {
+  id: string;
+  eventId: string;
+  event?: Event;
+  memberId?: string;
+  member?: Member;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  status: RSVPStatus;
+  rsvpDate: string | Date;
+  numberOfGuests: number;
+  message?: string;
+
+  // Metadata
+  rsvpSource?: string;
+  createdBy?: string;
+  updatedBy?: string;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
@@ -93,10 +191,26 @@ export interface CreateEventInput {
   title: string;
   description?: string;
   startDate: string | Date;
-  endDate: string | Date;
+  endDate?: string | Date;
   location?: string;
   category?: string;
   branchId?: string;
+  organisationId?: string;
+  eventType: EventType;
+  status: EventStatus;
+  capacity?: number;
+  registrationRequired: boolean;
+  registrationDeadline?: string | Date;
+  isPublic: boolean;
+  requiresApproval: boolean;
+  eventImageUrl?: string;
+  tags?: string[];
+  organizerName?: string;
+  organizerEmail?: string;
+  organizerPhone?: string;
+  isFree: boolean;
+  ticketPrice?: number;
+  currency?: string;
 }
 
 export interface UpdateEventInput {
@@ -108,6 +222,22 @@ export interface UpdateEventInput {
   location?: string;
   category?: string;
   branchId?: string;
+  organisationId?: string;
+  eventType?: EventType;
+  status?: EventStatus;
+  capacity?: number;
+  registrationRequired?: boolean;
+  registrationDeadline?: string | Date;
+  isPublic?: boolean;
+  requiresApproval?: boolean;
+  eventImageUrl?: string;
+  tags?: string[];
+  organizerName?: string;
+  organizerEmail?: string;
+  organizerPhone?: string;
+  isFree?: boolean;
+  ticketPrice?: number;
+  currency?: string;
 }
 
 /**
@@ -115,8 +245,55 @@ export interface UpdateEventInput {
  */
 export interface CreateEventRegistrationInput {
   eventId: string;
-  memberId: string;
+  memberId?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  numberOfGuests: number;
+  specialRequests?: string;
+  registrationSource?: string;
   notes?: string;
+}
+
+/**
+ * Input for updating an event registration
+ */
+export interface UpdateEventRegistrationInput {
+  id: string;
+  status?: EventRegistrationStatus;
+  numberOfGuests?: number;
+  specialRequests?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  transactionId?: string;
+  approvalStatus?: string;
+  rejectionReason?: string;
+  notes?: string;
+}
+
+/**
+ * Input for creating a new event RSVP
+ */
+export interface CreateEventRSVPInput {
+  eventId: string;
+  memberId?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  status: RSVPStatus;
+  numberOfGuests: number;
+  message?: string;
+  rsvpSource?: string;
+}
+
+/**
+ * Input for updating an event RSVP
+ */
+export interface UpdateEventRSVPInput {
+  id: string;
+  status?: RSVPStatus;
+  numberOfGuests?: number;
+  message?: string;
 }
 
 /**
@@ -127,5 +304,4 @@ export interface CalendarEvent extends Event {
   color?: string;
   allDay?: boolean;
   url?: string;
-} // No changes needed here, inherits updated Event fields
-
+}

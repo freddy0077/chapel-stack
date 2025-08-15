@@ -58,10 +58,12 @@ export interface CareRequest {
   priority: string;
   requestDate: string;
   assignedPastorId?: string;
+  assignedPastorName?: string;
   notes?: string;
   status: string;
   completionDate?: string;
   memberId: string;
+  memberName?: string;
   requesterId: string;
   organisationId: string;
   branchId?: string;

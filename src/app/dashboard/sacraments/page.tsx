@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect, useRef } from "react";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 import {
   Tabs,
   TabsContent,
@@ -41,9 +42,9 @@ import CreateCommunionModal from "./components/CreateCommunionModal";
 import CreateConfirmationModal from "./components/CreateConfirmationModal";
 import CreateMarriageModal from "./components/CreateMarriageModal";
 
-const BaptismRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
+const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
   <BaptismRecordsLoader>
-    {(records: BaptismRecord[], loading: boolean, error: unknown) => (
+    {(records: BaptismRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -106,7 +107,8 @@ const BaptismRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
                     </span>
                   </div>
                   
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -146,9 +148,9 @@ const BaptismRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   </BaptismRecordsLoader>
 );
 
-const CommunionRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
+const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
   <CommunionRecordsLoader>
-    {(records: CommunionRecord[], loading: boolean, error: unknown) => (
+    {(records: CommunionRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -211,7 +213,8 @@ const CommunionRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
                     </span>
                   </div>
                   
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -251,9 +254,9 @@ const CommunionRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   </CommunionRecordsLoader>
 );
 
-const ConfirmationRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
+const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
   <ConfirmationRecordsLoader>
-    {(records: ConfirmationRecord[], loading: boolean, error: unknown) => (
+    {(records: ConfirmationRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -316,7 +319,8 @@ const ConfirmationRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
                     </span>
                   </div>
                   
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -356,9 +360,9 @@ const ConfirmationRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
   </ConfirmationRecordsLoader>
 );
 
-const MarriageRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
+const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
   <MarriageRecordsLoader>
-    {(records: MarriageRecord[], loading: boolean, error: unknown) => (
+    {(records: MarriageRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -421,7 +425,8 @@ const MarriageRecords = ({ onOpenModal }: { onOpenModal?: () => void }) => (
                     </span>
                   </div>
                   
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>
+                  {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
+                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -534,9 +539,54 @@ export default function SacramentsPage() {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isMarriageModalOpen, setIsMarriageModalOpen] = useState(false);
 
-  const handleModalSuccess = () => {
-    // Optionally trigger a refetch of data here
-  };
+  // Store refetch functions for each sacrament type
+  const baptismRefetchRef = useRef<(() => void) | null>(null);
+  const communionRefetchRef = useRef<(() => void) | null>(null);
+  const confirmationRefetchRef = useRef<(() => void) | null>(null);
+  const marriageRefetchRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    const handleBaptismSuccess = () => {
+      setIsBaptismModalOpen(false);
+      if (baptismRefetchRef.current) {
+        baptismRefetchRef.current();
+      }
+      toast.success("Baptism record created successfully!");
+    };
+
+    const handleCommunionSuccess = () => {
+      setIsCommunionModalOpen(false);
+      if (communionRefetchRef.current) {
+        communionRefetchRef.current();
+      }
+      toast.success("Communion record created successfully!");
+    };
+
+    const handleConfirmationSuccess = () => {
+      setIsConfirmationModalOpen(false);
+      if (confirmationRefetchRef.current) {
+        confirmationRefetchRef.current();
+      }
+      toast.success("Confirmation record created successfully!");
+    };
+
+    const handleMarriageSuccess = () => {
+      setIsMarriageModalOpen(false);
+      if (marriageRefetchRef.current) {
+        marriageRefetchRef.current();
+      }
+      toast.success("Marriage record created successfully!");
+    };
+
+    const handleModalSuccess = () => {
+      // Optionally trigger a refetch of data here
+      toast.success("Record added successfully!");
+    };
+
+    return () => {
+      // Clean up
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -621,7 +671,7 @@ export default function SacramentsPage() {
         {/* Statistics Overview */}
         <div className="mb-8">
           <SacramentStatsLoader period="all">
-            {(stats: any[], loading: boolean, error: unknown) => (
+            {(stats: any[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard
                   title="Total Baptisms"
@@ -666,7 +716,7 @@ export default function SacramentsPage() {
         {/* Upcoming Anniversaries */}
         <div className="mb-8">
           <UpcomingAnniversariesLoader>
-            {(anniversaries: any[], loading: boolean, error: unknown) => (
+            {(anniversaries: any[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center justify-between">
@@ -748,16 +798,28 @@ export default function SacramentsPage() {
           </TabsList>
 
           <TabsContent value="baptism">
-            <BaptismRecords onOpenModal={() => setIsBaptismModalOpen(true)} />
+            <BaptismRecords 
+              onOpenModal={() => setIsBaptismModalOpen(true)} 
+              refetch={(loaderRefetch) => baptismRefetchRef.current = loaderRefetch}
+            />
           </TabsContent>
           <TabsContent value="communion">
-            <CommunionRecords onOpenModal={() => setIsCommunionModalOpen(true)} />
+            <CommunionRecords 
+              onOpenModal={() => setIsCommunionModalOpen(true)} 
+              refetch={(loaderRefetch) => communionRefetchRef.current = loaderRefetch}
+            />
           </TabsContent>
           <TabsContent value="confirmation">
-            <ConfirmationRecords onOpenModal={() => setIsConfirmationModalOpen(true)} />
+            <ConfirmationRecords 
+              onOpenModal={() => setIsConfirmationModalOpen(true)} 
+              refetch={(loaderRefetch) => confirmationRefetchRef.current = loaderRefetch}
+            />
           </TabsContent>
           <TabsContent value="marriage">
-            <MarriageRecords onOpenModal={() => setIsMarriageModalOpen(true)} />
+            <MarriageRecords 
+              onOpenModal={() => setIsMarriageModalOpen(true)} 
+              refetch={(loaderRefetch) => marriageRefetchRef.current = loaderRefetch}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -765,28 +827,52 @@ export default function SacramentsPage() {
         <CreateBaptismModal
           isOpen={isBaptismModalOpen}
           onClose={() => setIsBaptismModalOpen(false)}
-          onSuccess={handleModalSuccess}
+          onSuccess={() => {
+            setIsBaptismModalOpen(false);
+            if (baptismRefetchRef.current) {
+              baptismRefetchRef.current();
+            }
+            toast.success("Baptism record created successfully!");
+          }}
         />
       )}
       {isCommunionModalOpen && (
         <CreateCommunionModal
           isOpen={isCommunionModalOpen}
           onClose={() => setIsCommunionModalOpen(false)}
-          onSuccess={handleModalSuccess}
+          onSuccess={() => {
+            setIsCommunionModalOpen(false);
+            if (communionRefetchRef.current) {
+              communionRefetchRef.current();
+            }
+            toast.success("Communion record created successfully!");
+          }}
         />
       )}
       {isConfirmationModalOpen && (
         <CreateConfirmationModal
           isOpen={isConfirmationModalOpen}
           onClose={() => setIsConfirmationModalOpen(false)}
-          onSuccess={handleModalSuccess}
+          onSuccess={() => {
+            setIsConfirmationModalOpen(false);
+            if (confirmationRefetchRef.current) {
+              confirmationRefetchRef.current();
+            }
+            toast.success("Confirmation record created successfully!");
+          }}
         />
       )}
       {isMarriageModalOpen && (
         <CreateMarriageModal
           isOpen={isMarriageModalOpen}
           onClose={() => setIsMarriageModalOpen(false)}
-          onSuccess={handleModalSuccess}
+          onSuccess={() => {
+            setIsMarriageModalOpen(false);
+            if (marriageRefetchRef.current) {
+              marriageRefetchRef.current();
+            }
+            toast.success("Marriage record created successfully!");
+          }}
         />
       )}
     </div>

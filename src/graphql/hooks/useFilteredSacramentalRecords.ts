@@ -39,7 +39,7 @@ export function useFilteredBaptismRecords(filter: SacramentalRecordFilter) {
     variables.organisationId = filter.organisationId;
   }
   
-  const { data, loading, error } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
+  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
     GET_FILTERED_BAPTISM_RECORDS,
     {
       variables,
@@ -52,6 +52,7 @@ export function useFilteredBaptismRecords(filter: SacramentalRecordFilter) {
     records: data?.sacramentalRecords || [],
     loading,
     error,
+    refetch,
   };
 }
 
@@ -67,7 +68,7 @@ export function useFilteredCommunionRecords(filter: SacramentalRecordFilter) {
     variables.organisationId = filter.organisationId;
   }
   
-  const { data, loading, error } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
+  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
     GET_FILTERED_COMMUNION_RECORDS,
     {
       variables,
@@ -80,6 +81,7 @@ export function useFilteredCommunionRecords(filter: SacramentalRecordFilter) {
     records: data?.sacramentalRecords || [],
     loading,
     error,
+    refetch,
   };
 }
 
@@ -95,7 +97,7 @@ export function useFilteredConfirmationRecords(filter: SacramentalRecordFilter) 
     variables.organisationId = filter.organisationId;
   }
   
-  const { data, loading, error } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
+  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
     GET_FILTERED_CONFIRMATION_RECORDS,
     {
       variables,
@@ -108,6 +110,7 @@ export function useFilteredConfirmationRecords(filter: SacramentalRecordFilter) 
     records: data?.sacramentalRecords || [],
     loading,
     error,
+    refetch,
   };
 }
 
@@ -123,7 +126,7 @@ export function useFilteredMarriageRecords(filter: SacramentalRecordFilter) {
     variables.organisationId = filter.organisationId;
   }
   
-  const { data, loading, error } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
+  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
     GET_FILTERED_MARRIAGE_RECORDS,
     {
       variables,
@@ -136,5 +139,6 @@ export function useFilteredMarriageRecords(filter: SacramentalRecordFilter) {
     records: data?.sacramentalRecords || [],
     loading,
     error,
+    refetch,
   };
 }

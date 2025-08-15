@@ -93,10 +93,12 @@ export const GET_CARE_REQUESTS = gql`
       priority
       requestDate
       assignedPastorId
+      assignedPastorName
       notes
       status
       completionDate
       memberId
+      memberName
       requesterId
       organisationId
       branchId

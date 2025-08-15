@@ -1,33 +1,36 @@
 import { useQuery } from '@apollo/client';
-import { GET_MEMBER_STATISTICS } from '../queries/memberQueries';
-
-export interface MemberStatisticsPeriod {
-  totalMembers: number;
-  activeMembers: number;
-  inactiveMembers: number;
-  newMembersInPeriod: number;
-  visitorsInPeriod: number;
-}
+import { GET_MEMBER_STATISTICS_ENHANCED } from '../queries/memberStatisticsQueries';
+import type { MemberStatistics } from '../queries/memberStatisticsQueries';
 
 export interface MemberStatisticsData {
-  memberStatistics: {
-    totalMembers: number;
-    activeMembers: number;
-    inactiveMembers: number;
-    newMembersInPeriod: number;
-    visitorsInPeriod: number;
-    lastMonth?: MemberStatisticsPeriod;
-  };
+  memberStatistics: MemberStatistics;
 }
 
 export const useMemberStatistics = (branchId?: string, organisationId?: string) => {
-  const { data, loading, error, refetch } = useQuery<MemberStatisticsData>(GET_MEMBER_STATISTICS, {
+  const { data, loading, error, refetch } = useQuery<MemberStatisticsData>(GET_MEMBER_STATISTICS_ENHANCED, {
     variables: { branchId, organisationId },
     skip: !branchId && !organisationId,
+    fetchPolicy: 'cache-and-network', // Ensure fresh data while using cache
   });
 
   return {
     stats: data?.memberStatistics,
+    loading,
+    error,
+    refetch,
+  };
+};
+
+// Hook for individual member dashboard
+export const useMemberDashboard = (memberId: string) => {
+  const { data, loading, error, refetch } = useQuery(GET_MEMBER_DASHBOARD, {
+    variables: { memberId },
+    skip: !memberId,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  return {
+    dashboard: data?.memberDashboard,
     loading,
     error,
     refetch,

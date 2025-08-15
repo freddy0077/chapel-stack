@@ -20,13 +20,20 @@ import {
   InformationCircleIcon,
   XMarkIcon,
   CalendarDaysIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import DashboardHeader from "@/components/DashboardHeader";
-import NewEventModal from "../../../components/NewEventModal";
+import CreateEventModal from "../../../components/events/CreateEventModal";
+import EventRegistration from "../../../components/events/EventRegistration";
+import EventRSVP from "../../../components/events/EventRSVP";
+import EventAttendeesView from '../../../components/events/EventAttendeesView';
 import { Card, Select, SelectItem, Button, Badge, Text, Grid, Metric } from "@tremor/react";
 import { useFilteredEvents } from "@/graphql/hooks/useFilteredEvents";
+import { useEventActions } from "@/graphql/hooks/useEventRegistrationRSVP";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
-import { Event } from "@/graphql/types/event";
+import { Event, EventStatus, RSVPStatus } from "@/graphql/types/event";
 import Loading from "@/components/ui/Loading";
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from "@/contexts/AuthContextEnhanced";
@@ -44,12 +51,24 @@ type ViewMode = typeof VIEW_MODES[keyof typeof VIEW_MODES];
 // Event type options with colors
 const eventTypeOptions = [
   { id: 'all', name: 'All Events', color: 'bg-gray-500' },
-  { id: 'SERVICE', name: 'Service', color: 'bg-blue-500' },
-  { id: 'MEETING', name: 'Meeting', color: 'bg-green-500' },
+  { id: 'WORSHIP_SERVICE', name: 'Worship Service', color: 'bg-blue-500' },
+  { id: 'WEDDING', name: 'Wedding', color: 'bg-pink-500' },
+  { id: 'FUNERAL', name: 'Funeral', color: 'bg-gray-600' },
+  { id: 'BAPTISM', name: 'Baptism', color: 'bg-cyan-500' },
+  { id: 'GRADUATION', name: 'Graduation', color: 'bg-yellow-500' },
   { id: 'CONFERENCE', name: 'Conference', color: 'bg-purple-500' },
-  { id: 'WORKSHOP', name: 'Workshop', color: 'bg-yellow-500' },
-  { id: 'SOCIAL', name: 'Social Event', color: 'bg-pink-500' },
-  { id: 'OTHER', name: 'Other', color: 'bg-gray-500' },
+  { id: 'WORKSHOP', name: 'Workshop', color: 'bg-orange-500' },
+  { id: 'RETREAT', name: 'Retreat', color: 'bg-green-500' },
+  { id: 'FELLOWSHIP', name: 'Fellowship', color: 'bg-indigo-500' },
+  { id: 'YOUTH_EVENT', name: 'Youth Event', color: 'bg-red-500' },
+  { id: 'CHILDREN_EVENT', name: 'Children Event', color: 'bg-emerald-500' },
+  { id: 'PRAYER_MEETING', name: 'Prayer Meeting', color: 'bg-violet-500' },
+  { id: 'BIBLE_STUDY', name: 'Bible Study', color: 'bg-amber-500' },
+  { id: 'COMMUNITY_SERVICE', name: 'Community Service', color: 'bg-teal-500' },
+  { id: 'FUNDRAISER', name: 'Fundraiser', color: 'bg-lime-500' },
+  { id: 'CELEBRATION', name: 'Celebration', color: 'bg-rose-500' },
+  { id: 'MEETING', name: 'Meeting', color: 'bg-slate-500' },
+  { id: 'OTHER', name: 'Other', color: 'bg-neutral-500' },
 ];
 
 export default function Calendar() {
@@ -71,12 +90,55 @@ function CalendarContent() {
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.MONTH);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [showRSVPModal, setShowRSVPModal] = useState(false);
+  const [showAttendeesView, setShowAttendeesView] = useState(false);
+  const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { canManageEvents, isBranchAdmin } = usePermissions();
 
   const { state } = useAuth();
   const user = state.user;
   
   const orgBranchFilter = useOrganisationBranch();
+
+  // Event registration handlers
+  const handleEventRegistration = (event: Event) => {
+    setSelectedEvent(event);
+    setShowRegistrationModal(true);
+  };
+
+  const handleEventRSVP = (event: Event) => {
+    setSelectedEvent(event);
+    setShowRSVPModal(true);
+  };
+
+  const handleEventDetails = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetailsModal(true);
+  };
+
+  const closeRegistrationModal = () => {
+    setShowRegistrationModal(false);
+    setSelectedEvent(null);
+    refetch(); // Refresh events to show updated registration counts
+  };
+
+  const closeRSVPModal = () => {
+    setShowRSVPModal(false);
+    setSelectedEvent(null);
+    refetch(); // Refresh events to show updated RSVP counts
+  };
+
+  const closeEventDetailsModal = () => {
+    setShowEventDetailsModal(false);
+    setSelectedEvent(null);
+  };
+
+  const closeAttendeesView = () => {
+    setShowAttendeesView(false);
+    setSelectedEvent(null);
+  };
 
   // State for current date and filter selections
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -257,69 +319,65 @@ function CalendarContent() {
                 <ChevronRightIcon className="h-5 w-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
               </button>
             </div>
-            
-            <button
-              onClick={() => setCurrentDate(new Date())}
-              className="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200 border border-blue-200 hover:border-blue-300 hover:shadow-sm"
-            >
-              Today
-            </button>
           </div>
 
-          {/* View Controls and Actions */}
+          {/* View Toggle and Actions */}
           <div className="flex items-center space-x-3">
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-1 shadow-inner">
+            <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-1 shadow-inner">
               <button
                 onClick={() => setViewMode(VIEW_MODES.MONTH)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   viewMode === VIEW_MODES.MONTH
-                    ? 'bg-white text-gray-900 shadow-md transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <ViewColumnsIcon className="h-4 w-4" />
+                <ViewColumnsIcon className="h-4 w-4 inline mr-2" />
+                Month
               </button>
               <button
                 onClick={() => setViewMode(VIEW_MODES.LIST)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   viewMode === VIEW_MODES.LIST
-                    ? 'bg-white text-gray-900 shadow-md transform scale-105'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Bars3Icon className="h-4 w-4" />
+                <Bars3Icon className="h-4 w-4 inline mr-2" />
+                List
               </button>
             </div>
 
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 border ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm border ${
                 showFilters
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-600 shadow-lg transform scale-105'
-                  : 'bg-white/80 text-gray-700 hover:bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-md'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <FunnelIcon className="h-4 w-4 mr-2" />
+              <FunnelIcon className="h-4 w-4 inline mr-2" />
               Filters
             </button>
 
-            {/* Refresh */}
+            {/* Refresh Button */}
             <button
               onClick={() => refetch()}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white/80 rounded-xl transition-all duration-200 hover:shadow-md group"
+              className="px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 shadow-sm"
             >
-              <ArrowPathIcon className="h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
+              <ArrowPathIcon className="h-4 w-4 inline mr-2" />
+              Refresh
             </button>
 
-            {/* Create Event Button */}
+            {/* New Event Button */}
             {canManageEvents && (
               <button
                 onClick={() => setShowNewEventModal(true)}
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
+                <PlusIcon className="h-4 w-4 inline mr-2" />
                 New Event
               </button>
             )}
@@ -328,77 +386,52 @@ function CalendarContent() {
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="mt-8 pt-6 border-t border-gray-200/50 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-xl -m-4"></div>
-            <div className="relative">
-              <div className="flex items-center mb-6">
-                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></div>
-                <h3 className="text-lg font-semibold text-gray-900">Filter Events</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-gray-900 transition-colors">
-                    <CalendarIcon className="h-4 w-4 inline mr-2 text-blue-500" />
-                    Event Type
-                  </label>
-                  <div className="relative">
-                    <Select value={selectedType} onValueChange={setSelectedType}>
-                      {eventTypeOptions.map((option) => (
-                        <SelectItem key={option.id} value={option.id}>
-                          <div className="flex items-center">
-                            <div className={`w-3 h-3 rounded-full ${option.color} mr-3 shadow-sm`} />
-                            <span className="font-medium">{option.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-gray-900 transition-colors">
-                    <UserGroupIcon className="h-4 w-4 inline mr-2 text-purple-500" />
-                    Branch
-                  </label>
-                  <div className="relative">
-                    <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                      {branchOptions.map((option) => (
-                        <SelectItem key={option.id} value={option.id}>
-                          <span className="font-medium">{option.name}</span>
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="group">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-gray-900 transition-colors">
-                    <MapPinIcon className="h-4 w-4 inline mr-2 text-emerald-500" />
-                    Location
-                  </label>
-                  <div className="relative">
-                    <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                      {locationOptions.map((option) => (
-                        <SelectItem key={option.id} value={option.id}>
-                          <span className="font-medium">{option.name}</span>
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
+          <div className="relative mt-6 pt-6 border-t border-gray-200/50">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Event Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  {eventTypeOptions.map(option => (
+                    <SelectItem key={option.id} value={option.id}>
+                      <div className="flex items-center">
+                        <div className={`w-3 h-3 rounded-full ${option.color} mr-2`}></div>
+                        {option.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
 
-              <div className="flex justify-between items-center mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <Text className="text-sm font-medium text-gray-700">
-                    Showing <span className="font-bold text-gray-900">{filteredEvents.length}</span> of <span className="font-bold text-gray-900">{events.length}</span> events
-                  </Text>
-                </div>
+              {/* Branch Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Branch</label>
+                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                  {branchOptions.map(option => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Location Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                  {locationOptions.map(option => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Reset Filters */}
+              <div className="flex items-end">
                 <button
                   onClick={resetFilters}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:bg-blue-50 px-3 py-1 rounded-lg transition-all duration-200"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-200"
                 >
                   Reset Filters
                 </button>
@@ -417,24 +450,91 @@ function CalendarContent() {
           isDayToday={isDayToday}
           getEventTypeColor={getEventTypeColor}
           getEventTimeRange={getEventTimeRange}
+          handleEventRegistration={handleEventRegistration}
+          handleEventRSVP={handleEventRSVP}
+          handleEventDetails={handleEventDetails}
+          setSelectedEvent={setSelectedEvent}
+          setShowAttendeesView={setShowAttendeesView}
+          setShowRegistrationModal={setShowRegistrationModal}
+          setShowRSVPModal={setShowRSVPModal}
+          setShowEventDetailsModal={setShowEventDetailsModal}
         />
       ) : (
         <ListView 
           events={filteredEvents}
           getEventTypeColor={getEventTypeColor}
           getEventTimeRange={getEventTimeRange}
+          handleEventRegistration={handleEventRegistration}
+          handleEventRSVP={handleEventRSVP}
+          handleEventDetails={handleEventDetails}
         />
       )}
 
       {/* New Event Modal */}
-      <NewEventModal 
+      <CreateEventModal 
         open={showNewEventModal}
         onClose={() => setShowNewEventModal(false)}
-        onEventCreated={() => {
+        onSuccess={() => {
           setShowNewEventModal(false);
           refetch();
         }}
       />
+
+      {/* Event Registration Modal */}
+      {showRegistrationModal && selectedEvent && (
+        <EventRegistration 
+          event={selectedEvent}
+          onClose={() => {
+            setShowRegistrationModal(false);
+            setSelectedEvent(null);
+          }}
+          onSuccess={() => {
+            setShowRegistrationModal(false);
+            setSelectedEvent(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Event RSVP Modal */}
+      {showRSVPModal && selectedEvent && (
+        <EventRSVP 
+          event={selectedEvent}
+          onClose={() => {
+            setShowRSVPModal(false);
+            setSelectedEvent(null);
+          }}
+          onSuccess={() => {
+            setShowRSVPModal(false);
+            setSelectedEvent(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Event Attendees View */}
+      {showAttendeesView && selectedEvent && (
+        <EventAttendeesView
+          eventId={selectedEvent.id}
+          eventTitle={selectedEvent.title}
+          eventDate={selectedEvent.startDate}
+          onClose={() => {
+            setShowAttendeesView(false);
+            setSelectedEvent(null);
+          }}
+        />
+      )}
+
+      {/* Event Details Modal */}
+      {showEventDetailsModal && selectedEvent && (
+        <EventDetailsModal
+          event={selectedEvent}
+          onClose={() => {
+            setShowEventDetailsModal(false);
+            setSelectedEvent(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -447,6 +547,14 @@ interface MonthViewProps {
   isDayToday: (day: number | null) => boolean;
   getEventTypeColor: (category: string) => string;
   getEventTimeRange: (event: Event) => string;
+  handleEventRegistration: (event: Event) => void;
+  handleEventRSVP: (event: Event) => void;
+  handleEventDetails: (event: Event) => void;
+  setSelectedEvent: (event: Event | null) => void;
+  setShowAttendeesView: (show: boolean) => void;
+  setShowRegistrationModal: (show: boolean) => void;
+  setShowRSVPModal: (show: boolean) => void;
+  setShowEventDetailsModal: (show: boolean) => void;
 }
 
 function MonthView({ 
@@ -455,7 +563,15 @@ function MonthView({
   getEventsForDay, 
   isDayToday, 
   getEventTypeColor, 
-  getEventTimeRange 
+  getEventTimeRange,
+  handleEventRegistration,
+  handleEventRSVP,
+  handleEventDetails,
+  setSelectedEvent,
+  setShowAttendeesView,
+  setShowRegistrationModal,
+  setShowRSVPModal,
+  setShowEventDetailsModal
 }: MonthViewProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
@@ -505,19 +621,49 @@ function MonthView({
                   
                   <div className="space-y-2 flex-1">
                     {displayEvents.map((event, idx) => (
-                      <Link 
-                        key={idx} 
-                        href={`/dashboard/calendar/${event.id}`}
-                        className={`block px-3 py-2 rounded-lg text-xs font-semibold truncate transition-all duration-200 hover:shadow-md hover:scale-105 transform ${
-                          getEventTypeColor(event.category || 'OTHER')
-                        } text-white shadow-sm border border-white/20`}
-                        title={`${event.title} - ${getEventTimeRange(event)}`}
-                      >
+                      <div key={idx} className="block px-3 py-2 rounded-lg text-xs font-semibold truncate transition-all duration-200 hover:shadow-md hover:scale-105 transform">
                         <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-white/90 mr-2 flex-shrink-0 shadow-sm" />
+                          <div className={`w-2 h-2 rounded-full ${getEventTypeColor(event.category || 'OTHER')} mr-2 flex-shrink-0 shadow-sm`}></div>
                           <span className="truncate">{event.title}</span>
                         </div>
-                      </Link>
+                        {event.requiresRegistration && (
+                          <div className="flex items-center justify-between mt-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEvent(event);
+                                setShowAttendeesView(true);
+                              }}
+                              className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                              title="View Attendees"
+                            >
+                              👥 Attendees
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEvent(event);
+                                setShowRegistrationModal(true);
+                              }}
+                              className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                              title="Register for Event"
+                            >
+                              📝 Register
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEvent(event);
+                                setShowRSVPModal(true);
+                              }}
+                              className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                              title="RSVP for Event"
+                            >
+                              📣 RSVP
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
                     
                     {events.length > 2 && (
@@ -544,9 +690,12 @@ interface ListViewProps {
   events: Event[];
   getEventTypeColor: (category: string) => string;
   getEventTimeRange: (event: Event) => string;
+  handleEventRegistration: (event: Event) => void;
+  handleEventRSVP: (event: Event) => void;
+  handleEventDetails: (event: Event) => void;
 }
 
-function ListView({ events, getEventTypeColor, getEventTimeRange }: ListViewProps) {
+function ListView({ events, getEventTypeColor, getEventTimeRange, handleEventRegistration, handleEventRSVP, handleEventDetails }: ListViewProps) {
   if (events.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center relative overflow-hidden">
@@ -648,6 +797,56 @@ function ListView({ events, getEventTypeColor, getEventTimeRange }: ListViewProp
           </div>
         </Link>
       ))}
+    </div>
+  );
+}
+
+// EventDetailsModal Component
+interface EventDetailsModalProps {
+  event: Event;
+  onClose: () => void;
+}
+
+function EventDetailsModal({ event, onClose }: EventDetailsModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 w-full max-w-2xl relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-indigo-50/30"></div>
+        
+        <div className="relative flex flex-col space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">{event.title}</h2>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-200"
+            >
+              Close
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center text-sm text-gray-600">
+              <ClockIcon className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+              <span className="font-medium">{format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}</span>
+            </div>
+            
+            {event.location && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPinIcon className="h-4 w-4 mr-2 text-emerald-500 flex-shrink-0" />
+                <span className="font-medium truncate">{event.location}</span>
+              </div>
+            )}
+            
+            {event.description && (
+              <div className="flex items-start text-sm text-gray-600 mt-3">
+                <DocumentTextIcon className="h-4 w-4 mr-2 text-purple-500 flex-shrink-0 mt-0.5" />
+                <p className="line-clamp-2 font-medium">{event.description}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

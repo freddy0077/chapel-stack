@@ -92,7 +92,7 @@ export const ADD_MEMBER_TO_GROUP = gql`
   mutation AddMemberToGroup(
     $groupId: ID!,
     $memberId: ID!,
-    $roleInGroup: String!
+    $roleInGroup: String
   ) {
     addMemberToGroup(
       groupId: $groupId,
@@ -101,8 +101,6 @@ export const ADD_MEMBER_TO_GROUP = gql`
     ) {
       id
       role
-      joinDate
-      status
       memberId
       smallGroupId
       createdAt
@@ -127,8 +125,6 @@ export const UPDATE_GROUP_MEMBER = gql`
     updateGroupMember(id: $id, input: $input) {
       id
       role
-      joinDate
-      status
       memberId
       smallGroupId
       createdAt

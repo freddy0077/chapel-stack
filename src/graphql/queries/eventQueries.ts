@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GET_EVENTS_BY_BRANCH = gql`
-  query Events($branchId: ID) {
-    events(branchId: $branchId) {
+  query Events($branchId: ID, $organisationId: ID) {
+    events(branchId: $branchId, organisationId: $organisationId) {
       id
       title
       description
@@ -10,13 +10,30 @@ export const GET_EVENTS_BY_BRANCH = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
+      organisationId
       createdBy
       updatedBy
+      createdAt
+      updatedAt
     }
   }
 `;
-
 
 /**
  * Query to fetch all events
@@ -31,18 +48,36 @@ export const GET_EVENTS = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
+      organisationId
       createdBy
       updatedBy
+      createdAt
+      updatedAt
     }
   }
 `;
 
 /**
- * Query to fetch a single event by ID
+ * Query to fetch a single event by ID with registrations and RSVPs
  */
-export const GET_EVENT = gql`
-  query GetEvent($id: ID!) {
+export const GET_EVENT_BY_ID = gql`
+  query GetEventById($id: ID!) {
     event(id: $id) {
       id
       title
@@ -51,12 +86,154 @@ export const GET_EVENT = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
+      organisationId
       createdBy
       updatedBy
-      branch {
+      createdAt
+      updatedAt
+      eventRegistrations {
         id
-        name
+        memberId
+        member {
+          id
+          firstName
+          lastName
+          email
+        }
+        guestName
+        guestEmail
+        status
+        numberOfGuests
+        registrationDate
+        createdAt
+      }
+      eventRSVPs {
+        id
+        memberId
+        member {
+          id
+          firstName
+          lastName
+          email
+        }
+        guestName
+        guestEmail
+        status
+        numberOfGuests
+        rsvpDate
+        createdAt
+      }
+    }
+  }
+`;
+
+// Export alias for backward compatibility
+export const GET_EVENT = GET_EVENT_BY_ID;
+
+/**
+ * Query to fetch event registrations for a specific event
+ */
+export const GET_EVENT_REGISTRATIONS = gql`
+  query GetEventRegistrations($eventId: ID!) {
+    eventRegistrations(filter: { eventId: $eventId }) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      approvalStatus
+      approvedBy
+      approvalDate
+      rejectionReason
+      registrationSource
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Query to fetch event RSVPs for a specific event
+ */
+export const GET_EVENT_RSVPS = gql`
+  query GetEventRSVPs($eventId: ID!) {
+    eventRSVPs(filter: { eventId: $eventId }) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      rsvpDate
+      numberOfGuests
+      message
+      rsvpSource
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Query to get event statistics
+ */
+export const GET_EVENT_STATISTICS = gql`
+  query GetEventStatistics($eventId: ID!) {
+    eventStatistics(eventId: $eventId) {
+      totalRegistrations
+      totalRSVPs
+      attendingCount
+      maybeCount
+      notAttendingCount
+      pendingCount
+      capacityUtilization
+      registrationsByStatus {
+        status
+        count
+      }
+      rsvpsByStatus {
+        status
+        count
       }
     }
   }
@@ -65,24 +242,12 @@ export const GET_EVENT = gql`
 /**
  * Query to fetch all event registrations
  */
-export const GET_EVENT_REGISTRATIONS = gql`
-  query GetEventRegistrations {
+export const GET_ALL_EVENT_REGISTRATIONS = gql`
+  query GetAllEventRegistrations {
     eventRegistrations {
       id
-      status
-      registrationDate
-      checkInTime
-      checkOutTime
-      notes
-      event {
-        id
-        title
-        startDate
-        endDate
-        location
-        category
-        branchId
-      }
+      eventId
+      memberId
       member {
         id
         firstName
@@ -90,6 +255,24 @@ export const GET_EVENT_REGISTRATIONS = gql`
         email
         phone
       }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      approvalStatus
+      approvedBy
+      approvalDate
+      rejectionReason
+      registrationSource
+      notes
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -101,20 +284,8 @@ export const GET_EVENT_REGISTRATION = gql`
   query GetEventRegistration($id: ID!) {
     eventRegistration(id: $id) {
       id
-      status
-      registrationDate
-      checkInTime
-      checkOutTime
-      notes
-      event {
-        id
-        title
-        startDate
-        endDate
-        location
-        category
-        branchId
-      }
+      eventId
+      memberId
       member {
         id
         firstName
@@ -122,51 +293,24 @@ export const GET_EVENT_REGISTRATION = gql`
         email
         phone
       }
-    }
-  }
-`;
-
-/**
- * Query to fetch upcoming events
- * We'll filter the events by date range on the client side
- */
-export const GET_EVENTS_BY_DATE_RANGE = gql`
-  query GetEvents {
-    events {
-      id
-      title
-      description
-      startDate
-      endDate
-      location
-      category
-      branchId
-      createdBy
-      updatedBy
-    }
-  }
-`;
-
-/**
- * Query to fetch events for a specific member
- * Note: This is a custom query that would need to be implemented in the backend
- */
-export const GET_MEMBER_EVENTS = gql`
-  query GetMemberEvents($memberId: ID!) {
-    memberEvents(memberId: $memberId) {
-      id
+      guestName
+      guestEmail
+      guestPhone
       status
       registrationDate
-      event {
-        id
-        title
-        description
-        type
-        status
-        startDateTime
-        endDateTime
-        location
-      }
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      approvalStatus
+      approvedBy
+      approvalDate
+      rejectionReason
+      registrationSource
+      notes
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -188,7 +332,7 @@ export const GET_BRANCHES = gql`
  * Instead, we'll create mock room data based on the branch
  */
 export const GET_ROOMS = gql`
-  query GetBranchDetails($branchId: String!) {
+  query GetBranchDetails($branchId: ID!) {
     branch(id: $branchId) {
       id
       name
@@ -213,7 +357,7 @@ export const GET_VOLUNTEER_ROLES = gql`
  * Query to fetch events filtered by branchId and organisationId
  */
 export const GET_EVENTS_FILTERED = gql`
-  query EventsFiltered($branchId: String, $organisationId: String) {
+  query EventsFiltered($branchId: ID, $organisationId: ID) {
     events(branchId: $branchId, organisationId: $organisationId) {
       id
       title
@@ -222,10 +366,79 @@ export const GET_EVENTS_FILTERED = gql`
       endDate
       location
       category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
       branchId
       organisationId
       createdBy
       updatedBy
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Query to fetch events within a specific date range
+ */
+export const GET_EVENTS_BY_DATE_RANGE = gql`
+  query GetEventsByDateRange($startDate: DateTime!, $endDate: DateTime!, $branchId: ID, $organisationId: ID) {
+    events(branchId: $branchId, organisationId: $organisationId, startDate: $startDate, endDate: $endDate) {
+      id
+      title
+      description
+      startDate
+      endDate
+      location
+      category
+      eventType
+      status
+      capacity
+      registrationRequired
+      registrationDeadline
+      isPublic
+      requiresApproval
+      eventImageUrl
+      tags
+      organizerName
+      organizerEmail
+      organizerPhone
+      isFree
+      ticketPrice
+      currency
+      branchId
+      organisationId
+      createdBy
+      updatedBy
+      createdAt
+      updatedAt
+      eventRegistrations {
+        id
+        memberId
+        status
+        numberOfGuests
+        registrationDate
+      }
+      eventRSVPs {
+        id
+        memberId
+        status
+        numberOfGuests
+        rsvpDate
+      }
     }
   }
 `;

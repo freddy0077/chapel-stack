@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_MEMBERS_LIST, GET_MEMBER, GET_MEMBERS_WITH_CARDS_ALL_FIELDS } from "../queries/memberQueries";
+import { GET_MEMBER_ENHANCED } from "../queries/enhancedMemberQueries";
 import { ASSIGN_RFID_CARD_TO_MEMBER } from "../mutations/memberMutations";
 import { OrganizationBranchFilterInput } from '../types/filters';
 
@@ -133,6 +134,7 @@ export interface Member {
   firstName: string;
   middleName?: string;
   lastName: string;
+  title?: string;
   displayName?: string;
   prefix?: string;
   suffix?: string;
@@ -143,20 +145,23 @@ export interface Member {
   gender?: Gender;
   maritalStatus?: MaritalStatus;
   dateOfBirth?: string;
-  
-  // Address fields (both nested and direct)
-  address?: Address | string; // Can be either a string or an Address object
+  address?: Address | string;
   city?: string;
   state?: string;
   postalCode?: string;
   country?: string;
-  
-  // Employment
+  nationality?: string;
+  placeOfBirth?: string;
+  nlbNumber?: string;
   occupation?: string;
   employer?: string;
-  employerName?: string; // Alternative to employer
-  
-  // Dates and status
+  employerName?: string;
+  fatherName?: string;
+  motherName?: string;
+  fatherOccupation?: string;
+  motherOccupation?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   anniversaryDate?: string;
   status: MemberStatus;
   membershipDate?: string;
@@ -164,8 +169,6 @@ export interface Member {
   confirmationDate?: string;
   statusChangeDate?: string;
   statusChangeReason?: string;
-  
-  // Notes
   visitorNotes?: string;
   notes?: string;
   privacySettings?: {
@@ -176,30 +179,32 @@ export interface Member {
     showFamily?: boolean;
     allowMessaging?: boolean;
     [key: string]: boolean | undefined;
-  } // Specific type for privacy settings
-  
-  // Communication
+  };
+  showEmail?: boolean;
+  showPhone?: boolean;
+  showAddress?: boolean;
+  showBirthday?: boolean;
+  showFamily?: boolean;
+  allowMessaging?: boolean;
   communicationPreference?: string;
   preferredLanguage?: string;
   emergencyContact?: EmergencyContact;
-  
-  // Branch information
   userBranches?: UserBranch[];
   branchId?: string;
   branch?: Branch;
-  
-  // Relationships
   spouseId?: string;
   parentId?: string;
   spouse?: Member;
   parent?: Member;
   children?: Member[];
-  rfidCardId?: string;
-  
-  // Metadata
+  memberId?: string;
+  memberIdGeneratedAt?: string;
+  cardIssued?: boolean;
+  cardIssuedAt?: string;
+  cardType?: 'NFC' | 'RFID' | 'BARCODE';
   createdAt: string;
   updatedAt: string;
-  customFields?: Record<string, string | number | boolean | null>; // More specific type for custom fields
+  customFields?: Record<string, string | number | boolean | null>;
   ministries?: MinistryRole[];
 }
 
@@ -224,32 +229,50 @@ export type MemberInput = {
   firstName: string;
   middleName?: string;
   lastName: string;
-  prefix?: string;
-  suffix?: string;
+  preferredName?: string;
   email?: string;
-  phoneNumber?: string; // Changed from phone
+  phoneNumber?: string;
   alternatePhone?: string;
-  profileImage?: File; // Input remains File for upload
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  dateOfBirth?: string;
+  placeOfBirth?: string;
+  nationality?: string;
   gender?: Gender;
   maritalStatus?: MaritalStatus;
-  dateOfBirth?: string;
-  address?: AddressInput;
-  mailingAddress?: AddressInput;
   occupation?: string;
-  employer?: string;
-  anniversaryDate?: string;
+  employerName?: string;
+  education?: string;
   status?: MemberStatus;
-  primaryBranchId?: string;
-  notes?: string;
-  visitorNotes?: string;
-  membershipDate?: string; // Changed from membershipNumber
-  // joinDate?: string; // Removed
+  membershipStatus?: string;
+  membershipType?: string;
+  membershipDate?: string;
   baptismDate?: string;
-  communicationPreference?: ContactPreference;
-  preferredLanguage?: string;
-  emergencyContact?: EmergencyContactInput;
+  baptismLocation?: string;
+  confirmationDate?: string;
+  salvationDate?: string;
+  statusChangeReason?: string;
+  profileImageUrl?: string;
   customFields?: Record<string, string | number | boolean | null>;
-  createLogin?: boolean;
+  privacyLevel?: string;
+  preferredLanguage?: string;
+  notes?: string;
+  branchId?: string;
+  organisationId?: string;
+  spouseId?: string;
+  parentId?: string;
+  familyId?: string;
+  headOfHousehold?: boolean;
+  isRegularAttendee?: boolean;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  consentDate?: string;
+  consentVersion?: string;
+  dataRetentionDate?: string;
 };
 
 export interface PaginationInput {
@@ -274,8 +297,6 @@ export interface UserFilterInput extends OrganizationBranchFilterInput {
 };
 
 // Hook for fetching members with pagination and filtering
-import { GET_MEMBERS_COUNT } from "../queries/memberQueries";
-
 export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInput) => {
   // Fetch paginated members
   const { data, loading, error, refetch } = useQuery<MembersListQueryResponse>(GET_MEMBERS_LIST, {
@@ -289,22 +310,14 @@ export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInp
     notifyOnNetworkStatusChange: true,
   });
 
-  // Fetch total count for accurate pagination
-  const { data: countData, loading: countLoading } = useQuery<{ membersCount: number }>(GET_MEMBERS_COUNT, {
-    variables: {
-      branchId: filters?.branchId,
-      organisationId: filters?.organisationId,
-    },
-    fetchPolicy: "cache-and-network"
-  });
-
   const items = data?.members || [];
-  const totalCount = countData?.membersCount ?? 0;
+  // Use the length of fetched members as total count - simpler and always consistent
+  const totalCount = items.length;
 
   return {
     members: items,
     totalCount,
-    loading: loading || countLoading,
+    loading,
     error,
     refetch
   };
@@ -340,7 +353,7 @@ export function useAssignRfidCardToMember() {
     ASSIGN_RFID_CARD_TO_MEMBER
   );
 
-  // Usage: assignRfidCardToMember({ assignRfidCardInput: { memberId, rfidCardId } })
+  // Usage: assignRfidCardToMember({ assignRfidCardInput: { memberId, memberId } })
   const assignRfidCardToMember = async (assignRfidCardInput: unknown) => {
     return assignRfidCardToMemberMutation({ variables: { assignRfidCardInput } });
   };
@@ -355,7 +368,7 @@ export function useAssignRfidCardToMember() {
 
 // Hook for fetching a single member by ID
 export const useMember = (id: string) => {
-  const { data, loading, error, refetch } = useQuery<{ member: Member }>(GET_MEMBER, {
+  const { data, loading, error, refetch } = useQuery<{ member: Member }>(GET_MEMBER_ENHANCED, {
     variables: { memberId: id },
     skip: !id,
     fetchPolicy: "cache-and-network"

@@ -126,8 +126,6 @@ export interface AddGroupMemberInput {
 
 export interface UpdateGroupMemberInput {
   role?: SmallGroupMemberRole;
-  joinDate?: string;
-  status?: SmallGroupMemberStatus;
 }
 
 export interface MutationResponse {

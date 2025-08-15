@@ -1,528 +1,762 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useLazyQuery } from '@apollo/client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import { 
-  useMembers, 
-  MemberStatus, 
-  Gender, 
-  UserFilterInput, 
-  PaginationInput,
-  Member, // This is the backend Member type
-} from "@/graphql/hooks/useMember";
-import { useMemberStatistics } from "@/graphql/hooks/useMemberStatistics";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useOrganizationBranchFilter } from '@/hooks';
-
-// Import our custom components
-import SearchBar from "./components/SearchBar";
-import { FilterButton } from "./components/AdvancedFilters";
-import ExportButton from "./components/ExportButton";
-import MembersStats from "./components/MembersStats";
-import LoadingState from "./components/LoadingState";
-import EmptyState from "./components/EmptyState";
-import Pagination from "./components/Pagination";
-import AddMemberModal from "./components/AddMemberModal";
-import MemberDetailsModal from "./components/MemberDetailsModal";
-import MemberReports from "./components/MemberReports";
-
-import {
-  ArrowPathIcon,
+  MagnifyingGlassIcon, 
+  PlusIcon, 
   FunnelIcon,
-  XMarkIcon,
-  UserGroupIcon,
-  ChartBarIcon
-} from "@heroicons/react/24/outline";
+  Squares2X2Icon,
+  ListBulletIcon,
+  TableCellsIcon,
+  AdjustmentsHorizontalIcon
+} from '@heroicons/react/24/outline';
 
-import DashboardHeader from '@/components/DashboardHeader';
+// Components
+import MemberList from './components/MemberList';
+import MemberStats from './components/MemberStats';
+import SearchBar from './components/SearchBar';
+import FilterPanel from './components/FilterPanel';
+import AddMemberModal from './components/AddMemberModal';
+import MemberDetailModal from './components/MemberDetailModal';
+import EditMemberModal from './components/EditMemberModal';
+import AddSacramentModal from './components/AddSacramentModal';
+import BulkActionsBar from './components/BulkActionsBar';
+import ViewModeToggle from './components/ViewModeToggle';
+import BulkActionSelectionDialog from './components/BulkActionSelectionDialog';
 
-export default function MembersRedesigned() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const memberIdFromUrl = searchParams.get("id");
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(memberIdFromUrl);
+// Hooks
+import { useMembers } from './hooks/useMembers';
+import { 
+  useMemberStatistics, 
+  useSearchMembers,
+  useUpdateMember,
+  useRemoveMember,
+  useTransferMember,
+  useUpdateMemberStatus,
+  useRfidOperations
+} from './hooks/useMemberOperations';
+import { useOrganisationBranch } from '../../../hooks/useOrganisationBranch';
+import { useMemberManagement } from '../../../hooks/useMemberManagement';
+import { GET_ALL_SMALL_GROUPS } from '@/graphql/queries/groupQueries';
+import { LIST_MINISTRIES } from '@/graphql/queries/ministryQueries';
+import { GET_MEMBER } from '@/graphql/queries/memberQueries';
 
-  useEffect(() => {
-    if (memberIdFromUrl) setSelectedMemberId(memberIdFromUrl);
-  }, [memberIdFromUrl]);
+// Types
+import { ViewMode, MemberFilters, Member, BulkActionType } from './types/member.types';
 
-  const openMemberModal = (id: string) => {
-    setSelectedMemberId(id);
-    router.push(`/dashboard/members?id=${id}`, { shallow: true });
-  };
-  const closeMemberModal = () => {
-    setSelectedMemberId(null);
-    router.replace(`/dashboard/members`, { shallow: true });
-  };
+const MembersPage: React.FC = () => {
+  // State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('card');
+  const [filters, setFilters] = useState<MemberFilters>({});
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showSacramentModal, setShowSacramentModal] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showMemberDetailModal, setShowMemberDetailModal] = useState(false);
+  const [showEditMemberModal, setShowEditMemberModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
+  const [selectionDialogData, setSelectionDialogData] = useState<{
+    actionType: BulkActionType | null;
+    options: { id: string; name: string }[];
+    title: string;
+    label: string;
+  }>({ actionType: null, options: [], title: '', label: '' });
 
-  const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'members' | 'reports'>('members');
-  const { state } = useAuth();
-  const user = state.user;
+  // Organisation and branch context
   const { organisationId, branchId } = useOrganisationBranch();
-  
-  // Get organization/branch filter based on user role
-  const orgBranchFilter = useOrganizationBranchFilter();
-  
-  // UI state
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12); // Increased to show more members in the modern grid
-  const [isPageChanging, setIsPageChanging] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Convert UI filters to GraphQL filter format
-  const getGraphQLFilters = useCallback((): UserFilterInput => { 
-    const filters: UserFilterInput = {}; 
 
-    // Apply organization filter first, then branch filter if organization is not available
-    if (orgBranchFilter.organisationId) {
-      filters.organisationId = orgBranchFilter.organisationId;
+  // Members data with enhanced filtering
+  const {
+    members,
+    loading,
+    error,
+    pageInfo,
+    refetch,
+    loadMore,
+    goToNextPage,
+    goToPreviousPage,
+  } = useMembers({
+    search: searchQuery,
+    filters: {
+      ...filters,
+      organisationId,
+      branchId
+    },
+    pageSize: 20
+  });
+
+  // Member operations hooks
+  const { statistics, loading: statsLoading } = useMemberStatistics(branchId, organisationId);
+  const { searchMembers, members: searchResults, loading: searchLoading } = useSearchMembers();
+  const { updateMember, loading: updateLoading } = useUpdateMember();
+  const { removeMember, loading: removeLoading } = useRemoveMember();
+  const { transferMember, loading: transferLoading } = useTransferMember();
+  const { updateMemberStatus, loading: statusUpdateLoading } = useUpdateMemberStatus();
+  const { assignRfidCard, removeRfidCard, getMemberByRfid, loading: rfidLoading } = useRfidOperations();
+  const {
+    bulkUpdateMemberStatus,
+    bulkDeactivateMembers,
+    bulkExportMembers,
+    bulkAddToGroup,
+    bulkRemoveFromGroup,
+    bulkAddToMinistry,
+    bulkRemoveFromMinistry,
+    loading: bulkLoading,
+  } = useMemberManagement();
+
+  // Group and Ministry queries
+  const { data: groupsData } = useQuery(GET_ALL_SMALL_GROUPS);
+  const { data: ministriesData } = useQuery(LIST_MINISTRIES);
+
+  // Lazy query to fetch full member details on demand for the detail modal
+  const [fetchMember, { data: memberDetailData, loading: memberDetailLoading, error: memberDetailError }] = useLazyQuery(GET_MEMBER);
+
+  // Computed values
+  const isLoading = loading || statsLoading;
+
+  // Member management functions
+  const handleUpdateMember = async (id: string, memberData: any) => {
+    try {
+      await updateMember(id, memberData);
+      // Refresh data
+      refetch?.();
+    } catch (error) {
+      console.error('Error updating member:', error);
     }
-    
-    // Only add branchId if it has a value
-    if (orgBranchFilter.branchId) {
-      filters.branchId = orgBranchFilter.branchId;
-    }
-    
-    // Add search term if provided
-    if (searchTerm) {
-      filters.search = searchTerm;
-    }
-    
-    // Map status filters
-    if (activeFilters.status && activeFilters.status.length > 0) {
-      const statusMap: Record<string, MemberStatus> = {
-        'active': MemberStatus.ACTIVE,
-        'inactive': MemberStatus.INACTIVE,
-        'visitor': MemberStatus.VISITOR,
-        'first time visitor': MemberStatus.FIRST_TIME_VISITOR,
-        'returning visitor': MemberStatus.RETURNING_VISITOR,
-        'deceased': MemberStatus.DECEASED
-      };
-      
-      // Use the first status filter (API doesn't support multiple status filters)
-      const statusFilter = activeFilters.status[0].toLowerCase();
-      if (statusMap[statusFilter]) {
-        filters.status = statusMap[statusFilter];
+  };
+
+  // Open Edit modal with a member
+  const handleEditMember = (member: Member) => {
+    setSelectedMember(member);
+    setShowEditMemberModal(true);
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this member?')) {
+      try {
+        await removeMember(id);
+        // Refresh data
+        refetch?.();
+      } catch (error) {
+        console.error('Error deleting member:', error);
       }
     }
-    
-    // Map gender filters
-    if (activeFilters.gender && activeFilters.gender.length > 0) {
-      const genderMap: Record<string, Gender> = {
-        'male': Gender.MALE,
-        'female': Gender.FEMALE,
-      };
-      
-      // Use the first gender filter (API doesn't support multiple gender filters)
-      const genderFilter = activeFilters.gender[0].toLowerCase();
-      if (genderMap[genderFilter]) {
-        filters.gender = genderMap[genderFilter];
+  };
+
+  const handleTransferMember = async (id: string, fromBranchId: string, toBranchId: string, reason?: string) => {
+    try {
+      await transferMember(id, fromBranchId, toBranchId, reason);
+      // Refresh data
+      refetch?.();
+    } catch (error) {
+      console.error('Error transferring member:', error);
+    }
+  };
+
+  const handleStatusUpdate = async (id: string, status: string, reason?: string) => {
+    try {
+      await updateMemberStatus(id, status, reason);
+      // Refresh data
+      refetch?.();
+    } catch (error) {
+      console.error('Error updating member status:', error);
+    }
+  };
+
+  const handleRfidAssign = async (memberId: string, rfidCardId: string) => {
+    try {
+      await assignRfidCard({ memberId, rfidCardId });
+      // Refresh data
+      refetch?.();
+    } catch (error) {
+      console.error('Error assigning RFID card:', error);
+    }
+  };
+
+  const handleRfidRemove = async (memberId: string) => {
+    try {
+      await removeRfidCard(memberId);
+      // Refresh data
+      refetch?.();
+    } catch (error) {
+      console.error('Error removing RFID card:', error);
+    }
+  };
+
+  const handleSearch = async (query: string) => {
+    if (query.trim()) {
+      try {
+        await searchMembers(query, {
+          branchId,
+          ...filters
+        });
+      } catch (error) {
+        console.error('Error searching members:', error);
       }
     }
-    
-    return filters;
-  }, [searchTerm, activeFilters, orgBranchFilter]);
+  };
 
-  // Create pagination input
-  const paginationInput: PaginationInput = useMemo(() => ({
-    skip: (currentPage - 1) * itemsPerPage,
-    take: itemsPerPage
-  }), [itemsPerPage, currentPage]);
+  // Search effect - trigger search when query changes
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery);
+    }
+  }, [searchQuery]);
 
-  // Use GraphQL hook to fetch members with server-side filtering
-  const { 
-    members, 
-    totalCount,
-    loading, 
-    error, 
-    refetch
-  } = useMembers(
-    getGraphQLFilters(),
-    paginationInput
-  );
-  
-  // Just use the members directly from the API
-  const filteredMembers = useMemo(() => {
-    return members || [];
-  }, [members]);
-  
-  // Convert GraphQL members to display format - memoized to avoid recalculations
-  const displayMembers: DisplayMember[] = useMemo(() => {
-    if (!filteredMembers || filteredMembers.length === 0) return [];
-    
-    return filteredMembers
-      .map((member: Member) => {
-        const isActive = member.status === MemberStatus.ACTIVE;
-        const isVisitor = member.status === MemberStatus.VISITOR || 
-                          member.status === MemberStatus.FIRST_TIME_VISITOR || 
-                          member.status === MemberStatus.RETURNING_VISITOR;
-        return {
-          id: member.id,
-          name: `${member.firstName} ${member.lastName || ''}`.trim(),
-          email: member.email || undefined,
-          phone: member.phoneNumber || undefined,
-          status: formatMemberStatus(member.status),
-          memberSince: member.membershipDate || 'Unknown',
-          branch: member.branch?.name || undefined,
-          branchId: member.branchId || undefined,
-          profileImage: member.profileImageUrl || null,
-          gender: member.gender,
-          dateOfBirth: member.dateOfBirth,
-          occupation: member.occupation,
-          isActive,
-          isVisitor,
-        };
-      })
-      .sort((a, b) => {
-        const dateA = a.memberSince && a.memberSince !== 'Unknown' ? new Date(a.memberSince).getTime() : 0;
-        const dateB = b.memberSince && b.memberSince !== 'Unknown' ? new Date(b.memberSince).getTime() : 0;
-        return dateB - dateA; // Descending: newest first
-      });
-  }, [filteredMembers]);
+  const selectedCount = selectedMembers.length;
+  const hasSelection = selectedCount > 0;
 
-  // Handle search
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement> | string) => {
-    const term = typeof e === 'string' ? e : e.target.value;
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page on new search
-    // Server-side filtering will happen on the next render
-  }, []);
+  // Handlers
+  const handleFilterChange = (newFilters: Partial<MemberFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setSelectedMembers([]); // Clear selection on filter change
+  };
 
-  // Handle filter changes
-  const handleFilterChange = useCallback((newFilters: Record<string, string[]>) => {
-    setActiveFilters(newFilters);
-    setCurrentPage(1); // Reset to first page on filter change
-    // Server-side filtering will happen on the next render
-  }, []);
+  const handleSelectMember = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
 
-  // Reset all filters
-  const resetFilters = useCallback(() => {
-    setActiveFilters({});
-    setSearchTerm('');
-    setCurrentPage(1);
-    // Server-side filtering will happen on the next render
-  }, []);
+  const handleSelectAll = () => {
+    if (selectedCount === members.length) {
+      setSelectedMembers([]);
+    } else {
+      setSelectedMembers(members.map(member => member.id));
+    }
+  };
 
-  // Fetch member statistics from the API using our custom hook
-  const { 
-    stats: memberStats, 
-    loading: statsLoading,
-    error: statsError,
-    refetch: memberStatsRefetch
-  } = useMemberStatistics(orgBranchFilter.branchId, orgBranchFilter.organisationId);
-  
-  // Refresh data
-  const refreshData = useCallback(() => {
-    setIsRefreshing(true);
-    Promise.all([
-      refetch(),
-      memberStatsRefetch()
-    ]).then(() => {
-      setIsRefreshing(false);
-    }).catch(() => {
-      setIsRefreshing(false);
-    });
-  }, [refetch, memberStatsRefetch]);
+  const handleClearSelection = () => {
+    setSelectedMembers([]);
+  };
+
+  const handleBulkAction = async (actionType: BulkActionType, data?: any) => {
+    if (selectedMembers.length === 0) {
+      toast.error('Please select at least one member.');
+      return;
+    }
+
+    try {
+      switch (actionType) {
+        case 'recordSacrament':
+          setShowSacramentModal(true);
+          break;
+        case 'addToGroup':
+          setSelectionDialogData({
+            actionType,
+            options: groupsData?.smallGroups.map((g: any) => ({ id: g.id, name: g.name })) || [],
+            title: 'Add Members to Group',
+            label: 'Select a group',
+          });
+          setIsSelectionDialogOpen(true);
+          break;
+        case 'removeFromGroup':
+          setSelectionDialogData({
+            actionType,
+            options: groupsData?.smallGroups.map((g: any) => ({ id: g.id, name: g.name })) || [],
+            title: 'Remove Members from Group',
+            label: 'Select a group',
+          });
+          setIsSelectionDialogOpen(true);
+          break;
+        case 'addToMinistry':
+          setSelectionDialogData({
+            actionType,
+            options: ministriesData?.ministries.map((m: any) => ({ id: m.id, name: m.name })) || [],
+            title: 'Add Members to Ministry',
+            label: 'Select a ministry',
+          });
+          setIsSelectionDialogOpen(true);
+          break;
+        case 'removeFromMinistry':
+          setSelectionDialogData({
+            actionType,
+            options: ministriesData?.ministries.map((m: any) => ({ id: m.id, name: m.name })) || [],
+            title: 'Remove Members from Ministry',
+            label: 'Select a ministry',
+          });
+          setIsSelectionDialogOpen(true);
+          break;
+        case 'updateStatus':
+          const newStatus = data?.newStatus;
+          if (!newStatus) {
+            toast.error('Please select a new status.');
+            return;
+          }
+          await bulkUpdateMemberStatus({
+            variables: {
+              bulkUpdateStatusInput: { memberIds: selectedMembers, status: newStatus },
+            },
+          });
+          break;
+        case 'export': {
+          const result = await bulkExportMembers({
+            variables: {
+              bulkExportInput: {
+                memberIds: selectedMembers,
+                format: data?.format || 'CSV', // Default to CSV
+              },
+            },
+          });
+
+          const downloadUrl: string | undefined = result?.data?.bulkExportMembers;
+          if (downloadUrl) {
+            // Some backends may return the CSV content directly (not a URL). Detect and handle.
+            const looksLikeUrl = /^(https?:)?\/\//i.test(downloadUrl) || downloadUrl.startsWith('/');
+            const looksLikeCsv = /,/.test(downloadUrl) || /\n/.test(downloadUrl);
+            if (!looksLikeUrl && looksLikeCsv) {
+              try {
+                // If the string is URL-encoded, decode it safely
+                const maybeDecoded = decodeURIComponent(downloadUrl);
+                const csvText = maybeDecoded;
+                const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const inferredExt = (data?.format || 'CSV').toLowerCase();
+                link.href = url;
+                link.download = `members-export.${inferredExt}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                break;
+              } catch {
+                // Fall through to URL-based handling below
+              }
+            }
+            try {
+              // Normalize relative URLs
+              const finalUrl = new URL(downloadUrl, window.location.origin).toString();
+
+              // If the URL was constructed but actually contains CSV in the path (e.g., http://host/ID,Name,...),
+              // treat it as CSV content instead of fetching.
+              try {
+                const u = new URL(finalUrl);
+                const path = u.pathname || '';
+                const pathLooksLikeCsv = /,/.test(path) || /%2C/i.test(path) || /\n/.test(path);
+                if (pathLooksLikeCsv && path.length > 1) {
+                  const csvText = decodeURIComponent(path.slice(1));
+                  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  const inferredExt = (data?.format || 'CSV').toLowerCase();
+                  link.href = url;
+                  link.download = `members-export.${inferredExt}`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                  break;
+                }
+              } catch {}
+
+              // Try authenticated fetch (covers protected endpoints and preserves cookies)
+              const headers: Record<string, string> = {};
+              // Attempt to include a bearer token if your app uses one
+              const token =
+                (typeof window !== 'undefined' && (localStorage.getItem('authToken') || localStorage.getItem('accessToken'))) ||
+                undefined;
+              if (token) headers['Authorization'] = `Bearer ${token}`;
+
+              const resp = await fetch(finalUrl, {
+                method: 'GET',
+                headers,
+                credentials: 'include',
+              });
+
+              if (resp.ok) {
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                // Try to infer filename from Content-Disposition header
+                const cd = resp.headers.get('Content-Disposition') || '';
+                const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+                const inferredExt = (data?.format || 'CSV').toLowerCase();
+                const fallbackName = `members-export.${inferredExt}`;
+                const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackName);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+              } else {
+                // If direct fetch fails (CORS/protection), fall back to opening the URL
+                window.open(finalUrl, '_blank', 'noopener');
+              }
+            } catch (err) {
+              // As a last resort, attempt a simple anchor click
+              const link = document.createElement('a');
+              link.href = downloadUrl;
+              const inferredExt = (data?.format || 'CSV').toLowerCase();
+              link.download = `members-export.${inferredExt}`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }
+          } else {
+            toast.error('Export succeeded but no download URL was returned.');
+          }
+          break;
+        }
+        case 'deactivate':
+          await bulkDeactivateMembers({ variables: { memberIds: selectedMembers } });
+          break;
+        default:
+          toast.error('This bulk action is not yet implemented.');
+      }
+
+      if (['updateStatus', 'export', 'deactivate'].includes(actionType)) {
+        toast.success('Bulk action completed successfully!');
+        refetch();
+        setSelectedMembers([]);
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'An error occurred.');
+    }
+  };
+
+  const handleSelectionConfirm = async (selectedId: string) => {
+    if (!selectionDialogData.actionType) return;
+
+    try {
+      switch (selectionDialogData.actionType) {
+        case 'addToGroup':
+          await bulkAddToGroup({
+            variables: { bulkAddToGroupInput: { memberIds: selectedMembers, groupId: selectedId } },
+          });
+          break;
+        case 'removeFromGroup':
+          await bulkRemoveFromGroup({
+            variables: { bulkRemoveFromGroupInput: { memberIds: selectedMembers, groupId: selectedId } },
+          });
+          break;
+        case 'addToMinistry':
+          await bulkAddToMinistry({
+            variables: { bulkAddToMinistryInput: { memberIds: selectedMembers, ministryId: selectedId } },
+          });
+          break;
+        case 'removeFromMinistry':
+          await bulkRemoveFromMinistry({
+            variables: { bulkRemoveFromMinistryInput: { memberIds: selectedMembers, ministryId: selectedId } },
+          });
+          break;
+      }
+      toast.success('Bulk action completed successfully!');
+      refetch();
+      setSelectedMembers([]);
+    } catch (e: any) {
+      toast.error(e.message || 'An error occurred during the bulk action.');
+    } finally {
+      setIsSelectionDialogOpen(false);
+    }
+  };
+
+  const handleViewMember = (member: Member) => {
+    // Open modal immediately with existing lightweight data
+    setSelectedMember(member);
+    setShowMemberDetailModal(true);
+    // Fetch full details in the background
+    if (member?.id) {
+      fetchMember({ variables: { memberId: member.id } });
+    }
+  };
+
+  // When full member details arrive, update the selected member in state
+  useEffect(() => {
+    if (memberDetailData?.member) {
+      setSelectedMember(memberDetailData.member);
+    }
+  }, [memberDetailData]);
+
+  // Optionally surface errors from the detail fetch
+  useEffect(() => {
+    if (memberDetailError) {
+      console.error('Error fetching member details:', memberDetailError);
+    }
+  }, [memberDetailError]);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Members</h3>
+            <p className="text-gray-600 mb-4">{error.message}</p>
+            <button
+              onClick={() => refetch()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <DashboardHeader
-        title="Members"
-        subtitle="Manage and explore all church members"
-        icon={<UserGroupIcon className="h-10 w-10 text-white" />}
-      />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation */}
-        <div className="mt-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('members')}
-                className={`${
-                  activeTab === 'members'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
-              >
-                <UserGroupIcon className="h-5 w-5 mr-2" />
-                Members
-                {!loading && (
-                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs font-medium">
-                    {totalCount}
-                  </span>
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <div className="w-full max-w-7xl">
+        {/* Header */}
+        <motion.div 
+          className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40"
+          variants={itemVariants}
+        >
+          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                  Members
+                </h1>
+                <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
+                  <span>{pageInfo.totalCount} total</span>
+                  {Object.keys(filters).some(key => filters[key as keyof MemberFilters]) && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                      Filtered
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                {/* View Mode Toggle */}
+                <ViewModeToggle 
+                  currentMode={viewMode} 
+                  onModeChange={setViewMode} 
+                />
+
+                {/* Filter Toggle */}
+                <button
+                  onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  className={`p-2 rounded-lg transition-all duration-200 ${
+                    showFilterPanel || Object.keys(filters).some(key => filters[key as keyof MemberFilters])
+                      ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <FunnelIcon className="w-5 h-5" />
+                </button>
+
+                {/* Add Member Button */}
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                >
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Add Member</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats Section */}
+        <motion.div variants={itemVariants}>
+          <MemberStats 
+            totalMembers={pageInfo.totalCount} 
+            isLoading={isLoading} 
+            statistics={statistics} 
+          />
+        </motion.div>
+
+        {/* Main Content */}
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Sidebar - Filters */}
+            <AnimatePresence>
+              {showFilterPanel && (
+                <motion.div
+                  initial={{ opacity: 0, x: -300 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -300 }}
+                  className="lg:w-80 flex-shrink-0"
+                >
+                  <FilterPanel
+                    filters={filters}
+                    onFiltersChange={handleFilterChange}
+                    members={members}
+                    statistics={statistics}
+                    onClose={() => setShowFilterPanel(false)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Main Content Area */}
+            <motion.div 
+              className="flex-1 space-y-6"
+              variants={itemVariants}
+            >
+              {/* Search and Actions Bar */}
+              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <SearchBar 
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search members..."
+                  loading={searchLoading}
+                />
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowFilterPanel(!showFilterPanel)}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                    Filters
+                    {Object.keys(filters).some(key => filters[key as keyof MemberFilters]) && (
+                      <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+                        {Object.values(filters).filter(Boolean).length}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <ViewModeToggle 
+                    currentMode={viewMode} 
+                    onModeChange={setViewMode} 
+                  />
+                </div>
+              </motion.div>
+
+              {/* Bulk Actions Bar */}
+              <AnimatePresence>
+                {hasSelection && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <BulkActionsBar
+                      selectedCount={selectedCount}
+                      onClearSelection={handleClearSelection}
+                      onBulkAction={handleBulkAction}
+                    />
+                  </motion.div>
                 )}
-              </button>
-              <button
-                onClick={() => setActiveTab('reports')}
-                className={`${
-                  activeTab === 'reports'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
-              >
-                <ChartBarIcon className="h-5 w-5 mr-2" />
-                Reports
-              </button>
-            </nav>
+              </AnimatePresence>
+
+              {/* Member List */}
+              <motion.div variants={itemVariants}>
+                <MemberList
+                  members={members}
+                  loading={isLoading}
+                  viewMode={viewMode}
+                  selectedMembers={selectedMembers}
+                  onSelectMember={handleSelectMember}
+                  onSelectAll={handleSelectAll}
+                  onViewMember={handleViewMember}
+                  onEditMember={handleEditMember}
+                  totalCount={pageInfo.totalCount}
+                  onLoadMore={loadMore}
+                  hasNextPage={pageInfo.hasNextPage}
+                  hasPreviousPage={pageInfo.hasPreviousPage}
+                  onNextPage={goToNextPage}
+                  onPreviousPage={goToPreviousPage}
+                />
+              </motion.div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'members' && (
-          <>
-            {/* Statistics Cards */}
-            {statsLoading ? (
-              <div className="mt-6 text-center">
-                <p className="text-gray-500">Loading statistics...</p>
-              </div>
-            ) : statsError ? (
-              <div className="mt-6 text-center">
-                <p className="text-red-500">Error loading statistics</p>
-              </div>
-            ) : memberStats ? (
-              <MembersStats 
-                totalMembers={memberStats.totalMembers}
-                activeMembers={memberStats.activeMembers}
-                inactiveMembers={memberStats.inactiveMembers}
-                newMembersInPeriod={memberStats.newMembersInPeriod}
-                visitorsInPeriod={memberStats.visitorsInPeriod}
-              />
-            ) : null}
+        {/* Modals */}
+        <AnimatePresence>
+          {showAddModal && (
+            <AddMemberModal
+              isOpen={showAddModal}
+              onClose={() => setShowAddModal(false)}
+              onSuccess={() => {
+                refetch();
+                setShowAddModal(false);
+              }}
+              organisationId={organisationId}
+              branchId={branchId}
+            />
+          )}
+        </AnimatePresence>
 
-            {/* Search and filters section */}
-            <div className="mt-6 bg-white shadow-sm rounded-lg p-4 border border-gray-200">
-              <div className="sm:flex sm:items-center sm:justify-between flex-wrap gap-4">
-                <div className="flex-grow max-w-md">
-                  <SearchBar 
-                    value={searchTerm} 
-                    onChange={handleSearch} 
-                    placeholder="Search by name, email, or phone..."
-                  />
-                </div>
-                
-                <div className="flex flex-wrap gap-2 items-center">
-                  <FilterButton 
-                    onFilterChange={handleFilterChange} 
-                    activeFilters={activeFilters} 
-                  />
-                  <ExportButton members={displayMembers} />
-                </div>
-              </div>
+        <AnimatePresence>
+          {showSacramentModal && (
+            <AddSacramentModal 
+              isOpen={showSacramentModal} 
+              onClose={() => setShowSacramentModal(false)} 
+              selectedMemberIds={selectedMembers} 
+            />
+          )}
+        </AnimatePresence>
 
-              {/* Active filters display */}
-              {Object.keys(activeFilters).length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-gray-500 flex items-center">
-                    <FunnelIcon className="h-4 w-4 mr-1" /> Active filters:
-                  </span>
-                  
-                  {Object.entries(activeFilters).map(([category, values]) => (
-                    values.map(value => (
-                      <span
-                        key={`${category}-${value}`}
-                        className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
-                      >
-                        {`${category}: ${value}`}
-                        <button
-                          type="button"
-                          className="ml-1 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:bg-indigo-500 focus:text-white focus:outline-none"
-                          onClick={() => {
-                            const updatedFilters = { ...activeFilters };
-                            updatedFilters[category] = updatedFilters[category].filter(v => v !== value);
-                            if (updatedFilters[category].length === 0) {
-                              delete updatedFilters[category];
-                            }
-                            handleFilterChange(updatedFilters);
-                          }}
-                        >
-                          <span className="sr-only">Remove filter for {value}</span>
-                          <XMarkIcon className="h-3 w-3" aria-hidden="true" />
-                        </button>
-                      </span>
-                    ))
-                  ))}
-                  
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="text-xs font-medium text-gray-700 hover:text-indigo-600"
-                  >
-                    Clear all
-                  </button>
-                </div>
-              )}
-            </div>
+        <AnimatePresence>
+          {showMemberDetailModal && selectedMember && (
+            <MemberDetailModal
+              isOpen={showMemberDetailModal}
+              onClose={() => setShowMemberDetailModal(false)}
+              member={selectedMember}
+            />
+          )}
+        </AnimatePresence>
 
-            {/* Status information */}
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                Showing <span className="font-medium text-gray-900">{displayMembers.length}</span> of <span className="font-medium text-gray-900">{totalCount || 0}</span> {(totalCount || 0) === 1 ? 'member' : 'members'}
-                {Object.keys(activeFilters).length > 0 && ' with applied filters'}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setAddMemberOpen(true)}
-                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  + Add Member
-                </button>
-                {/* Refresh button */}
-                <button 
-                  onClick={refreshData} 
-                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  disabled={isRefreshing}
-                >
-                  <ArrowPathIcon className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-                </button>
-              </div>
-            </div>
-            
-            {/* Loading state */}
-            {(loading || isPageChanging) && !isRefreshing && <LoadingState />}
-            
-            {/* Error state */}
-            {error && (
-              <div className="mt-8 text-red-500 flex items-center justify-center p-4 bg-red-50 rounded-lg">
-                <p>Error loading members: {error.message}</p>
-              </div>
-            )}
-            
-            {/* Empty state */}
-            {!loading && !isRefreshing && displayMembers.length === 0 && (
-              <EmptyState onResetFilters={resetFilters} />
-            )}
-            
-            {/* Members card grid view */}
-            {!loading && displayMembers.length > 0 && (
-              <div className="mt-10">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
-                  {displayMembers.map((member) => (
-                    <div key={member.id} className="">
-                      {/* Card UI for each member */}
-                      <div className="bg-white rounded-2xl shadow-lg border border-indigo-50 p-6 flex flex-col items-center hover:shadow-xl transition group">
-                        {/* Profile image or initials */}
-                        {member.profileImage ? (
-                          <img
-                            src={member.profileImage}
-                            alt={member.name}
-                            className="h-20 w-20 rounded-full object-cover border-4 border-indigo-100 mb-3 shadow"
-                          />
-                        ) : (
-                          <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-700 mb-3 shadow">
-                            {member.name.split(' ').map(n => n[0]).join('').substring(0,2)}
-                          </div>
-                        )}
-                        <div className="text-lg font-semibold text-indigo-900 group-hover:text-indigo-700 text-center">{member.name}</div>
-                        <div className="text-xs text-gray-500 mb-2 text-center">{member.branch}</div>
-                        <div className="flex flex-col items-center gap-1 mb-2">
-                          <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-medium ${member.status === 'Active' ? 'bg-green-100 text-green-700' : member.status === 'Inactive' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-50 text-indigo-700'}`}>{member.status}</span>
-                          <span className="text-xs text-gray-400">Member since {member.memberSince}</span>
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                          {member.email && (
-                            <a href={`mailto:${member.email}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Email</a>
-                          )}
-                          {member.phone && (
-                            <a href={`tel:${member.phone}`} className="text-indigo-500 hover:text-indigo-700 text-sm underline">Call</a>
-                          )}
-                          <button
-                            className="text-sm text-indigo-600 hover:text-indigo-900 underline ml-2"
-                            onClick={() => openMemberModal(member.id)}
-                          >
-                            View
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Pagination */}
-            {!loading && displayMembers.length > 0 && (
-              <div className="mt-6">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={totalCount || 0}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={async (page) => {
-                    if (page === currentPage) return;
-                    setIsPageChanging(true);
-                    setCurrentPage(page);
-                    await refetch({
-                      skip: (page - 1) * itemsPerPage,
-                      take: itemsPerPage,
-                      ...(getGraphQLFilters() || {})
-                    });
-                    setIsPageChanging(false);
-                  }}
-                />
-              </div>
-            )}
-          </>
-        )}
+        <AnimatePresence>
+          {showEditMemberModal && selectedMember && (
+            <EditMemberModal
+              isOpen={showEditMemberModal}
+              onClose={() => setShowEditMemberModal(false)}
+              member={selectedMember}
+              onSuccess={() => {
+                refetch?.();
+              }}
+            />
+          )}
+        </AnimatePresence>
 
-        {activeTab === 'reports' && (
-          <MemberReports className="mt-6" />
-        )}
+        <AnimatePresence>
+          {isSelectionDialogOpen && (
+            <BulkActionSelectionDialog
+              isOpen={isSelectionDialogOpen}
+              onClose={() => setIsSelectionDialogOpen(false)}
+              onConfirm={handleSelectionConfirm}
+              title={selectionDialogData.title}
+              label={selectionDialogData.label}
+              options={selectionDialogData.options}
+            />
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* Modals */}
-      <AddMemberModal 
-        isOpen={addMemberOpen} 
-        onClose={() => setAddMemberOpen(false)} 
-        onMemberAdded={refreshData} 
-      />
-      
-      {selectedMemberId && (
-        <MemberDetailsModal 
-          memberId={selectedMemberId} 
-          onClose={closeMemberModal} 
-        />
-      )}
-    </div>
+    </motion.div>
   );
-}
-
-interface DisplayMember {
-  id: string | number;
-  name: string;
-  email?: string;
-  phone?: string;
-  status: string;
-  memberSince: string;
-  branch?: string;
-  branchId?: string;
-  profileImage?: string | null;
-  role?: string;
-  gender?: string;
-  occupation?: string;
-  dateOfBirth?: string;
-  isActive: boolean;
-  isVisitor?: boolean;
-}
-
-// Helper function to convert MemberStatus enum to display string
-const formatMemberStatus = (status: MemberStatus): string => {
-  switch (status) {
-    case MemberStatus.ACTIVE: return "Active";
-    case MemberStatus.INACTIVE: return "Inactive";
-    case MemberStatus.PENDING: return "Pending";
-    case MemberStatus.VISITOR: return "Visitor";
-    case MemberStatus.FIRST_TIME_VISITOR: return "First Time Visitor";
-    case MemberStatus.RETURNING_VISITOR: return "Returning Visitor";
-    case MemberStatus.DECEASED: return "Deceased";
-    case MemberStatus.TRANSFERRED_OUT: return "Transferred Out";
-    case MemberStatus.EXCOMMUNICATED: return "Excommunicated";
-    case MemberStatus.PROSPECTIVE: return "Prospective";
-    default:
-      return status; // Fallback, or consider 'Unknown'
-  }
 };
+
+export default MembersPage;
