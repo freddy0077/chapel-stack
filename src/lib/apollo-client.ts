@@ -7,7 +7,6 @@ import {
 import { createUploadLink } from 'apollo-upload-client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
-import { createHttpLink } from '@apollo/client';
 
 // Define the backend GraphQL API endpoint
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/graphql';
@@ -21,16 +20,10 @@ const uploadLink = createUploadLink({
   },
 });
 
-// Simplified authentication link for new auth system
-const isDev = process.env.NODE_ENV === 'development';
-
+// Optimized authentication link
 const authLink = setContext((operation, { headers }) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('chapel_access_token') : null;
   
-  // Reduced logging - only for critical operations
-  if (isDev && operation.operationName && ['login', 'refreshToken'].includes(operation.operationName)) {
-  }
-
   return {
     headers: {
       ...headers,
@@ -39,25 +32,18 @@ const authLink = setContext((operation, { headers }) => {
   };
 });
 
-// Simplified error handling - no automatic token refresh
-const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
-
+// Streamlined error handling
+const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) => {
-      // Removed console.error for performance
-      
-      // Handle authentication errors - but don't redirect immediately to avoid loops
+    graphQLErrors.forEach(({ message }) => {
+      // Handle authentication errors
       if (message.includes('Unauthorized') || message.includes('Token')) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('chapel_access_token');
           localStorage.removeItem('userData');
-          // Clear auth cookie
-          if (typeof document !== 'undefined') {
-            document.cookie = 'chapel_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          }
           
-          // Only redirect if not already on login page to prevent loops
-          if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes('/auth/login')) {
             setTimeout(() => {
               window.location.href = '/auth/login';
             }, 100);
@@ -67,31 +53,21 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
     });
   }
 
-  if (networkError) {
-    // Removed console.error for performance
-    
-    // Handle 401 errors - but don't redirect immediately to avoid loops
-    if ('statusCode' in networkError && networkError.statusCode === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('chapel_access_token');
-        localStorage.removeItem('userData');
-        // Clear auth cookie
-        if (typeof document !== 'undefined') {
-          document.cookie = 'chapel_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        }
-        
-        // Only redirect if not already on login page to prevent loops
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-          setTimeout(() => {
-            window.location.href = '/auth/login';
-          }, 100);
-        }
+  if (networkError && 'statusCode' in networkError && networkError.statusCode === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('chapel_access_token');
+      localStorage.removeItem('userData');
+      
+      if (!window.location.pathname.includes('/auth/login')) {
+        setTimeout(() => {
+          window.location.href = '/auth/login';
+        }, 100);
       }
     }
   }
 });
 
-// Create the Apollo Client
+// Create the Apollo Client with optimized cache
 const client = new ApolloClient({
   link: from([
     errorLink,
@@ -99,10 +75,20 @@ const client = new ApolloClient({
     uploadLink,
   ]),
   cache: new InMemoryCache({
+    // Optimize cache with better type policies
     typePolicies: {
       Query: {
         fields: {
-          // Add any cache policies here if needed
+          members: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
+          events: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
         },
       },
     },
@@ -110,11 +96,17 @@ const client = new ApolloClient({
   defaultOptions: {
     watchQuery: {
       errorPolicy: 'all',
+      fetchPolicy: 'cache-first', // Use cache-first for better performance
     },
     query: {
       errorPolicy: 'all',
+      fetchPolicy: 'cache-first',
     },
   },
+  // Enable query deduplication
+  queryDeduplication: true,
+  // Assume immutable cache for better performance
+  assumeImmutableResults: true,
 });
 
 export default client;

@@ -5,6 +5,23 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Performance optimizations
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@tremor/react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      'lucide-react',
+      'react-icons'
+    ],
+  },
+  // Compress responses
+  compress: true,
+  // Enable SWC minification
+  swcMinify: true,
   images: {
     domains: ['images.unsplash.com', 'placehold.co', 'via.placeholder.com', 'example.com', 'chapelstack-bucket.s3.eu-west-1.amazonaws.com'],
     remotePatterns: [

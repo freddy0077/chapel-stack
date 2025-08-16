@@ -89,6 +89,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     }
   }, [isOpen, member]);
 
+  /**
+   * Updates the form data for a given field.
+   *
+   * @param {keyof UpdateMemberInput} field - The field to update.
+   * @param {any} value - The new value for the field.
+   * @return {void}
+   */
   const handleChange = (field: keyof UpdateMemberInput, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -330,10 +337,10 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <input id="headOfHousehold" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.headOfHousehold)} onChange={(e) => handleChange('headOfHousehold', e.target.checked)} />
                       <label htmlFor="headOfHousehold" className="text-sm text-gray-700">Head of Household</label>
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Family ID</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.familyId || ''} onChange={(e) => handleChange('familyId', e.target.value)} />
-                    </div>
+                    {/*<div>*/}
+                    {/*  <label className="block text-sm text-gray-600 mb-1">Family ID</label>*/}
+                    {/*  <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.familyId || ''} onChange={(e) => handleChange('familyId', e.target.value)} />*/}
+                    {/*</div>*/}
                   </div>
                 </div>
               )}
