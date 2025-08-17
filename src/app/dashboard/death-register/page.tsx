@@ -26,6 +26,7 @@ import { ModernDeathRegisterStats } from '../../../components/death-register/Mod
 import { ModernDeathRegisterForm } from '../../../components/death-register/ModernDeathRegisterFormWizard';
 import MemorialCalendarView from '../../../components/death-register/MemorialCalendarView';
 import DeathRegisterAnalyticsView from '../../../components/death-register/DeathRegisterAnalyticsView';
+import { DeleteConfirmationModal } from '../../../components/death-register/DeleteConfirmationModal';
 
 export default function DeathRegisterPage() {
   const { user } = useAuth();
@@ -40,6 +41,11 @@ export default function DeathRegisterPage() {
   const [sortBy, setSortBy] = useState('dateOfDeath');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<DeathRegister | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     deathRegisters,
@@ -94,7 +100,7 @@ export default function DeathRegisterPage() {
           },
         });
       } else if (modalMode === 'edit' && selectedRecord) {
-        await updateDeathRegister(selectedRecord.id, data as UpdateDeathRegisterInput);
+        await updateDeathRegister(data as UpdateDeathRegisterInput);
         toast.success('Death record updated successfully', {
           icon: '✅',
           style: {
@@ -120,31 +126,11 @@ export default function DeathRegisterPage() {
     }
   }, [modalMode, selectedRecord, createDeathRegister, updateDeathRegister, refetch]);
 
-  const handleDeleteRecord = useCallback(async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this death record? This action cannot be undone.')) {
-      try {
-        await deleteDeathRegister(id);
-        toast.success('Death record deleted successfully', {
-          icon: '✅',
-          style: {
-            borderRadius: '10px',
-            background: '#10B981',
-            color: '#fff',
-          },
-        });
-        refetch();
-      } catch (err) {
-        toast.error('Failed to delete death record', {
-          icon: '❌',
-          style: {
-            borderRadius: '10px',
-            background: '#EF4444',
-            color: '#fff',
-          },
-        });
-      }
-    }
-  }, [deleteDeathRegister, refetch]);
+  // Handle delete record with modal
+  const handleDeleteRecord = useCallback((record: DeathRegister) => {
+    setRecordToDelete(record);
+    setShowDeleteModal(true);
+  }, []);
 
   // Filter and sort records
   const filteredRecords = deathRegisters
@@ -346,6 +332,47 @@ export default function DeathRegisterPage() {
           organisationId={organisationId || ''}
           branchId={branchId}
         />
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          record={recordToDelete}
+          onConfirm={async () => {
+            if (recordToDelete) {
+              setIsDeleting(true);
+              try {
+                await deleteDeathRegister(recordToDelete.id);
+                toast.success('Death record deleted successfully', {
+                  icon: '✅',
+                  style: {
+                    borderRadius: '10px',
+                    background: '#10B981',
+                    color: '#fff',
+                  },
+                });
+                refetch();
+                setShowDeleteModal(false);
+                setRecordToDelete(null);
+              } catch (err) {
+                toast.error('Failed to delete death record', {
+                  icon: '❌',
+                  style: {
+                    borderRadius: '10px',
+                    background: '#EF4444',
+                    color: '#fff',
+                  },
+                });
+              } finally {
+                setIsDeleting(false);
+              }
+            }
+          }}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setRecordToDelete(null);
+          }}
+          loading={isDeleting}
+        />
       </div>
     </div>
   );
@@ -356,7 +383,7 @@ const DeathRecordsTable: React.FC<{
   records: DeathRegister[];
   loading: boolean;
   onEdit: (record: DeathRegister) => void;
-  onDelete: (id: string) => void;
+  onDelete: (record: DeathRegister) => void;
   onMarkNotified: (id: string) => Promise<void>;
 }> = ({ records, loading, onEdit, onDelete, onMarkNotified }) => {
   if (loading) {
@@ -448,7 +475,7 @@ const DeathRecordsTable: React.FC<{
               )}
               
               <button
-                onClick={() => onDelete(record.id)}
+                onClick={() => onDelete(record)}
                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 title="Delete Record"
               >

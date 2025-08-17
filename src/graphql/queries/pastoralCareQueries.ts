@@ -76,7 +76,6 @@ export const GET_PASTORAL_CARE_RECENT_ACTIVITY = gql`
       title
       description
       date
-      memberName
       pastorName
     }
   }
@@ -93,12 +92,10 @@ export const GET_CARE_REQUESTS = gql`
       priority
       requestDate
       assignedPastorId
-      assignedPastorName
       notes
       status
       completionDate
       memberId
-      memberName
       requesterId
       organisationId
       branchId
@@ -225,9 +222,7 @@ export const GET_PASTORAL_VISITS = gql`
       description
       visitType
       scheduledDate
-      completedDate
       status
-      notes
       memberId
       pastorId
       organisationId
@@ -248,9 +243,7 @@ export const GET_COUNSELING_SESSIONS = gql`
       description
       sessionType
       scheduledDate
-      completedDate
       status
-      notes
       memberId
       counselorId
       organisationId
@@ -267,16 +260,17 @@ export const GET_FOLLOW_UP_REMINDERS = gql`
   query GetFollowUpReminders($filter: FollowUpReminderFilterInput!, $skip: Int, $take: Int) {
     followUpReminders(filter: $filter, skip: $skip, take: $take) {
       id
+      memberId
+      followUpType
       title
       description
-      reminderType
-      scheduledDate
-      completedDate
-      status
-      notes
-      relatedEntityType
-      relatedEntityId
+      dueDate
+      reminderDate
       assignedToId
+      notes
+      status
+      completedDate
+      actionRequired
       organisationId
       branchId
       createdBy
@@ -391,6 +385,13 @@ export const UPDATE_PASTORAL_VISIT = gql`
   }
 `;
 
+// Delete pastoral visit
+export const DELETE_PASTORAL_VISIT = gql`
+  mutation DeletePastoralVisit($id: String!) {
+    deletePastoralVisit(id: $id)
+  }
+`;
+
 // Create counseling session
 export const CREATE_COUNSELING_SESSION = gql`
   mutation CreateCounselingSession($input: CreateCounselingSessionInput!) {
@@ -437,21 +438,29 @@ export const UPDATE_COUNSELING_SESSION = gql`
   }
 `;
 
+// Delete counseling session
+export const DELETE_COUNSELING_SESSION = gql`
+  mutation DeleteCounselingSession($id: String!) {
+    deleteCounselingSession(id: $id)
+  }
+`;
+
 // Create follow-up reminder
 export const CREATE_FOLLOW_UP_REMINDER = gql`
   mutation CreateFollowUpReminder($input: CreateFollowUpReminderInput!) {
     createFollowUpReminder(input: $input) {
       id
+      memberId
+      followUpType
       title
       description
-      reminderType
-      scheduledDate
-      completedDate
-      status
-      notes
-      relatedEntityType
-      relatedEntityId
+      dueDate
+      reminderDate
       assignedToId
+      notes
+      status
+      completedDate
+      actionRequired
       organisationId
       branchId
       createdBy
@@ -466,21 +475,29 @@ export const UPDATE_FOLLOW_UP_REMINDER = gql`
   mutation UpdateFollowUpReminder($input: UpdateFollowUpReminderInput!) {
     updateFollowUpReminder(input: $input) {
       id
+      memberId
+      followUpType
       title
       description
-      reminderType
-      scheduledDate
-      completedDate
-      status
-      notes
-      relatedEntityType
-      relatedEntityId
+      dueDate
+      reminderDate
       assignedToId
+      notes
+      status
+      completedDate
+      actionRequired
       organisationId
       branchId
       createdBy
       createdAt
       updatedAt
     }
+  }
+`;
+
+// Delete follow-up reminder
+export const DELETE_FOLLOW_UP_REMINDER = gql`
+  mutation DeleteFollowUpReminder($id: String!) {
+    deleteFollowUpReminder(id: $id)
   }
 `;

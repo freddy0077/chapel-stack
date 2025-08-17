@@ -100,7 +100,7 @@ export const GET_DEATH_REGISTER = gql`
         profileImageUrl
         gender
         membershipDate
-        phone
+        phoneNumber
         email
       }
       branch {

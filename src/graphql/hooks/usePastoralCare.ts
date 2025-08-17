@@ -18,10 +18,13 @@ import {
   DELETE_CARE_REQUEST,
   CREATE_PASTORAL_VISIT,
   UPDATE_PASTORAL_VISIT,
+  DELETE_PASTORAL_VISIT,
   CREATE_COUNSELING_SESSION,
   UPDATE_COUNSELING_SESSION,
+  DELETE_COUNSELING_SESSION,
   CREATE_FOLLOW_UP_REMINDER,
   UPDATE_FOLLOW_UP_REMINDER,
+  DELETE_FOLLOW_UP_REMINDER,
 } from '../queries/pastoralCareQueries';
 
 // Types based on actual backend schema
@@ -58,12 +61,10 @@ export interface CareRequest {
   priority: string;
   requestDate: string;
   assignedPastorId?: string;
-  assignedPastorName?: string;
   notes?: string;
   status: string;
   completionDate?: string;
   memberId: string;
-  memberName?: string;
   requesterId: string;
   organisationId: string;
   branchId?: string;
@@ -78,9 +79,7 @@ export interface PastoralVisit {
   description: string;
   visitType: string;
   scheduledDate: string;
-  completedDate?: string;
   status: string;
-  notes?: string;
   memberId: string;
   pastorId: string;
   organisationId: string;
@@ -96,9 +95,7 @@ export interface CounselingSession {
   description: string;
   sessionType: string;
   scheduledDate: string;
-  completedDate?: string;
   status: string;
-  notes?: string;
   memberId: string;
   counselorId: string;
   organisationId: string;
@@ -110,16 +107,17 @@ export interface CounselingSession {
 
 export interface FollowUpReminder {
   id: string;
+  memberId?: string;
+  followUpType: string;
   title: string;
-  description: string;
-  reminderType: string;
-  scheduledDate: string;
-  completedDate?: string;
-  status: string;
+  description?: string;
+  dueDate: string;
+  reminderDate?: string;
+  assignedToId?: string;
   notes?: string;
-  relatedEntityType: string;
-  relatedEntityId: string;
-  assignedToId: string;
+  status: string;
+  completedDate?: string;
+  actionRequired?: string;
   organisationId: string;
   branchId?: string;
   createdBy: string;
@@ -163,11 +161,10 @@ export interface CounselingSessionFilterInput {
 }
 
 export interface FollowUpReminderFilterInput {
+  memberId?: string;
   assignedToId?: string;
-  reminderType?: string;
+  followUpType?: string;
   status?: string;
-  relatedEntityType?: string;
-  relatedEntityId?: string;
   startDate?: string;
   endDate?: string;
   organisationId: string;
@@ -199,6 +196,73 @@ export interface UpdateCareRequestInput {
   notes?: string;
   status?: string;
   completionDate?: string;
+}
+
+export interface CreatePastoralVisitInput {
+  title: string;
+  description: string;
+  visitType: string;
+  scheduledDate: string;
+  memberId: string;
+  pastorId: string;
+  organisationId: string;
+  branchId?: string;
+}
+
+export interface UpdatePastoralVisitInput {
+  id: string;
+  title?: string;
+  description?: string;
+  visitType?: string;
+  scheduledDate?: string;
+  memberId?: string;
+  pastorId?: string;
+  status?: string;
+}
+
+export interface CreateCounselingSessionInput {
+  title: string;
+  description: string;
+  sessionType: string;
+  scheduledDate: string;
+  memberId: string;
+  counselorId: string;
+  organisationId: string;
+  branchId?: string;
+}
+
+export interface UpdateCounselingSessionInput {
+  id: string;
+  title?: string;
+  description?: string;
+  sessionType?: string;
+  scheduledDate?: string;
+  memberId?: string;
+  counselorId?: string;
+  status?: string;
+}
+
+export interface CreateFollowUpReminderInput {
+  title: string;
+  description: string;
+  reminderType: string;
+  scheduledDate: string;
+  relatedEntityType: string;
+  relatedEntityId: string;
+  assignedToId: string;
+  organisationId: string;
+  branchId?: string;
+}
+
+export interface UpdateFollowUpReminderInput {
+  id: string;
+  title?: string;
+  description?: string;
+  reminderType?: string;
+  scheduledDate?: string;
+  completedDate?: string;
+  status?: string;
+  notes?: string;
 }
 
 // Hooks
@@ -455,7 +519,7 @@ export function useDeleteCareRequest() {
   return {
     deleteCareRequest: async (id: string) => {
       const result = await deleteCareRequest({ variables: { id } });
-      return result.data?.deleteCareRequest;
+      return result.data?.deleteCareRequest as boolean;
     },
     loading,
     error,
@@ -467,7 +531,7 @@ export function useCreatePastoralVisit() {
   const [createPastoralVisit, { loading, error }] = useMutation(CREATE_PASTORAL_VISIT);
   
   return {
-    createPastoralVisit: async (input: any) => {
+    createPastoralVisit: async (input: CreatePastoralVisitInput) => {
       const result = await createPastoralVisit({ variables: { input } });
       return result.data?.createPastoralVisit as PastoralVisit;
     },
@@ -481,9 +545,23 @@ export function useUpdatePastoralVisit() {
   const [updatePastoralVisit, { loading, error }] = useMutation(UPDATE_PASTORAL_VISIT);
   
   return {
-    updatePastoralVisit: async (input: any) => {
+    updatePastoralVisit: async (input: UpdatePastoralVisitInput) => {
       const result = await updatePastoralVisit({ variables: { input } });
       return result.data?.updatePastoralVisit as PastoralVisit;
+    },
+    loading,
+    error,
+  };
+}
+
+// Delete pastoral visit
+export function useDeletePastoralVisit() {
+  const [deletePastoralVisit, { loading, error }] = useMutation(DELETE_PASTORAL_VISIT);
+  
+  return {
+    deletePastoralVisit: async (id: string) => {
+      const result = await deletePastoralVisit({ variables: { id } });
+      return result.data?.deletePastoralVisit as boolean;
     },
     loading,
     error,
@@ -495,7 +573,7 @@ export function useCreateCounselingSession() {
   const [createCounselingSession, { loading, error }] = useMutation(CREATE_COUNSELING_SESSION);
   
   return {
-    createCounselingSession: async (input: any) => {
+    createCounselingSession: async (input: CreateCounselingSessionInput) => {
       const result = await createCounselingSession({ variables: { input } });
       return result.data?.createCounselingSession as CounselingSession;
     },
@@ -509,9 +587,23 @@ export function useUpdateCounselingSession() {
   const [updateCounselingSession, { loading, error }] = useMutation(UPDATE_COUNSELING_SESSION);
   
   return {
-    updateCounselingSession: async (input: any) => {
+    updateCounselingSession: async (input: UpdateCounselingSessionInput) => {
       const result = await updateCounselingSession({ variables: { input } });
       return result.data?.updateCounselingSession as CounselingSession;
+    },
+    loading,
+    error,
+  };
+}
+
+// Delete counseling session
+export function useDeleteCounselingSession() {
+  const [deleteCounselingSession, { loading, error }] = useMutation(DELETE_COUNSELING_SESSION);
+  
+  return {
+    deleteCounselingSession: async (id: string) => {
+      const result = await deleteCounselingSession({ variables: { id } });
+      return result.data?.deleteCounselingSession as boolean;
     },
     loading,
     error,
@@ -523,7 +615,7 @@ export function useCreateFollowUpReminder() {
   const [createFollowUpReminder, { loading, error }] = useMutation(CREATE_FOLLOW_UP_REMINDER);
   
   return {
-    createFollowUpReminder: async (input: any) => {
+    createFollowUpReminder: async (input: CreateFollowUpReminderInput) => {
       const result = await createFollowUpReminder({ variables: { input } });
       return result.data?.createFollowUpReminder as FollowUpReminder;
     },
@@ -537,9 +629,23 @@ export function useUpdateFollowUpReminder() {
   const [updateFollowUpReminder, { loading, error }] = useMutation(UPDATE_FOLLOW_UP_REMINDER);
   
   return {
-    updateFollowUpReminder: async (input: any) => {
+    updateFollowUpReminder: async (input: UpdateFollowUpReminderInput) => {
       const result = await updateFollowUpReminder({ variables: { input } });
       return result.data?.updateFollowUpReminder as FollowUpReminder;
+    },
+    loading,
+    error,
+  };
+}
+
+// Delete follow-up reminder
+export function useDeleteFollowUpReminder() {
+  const [deleteFollowUpReminder, { loading, error }] = useMutation(DELETE_FOLLOW_UP_REMINDER);
+  
+  return {
+    deleteFollowUpReminder: async (id: string) => {
+      const result = await deleteFollowUpReminder({ variables: { id } });
+      return result.data?.deleteFollowUpReminder as boolean;
     },
     loading,
     error,

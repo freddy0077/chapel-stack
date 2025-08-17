@@ -46,3 +46,12 @@ export const BIRTHDAY_MEMBERS = gql`
     }
   }
 `;
+
+export const GET_RECIPIENT_FILTER_COUNTS = gql`
+  query RecipientFilterCounts($input: RecipientCountInput!) {
+    recipientFilterCounts(input: $input) {
+      filter
+      count
+    }
+  }
+`;

@@ -10,6 +10,7 @@ import { useRecipientGroups } from '@/graphql/hooks/useRecipientGroups';
 import { useMemberSearch } from '@/graphql/hooks/useMemberSearch';
 import { useFilteredMembers } from '@/graphql/hooks/useFilteredMembers';
 import { useBirthdayMembers } from '@/graphql/hooks/useBirthdayMembers';
+import { useRecipientFilterCounts } from '@/graphql/hooks/useRecipientFilterCounts';
 import DemographicsModal from './modals/DemographicsModal';
 import EventAttendeesModal from './modals/EventAttendeesModal';
 import CustomListModal from './modals/CustomListModal';
@@ -48,6 +49,23 @@ export default function RecipientSelector({ recipients, setRecipients, birthdayR
   const { members: filteredMembers, fetchFiltered, loading: filterLoading } = useFilteredMembers();
   const { members: birthdayMembers, fetchBirthdays, loading: birthdayLoading } = useBirthdayMembers();
 
+  // Define all available filter keys
+  const availableFilterKeys = ['all-members', 'volunteers', 'inactive', 'donors', 'parents', 'families', 'anniversary-celebrants', 'prayer-request-submitters', 'new-members', 'recently-baptised'];
+  
+  // Add recipient filter counts hook - fetch counts when filter tab is active
+  const { counts, loading: countsLoading, refetch: refetchCounts } = useRecipientFilterCounts(
+    availableFilterKeys,
+    {
+      contactType: 'email', // Default to email counts, could be made configurable
+      skip: mode !== 'filter', // Only fetch when filter tab is active
+    }
+  );
+
+  // Get currently selected filter keys to fetch counts for
+  const selectedFilterKeys = recipients
+    .filter(r => r.type === 'Filter')
+    .map(r => r.key);
+  
   // Add/remove logic
   const handleAddRecipient = (recipient) => {
     if (!recipients.find(r => r.id === recipient.id)) {
@@ -371,6 +389,154 @@ export default function RecipientSelector({ recipients, setRecipients, birthdayR
             <div className="space-y-4">
               <p className="text-sm text-gray-600">Select advanced recipient groups not covered by Groups, Search, or Birthdays:</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* All Members */}
+                <div
+                  className={`rounded-lg p-3 cursor-pointer transition-all ${recipients.find(r => r.type === 'Filter' && r.key === 'all-members') ? 'bg-gradient-to-br from-violet-100 to-fuchsia-100 border-2 border-violet-300 shadow-sm' : 'bg-white border border-gray-200 hover:border-violet-200 hover:bg-violet-50'}`}
+                  onClick={() => {
+                    const exists = recipients.find(r => r.type === 'Filter' && r.key === 'all-members');
+                    if (exists) {
+                      setRecipients(recipients.filter(r => !(r.type === 'Filter' && r.key === 'all-members')));
+                    } else {
+                      setRecipients([...recipients, { id: 'filter-all-members', type: 'Filter', key: 'all-members', label: 'All Members' }]);
+                    }
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center mr-3">
+                      <span role="img" aria-label="All Members">👥</span>
+                    </div>
+                    <div className="flex-1 truncate">
+                      <div className="font-medium text-gray-900 truncate">All Members</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        All active church members
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts['all-members'] ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts['all-members']} recipients)</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {recipients.find(r => r.type === 'Filter' && r.key === 'all-members') && (
+                      <div className="ml-2 text-violet-600">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Volunteers */}
+                <div
+                  className={`rounded-lg p-3 cursor-pointer transition-all ${recipients.find(r => r.type === 'Filter' && r.key === 'volunteers') ? 'bg-gradient-to-br from-violet-100 to-fuchsia-100 border-2 border-violet-300 shadow-sm' : 'bg-white border border-gray-200 hover:border-violet-200 hover:bg-violet-50'}`}
+                  onClick={() => {
+                    const exists = recipients.find(r => r.type === 'Filter' && r.key === 'volunteers');
+                    if (exists) {
+                      setRecipients(recipients.filter(r => !(r.type === 'Filter' && r.key === 'volunteers')));
+                    } else {
+                      setRecipients([...recipients, { id: 'filter-volunteers', type: 'Filter', key: 'volunteers', label: 'Volunteers' }]);
+                    }
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center mr-3">
+                      <span role="img" aria-label="Volunteers">🙋‍♂️</span>
+                    </div>
+                    <div className="flex-1 truncate">
+                      <div className="font-medium text-gray-900 truncate">Volunteers</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        Active ministry volunteers
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts.volunteers ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts.volunteers} recipients)</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {recipients.find(r => r.type === 'Filter' && r.key === 'volunteers') && (
+                      <div className="ml-2 text-violet-600">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* New Members */}
+                <div
+                  className={`rounded-lg p-3 cursor-pointer transition-all ${recipients.find(r => r.type === 'Filter' && r.key === 'new-members') ? 'bg-gradient-to-br from-violet-100 to-fuchsia-100 border-2 border-violet-300 shadow-sm' : 'bg-white border border-gray-200 hover:border-violet-200 hover:bg-violet-50'}`}
+                  onClick={() => {
+                    const exists = recipients.find(r => r.type === 'Filter' && r.key === 'new-members');
+                    if (exists) {
+                      setRecipients(recipients.filter(r => !(r.type === 'Filter' && r.key === 'new-members')));
+                    } else {
+                      setRecipients([...recipients, { id: 'filter-new-members', type: 'Filter', key: 'new-members', label: 'New Members' }]);
+                    }
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center mr-3">
+                      <span role="img" aria-label="New Members">🆕</span>
+                    </div>
+                    <div className="flex-1 truncate">
+                      <div className="font-medium text-gray-900 truncate">New Members</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        Joined in last 30 days
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts['new-members'] ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts['new-members']} recipients)</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {recipients.find(r => r.type === 'Filter' && r.key === 'new-members') && (
+                      <div className="ml-2 text-violet-600">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Inactive Members */}
+                <div
+                  className={`rounded-lg p-3 cursor-pointer transition-all ${recipients.find(r => r.type === 'Filter' && r.key === 'inactive') ? 'bg-gradient-to-br from-violet-100 to-fuchsia-100 border-2 border-violet-300 shadow-sm' : 'bg-white border border-gray-200 hover:border-violet-200 hover:bg-violet-50'}`}
+                  onClick={() => {
+                    const exists = recipients.find(r => r.type === 'Filter' && r.key === 'inactive');
+                    if (exists) {
+                      setRecipients(recipients.filter(r => !(r.type === 'Filter' && r.key === 'inactive')));
+                    } else {
+                      setRecipients([...recipients, { id: 'filter-inactive', type: 'Filter', key: 'inactive', label: 'Inactive Members' }]);
+                    }
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-md bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center mr-3">
+                      <span role="img" aria-label="Inactive">😴</span>
+                    </div>
+                    <div className="flex-1 truncate">
+                      <div className="font-medium text-gray-900 truncate">Inactive Members</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        Members with inactive status
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts.inactive ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts.inactive} recipients)</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    {recipients.find(r => r.type === 'Filter' && r.key === 'inactive') && (
+                      <div className="ml-2 text-violet-600">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Parents & Families */}
                 <div
                   className={`rounded-lg p-3 cursor-pointer transition-all ${recipients.find(r => r.type === 'Filter' && r.key === 'parents') ? 'bg-gradient-to-br from-violet-100 to-fuchsia-100 border-2 border-violet-300 shadow-sm' : 'bg-white border border-gray-200 hover:border-violet-200 hover:bg-violet-50'}`}
@@ -389,7 +555,14 @@ export default function RecipientSelector({ recipients, setRecipients, birthdayR
                     </div>
                     <div className="flex-1 truncate">
                       <div className="font-medium text-gray-900 truncate">Parents & Families</div>
-                      <div className="text-xs text-gray-500 truncate">Households with children</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        Households with children
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts.parents ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts.parents} recipients)</span>
+                        ) : null}
+                      </div>
                     </div>
                     {recipients.find(r => r.type === 'Filter' && r.key === 'parents') && (
                       <div className="ml-2 text-violet-600">
@@ -447,7 +620,14 @@ export default function RecipientSelector({ recipients, setRecipients, birthdayR
                     </div>
                     <div className="flex-1 truncate">
                       <div className="font-medium text-gray-900 truncate">Anniversary Celebrants</div>
-                      <div className="text-xs text-gray-500 truncate">This month's anniversaries</div>
+                      <div className="text-xs text-gray-500 truncate">
+                        This month's anniversaries
+                        {countsLoading ? (
+                          <span className="ml-1 text-violet-500">Loading...</span>
+                        ) : counts['anniversary-celebrants'] ? (
+                          <span className="ml-1 font-medium text-violet-600">({counts['anniversary-celebrants']} recipients)</span>
+                        ) : null}
+                      </div>
                     </div>
                     {recipients.find(r => r.type === 'Filter' && r.key === 'anniversary') && (
                       <div className="ml-2 text-violet-600">

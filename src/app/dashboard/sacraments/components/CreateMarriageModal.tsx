@@ -69,7 +69,6 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
     certificate: null as File | null
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { createMatrimonyRecord, loading: mutationLoading, error: mutationError } = useCreateMatrimonyRecord();
 
@@ -89,7 +88,6 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
         certificate: null
       });
       setErrorMessage(null);
-      setSuccessMessage(null);
     }
   }, [isOpen]);
 
@@ -158,11 +156,8 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
       });
 
       if (result.data?.createSacramentalRecord) {
-        setSuccessMessage("Marriage record created successfully!");
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, 1500);
+        // Call onSuccess immediately to let parent handle success flow
+        onSuccess?.();
       }
     } catch (error) {
       console.error("Error creating marriage record:", error);
@@ -225,12 +220,6 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
                   {errorMessage && (
                     <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
                       <p className="text-sm text-red-700">{errorMessage}</p>
-                    </div>
-                  )}
-
-                  {successMessage && (
-                    <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-green-700">{successMessage}</p>
                     </div>
                   )}
 

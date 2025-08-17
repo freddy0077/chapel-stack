@@ -67,7 +67,7 @@ export const UPDATE_EMERGENCY_CONTACT = gql`
       emergencyContact {
         name
         relationship
-        phone
+        phoneNumber
         alternatePhone
         email
       }

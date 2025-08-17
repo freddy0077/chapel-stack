@@ -67,7 +67,6 @@ export default function CreateBaptismModal({ isOpen, onClose, onSuccess }: Creat
     certificate: null as File | null
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [memberSearch, setMemberSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -96,7 +95,6 @@ export default function CreateBaptismModal({ isOpen, onClose, onSuccess }: Creat
       });
       setMemberSearch("");
       setErrorMessage(null);
-      setSuccessMessage(null);
       setShowDropdown(false);
     }
   }, [isOpen]);
@@ -188,11 +186,8 @@ export default function CreateBaptismModal({ isOpen, onClose, onSuccess }: Creat
       });
 
       if (result.data?.createSacramentalRecord) {
-        setSuccessMessage("Baptism record created successfully!");
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, 1500);
+        // Call onSuccess immediately to let parent handle success flow
+        onSuccess?.();
       }
     } catch (error) {
       console.error("Error creating baptism record:", error);
@@ -255,12 +250,6 @@ export default function CreateBaptismModal({ isOpen, onClose, onSuccess }: Creat
                   {errorMessage && (
                     <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
                       <p className="text-sm text-red-700">{errorMessage}</p>
-                    </div>
-                  )}
-
-                  {successMessage && (
-                    <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-green-700">{successMessage}</p>
                     </div>
                   )}
 

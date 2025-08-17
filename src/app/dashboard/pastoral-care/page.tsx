@@ -6,12 +6,18 @@ import {
   usePastoralCareStats, 
   usePastoralCareRecentActivity, 
   useCareRequests,
-  useUpdateCareRequest 
+  useUpdateCareRequest,
+  usePastoralVisits,
+  useCounselingSessions,
+  useFollowUpReminders
 } from '@/graphql/hooks/usePastoralCare';
 import PastoralCareStats from './components/PastoralCareStats';
 import RecentActivity from './components/RecentActivity';
 import CareRequestsList from './components/CareRequestsList';
 import CreateCareRequestModal from './components/CreateCareRequestModal';
+import PastoralVisitsList from './components/PastoralVisitsList';
+import CounselingSessionsList from './components/CounselingSessionsList';
+import FollowUpRemindersList from './components/FollowUpRemindersList';
 import { HeartIcon, HomeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 export default function PastoralCarePage() {
@@ -21,9 +27,20 @@ export default function PastoralCarePage() {
 
   // Fetch data using our custom hooks
   const { stats, loading: statsLoading, error: statsError } = usePastoralCareStats();
-  const { activity, loading: activityLoading, error: activityError } = usePastoralCareRecentActivity(7);
+  // Temporarily disable recent activity query due to backend data integrity issue
+  // const { activity, loading: activityLoading, error: activityError } = usePastoralCareRecentActivity(7);
+  const activity = undefined;
+  const activityLoading = false;
+  const activityError = { message: 'Recent activity temporarily disabled due to backend data integrity issue' };
+  
   const { careRequests, loading: requestsLoading, error: requestsError, refetch: refetchRequests } = useCareRequests();
   const { updateCareRequest, loading: updating } = useUpdateCareRequest();
+  const { pastoralVisits, loading: visitsLoading, error: visitsError } = usePastoralVisits();
+  const { counselingSessions, loading: sessionsLoading, error: sessionsError } = useCounselingSessions();
+  const { followUpReminders, loading: remindersLoading, error: remindersError } = useFollowUpReminders();
+
+  // Handle the case where recent activity has data integrity issues
+  const safeActivity = activity?.filter(item => item.date != null) || [];
 
   const handleUpdateRequest = async (id: string, updates: any) => {
     try {
@@ -44,7 +61,7 @@ export default function PastoralCarePage() {
     refetchRequests();
   };
 
-  if (statsError || activityError || requestsError) {
+  if (statsError || requestsError || visitsError || sessionsError || remindersError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 p-6">
         <div className="max-w-7xl mx-auto">
@@ -118,6 +135,16 @@ export default function PastoralCarePage() {
                 <ChatBubbleLeftRightIcon className="h-4 w-4 inline mr-1" />
                 Counseling
               </button>
+              <button
+                onClick={() => setActiveTab('reminders')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'reminders'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Reminders
+              </button>
             </div>
           </div>
         </div>
@@ -134,7 +161,22 @@ export default function PastoralCarePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Recent Activity - Takes 1 column */}
               <div className="lg:col-span-1">
-                <RecentActivity activity={activity} loading={activityLoading} />
+                {activityError ? (
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                    <div className="text-center py-8">
+                      <div className="text-yellow-500 mb-2">⚠️</div>
+                      <p className="text-gray-500 text-sm">
+                        Recent activity temporarily unavailable
+                      </p>
+                      <p className="text-gray-400 text-xs mt-1">
+                        Data integrity issue being resolved
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <RecentActivity activity={safeActivity} loading={activityLoading} />
+                )}
               </div>
 
               {/* Care Requests - Takes 2 columns */}
@@ -151,29 +193,15 @@ export default function PastoralCarePage() {
         )}
 
         {activeTab === 'visits' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pastoral Visits</h2>
-            <div className="text-center py-8">
-              <HomeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Pastoral visits management coming soon</p>
-              <p className="text-sm text-gray-400 mt-1">
-                This section will allow you to schedule and track pastoral visits
-              </p>
-            </div>
-          </div>
+          <PastoralVisitsList visits={pastoralVisits} loading={visitsLoading} />
         )}
 
         {activeTab === 'counseling' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Counseling Sessions</h2>
-            <div className="text-center py-8">
-              <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Counseling sessions management coming soon</p>
-              <p className="text-sm text-gray-400 mt-1">
-                This section will allow you to schedule and manage counseling sessions
-              </p>
-            </div>
-          </div>
+          <CounselingSessionsList sessions={counselingSessions} loading={sessionsLoading} />
+        )}
+
+        {activeTab === 'reminders' && (
+          <FollowUpRemindersList reminders={followUpReminders} loading={remindersLoading} />
         )}
       </div>
       <CreateCareRequestModal 
