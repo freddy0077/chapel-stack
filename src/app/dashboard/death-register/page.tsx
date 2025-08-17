@@ -15,6 +15,7 @@ import {
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { useDeathRegisterManagement, useMemorialCalendar } from '../../../hooks/useDeathRegister';
+import { useOrganisationBranch } from '../../../hooks/useOrganisationBranch';
 import { DeathRegister, CreateDeathRegisterInput, UpdateDeathRegisterInput } from '../../../types/deathRegister';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContextEnhanced';
@@ -23,10 +24,12 @@ import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { ModernDeathRegisterHeader } from '../../../components/death-register/ModernDeathRegisterHeader';
 import { ModernDeathRegisterStats } from '../../../components/death-register/ModernDeathRegisterStats';
 import { ModernDeathRegisterForm } from '../../../components/death-register/ModernDeathRegisterFormWizard';
+import MemorialCalendarView from '../../../components/death-register/MemorialCalendarView';
+import DeathRegisterAnalyticsView from '../../../components/death-register/DeathRegisterAnalyticsView';
 
 export default function DeathRegisterPage() {
-  const { state } = useAuth();
-  const user = state.user;
+  const { user } = useAuth();
+  const { organisationId, branchId } = useOrganisationBranch();
   
   const [selectedTab, setSelectedTab] = useState('records');
   const [showModal, setShowModal] = useState(false);
@@ -36,6 +39,7 @@ export default function DeathRegisterPage() {
   const [filterYear, setFilterYear] = useState('');
   const [sortBy, setSortBy] = useState('dateOfDeath');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const {
     deathRegisters,
@@ -49,14 +53,15 @@ export default function DeathRegisterPage() {
     statsLoading,
     refetch,
   } = useDeathRegisterManagement({
-    organisationId: user?.organisationId || '',
-    branchId: user?.branchId || '',
+    organisationId: organisationId || '',
+    branchId: branchId || '',
   });
 
-  const { upcomingMemorials, memorialLoading } = useMemorialCalendar({
-    organisationId: user?.organisationId || '',
-    branchId: user?.branchId || '',
-  });
+  const { memorialDates: upcomingMemorials, loading: memorialLoading } = useMemorialCalendar(
+    selectedYear,
+    organisationId || '',
+    branchId || '',
+  );
 
   // Event handlers
   const handleAddRecord = useCallback(() => {
@@ -314,14 +319,18 @@ export default function DeathRegisterPage() {
               <MemorialCalendarView 
                 upcomingMemorials={upcomingMemorials}
                 loading={memorialLoading}
+                year={selectedYear}
+                onYearChange={setSelectedYear}
               />
             )}
 
             {selectedTab === 'analytics' && (
-              <AnalyticsView 
+              <DeathRegisterAnalyticsView 
                 stats={stats}
                 records={deathRegisters}
                 loading={statsLoading}
+                organisationId={organisationId}
+                branchId={branchId}
               />
             )}
           </div>
@@ -334,8 +343,8 @@ export default function DeathRegisterPage() {
           onClose={handleCloseModal}
           onSubmit={handleSubmitRecord}
           loading={loading}
-          organisationId={user?.organisationId || ''}
-          branchId={user?.branchId}
+          organisationId={organisationId || ''}
+          branchId={branchId}
         />
       </div>
     </div>
@@ -383,7 +392,7 @@ const DeathRecordsTable: React.FC<{
         <p className="mt-1 text-sm text-gray-500">
           No records match your current search and filter criteria.
         </p>
-      </div>
+    </div>
     );
   }
 
@@ -452,31 +461,3 @@ const DeathRecordsTable: React.FC<{
     </div>
   );
 };
-
-// Placeholder components for other tabs
-const MemorialCalendarView: React.FC<{
-  upcomingMemorials: any[];
-  loading: boolean;
-}> = ({ upcomingMemorials, loading }) => (
-  <div className="text-center py-12">
-    <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-    <h3 className="mt-2 text-sm font-medium text-gray-900">Memorial Calendar</h3>
-    <p className="mt-1 text-sm text-gray-500">
-      Memorial calendar view will be implemented here.
-    </p>
-  </div>
-);
-
-const AnalyticsView: React.FC<{
-  stats: any;
-  records: DeathRegister[];
-  loading: boolean;
-}> = ({ stats, records, loading }) => (
-  <div className="text-center py-12">
-    <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-    <h3 className="mt-2 text-sm font-medium text-gray-900">Analytics Dashboard</h3>
-    <p className="mt-1 text-sm text-gray-500">
-      Detailed analytics and reporting will be implemented here.
-    </p>
-  </div>
-);

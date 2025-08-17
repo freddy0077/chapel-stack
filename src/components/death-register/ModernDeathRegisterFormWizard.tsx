@@ -14,7 +14,7 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { useQuery } from '@apollo/client';
-import { GET_MEMBERS } from '../../graphql/queries/memberQueries';
+import { GET_MEMBERS_LIST } from '../../graphql/queries/memberQueries';
 import { 
   DeathRegister, 
   CreateDeathRegisterInput, 
@@ -116,7 +116,7 @@ export const ModernDeathRegisterForm: React.FC<ModernDeathRegisterFormProps> = (
     obituaryUrl: '',
     photoUrls: [],
     additionalDocuments: [],
-    branchId: branchId || '',
+    branchId: branchId || undefined,
     organisationId,
     funeralEventId: '',
   });
@@ -125,20 +125,18 @@ export const ModernDeathRegisterForm: React.FC<ModernDeathRegisterFormProps> = (
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Fetch members for selection
-  const { data: membersData, loading: membersLoading } = useQuery(GET_MEMBERS, {
+  const { data: membersData, loading: membersLoading } = useQuery(GET_MEMBERS_LIST, {
     variables: {
-      filter: {
-        organisationId,
-        branchId,
-        status: 'ACTIVE',
-        searchTerm: memberSearchTerm,
-        take: 20,
-      },
+      organisationId,
+      branchId,
+      search: memberSearchTerm,
+      memberStatus: ['ACTIVE'],
+      take: 20,
     },
     skip: currentStep !== 0,
   });
 
-  const members: Member[] = membersData?.members?.data || [];
+  const members: Member[] = membersData?.members || [];
 
   const handleInputChange = (field: keyof DeathRegisterFormData, value: any) => {
     setFormData(prev => ({
@@ -207,12 +205,61 @@ export const ModernDeathRegisterForm: React.FC<ModernDeathRegisterFormProps> = (
     if (!validateStep(currentStep)) return;
 
     try {
+      // Helper function to convert date string to ISO 8601 format
+      const formatDateToISO = (dateString: string): string | undefined => {
+        if (!dateString || dateString.trim() === '') return undefined;
+        try {
+          // Handle different date input formats
+          let date: Date;
+          
+          // If it's already in YYYY-MM-DD format from date input
+          if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            date = new Date(dateString + 'T00:00:00.000Z');
+          } else {
+            date = new Date(dateString);
+          }
+          
+          // Check if date is valid
+          if (isNaN(date.getTime())) {
+            console.error('Invalid date:', dateString);
+            return undefined;
+          }
+          
+          const isoString = date.toISOString();
+          console.log(`Formatted date: ${dateString} -> ${isoString}`);
+          return isoString;
+        } catch (error) {
+          console.error('Error formatting date:', dateString, error);
+          return undefined;
+        }
+      };
+
       const submitData = {
         ...formData,
         memberId: formData.selectedMember?.id,
         selectedMember: undefined,
+        // Convert date strings to ISO 8601 format, filter out undefined values
+        dateOfDeath: formatDateToISO(formData.dateOfDeath) || formData.dateOfDeath, // Fallback to original if formatting fails
+        funeralDate: formatDateToISO(formData.funeralDate),
+        notificationDate: formData.familyNotified && formData.notificationDate 
+          ? formatDateToISO(formData.notificationDate) 
+          : undefined,
       };
 
+      // Remove undefined date fields to avoid sending them, but keep required fields
+      Object.keys(submitData).forEach(key => {
+        // Don't delete required fields even if they're undefined
+        const requiredFields = ['dateOfDeath', 'memberId', 'placeOfDeath', 'organisationId'];
+        if (submitData[key] === undefined && !requiredFields.includes(key)) {
+          delete submitData[key];
+        }
+        // Also remove empty strings for optional foreign key fields
+        if (submitData[key] === '' && ['branchId', 'funeralEventId'].includes(key)) {
+          delete submitData[key];
+        }
+      });
+
+      console.log('Submitting death register data:', submitData);
       await onSubmit(submitData);
       onClose();
     } catch (error) {

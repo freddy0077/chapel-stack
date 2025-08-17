@@ -100,9 +100,8 @@ export const GET_DEATH_REGISTER = gql`
         profileImageUrl
         gender
         membershipDate
-        phoneNumber
+        phone
         email
-        address
       }
       branch {
         id
@@ -116,7 +115,6 @@ export const GET_DEATH_REGISTER = gql`
         id
         title
         startDate
-        endDate
         location
         description
       }
@@ -160,12 +158,6 @@ export const GET_DEATH_REGISTER_BY_MEMBER = gql`
         dateOfBirth
         profileImageUrl
         gender
-      }
-      funeralEvent {
-        id
-        title
-        startDate
-        location
       }
     }
   }
@@ -274,8 +266,8 @@ export const UPDATE_DEATH_REGISTER = gql`
 `;
 
 export const DELETE_DEATH_REGISTER = gql`
-  mutation DeleteDeathRegister($id: ID!) {
-    deleteDeathRegister(id: $id)
+  mutation RemoveDeathRegister($id: ID!) {
+    removeDeathRegister(id: $id)
   }
 `;
 
