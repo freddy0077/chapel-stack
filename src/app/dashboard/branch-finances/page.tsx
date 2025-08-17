@@ -8,12 +8,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTransactionMutations } from '@/graphql/hooks/useTransactionMutations';
 import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
-import { useTransactionsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useQuery, gql, useMutation, useApolloClient } from '@apollo/client';
+import { GET_MEMBERS_LIST } from '@/graphql/queries/memberQueries';
+import { useTransactionsQuery, useTransactionStatsQuery } from '@/graphql/hooks/useTransactionQueries';
 import DashboardHeader from "@/components/DashboardHeader";
 import { useFinanceReferenceData } from '@/graphql/hooks/useFinanceReferenceData';
-import { useTransactionStatsQuery } from '@/graphql/hooks/useTransactionQueries';
 import { useBranchEvents } from '@/hooks/useBranchEvents';
 import { EXPORT_TRANSACTIONS } from '@/graphql/queries/exportTransactionQueries';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
@@ -231,22 +230,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   });
 
   const [memberSearch, setMemberSearch] = useState('');
-
-  // For SUPER_ADMIN, only use selected branch from filter, not user's default branch
   const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
   const branchId = isSuperAdmin ? selectedBranch : (selectedBranch || defaultBranchId);
-
-  const [addFundOpen, setAddFundOpen] = useState(false);
-  const [fundsRefreshKey, setFundsRefreshKey] = useState(0);
-  const handleFundCreated = () => setFundsRefreshKey(k => k + 1);
-
-  const { data: fundsData, loading: fundsLoading, error: fundsError } = useQuery(GET_FUNDS, {
-    variables: { organisationId, branchId },
-    skip: !organisationId,
-  });
-  const funds = fundsData?.funds || [];
-
-  const { data: memberResults, loading: memberLoading } = useSearchMembers(memberSearch, organisationId, branchId);
 
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
@@ -658,6 +643,28 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
     setSelectedTransaction(transaction);
     setShowTransactionModal(true);
   };
+
+  const [addFundOpen, setAddFundOpen] = useState(false);
+  const [fundsRefreshKey, setFundsRefreshKey] = useState(0);
+  const handleFundCreated = () => setFundsRefreshKey(k => k + 1);
+
+  const { data: fundsData, loading: fundsLoading, error: fundsError } = useQuery(GET_FUNDS, {
+    variables: { organisationId, branchId },
+    skip: !organisationId,
+  });
+  const funds = fundsData?.funds || [];
+
+  const { data: memberResults, loading: memberLoading } = useQuery(GET_MEMBERS_LIST, {
+    variables: {
+      organisationId,
+      branchId,
+      search: memberSearch,
+      take: 20,
+    },
+    skip: !memberSearch || memberSearch.trim().length < 2,
+  });
+
+  const members = memberResults?.members || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white pb-16">
@@ -1214,15 +1221,15 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                     required
                   />
                   {memberLoading && <div className="text-xs text-gray-400 mt-1">Searching...</div>}
-                  {memberResults && memberSearch && (
+                  {members && memberSearch && !selectedMemberId && (
                     <ul className="border rounded bg-white mt-1 max-h-40 overflow-y-auto">
-                      {memberResults.length === 0 ? (
+                      {members.length === 0 ? (
                         <li className="p-2 text-gray-500 text-sm">No members found</li>
                       ) : (
-                        memberResults.map((m: any) => (
+                        members.map((m: any) => (
                           <li
                             key={m.id}
-                            className={`p-2 cursor-pointer hover:bg-gray-100 ${selectedMemberId === m.id ? 'bg-indigo-100' : ''}`}
+                            className="p-2 cursor-pointer hover:bg-gray-100"
                             onClick={() => {
                               setSelectedMemberId(m.id);
                               setMemberSearch(`${m.firstName} ${m.lastName}`);
@@ -1235,9 +1242,19 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
                     </ul>
                   )}
                   {/* Show selected member below the input if set */}
-                  {selectedMemberId && memberResults && (
-                    <div className="mt-1 text-xs text-indigo-700">
-                      Selected: {memberResults.find((m: any) => m.id === selectedMemberId)?.firstName} {memberResults.find((m: any) => m.id === selectedMemberId)?.lastName}
+                  {selectedMemberId && (
+                    <div className="mt-1 text-xs text-indigo-700 flex items-center justify-between">
+                      <span>Selected: {memberSearch}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMemberId(null);
+                          setMemberSearch('');
+                        }}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                      >
+                        ✕
+                      </button>
                     </div>
                   )}
                 </div>

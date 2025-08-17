@@ -1,23 +1,20 @@
 "use client";
-
-import React from "react";
-import { useQuery, gql } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { RoleRoute } from "@/components/auth/RoleRoute";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { BranchOverviewWidgets } from "@/components/dashboard/BranchOverviewWidgets";
-import { BranchFinancesSummary } from "@/components/dashboard/BranchFinancesSummary";
-import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
-import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
-import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
-import { BranchAnnouncements } from "@/components/dashboard/BranchAnnouncements";
+import { BranchAnalyticsTrends } from "@/components/dashboard/BranchAnalyticsTrends";
+import { BranchActivityFeed } from "@/components/dashboard/BranchActivityFeed";
 import { FinancialBreakdown } from "@/components/dashboard/FinancialBreakdown";
+import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
+import { BranchAnnouncements } from "@/components/dashboard/BranchAnnouncements";
+import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import BranchFinanceStats from "@/components/BranchFinanceStats";
-import { useQuery as useApolloQuery } from "@apollo/client";
 
 const BRANCH_DASHBOARD_QUERY = gql`
-  query BranchDashboard($branchId: String!) {
+  query BranchDashboard($branchId: ID!) {
     branchDashboard(branchId: $branchId) {
       branchInfo {
         id
@@ -26,15 +23,85 @@ const BRANCH_DASHBOARD_QUERY = gql`
         isActive
         admins { id name }
       }
-      memberStats { total newMembersThisMonth }
-      financeStats {
-        totalContributions tithes expenses pledge offering donation specialContribution
+      memberStats { 
+        total 
+        newMembersThisMonth 
+        growthRate
+        monthlyTrends {
+          month
+          year
+          totalMembers
+          newMembers
+        }
       }
-      attendanceStats { totalAttendance }
-      sacramentStats { totalSacraments }
+      financeStats {
+        totalContributions 
+        totalExpenses
+        tithes 
+        pledge 
+        offering 
+        donation 
+        specialContribution
+        growthRate
+        netIncome
+        monthlyTrends {
+          month
+          year
+          contributions
+          expenses
+          netIncome
+        }
+      }
+      attendanceStats { 
+        totalAttendance 
+        uniqueAttendeesThisMonth
+        averageAttendance
+        growthRate
+        monthlyTrends {
+          month
+          year
+          totalAttendance
+          uniqueAttendees
+        }
+      }
+      sacramentStats { 
+        totalSacraments 
+        breakdown {
+          type
+          count
+        }
+        monthlyTrends {
+          month
+          count
+        }
+      }
       activityStats {
         recentEvents { id title startDate }
         upcomingEvents { id title startDate }
+        recentMembers {
+          id
+          name
+          joinedAt
+        }
+        recentContributions {
+          id
+          amount
+          date
+          type
+        }
+        recentSacraments {
+          id
+          type
+          date
+          memberName
+        }
+        activitySummary {
+          newMembersCount
+          contributionsCount
+          sacramentsCount
+          attendanceRecordsCount
+          totalActivities
+        }
       }
       systemStatus {
         timestamp
@@ -66,7 +133,7 @@ export default function BranchDashboardPage() {
   });
 
   // Fetch funds for this branch for the finance stats component
-  const { data: fundsData, loading: fundsLoading, error: fundsError } = useApolloQuery(gql`
+  const { data: fundsData, loading: fundsLoading, error: fundsError } = useQuery(gql`
     query GetFunds($organisationId: String!, $branchId: String) {
       funds(organisationId: $organisationId, branchId: $branchId) {
         id
@@ -116,35 +183,34 @@ export default function BranchDashboardPage() {
             sacramentStats={branchDashboard.sacramentStats}
             activityStats={branchDashboard.activityStats}
           />
-          {/* Add more widgets as needed, e.g. finances, events, etc. */}
-          {/*<BranchFinancesSummary financeStats={branchDashboard.financeStats} />*/}
-          {/* BranchFinanceStats: Real-time branch and fund stats */}
+
+          {/* Enhanced Analytics Trends */}
+          <BranchAnalyticsTrends
+            memberTrends={branchDashboard.memberStats.monthlyTrends}
+            financeTrends={branchDashboard.financeStats.monthlyTrends}
+            attendanceTrends={branchDashboard.attendanceStats.monthlyTrends}
+            sacramentBreakdown={branchDashboard.sacramentStats.breakdown}
+            sacramentTrends={branchDashboard.sacramentStats.monthlyTrends}
+          />
+
+          {/* Enhanced Activity Feed */}
+          <BranchActivityFeed
+            recentMembers={branchDashboard.activityStats.recentMembers || []}
+            recentContributions={branchDashboard.activityStats.recentContributions || []}
+            recentSacraments={branchDashboard.activityStats.recentSacraments || []}
+            activitySummary={branchDashboard.activityStats.activitySummary}
+          />
+
+          {/* Financial Components */}
           <BranchFinanceStats
             organisationId={organisationId}
             branchId={branchId}
             funds={fundsData?.funds || []}
           />
           <FinancialBreakdown financeStats={branchDashboard.financeStats} />
-          {/* Recent Events Section */}
-          <section className="my-8">
-            <h2 className="text-2xl font-bold text-blue-800 mb-4">Recent Events</h2>
-            {branchDashboard.activityStats.recentEvents.length === 0 ? (
-              <div className="text-gray-500">No recent events.</div>
-            ) : (
-              <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100 bg-white/80 shadow-sm">
-                {branchDashboard.activityStats.recentEvents.map((event: any) => (
-                  <li key={event.id} className="flex items-center px-6 py-4 hover:bg-blue-50 transition">
-                    <div className="flex-1">
-                      <div className="font-semibold text-blue-900">{event.title}</div>
-                      <div className="text-gray-500 text-sm">{new Date(event.startDate).toLocaleString()}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+
+          {/* Events and Admin */}
           <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
-          {/*<BranchPerformance />*/}
           <BranchAnnouncements branchAnnouncements={branchDashboard.branchAnnouncements} />
           <BranchAdminTools branchInfo={branchDashboard.branchInfo} />
         </main>

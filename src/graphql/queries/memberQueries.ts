@@ -347,8 +347,8 @@ export const GET_MEMBER = gql`
 
 // Query to search for members by name, email, or phone number
 export const SEARCH_MEMBERS = gql`
-  query SearchMembers($search: String, $organisationId: String, $branchId: String) {
-    members(search: $search, organisationId: $organisationId, branchId: $branchId) {
+  query SearchMembers($query: String!, $branchId: String) {
+    searchMembers(query: $query, branchId: $branchId) {
       id
       firstName
       lastName

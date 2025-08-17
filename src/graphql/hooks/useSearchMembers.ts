@@ -10,12 +10,16 @@ export interface SearchMember {
   phoneNumber?: string;
 }
 
-// Accepts search string and optionally a limit, returns { members, loading, error, searchMembers }
+// Accepts search string and optionally a limit, returns { data: members, loading, error }
 export function useSearchMembers(searchTerm: string, organisationId: string, branchId?: string) {
   const { data, loading, error } = useQuery(SEARCH_MEMBERS, {
-    variables: { search: searchTerm, organisationId, branchId },
-    skip: !searchTerm,
+    variables: { query: searchTerm, branchId },
+    skip: !searchTerm || searchTerm.trim().length < 2, // Only search when we have at least 2 characters
   });
 
-  return { members: data?.members || [], loading, error };
+  return { 
+    data: data?.searchMembers || [], 
+    loading, 
+    error 
+  };
 }
