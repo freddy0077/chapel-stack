@@ -1358,8 +1358,23 @@ export const CREATE_SACRAMENTAL_RECORD = gql`
   mutation CreateSacramentalRecord($input: CreateSacramentalRecordInput!) {
     createSacramentalRecord(input: $input) {
       id
+      memberId
       sacramentType
       dateOfSacrament
+      officiantName
+      locationOfSacrament
+      certificateNumber
+      certificateUrl
+      notes
+      godparent1Name
+      godparent2Name
+      sponsorName
+      witness1Name
+      witness2Name
+      groomName
+      brideName
+      createdAt
+      updatedAt
     }
   }
 `;

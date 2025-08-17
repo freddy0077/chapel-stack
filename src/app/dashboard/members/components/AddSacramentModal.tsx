@@ -41,6 +41,8 @@ const AddSacramentModal: React.FC<AddSacramentModalProps> = ({ isOpen, onClose, 
     sponsorName: '',
     witness1Name: '',
     witness2Name: '',
+    groomName: '',
+    brideName: '',
   });
 
   const [createSacramentalRecord, { loading }] = useMutation(CREATE_SACRAMENTAL_RECORD);
@@ -59,6 +61,8 @@ const AddSacramentModal: React.FC<AddSacramentModalProps> = ({ isOpen, onClose, 
         sponsorName: '',
         witness1Name: '',
         witness2Name: '',
+        groomName: '',
+        brideName: '',
       });
     }
   }, [isOpen, user?.userBranches]);
@@ -216,6 +220,33 @@ const AddSacramentModal: React.FC<AddSacramentModalProps> = ({ isOpen, onClose, 
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
+                </div>
+              )}
+
+              {formData.sacramentType === 'MATRIMONY' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="groomName" className="block text-sm font-medium text-gray-700">Groom</label>
+                        <input
+                        type="text"
+                        id="groomName"
+                        name="groomName"
+                        value={formData.groomName}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="brideName" className="block text-sm font-medium text-gray-700">Bride</label>
+                        <input
+                        type="text"
+                        id="brideName"
+                        name="brideName"
+                        value={formData.brideName}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
                 </div>
               )}
 

@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   SparklesIcon, 
-  PlusIcon,
-  CalendarIcon,
-  MapPinIcon,
+  CalendarIcon, 
   UserIcon,
-  CheckCircleIcon
+  MapPinIcon,
+  DocumentTextIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline';
 import { Member } from '../../types/member.types';
+import { useMemberSacramentalRecords } from '@/graphql/hooks/useMemberGroupMemberships';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 
 interface SacramentsSectionProps {
   member: Member;
@@ -15,194 +17,57 @@ interface SacramentsSectionProps {
 
 interface Sacrament {
   id: string;
-  type: 'baptism' | 'confirmation' | 'communion' | 'marriage' | 'ordination' | 'dedication';
-  date: string;
-  location?: string;
-  officiant?: string;
-  notes?: string;
-  certificate?: string;
-}
-
-interface AddSacramentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (sacrament: Omit<Sacrament, 'id'>) => void;
   memberId: string;
+  sacramentType: string;
+  dateOfSacrament: string;
+  locationOfSacrament?: string;
+  officiantName?: string;
+  notes?: string;
+  certificateNumber?: string;
+  groomName?: string;
+  brideName?: string;
 }
-
-const AddSacramentModal: React.FC<AddSacramentModalProps> = ({ isOpen, onClose, onAdd, memberId }) => {
-  const [formData, setFormData] = useState({
-    type: 'baptism' as Sacrament['type'],
-    date: '',
-    location: '',
-    officiant: '',
-    notes: '',
-    certificate: ''
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAdd(formData);
-    setFormData({
-      type: 'baptism',
-      date: '',
-      location: '',
-      officiant: '',
-      notes: '',
-      certificate: ''
-    });
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Sacrament</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sacrament Type
-              </label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as Sacrament['type'] })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="baptism">Baptism</option>
-                <option value="confirmation">Confirmation</option>
-                <option value="communion">First Communion</option>
-                <option value="marriage">Marriage</option>
-                <option value="ordination">Ordination</option>
-                <option value="dedication">Child Dedication</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Location
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Church name or location"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Officiant
-              </label>
-              <input
-                type="text"
-                value={formData.officiant}
-                onChange={(e) => setFormData({ ...formData, officiant: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Pastor or officiant name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Additional notes or details"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Add Sacrament
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const SacramentsSection: React.FC<SacramentsSectionProps> = ({ member }) => {
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [sacraments, setSacraments] = useState<Sacrament[]>([]);
+  const { organisationId, branchId } = useOrganisationBranch();
+  const { sacramentalRecords, loading, error } = useMemberSacramentalRecords(
+    member.id,
+    branchId,
+    organisationId
+  );
 
-  // Initialize with existing sacrament data from member
-  React.useEffect(() => {
-    const existingSacraments: Sacrament[] = [];
-    
-    if (member.baptismDate) {
-      existingSacraments.push({
-        id: 'baptism-' + member.id,
-        type: 'baptism',
-        date: member.baptismDate.toString(),
-        location: member.baptismLocation,
-        officiant: '',
-        notes: ''
-      });
-    }
-    
-    if (member.confirmationDate) {
-      existingSacraments.push({
-        id: 'confirmation-' + member.id,
-        type: 'confirmation',
-        date: member.confirmationDate.toString(),
-        location: '',
-        officiant: '',
-        notes: ''
-      });
-    }
-    
-    setSacraments(existingSacraments);
-  }, [member]);
+  console.log(' SacramentsSection Debug:', {
+    memberId: member.id,
+    branchId,
+    organisationId,
+    sacramentalRecords,
+    recordsLength: sacramentalRecords?.length || 0,
+    loading,
+    error
+  });
 
   const getSacramentIcon = (type: string) => {
     switch (type) {
-      case 'baptism':
+      case 'EUCHARIST_FIRST_COMMUNION':
+        return <DocumentTextIcon className="h-4 w-4 text-green-500" />;
+      case 'BAPTISM':
         return <SparklesIcon className="h-4 w-4 text-blue-500" />;
-      case 'confirmation':
-        return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
-      case 'communion':
-        return <SparklesIcon className="h-4 w-4 text-purple-500" />;
-      case 'marriage':
+      case 'CONFIRMATION':
+        return <DocumentTextIcon className="h-4 w-4 text-green-500" />;
+      case 'MATRIMONY':
         return <SparklesIcon className="h-4 w-4 text-pink-500" />;
-      case 'ordination':
+      case 'HOLY_ORDERS_PRIESTHOOD':
         return <SparklesIcon className="h-4 w-4 text-yellow-500" />;
-      case 'dedication':
+      case 'HOLY_ORDERS_DIACONATE':
+        return <SparklesIcon className="h-4 w-4 text-yellow-500" />;
+      case 'ANOINTING_OF_THE_SICK':
         return <SparklesIcon className="h-4 w-4 text-indigo-500" />;
+      case 'RECONCILIATION_FIRST':
+        return <SparklesIcon className="h-4 w-4 text-purple-500" />;
+      case 'RCIA_INITIATION':
+        return <SparklesIcon className="h-4 w-4 text-purple-500" />;
+      case 'OTHER':
+        return <SparklesIcon className="h-4 w-4 text-gray-500" />;
       default:
         return <SparklesIcon className="h-4 w-4 text-gray-500" />;
     }
@@ -210,18 +75,26 @@ const SacramentsSection: React.FC<SacramentsSectionProps> = ({ member }) => {
 
   const getSacramentColor = (type: string) => {
     switch (type) {
-      case 'baptism':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'confirmation':
+      case 'EUCHARIST_FIRST_COMMUNION':
         return 'bg-green-50 text-green-700 border-green-200';
-      case 'communion':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'marriage':
+      case 'BAPTISM':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'CONFIRMATION':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'MATRIMONY':
         return 'bg-pink-50 text-pink-700 border-pink-200';
-      case 'ordination':
+      case 'HOLY_ORDERS_PRIESTHOOD':
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'dedication':
+      case 'HOLY_ORDERS_DIACONATE':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'ANOINTING_OF_THE_SICK':
         return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'RECONCILIATION_FIRST':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'RCIA_INITIATION':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'OTHER':
+        return 'bg-gray-50 text-gray-700 border-gray-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -229,22 +102,29 @@ const SacramentsSection: React.FC<SacramentsSectionProps> = ({ member }) => {
 
   const formatSacramentType = (type: string) => {
     switch (type) {
-      case 'communion':
+      case 'EUCHARIST_FIRST_COMMUNION':
         return 'First Communion';
-      case 'dedication':
-        return 'Child Dedication';
+      case 'BAPTISM':
+        return 'Baptism';
+      case 'CONFIRMATION':
+        return 'Confirmation';
+      case 'MATRIMONY':
+        return 'Marriage';
+      case 'HOLY_ORDERS_PRIESTHOOD':
+        return 'Priesthood';
+      case 'HOLY_ORDERS_DIACONATE':
+        return 'Diaconate';
+      case 'ANOINTING_OF_THE_SICK':
+        return 'Anointing of the Sick';
+      case 'RECONCILIATION_FIRST':
+        return 'First Reconciliation';
+      case 'RCIA_INITIATION':
+        return 'RCIA Initiation';
+      case 'OTHER':
+        return 'Other';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
-  };
-
-  const handleAddSacrament = (newSacrament: Omit<Sacrament, 'id'>) => {
-    const sacrament: Sacrament = {
-      ...newSacrament,
-      id: `${newSacrament.type}-${Date.now()}`
-    };
-    setSacraments([...sacraments, sacrament]);
-    // TODO: Call GraphQL mutation to add sacrament
   };
 
   return (
@@ -256,58 +136,90 @@ const SacramentsSection: React.FC<SacramentsSectionProps> = ({ member }) => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900">Sacraments & Milestones</h3>
         </div>
-        
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Add Sacrament
-        </button>
       </div>
 
-      {sacraments.length > 0 ? (
+      {loading ? (
+        <div className="text-center py-8">
+          <SparklesIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Loading sacraments...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <XCircleIcon className="h-12 w-12 text-red-300 mx-auto mb-3" />
+          <p className="text-red-600 text-sm">Error loading sacraments</p>
+        </div>
+      ) : sacramentalRecords.length === 0 ? (
+        <div className="text-center py-8">
+          <SparklesIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">No sacramental records found</p>
+        </div>
+      ) : (
         <div className="space-y-4">
-          {sacraments.map((sacrament) => (
+          {sacramentalRecords.map((sacrament) => (
             <div
               key={sacrament.id}
               className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
             >
               <div className="flex-shrink-0 mt-1">
-                {getSacramentIcon(sacrament.type)}
+                {getSacramentIcon(sacrament.sacramentType)}
               </div>
               
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h4 className="font-medium text-gray-900">
-                    {formatSacramentType(sacrament.type)}
+                    {formatSacramentType(sacrament.sacramentType)}
                   </h4>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getSacramentColor(sacrament.type)}`}>
-                    {getSacramentIcon(sacrament.type)}
-                    {formatSacramentType(sacrament.type)}
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getSacramentColor(sacrament.sacramentType)}`}>
+                    {getSacramentIcon(sacrament.sacramentType)}
+                    {formatSacramentType(sacrament.sacramentType)}
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mb-2">
                   <span className="flex items-center gap-1">
                     <CalendarIcon className="h-3 w-3" />
-                    {new Date(sacrament.date).toLocaleDateString()}
+                    {new Date(sacrament.dateOfSacrament).toLocaleDateString()}
                   </span>
                   
-                  {sacrament.location && (
+                  {sacrament.locationOfSacrament && (
                     <span className="flex items-center gap-1">
                       <MapPinIcon className="h-3 w-3" />
-                      {sacrament.location}
+                      {sacrament.locationOfSacrament}
                     </span>
                   )}
                   
-                  {sacrament.officiant && (
+                  {sacrament.officiantName && (
                     <span className="flex items-center gap-1">
                       <UserIcon className="h-3 w-3" />
-                      {sacrament.officiant}
+                      {sacrament.officiantName}
+                    </span>
+                  )}
+
+                  {sacrament.certificateNumber && (
+                    <span className="flex items-center gap-1">
+                      <DocumentTextIcon className="h-3 w-3" />
+                      Certificate: {sacrament.certificateNumber}
                     </span>
                   )}
                 </div>
+                
+                {/* Display groom and bride for marriage sacraments */}
+                {sacrament.sacramentType === 'MATRIMONY' && (sacrament.groomName || sacrament.brideName) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mb-2 mt-2 pt-2 border-t border-gray-200">
+                    {sacrament.groomName && (
+                      <span className="flex items-center gap-1">
+                        <UserIcon className="h-3 w-3" />
+                        Groom: {sacrament.groomName}
+                      </span>
+                    )}
+                    {sacrament.brideName && (
+                      <span className="flex items-center gap-1">
+                        <UserIcon className="h-3 w-3" />
+                        Bride: {sacrament.brideName}
+                      </span>
+                    )}
+                  </div>
+                )}
                 
                 {sacrament.notes && (
                   <p className="text-sm text-gray-600 mt-2">
@@ -318,22 +230,7 @@ const SacramentsSection: React.FC<SacramentsSectionProps> = ({ member }) => {
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-8">
-          <SparklesIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">No sacraments recorded</p>
-          <p className="text-gray-400 text-xs mt-1">
-            Add baptism, confirmation, and other spiritual milestones
-          </p>
-        </div>
       )}
-
-      <AddSacramentModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={handleAddSacrament}
-        memberId={member.id}
-      />
     </div>
   );
 };

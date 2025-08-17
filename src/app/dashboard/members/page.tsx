@@ -407,7 +407,11 @@ const MembersPage: React.FC = () => {
           break;
         }
         case 'deactivate':
-          await bulkDeactivateMembers({ variables: { memberIds: selectedMembers } });
+          await bulkDeactivateMembers({ 
+            variables: { 
+              bulkDeactivateInput: { memberIds: selectedMembers } 
+            } 
+          });
           break;
         default:
           toast.error('This bulk action is not yet implemented.');

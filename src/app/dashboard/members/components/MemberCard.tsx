@@ -40,14 +40,14 @@ const MemberCard: React.FC<MemberCardProps> = ({
   const [showMenu, setShowMenu] = useState(false);
 
   // Get member's full name
-  const fullName = [member.firstName, member.middleName, member.lastName]
+  const fullName = [member.lastName, member.middleName, member.firstName]
     .filter(Boolean)
     .join(' ');
 
   // Base display name prefers preferredName over constructed full name
-  const baseDisplayName = member.preferredName || fullName;
+  const baseDisplayName = fullName;
   // If title exists, always prepend it to the display name
-  const displayName = member.title ? `${member.title} ${baseDisplayName}` : baseDisplayName;
+  const displayName = member.title ? `${member.title}. ${baseDisplayName}` : baseDisplayName;
 
   // Get status color and label
   const getStatusInfo = (status: MembershipStatus) => {
