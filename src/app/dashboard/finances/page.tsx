@@ -19,6 +19,11 @@ import { useBranchEvents } from '@/hooks/useBranchEvents';
 import { EXPORT_TRANSACTIONS } from '@/graphql/queries/exportTransactionQueries';
 import { useBranches } from "../../../graphql/hooks/useBranches";
 
+// Import analytics components
+import CashFlowAnalysis from '@/components/finance/CashFlowAnalysis';
+import ComparativePeriodAnalysis from '@/components/finance/ComparativePeriodAnalysis';
+import MemberGivingHistory from '@/components/finance/MemberGivingHistory';
+
 // Simple Modal component
 function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
   if (!open) return null;
@@ -215,8 +220,9 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const { branches, loading: branchesLoading, error: branchesError } = useBranches({ organisationId });
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("transactions"); // Add main tab state
   const [searchQuery, setSearchQuery] = useState("");
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState("all");
 
   const [openModal, setOpenModal] = useState<string | null>(null);
 
@@ -302,11 +308,11 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
   } = useTransactionsQuery({
     organisationId,
     branchId,
-    type: activeTab === 'all' ? undefined :
-        activeTab === 'contribution' ? 'CONTRIBUTION' :
-            activeTab === 'expense' ? 'EXPENSE' :
-                activeTab === 'transfer' ? 'TRANSFER' :
-                    activeTab === 'fund_allocation' ? 'FUND_ALLOCATION' : undefined,
+    type: transactionTypeFilter === 'all' ? undefined :
+        transactionTypeFilter === 'contribution' ? 'CONTRIBUTION' :
+            transactionTypeFilter === 'expense' ? 'EXPENSE' :
+                transactionTypeFilter === 'transfer' ? 'TRANSFER' :
+                    transactionTypeFilter === 'fund_allocation' ? 'FUND_ALLOCATION' : undefined,
     fundId: selectedFund || undefined,
     eventId: selectedEvent || undefined,
     skip: (currentPage - 1) * pageSize,
@@ -692,219 +698,238 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
             }
         />
 
+        {/* Main Tab Navigation */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+            <nav className="flex space-x-1" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('transactions')}
+                className={`${
+                  activeTab === 'transactions'
+                    ? 'bg-indigo-100 text-indigo-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                } px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Transactions
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`${
+                  activeTab === 'analytics'
+                    ? 'bg-indigo-100 text-indigo-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                } px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                Analytics & Reports
+              </button>
+            </nav>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* MODERN UNIFIED FILTER BAR */}
           <div className="relative z-10 mb-8">
-            <div className="backdrop-blur-md bg-white/70 border border-indigo-100 shadow-xl rounded-2xl p-6 flex flex-wrap gap-6 md:gap-4 lg:gap-6 lg:flex-nowrap items-end">
-              {/* Branch Filter */}
-              <div className="flex-1 min-w-[180px] flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 01-8 0" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v4" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  Branch
-                </label>
-                <select
-                  value={selectedBranchId}
-                  onChange={e => setSelectedBranchId(e.target.value)}
-                  className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0 appearance-none"
-                  disabled={branchesLoading}
-                >
-                  <option value="">All Branches</option>
-                  {branches.map((branch: any) => (
-                    <option key={branch.id} value={branch.id}>{branch.name}</option>
-                  ))}
-                </select>
-              </div>
-              {/* Date Range */}
-              <div className="flex-1 min-w-[180px] flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  Date Range
-                </label>
-                <div className="flex gap-2 min-w-0">
-                  <input
-                      type="date"
-                      value={dateRange.startDate}
-                      onChange={e => handleDateRangeChange('startDate', e.target.value)}
-                      className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0"
-                      placeholder="Start"
-                  />
-                  <span className="text-gray-400 font-bold">–</span>
-                  <input
-                      type="date"
-                      value={dateRange.endDate}
-                      onChange={e => handleDateRangeChange('endDate', e.target.value)}
-                      className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0"
-                      placeholder="End"
-                  />
-                </div>
-              </div>
-              {/* Event Filter */}
-              <div className="flex-1 min-w-[160px] flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 01-8 0" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v4" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  Event
-                </label>
-                <div className="relative min-w-0 overflow-hidden">
-                  <select
-                      value={selectedEvent || ""}
-                      onChange={e => setSelectedEvent(e.target.value || null)}
-                      className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition w-full min-w-0 appearance-none"
-                      disabled={eventsLoading}
-                  >
-                    <option value="">All Events</option>
-                    {events && events.length > 0 ? (
-                        events.map((event: any) => (
-                            <option key={event.id} value={event.id}>{event.title}</option>
-                        ))
-                    ) : (
-                        <option disabled>{eventsLoading ? 'Loading events...' : 'No events available'}</option>
-                    )}
-                  </select>
-                  {selectedEvent && (
-                      <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-pink-500" onClick={() => setSelectedEvent(null)} title="Clear">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                  )}
-                </div>
-              </div>
-              {/* Fund Filter */}
-              <div className="flex-1 min-w-[160px] flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Fund
-                </label>
-                <div className="relative min-w-0 overflow-hidden">
-                  <select
-                      value={selectedFund || ""}
-                      onChange={e => setSelectedFund(e.target.value || null)}
-                      className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-green-400 focus:border-green-400 transition w-full min-w-0 appearance-none"
-                      disabled={fundsLoading}
-                  >
-                    <option value="">All Funds</option>
-                    {funds && funds.length > 0 ? (
-                        funds.map((fund: any) => (
-                            <option key={fund.id} value={fund.id}>{fund.name}</option>
-                        ))
-                    ) : (
-                        <option disabled>{fundsLoading ? 'Loading funds...' : 'No funds available'}</option>
-                    )}
-                  </select>
-                  {selectedFund && (
-                      <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-green-500" onClick={() => setSelectedFund(null)} title="Clear">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                  )}
-                </div>
-              </div>
-              {/* Transaction Type Filter */}
-              <div className="flex-1 min-w-[160px] flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                  Type
-                </label>
-                <select
-                    value={activeTab}
-                    onChange={e => setActiveTab(e.target.value)}
-                    className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition w-full min-w-0 appearance-none"
-                >
-                  <option value="all">All Types</option>
-                  <option value="contribution">Contributions</option>
-                  <option value="expense">Expenses</option>
-                  <option value="transfer">Transfers</option>
-                  <option value="fund_allocation">Fund Allocations</option>
-                </select>
-              </div>
-              {/* Search Input */}
-              <div className="flex-[2] min-w-[200px] md:ml-2 flex flex-col">
-                <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  Search
-                </label>
-                <div className="relative min-w-0 overflow-hidden">
-                  <input
-                      type="text"
-                      placeholder="Search transactions..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0 pr-8"
-                      aria-label="Search transactions"
-                  />
-                  {searchQuery && (
-                      <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-indigo-500" onClick={() => setSearchQuery("")} title="Clear">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                  )}
-                </div>
-              </div>
-              {/* Actions */}
-              <div className="flex flex-col gap-2 md:ml-2 md:w-auto w-full mt-2 md:mt-0">
-                {/* Export Dropdown Button */}
-                <div className="relative group">
-                  <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-full bg-white/80 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition w-full"
-                  >
-                    <svg className="w-4 h-4 mr-1 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16v-8m0 8l-4-4m4 4l4-4M4 20h16" /></svg>
-                    Export
-                    <svg className="w-3 h-3 ml-2 text-gray-400" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7l3-3 3 3m0 6l-3 3-3-3" /></svg>
-                  </button>
-                  <div className="absolute right-0 mt-2 min-w-[120px] bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition z-20">
-                    {/*<button*/}
-                    {/*  className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-t-lg"*/}
-                    {/*  onClick={() => handleExport("pdf")}*/}
-                    {/*>*/}
-                    {/*  <span className="inline-flex items-center">*/}
-                    {/*    <svg className="w-3 h-3 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 16V4a2 2 0 012-2h8a2 2 0 012 2v12M6 16h12M6 16l-2 2m2-2l2 2" /></svg>*/}
-                    {/*    PDF*/}
-                    {/*  </span>*/}
-                    {/*</button>*/}
-                    <button
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50"
-                        onClick={() => handleExport("excel")}
-                    >
-                    <span className="inline-flex items-center">
-                      <svg className="w-3 h-3 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-8-8v8m8-8H8m8 8h-8" /></svg>
-                      Excel
-                    </span>
-                    </button>
-                    <button
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-b-lg"
-                        onClick={() => handleExport("csv")}
-                    >
-                    <span className="inline-flex items-center">
-                      <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4V4zm4 4h8v8H8V8z" /></svg>
-                      CSV
-                    </span>
-                    </button>
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+                {/* Date Range */}
+                <div className="flex-1 min-w-[200px] flex flex-col">
+                  <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Date Range
+                  </label>
+                  <div className="flex gap-2 min-w-0">
+                    <input
+                        type="date"
+                        value={dateRange.startDate}
+                        onChange={e => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition flex-1 min-w-0"
+                        placeholder="Start date"
+                    />
+                    <input
+                        type="date"
+                        value={dateRange.endDate}
+                        onChange={e => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition flex-1 min-w-0"
+                        placeholder="End date"
+                    />
                   </div>
                 </div>
-                <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-full bg-white/80 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition"
-                    onClick={() => {
-                      setDateRange({ startDate: '', endDate: '' });
-                      setSelectedEvent(null);
-                      setSelectedFund(null);
-                      setActiveTab("all");
-                      setSearchQuery("");
-                      setCurrentPage(1);
-                      refetch();
-                    }}
-                >
-                  <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Clear All
-                </button>
-                <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    onClick={() => {
-                      setCurrentPage(1);
-                      refetch();
-                    }}
-                >
-                  <svg className="w-4 h-4 mr-1 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Apply Filters
-                </button>
+
+                {/* Transaction Type Filter - Only show on transactions tab */}
+                {activeTab === 'transactions' && (
+                  <div className="flex-1 min-w-[160px] flex flex-col">
+                    <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+                      <svg className="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                      Type
+                    </label>
+                    <select
+                        value={transactionTypeFilter}
+                        onChange={e => setTransactionTypeFilter(e.target.value)}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition w-full min-w-0 appearance-none"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="contribution">Contributions</option>
+                      <option value="expense">Expenses</option>
+                      <option value="transfer">Transfers</option>
+                      <option value="fund_allocation">Fund Allocations</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Event Filter */}
+                <div className="flex-1 min-w-[160px] flex flex-col">
+                  <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 01-8 0" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v4" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    Event
+                  </label>
+                  <div className="relative min-w-0 overflow-hidden">
+                    <select
+                        value={selectedEvent || ""}
+                        onChange={e => setSelectedEvent(e.target.value || null)}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition w-full min-w-0 appearance-none"
+                        disabled={eventsLoading}
+                    >
+                      <option value="">All Events</option>
+                      {events && events.length > 0 ? (
+                          events.map((event: any) => (
+                              <option key={event.id} value={event.id}>{event.title}</option>
+                          ))
+                      ) : (
+                          <option disabled>{eventsLoading ? 'Loading events...' : 'No events available'}</option>
+                      )}
+                    </select>
+                    {selectedEvent && (
+                        <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-pink-500" onClick={() => setSelectedEvent(null)} title="Clear">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fund Filter */}
+                <div className="flex-1 min-w-[160px] flex flex-col">
+                  <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Fund
+                  </label>
+                  <div className="relative min-w-0 overflow-hidden">
+                    <select
+                        value={selectedFund || ""}
+                        onChange={e => setSelectedFund(e.target.value || null)}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-green-400 focus:border-green-400 transition w-full min-w-0 appearance-none"
+                        disabled={fundsLoading}
+                    >
+                      <option value="">All Funds</option>
+                      {funds && funds.length > 0 ? (
+                          funds.map((fund: any) => (
+                              <option key={fund.id} value={fund.id}>{fund.name}</option>
+                          ))
+                      ) : (
+                          <option disabled>{fundsLoading ? 'Loading funds...' : 'No funds available'}</option>
+                      )}
+                    </select>
+                    {selectedFund && (
+                        <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-green-500" onClick={() => setSelectedFund(null)} title="Clear">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Search Input */}
+                <div className="flex-[2] min-w-[200px] md:ml-2 flex flex-col">
+                  <label className="block text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    Search
+                  </label>
+                  <div className="relative min-w-0 overflow-hidden">
+                    <input
+                        type="text"
+                        placeholder="Search transactions..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="rounded-full px-4 py-2 border border-gray-200 bg-white/80 text-sm shadow focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-full min-w-0 pr-8"
+                        aria-label="Search transactions"
+                    />
+                    {searchQuery && (
+                        <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-indigo-500" onClick={() => setSearchQuery("")} title="Clear">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    )}
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="flex flex-col gap-2 md:ml-2 md:w-auto w-full mt-2 md:mt-0">
+                  {/* Export Dropdown Button */}
+                  <div className="relative group">
+                    <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-full bg-white/80 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition w-full"
+                    >
+                      <svg className="w-4 h-4 mr-1 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16v-8m0 8l-4-4m4 4l4-4M4 20h16" /></svg>
+                      Export
+                      <svg className="w-3 h-3 ml-2 text-gray-400" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7l3-3 3 3m0 6l-3 3-3-3" /></svg>
+                    </button>
+                    <div className="absolute right-0 mt-2 min-w-[120px] bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition z-20">
+                      {/*<button*/}
+                      {/*  className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-t-lg"*/}
+                      {/*  onClick={() => handleExport("pdf")}*/}
+                      {/*>*/}
+                      {/*  <span className="inline-flex items-center">*/}
+                      {/*    <svg className="w-3 h-3 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 16V4a2 2 0 012-2h8a2 2 0 012 2v12M6 16h12M6 16l-2 2m2-2l2 2" /></svg>*/}
+                      {/*    PDF*/}
+                      {/*  </span>*/}
+                      {/*</button>*/}
+                      <button
+                          className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50"
+                          onClick={() => handleExport("excel")}
+                      >
+                        <span className="inline-flex items-center">
+                          <svg className="w-3 h-3 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-8-8v8m8-8H8m8 8h-8" /></svg>
+                          Excel
+                        </span>
+                      </button>
+                      <button
+                          className="w-full text-left px-4 py-2 text-xs hover:bg-indigo-50 rounded-b-lg"
+                          onClick={() => handleExport("csv")}
+                      >
+                        <span className="inline-flex items-center">
+                          <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4V4zm4 4h8v8H8V8z" /></svg>
+                          CSV
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-full bg-white/80 border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition"
+                      onClick={() => {
+                        setDateRange({ startDate: '', endDate: '' });
+                        setSelectedEvent(null);
+                        setSelectedFund(null);
+                        setTransactionTypeFilter("all");
+                        setSearchQuery("");
+                        setCurrentPage(1);
+                        refetch();
+                      }}
+                  >
+                    <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    Clear All
+                  </button>
+                  <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      onClick={() => {
+                        setCurrentPage(1);
+                        refetch();
+                      }}
+                  >
+                    <svg className="w-4 h-4 mr-1 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Apply Filters
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1031,106 +1056,150 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
           </div>
 
           {/* TRANSACTIONS TABLE */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 mb-8">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0 z-10">
-                <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                    Date
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Type
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Description
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Event
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Amount
-                  </th>
-                  <th scope="col" className="relative py-3.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                {displayedTransactions.length === 0 && !transactionsLoading && (
+          {activeTab === 'transactions' && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 mb-8">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-400">No transactions found.</td>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                        Date
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Type
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Description
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Event
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                        Amount
+                      </th>
+                      <th scope="col" className="relative py-3.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        <span className="sr-only">Actions</span>
+                      </th>
                     </tr>
-                )}
-                {transactionsLoading && displayedTransactions.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-400">
-                        <div className="flex justify-center items-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Loading transactions...
-                        </div>
-                      </td>
-                    </tr>
-                )}
-                {displayedTransactions.map((transaction, idx) => (
-                    <tr key={transaction.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                        {formatDate(transaction.date)}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {transaction.type === 'CONTRIBUTION' ? 'Income' : transaction.type === 'EXPENSE' ? 'Expense' : transaction.type === 'TRANSFER' ? 'Transfer' : 'Fund Allocation'}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {transaction.description || '-'}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {transaction.event?.title ? (
-                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          {transaction.event.title}
-                        </span>
-                        ) : '-'}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      <span className={`inline-flex items-center rounded-md ${transaction.type === 'CONTRIBUTION' ? 'bg-green-50 text-green-700 ring-green-700/10' : 'bg-red-50 text-red-700 ring-red-700/10'} px-2 py-1 text-xs font-medium ring-1 ring-inset`}>
-                        {transaction.type === 'CONTRIBUTION' ? '+' : '-'} ₵{transaction.amount}
-                      </span>
-                      </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <button
-                            onClick={() => handleViewTransaction(transaction)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                ))}
-                </tbody>
-              </table>
-            </div>
-            {hasNextPage && (
-                <div className="text-center py-4">
-                  <button
-                      onClick={handleLoadMore}
-                      disabled={transactionsLoading}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
-                  >
-                    {transactionsLoading ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Loading...
-                        </>
-                    ) : 'Load More'}
-                  </button>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                    {displayedTransactions.length === 0 && !transactionsLoading && (
+                        <tr>
+                          <td colSpan={6} className="text-center py-8 text-gray-400">No transactions found.</td>
+                        </tr>
+                    )}
+                    {transactionsLoading && displayedTransactions.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="text-center py-8 text-gray-400">
+                            <div className="flex justify-center items-center">
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Loading transactions...
+                            </div>
+                          </td>
+                        </tr>
+                    )}
+                    {displayedTransactions.map((transaction, idx) => (
+                        <tr key={transaction.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            {formatDate(transaction.date)}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {transaction.type === 'CONTRIBUTION' ? 'Income' : transaction.type === 'EXPENSE' ? 'Expense' : transaction.type === 'TRANSFER' ? 'Transfer' : 'Fund Allocation'}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {transaction.description || '-'}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {transaction.event?.title ? (
+                                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                              {transaction.event.title}
+                            </span>
+                            ) : '-'}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          <span className={`inline-flex items-center rounded-md ${transaction.type === 'CONTRIBUTION' ? 'bg-green-50 text-green-700 ring-green-700/10' : 'bg-red-50 text-red-700 ring-red-700/10'} px-2 py-1 text-xs font-medium ring-1 ring-inset`}>
+                            {transaction.type === 'CONTRIBUTION' ? '+' : '-'} ₵{transaction.amount}
+                          </span>
+                          </td>
+                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                            <button
+                                onClick={() => handleViewTransaction(transaction)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                  </table>
                 </div>
-            )}
-          </div>
+                {hasNextPage && (
+                    <div className="text-center py-4">
+                      <button
+                          onClick={handleLoadMore}
+                          disabled={transactionsLoading}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+                      >
+                        {transactionsLoading ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Loading...
+                            </>
+                        ) : 'Load More'}
+                      </button>
+                    </div>
+                )}
+              </div>
+          )}
+
+          {/* Analytics Section */}
+          {activeTab === 'analytics' && (
+              <div className="space-y-8">
+                {/* Debug logging */}
+                {console.log('Analytics Tab Active - Props:', {
+                  organisationId,
+                  branchId,
+                  selectedBranchId,
+                  dateRange,
+                  activeTab
+                })}
+                
+                {/* Analytics Header */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">Financial Analytics & Reports</h2>
+                  <p className="text-gray-600">Comprehensive financial insights and reporting for your organization.</p>
+                </div>
+
+                {/* Analytics Components */}
+                <div className="space-y-8">
+                  <CashFlowAnalysis 
+                    organisationId={organisationId}
+                    branchId={selectedBranchId || branchId}
+                    dateRange={{
+                      startDate: dateRange.startDate ? new Date(dateRange.startDate) : new Date(new Date().getFullYear(), 0, 1),
+                      endDate: dateRange.endDate ? new Date(dateRange.endDate) : new Date()
+                    }}
+                  />
+                  
+                  <ComparativePeriodAnalysis 
+                    organisationId={organisationId}
+                    branchId={selectedBranchId || branchId}
+                  />
+                  
+                  <MemberGivingHistory 
+                    organisationId={organisationId}
+                    branchId={selectedBranchId || branchId}
+                  />
+                </div>
+              </div>
+          )}
 
           {/* FLOATING ADD TRANSACTION BUTTON (MOBILE) */}
           <div className="fixed bottom-6 right-6 md:hidden z-50">
