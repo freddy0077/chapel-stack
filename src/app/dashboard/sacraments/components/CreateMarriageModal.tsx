@@ -142,26 +142,34 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
           input: {
             memberId: formData.groomId, 
             sacramentType: "MATRIMONY",
-            dateOfSacrament: new Date(formData.marriageDate),
+            dateOfSacrament: formData.marriageDate, // Send as string, not Date object
             locationOfSacrament: formData.location,
             officiantName: formData.officiant,
+            groomName: formData.groomName, // Add groom name
+            brideName: formData.brideName, // Add bride name
             witness1Name: formData.witnesses?.split(',')[0]?.trim() || null,
             witness2Name: formData.witnesses?.split(',')[1]?.trim() || null,
-            certificateNumber: formData.certificate || null,
-            notes: `Groom: ${formData.groomName}, Bride: ${formData.brideName}${formData.notes ? `. ${formData.notes}` : ''}`,
+            certificateNumber: formData.certificate?.name || null, // Use filename as certificate number
+            notes: formData.notes || null, // Send notes separately
             branchId,
             organisationId
           }
         }
       });
 
+      console.log('Marriage record creation result:', result); // Debug log
+
       if (result.data?.createSacramentalRecord) {
         // Call onSuccess immediately to let parent handle success flow
         onSuccess?.();
+      } else {
+        setErrorMessage("Failed to create marriage record. Please check all required fields.");
       }
     } catch (error) {
       console.error("Error creating marriage record:", error);
-      setErrorMessage("Failed to create marriage record. Please try again.");
+      // Show more detailed error message
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      setErrorMessage(`Failed to create marriage record: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -425,25 +433,25 @@ export default function CreateMarriageModal({ isOpen, onClose, onSuccess }: Crea
                         </label>
                       </div>
                     </div>
-                  </form>
-                </div>
 
-                {/* Footer */}
-                <div className="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-rose-600 border border-transparent rounded-md hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Creating..." : "Create Marriage Record"}
-                  </button>
+                    {/* Form Actions */}
+                    <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-4 py-2 text-sm font-medium text-white bg-rose-600 border border-transparent rounded-md hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? "Creating..." : "Create Marriage Record"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

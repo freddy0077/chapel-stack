@@ -11,7 +11,8 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
   updateFormData,
   onNext,
   onPrev,
-  isFirstStep
+  isFirstStep,
+  isLastStep
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 

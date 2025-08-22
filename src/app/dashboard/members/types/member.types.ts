@@ -102,6 +102,8 @@ export interface Member {
   
   // Additional Data
   notes?: string;
+  specialGifts?: string;
+  groupIds?: string[];
   customFields?: any;
   privacySettings?: any;
   
@@ -362,6 +364,8 @@ export interface CreateMemberInput {
   // Additional
   isRegularAttendee?: boolean;
   headOfHousehold?: boolean;
+  specialGifts?: string;
+  groupIds?: string[];
   
   // GDPR
   consentDate?: Date;

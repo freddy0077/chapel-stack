@@ -10,6 +10,23 @@ export const GET_BAPTISM_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      godparent1Name
+      godparent2Name
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -26,6 +43,22 @@ export const GET_COMMUNION_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      sponsorName
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -42,6 +75,22 @@ export const GET_CONFIRMATION_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      sponsorName
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -59,9 +108,24 @@ export const GET_MARRIAGE_RECORDS = gql`
       officiantName
       witness1Name
       witness2Name
+      groomName
+      brideName
       certificateNumber
       certificateUrl
       notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -84,6 +148,23 @@ export const GET_FILTERED_BAPTISM_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      godparent1Name
+      godparent2Name
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -104,6 +185,22 @@ export const GET_FILTERED_COMMUNION_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      sponsorName
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -124,6 +221,22 @@ export const GET_FILTERED_CONFIRMATION_RECORDS = gql`
       officiantName
       locationOfSacrament
       certificateUrl
+      sponsorName
+      certificateNumber
+      notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }
@@ -146,8 +259,23 @@ export const GET_FILTERED_MARRIAGE_RECORDS = gql`
       certificateUrl
       witness1Name
       witness2Name
+      groomName
+      brideName
       certificateNumber
       notes
+      member {
+        id
+        firstName
+        middleName
+        lastName
+        dateOfBirth
+        gender
+        email
+        phoneNumber
+        profileImageUrl
+        membershipDate
+        status
+      }
       createdAt
       updatedAt
     }

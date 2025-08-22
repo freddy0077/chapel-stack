@@ -160,7 +160,16 @@ export const useDeathRegisterMutations = (): UseDeathRegisterMutationsResult => 
       try {
         const { data } = await createMutation({
           variables: { input },
-          refetchQueries: [GET_DEATH_REGISTERS, GET_DEATH_REGISTER_STATS],
+          refetchQueries: [
+            GET_DEATH_REGISTERS,
+            {
+              query: GET_DEATH_REGISTER_STATS,
+              variables: {
+                organisationId: input.organisationId,
+                branchId: input.branchId,
+              },
+            },
+          ],
           awaitRefetchQueries: true,
         });
         return data.createDeathRegister;
@@ -180,7 +189,13 @@ export const useDeathRegisterMutations = (): UseDeathRegisterMutationsResult => 
           refetchQueries: [
             { query: GET_DEATH_REGISTER, variables: { id: input.id } },
             GET_DEATH_REGISTERS,
-            GET_DEATH_REGISTER_STATS,
+            {
+              query: GET_DEATH_REGISTER_STATS,
+              variables: {
+                organisationId: input.organisationId,
+                branchId: input.branchId,
+              },
+            },
           ],
           awaitRefetchQueries: true,
         });
@@ -194,11 +209,20 @@ export const useDeathRegisterMutations = (): UseDeathRegisterMutationsResult => 
   );
 
   const deleteDeathRegister = useCallback(
-    async (id: string): Promise<boolean> => {
+    async (id: string, organisationId?: string, branchId?: string): Promise<boolean> => {
       try {
         const { data } = await deleteMutation({
           variables: { id },
-          refetchQueries: [GET_DEATH_REGISTERS, GET_DEATH_REGISTER_STATS],
+          refetchQueries: [
+            GET_DEATH_REGISTERS,
+            ...(organisationId ? [{
+              query: GET_DEATH_REGISTER_STATS,
+              variables: {
+                organisationId,
+                branchId,
+              },
+            }] : []),
+          ],
           awaitRefetchQueries: true,
         });
         

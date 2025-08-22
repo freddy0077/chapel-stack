@@ -94,7 +94,7 @@ const MemberStats: React.FC<MemberStatsProps> = ({
     },
     {
       title: 'Retention Rate',
-      value: loading ? '...' : `${retentionRate}%`,
+      value: loading ? '...' : `${retentionRate.toFixed(1)}%`,
       icon: UserPlusIcon,
       change: '',
       changeType: 'positive' as const,
@@ -102,7 +102,7 @@ const MemberStats: React.FC<MemberStatsProps> = ({
     },
     {
       title: 'Conversion Rate',
-      value: loading ? '...' : `${conversionRate}%`,
+      value: loading ? '...' : `${conversionRate.toFixed(1)}%`,
       icon: ArrowTrendingUpIcon,
       change: '',
       changeType: 'positive' as const,
@@ -201,21 +201,21 @@ const MemberStats: React.FC<MemberStatsProps> = ({
                     <span className="text-gray-600">Male:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900">{memberStatistics.genderDistribution.maleCount}</span>
-                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.malePercentage}%)</span>
+                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.malePercentage.toFixed(1)}%)</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Female:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900">{memberStatistics.genderDistribution.femaleCount}</span>
-                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.femalePercentage}%)</span>
+                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.femalePercentage.toFixed(1)}%)</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Other:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900">{memberStatistics.genderDistribution.otherCount}</span>
-                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.otherPercentage}%)</span>
+                      <span className="text-xs text-gray-500">({memberStatistics.genderDistribution.otherPercentage.toFixed(1)}%)</span>
                     </div>
                   </div>
                 </div>
@@ -235,7 +235,7 @@ const MemberStats: React.FC<MemberStatsProps> = ({
                       <span className="text-gray-600">{group.range}:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-900">{group.count}</span>
-                        <span className="text-xs text-gray-500">({group.percentage}%)</span>
+                        <span className="text-xs text-gray-500">({group.percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
                   ))}
@@ -256,7 +256,7 @@ const MemberStats: React.FC<MemberStatsProps> = ({
                       <span className="text-gray-600">{item.status}:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-900">{item.count}</span>
-                        <span className="text-xs text-gray-500">({item.percentage}%)</span>
+                        <span className="text-xs text-gray-500">({item.percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
                   ))}
@@ -277,7 +277,7 @@ const MemberStats: React.FC<MemberStatsProps> = ({
                       <span className="text-gray-600">{item.status}:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-900">{item.count}</span>
-                        <span className="text-xs text-gray-500">({item.percentage}%)</span>
+                        <span className="text-xs text-gray-500">({item.percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
                   ))}

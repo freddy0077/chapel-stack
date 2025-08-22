@@ -221,16 +221,43 @@ export const GET_CARE_REQUESTS = gql`
       description
       requestType
       priority
-      requestDate
-      assignedPastorId
-      notes
       status
+      urgentNotes
+      contactInfo
+      preferredContactMethod
+      assignedPastorId
+      assistantId
+      assignedDate
+      requestDate
+      responseDate
       completionDate
+      responseNotes
+      resolutionNotes
+      actionsTaken
+      notes
       organisationId
       branchId
       createdBy
       createdAt
       updatedAt
+      requester {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+      }
+      assignedPastor {
+        id
+        firstName
+        lastName
+        email
+      }
+      creator {
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;
@@ -245,16 +272,43 @@ export const GET_CARE_REQUEST_BY_ID = gql`
       description
       requestType
       priority
-      requestDate
-      assignedPastorId
-      notes
       status
+      urgentNotes
+      contactInfo
+      preferredContactMethod
+      assignedPastorId
+      assistantId
+      assignedDate
+      requestDate
+      responseDate
       completionDate
+      responseNotes
+      resolutionNotes
+      actionsTaken
+      notes
       organisationId
       branchId
       createdBy
       createdAt
       updatedAt
+      requester {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+      }
+      assignedPastor {
+        id
+        firstName
+        lastName
+        email
+      }
+      creator {
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;
@@ -271,6 +325,7 @@ export const CREATE_CARE_REQUEST = gql`
       priority
       requestDate
       assignedPastorId
+      assistantId
       notes
       status
       completionDate
@@ -295,6 +350,7 @@ export const UPDATE_CARE_REQUEST = gql`
       priority
       requestDate
       assignedPastorId
+      assistantId
       notes
       status
       completionDate
@@ -571,6 +627,7 @@ export interface CareRequest {
   priority: string;
   requestDate: string;
   assignedPastorId?: string;
+  assistantId?: string;
   notes?: string;
   status: string;
   completionDate?: string;

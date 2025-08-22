@@ -53,24 +53,52 @@ export interface PastoralCareActivity {
   pastorName?: string;
 }
 
+export interface Member {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phoneNumber?: string;
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+}
+
 export interface CareRequest {
   id: string;
   title: string;
   description: string;
   requestType: string;
   priority: string;
-  requestDate: string;
-  assignedPastorId?: string;
-  notes?: string;
   status: string;
+  urgentNotes?: string;
+  contactInfo?: string;
+  preferredContactMethod?: string;
+  requesterId?: string;
+  assignedPastorId?: string;
+  assistantId?: string;
+  assignedDate?: string;
+  requestDate: string;
+  responseDate?: string;
   completionDate?: string;
+  responseNotes?: string;
+  resolutionNotes?: string;
+  actionsTaken?: string;
   memberId: string;
-  requesterId: string;
   organisationId: string;
   branchId?: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  notes?: string; // For backward compatibility
+  // Member details
+  requester?: Member;
+  assignedPastor?: User;
+  creator?: User;
 }
 
 export interface PastoralVisit {
@@ -92,17 +120,29 @@ export interface PastoralVisit {
 export interface CounselingSession {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   sessionType: string;
   scheduledDate: string;
   status: string;
   memberId: string;
   counselorId: string;
+  duration?: number;
+  location?: string;
+  sessionNotes?: string;
+  privateNotes?: string;
+  homework?: string;
+  nextSteps?: string;
+  sessionNumber?: number;
+  totalSessions?: number;
+  progressNotes?: string;
+  isConfidential?: boolean;
+  followUpDate?: string;
   organisationId: string;
   branchId?: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  notes?: string; // For backward compatibility
 }
 
 export interface FollowUpReminder {

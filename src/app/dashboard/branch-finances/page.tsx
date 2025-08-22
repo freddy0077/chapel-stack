@@ -209,6 +209,60 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
 
   const handleOpenTransactionModal = () => setShowTransactionModal(true);
 
+  // Handle modal form submission
+  const handleModalSubmit = async (formData: ModalFormData) => {
+    setSubmitAttempted(true);
+    setFormMessage({ type: null, text: '' });
+
+    // Validate form data
+    const validation = validateTransactionForm(formData);
+    if (!validation.isValid) {
+      setFormMessage({ type: 'error', text: validation.message });
+      return;
+    }
+
+    try {
+      // Prepare transaction data
+      const transactionData = {
+        organisationId,
+        branchId,
+        type: getTransactionTypeFromModal(formData.type),
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        date: formData.date,
+        fundId: formData.fundId,
+        memberId: formData.memberId || null,
+        eventId: formData.eventId || null,
+        reference: formData.reference || null,
+      };
+
+      // Create transaction
+      await createTransaction({
+        variables: { input: transactionData },
+        refetchQueries: [
+          { query: GET_FUNDS, variables: { organisationId, branchId } },
+        ],
+        awaitRefetchQueries: true,
+      });
+
+      // Success - close modal and reset form
+      setShowTransactionModal(false);
+      setModalForm(getInitialModalForm());
+      setSubmitAttempted(false);
+      setFormMessage({ type: 'success', text: 'Transaction created successfully!' });
+      
+      // Refetch transactions to update the list
+      refetch();
+      
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      setFormMessage({ 
+        type: 'error', 
+        text: 'Failed to create transaction. Please try again.' 
+      });
+    }
+  };
+
   // Transaction CRUD handlers
   const handleViewTransaction = (transaction: any) => {
     setSelectedTransaction(transaction);
@@ -350,9 +404,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
               className="inline-flex items-center rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
               type="button"
             >
-              <svg className="-ml-0.5 mr-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a9 9 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+              <svg className="-ml-0.5 mr-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a9 9 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               Member History
             </button>
             <button
@@ -399,8 +451,8 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
         {/* Analytics View */}
         {mainView === 'analytics' && (
           <FinancialAnalyticsSection 
-            organisationId={organisationId} 
-            branchId={branchId} 
+            organisationId={organisationId}
+            branchId={branchId}
           />
         )}
 
@@ -650,7 +702,9 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
             {/* Fund Balances Section */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-indigo-100">
               <h2 className="text-lg font-bold text-indigo-900 mb-4 flex items-center">
-                <svg className="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <svg className="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 Fund Balances
               </h2>
               {fundsLoading ? (
@@ -670,6 +724,25 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
         )}
 
         {/* Modals */}
+        <SharedModal
+          isOpen={showTransactionModal}
+          onClose={() => setShowTransactionModal(false)}
+          modalForm={modalForm}
+          setModalForm={setModalForm}
+          onSubmit={handleModalSubmit}
+          members={members}
+          funds={funds}
+          events={events}
+          memberSearch={memberSearch}
+          setMemberSearch={setMemberSearch}
+          selectedMemberId={selectedMemberId}
+          setSelectedMemberId={setSelectedMemberId}
+          submitAttempted={submitAttempted}
+          formMessage={formMessage}
+          organisationId={organisationId}
+          branchId={branchId}
+        />
+
         <AddFundModal 
           open={addFundOpen} 
           onClose={() => setAddFundOpen(false)} 

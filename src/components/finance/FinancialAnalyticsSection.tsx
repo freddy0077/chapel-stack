@@ -2,17 +2,20 @@
 
 import React, { useState } from 'react';
 import { 
-  ChartBarIcon,
-  DocumentTextIcon,
+  ChartBarIcon, 
+  ArrowTrendingUpIcon, 
   UserGroupIcon,
-  CurrencyDollarIcon,
-  CalendarIcon
+  DocumentTextIcon,
+  CalendarIcon,
+  FunnelIcon 
 } from '@heroicons/react/24/outline';
 import CashFlowAnalysis from './CashFlowAnalysis';
 import ComparativePeriodAnalysis from './ComparativePeriodAnalysis';
+import MemberGivingHistory from './MemberGivingHistory';
 import FinancialStatements from './FinancialStatements';
 import DonorStatements from './DonorStatements';
-import { BudgetVsActualReport } from '@/app/dashboard/reports/components/BudgetVsActualReport';
+import BudgetVsActual from './BudgetVsActual';
+import BudgetManagement from './BudgetManagement';
 
 // Mock data interfaces (replace with actual GraphQL data)
 interface CashFlowData {
@@ -180,8 +183,14 @@ const generateMockDonorData = (): DonorData[] => {
 };
 
 export default function FinancialAnalyticsSection({ organisationId, branchId }: FinancialAnalyticsSectionProps) {
-  const [activeTab, setActiveTab] = useState<'cash-flow' | 'comparative' | 'statements' | 'budget' | 'donors'>('cash-flow');
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<'cash-flow' | 'comparative' | 'statements' | 'budget' | 'budget-management' | 'donors'>('cash-flow');
   const [loading, setLoading] = useState(false);
+
+  // Default date range for analytics (current year)
+  const [dateRange] = useState({
+    startDate: new Date(new Date().getFullYear(), 0, 1), // Start of current year
+    endDate: new Date(), // Today
+  });
 
   // Mock data (replace with actual data fetching hooks)
   const cashFlowData = generateMockCashFlowData();
@@ -193,7 +202,8 @@ export default function FinancialAnalyticsSection({ organisationId, branchId }: 
     { id: 'cash-flow', name: 'Cash Flow', icon: ChartBarIcon },
     { id: 'comparative', name: 'Comparative Analysis', icon: CalendarIcon },
     { id: 'statements', name: 'Financial Statements', icon: DocumentTextIcon },
-    { id: 'budget', name: 'Budget vs Actual', icon: CurrencyDollarIcon },
+    { id: 'budget', name: 'Budget vs Actual', icon: FunnelIcon },
+    { id: 'budget-management', name: 'Budget Management', icon: ArrowTrendingUpIcon },
     { id: 'donors', name: 'Donor Statements', icon: UserGroupIcon },
   ];
 
@@ -236,9 +246,9 @@ export default function FinancialAnalyticsSection({ organisationId, branchId }: 
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveAnalyticsTab(tab.id as any)}
                   className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                    activeTab === tab.id
+                    activeAnalyticsTab === tab.id
                       ? 'border-indigo-500 text-indigo-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
@@ -251,43 +261,44 @@ export default function FinancialAnalyticsSection({ organisationId, branchId }: 
           </nav>
         </div>
 
-        {/* Tab Content */}
-        <div className="min-h-[600px]">
-          {activeTab === 'cash-flow' && (
-            <CashFlowAnalysis
-              data={cashFlowData}
-              loading={loading}
-              period="monthly"
-              onPeriodChange={(period) => console.log('Period changed:', period)}
+        {/* Analytics Content */}
+        <div className="space-y-8">
+          {activeAnalyticsTab === 'cash-flow' && (
+            <CashFlowAnalysis dateRange={dateRange} />
+          )}
+          
+          {activeAnalyticsTab === 'comparative' && (
+            <ComparativePeriodAnalysis />
+          )}
+
+          {activeAnalyticsTab === 'statements' && (
+            <FinancialStatements 
+              organisationId={organisationId}
+              branchId={branchId}
+              dateRange={dateRange}
             />
           )}
 
-          {activeTab === 'comparative' && (
-            <ComparativePeriodAnalysis
-              data={comparativeData}
-              loading={loading}
-              comparisonType="quarter-over-quarter"
-              onComparisonTypeChange={(type) => console.log('Comparison type changed:', type)}
-            />
-          )}
-
-          {activeTab === 'statements' && (
-            <FinancialStatements
-              data={financialData}
-              period="2024"
-              loading={loading}
-              onExport={handleExport}
-              onPrint={handlePrint}
-            />
-          )}
-
-          {activeTab === 'budget' && (
+          {activeAnalyticsTab === 'budget' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <BudgetVsActualReport />
+              <BudgetVsActual 
+                organisationId={organisationId}
+                branchId={branchId}
+                dateRange={dateRange}
+              />
             </div>
           )}
 
-          {activeTab === 'donors' && (
+          {activeAnalyticsTab === 'budget-management' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <BudgetManagement 
+                organisationId={organisationId}
+                branchId={branchId}
+              />
+            </div>
+          )}
+
+          {activeAnalyticsTab === 'donors' && (
             <DonorStatements
               donors={donorData}
               loading={loading}

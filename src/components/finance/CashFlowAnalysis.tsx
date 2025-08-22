@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@apollo/client';
 import { 
@@ -10,7 +10,10 @@ import {
   ArrowTrendingDownIcon,
   ChartBarIcon 
 } from '@heroicons/react/24/outline';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { CASH_FLOW_ANALYSIS, CashFlowAnalysisInput, CashFlowAnalysisResult } from '../../graphql/queries/analytics';
+import {useOrganizationBranchFilter} from "@/hooks";
 
 // Dynamically import Recharts components to prevent SSR issues
 const ResponsiveContainer = dynamic(
@@ -74,9 +77,7 @@ const Bar = dynamic(
 );
 
 interface CashFlowAnalysisProps {
-  organisationId: string;
-  branchId?: string;
-  dateRange: {
+  dateRange?: {
     startDate: Date;
     endDate: Date;
   };
@@ -84,50 +85,61 @@ interface CashFlowAnalysisProps {
 }
 
 const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
-  organisationId,
-  branchId,
   dateRange,
   fundId,
 }) => {
   const [periodType, setPeriodType] = useState<'MONTHLY' | 'QUARTERLY' | 'YEARLY'>('MONTHLY');
   const [isClient, setIsClient] = useState(false);
 
-  // Debug logging
-  console.log('CashFlowAnalysis Props:', {
-    organisationId,
-    branchId,
-    dateRange,
-    fundId,
-    hasOrganisationId: !!organisationId
-  });
+  // Get organisationId and branchId using the same pattern as branch-finances page
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId: defaultBranchId } = useOrganizationBranchFilter();
+  console.log("CashFlowAnalysis OrganisationId",organisationId)
+  
+  // Use the same super admin logic as the branch-finances page
+  const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
+  const effectiveBranchId = isSuperAdmin ? undefined : defaultBranchId; // For super admin, don't restrict by branch
 
-  // Default date range if not provided
-  const defaultDateRange = {
-    startDate: new Date(new Date().getFullYear(), 0, 1), // Start of current year
-    endDate: new Date(), // Today
-  };
+  // Memoize the effective date range to prevent infinite loops
+  const effectiveDateRange = useMemo(() => {
+    if (dateRange) {
+      return {
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      };
+    }
+    // Default date range if not provided
+    return {
+      startDate: new Date(new Date().getFullYear(), 0, 1), // Start of current year
+      endDate: new Date(), // Today
+    };
+  }, [dateRange]);
 
-  const effectiveDateRange = dateRange || defaultDateRange;
-
-  // Prepare GraphQL input
-  const cashFlowInput: CashFlowAnalysisInput = {
-    organisationId,
-    branchId,
-    dateRange: {
-      startDate: effectiveDateRange.startDate.toISOString(),
-      endDate: effectiveDateRange.endDate.toISOString(),
-    },
-    periodType,
-    fundId,
-  };
+  // Memoize GraphQL input to prevent unnecessary re-renders - only when we have valid data
+  const cashFlowInput: CashFlowAnalysisInput | null = useMemo(() => {
+    if (!organisationId) {
+      return null;
+    }
+    const input = {
+      organisationId,
+      branchId: effectiveBranchId,
+      dateRange: effectiveDateRange,
+      periodType,
+      fundId,
+    };
+    console.log('CashFlowAnalysis - GraphQL Input:', JSON.stringify(input, null, 2));
+    return input;
+  }, [organisationId, effectiveBranchId, effectiveDateRange, periodType, fundId]);
 
   // GraphQL query for cash flow analysis
-  const { data, loading, error, refetch } = useQuery<{ cashFlowAnalysis: CashFlowAnalysisResult }>(
+  const { data, loading, error } = useQuery<{ cashFlowAnalysis: CashFlowAnalysisResult }>(
     CASH_FLOW_ANALYSIS,
     {
       variables: { input: cashFlowInput },
-      skip: !organisationId,
+      skip: !organisationId || !cashFlowInput, // Skip if organisationId is undefined or input is null
       errorPolicy: 'all',
+      notifyOnNetworkStatusChange: true,
     }
   );
 
@@ -135,11 +147,30 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (organisationId) {
-      refetch();
-    }
-  }, [organisationId, branchId, effectiveDateRange, periodType, fundId, refetch]);
+  // Debug logging
+  console.log('CashFlowAnalysis Debug:', {
+    organisationId,
+    branchId: effectiveBranchId,
+    dateRange,
+    fundId,
+    hasOrganisationId: !!organisationId,
+    inputValid: !!cashFlowInput,
+    querySkipped: !organisationId || !cashFlowInput
+  });
+
+  // Show loading state when organizationId is not available
+  if (!organisationId) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading organization data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -185,7 +216,7 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
             {error.message || 'Unable to load cash flow analysis. Please try again.'}
           </p>
           <button
-            onClick={() => refetch()}
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Retry

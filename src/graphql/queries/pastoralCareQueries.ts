@@ -293,6 +293,7 @@ export const CREATE_CARE_REQUEST = gql`
       priority
       requestDate
       assignedPastorId
+      assistantId
       notes
       status
       completionDate
@@ -318,6 +319,7 @@ export const UPDATE_CARE_REQUEST = gql`
       priority
       requestDate
       assignedPastorId
+      assistantId
       notes
       status
       completionDate

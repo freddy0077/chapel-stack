@@ -26,6 +26,11 @@ import NewEventModal, { NewEventInput } from "./components/NewEventModal";
 import AttendanceSessionDetailsModal from "./components/AttendanceSessionDetailsModal";
 import PaginatedAttendanceRecords from "./components/PaginatedAttendanceRecords";
 import AttendanceReportDownloadModal from "@/components/attendance/AttendanceReportDownloadModal";
+import AttendanceRecordDetailModal from "./components/AttendanceRecordDetailModal";
+import EditAttendanceRecordModal from "./components/EditAttendanceRecordModal";
+import DeleteAttendanceRecordModal from "./components/DeleteAttendanceRecordModal";
+import CreateEventModal from "@/components/events/CreateEventModal";
+import EventDetailsModal from "./components/EventDetailsModal";
 import { useFilteredAttendanceSessions, useAllAttendanceRecords } from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useMutation, useQuery, gql } from "@apollo/client";
@@ -45,6 +50,9 @@ const GET_EVENTS = gql`
       endDate
       location
       category
+      attendanceRecords {
+        id
+      }
     }
   }
 `;
@@ -59,8 +67,17 @@ export default function AttendanceDashboard() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [detailsModalSessionId, setDetailsModalSessionId] = useState<string | null>(null);
   const [detailsModalSessionName, setDetailsModalSessionName] = useState<string>("");
+  const [eventDetailsModalOpen, setEventDetailsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [creatingEvent, setCreatingEvent] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  
+  // Attendance record modal states
+  const [recordDetailModalOpen, setRecordDetailModalOpen] = useState(false);
+  const [editRecordModalOpen, setEditRecordModalOpen] = useState(false);
+  const [deleteRecordModalOpen, setDeleteRecordModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({
@@ -88,11 +105,49 @@ export default function AttendanceDashboard() {
   const events = eventsData?.events || [];
 
   // Fetch all attendance records for statistics
-  const { attendanceRecords } = useAllAttendanceRecords({
+  const { attendanceRecords, refetch: refetchAttendanceRecords } = useAllAttendanceRecords({
     filter: {
       branchId: orgBranchFilter.branchId,
     }
   });
+
+  // Handler functions for attendance record actions
+  const handleViewRecord = (record: any) => {
+    setSelectedRecord(record);
+    setRecordDetailModalOpen(true);
+  };
+
+  const handleEditRecord = (record: any) => {
+    setSelectedRecord(record);
+    setEditRecordModalOpen(true);
+  };
+
+  const handleDeleteRecord = (record: any) => {
+    setSelectedRecord(record);
+    setDeleteRecordModalOpen(true);
+  };
+
+  const handleRecordUpdated = () => {
+    refetchAttendanceRecords();
+    setEditRecordModalOpen(false);
+    setSelectedRecord(null);
+  };
+
+  const handleRecordDeleted = () => {
+    refetchAttendanceRecords();
+    setDeleteRecordModalOpen(false);
+    setSelectedRecord(null);
+  };
+
+  const handleEditFromDetail = (record: any) => {
+    setRecordDetailModalOpen(false);
+    setEditRecordModalOpen(true);
+  };
+
+  const handleDeleteFromDetail = (record: any) => {
+    setRecordDetailModalOpen(false);
+    setDeleteRecordModalOpen(true);
+  };
 
   // Handler for creating a new event or session
   const handleCreateNewEvent = async (event: NewEventInput) => {
@@ -166,7 +221,7 @@ export default function AttendanceDashboard() {
       date: new Date(event.startDate),
       location: event.location,
       category: event.category,
-      attendanceCount: 0, // Events don't have direct attendance count in this query
+      attendanceCount: event.attendanceRecords?.length || 0,
     }));
 
     return [...sessionItems, ...eventItems];
@@ -441,15 +496,9 @@ export default function AttendanceDashboard() {
               records={attendanceRecords}
               loading={false}
               error={null}
-              onViewRecord={(record) => {
-                // Handle view record action
-              }}
-              onEditRecord={(record) => {
-                // Handle edit record action
-              }}
-              onDeleteRecord={(record) => {
-                // Handle delete record action
-              }}
+              onViewRecord={handleViewRecord}
+              onEditRecord={handleEditRecord}
+              onDeleteRecord={handleDeleteRecord}
               viewMode={viewMode === "grid" ? "cards" : "table"}
               className="space-y-6"
             />
@@ -466,13 +515,17 @@ export default function AttendanceDashboard() {
               </p>
               <button
                 onClick={() => {
-                  setModalMode('session');
-                  setIsNewEventModalOpen(true);
+                  if (activeTab === 'events') {
+                    setCreateEventModalOpen(true);
+                  } else {
+                    setModalMode('session');
+                    setIsNewEventModalOpen(true);
+                  }
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <PlusIcon className="h-5 w-5" />
-                Create New Session
+                {activeTab === 'events' ? 'Create New Event' : 'Create New Session'}
               </button>
             </div>
           ) : viewMode === "grid" ? (
@@ -523,6 +576,9 @@ export default function AttendanceDashboard() {
                                 setDetailsModalSessionId(item.id);
                                 setDetailsModalSessionName(item.title);
                                 setDetailsModalOpen(true);
+                              } else if (item.type === "event") {
+                                setSelectedEvent(item);
+                                setEventDetailsModalOpen(true);
                               }
                             }}
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -617,6 +673,9 @@ export default function AttendanceDashboard() {
                                     setDetailsModalSessionId(item.id);
                                     setDetailsModalSessionName(item.title);
                                     setDetailsModalOpen(true);
+                                  } else if (item.type === "event") {
+                                    setSelectedEvent(item);
+                                    setEventDetailsModalOpen(true);
                                   }
                                 }}
                                 className="text-indigo-600 hover:text-indigo-900 p-1 rounded transition-colors"
@@ -684,6 +743,52 @@ export default function AttendanceDashboard() {
           sessionId={detailsModalSessionId}
           sessionName={detailsModalSessionName}
         />
+
+        {/* Attendance Record Modals */}
+        <AttendanceRecordDetailModal
+          isOpen={recordDetailModalOpen}
+          onClose={() => setRecordDetailModalOpen(false)}
+          record={selectedRecord}
+          onEdit={handleEditFromDetail}
+          onDelete={handleDeleteFromDetail}
+        />
+
+        <EditAttendanceRecordModal
+          isOpen={editRecordModalOpen}
+          onClose={() => setEditRecordModalOpen(false)}
+          record={selectedRecord}
+          onSuccess={handleRecordUpdated}
+        />
+
+        <DeleteAttendanceRecordModal
+          isOpen={deleteRecordModalOpen}
+          onClose={() => setDeleteRecordModalOpen(false)}
+          record={selectedRecord}
+          onSuccess={handleRecordDeleted}
+        />
+
+        {/* Create Event Modal */}
+        <CreateEventModal
+          open={createEventModalOpen}
+          onClose={() => setCreateEventModalOpen(false)}
+          onSuccess={() => {
+            setCreateEventModalOpen(false);
+            // Refetch events data to show the newly created event
+            window.location.reload(); // Simple refresh for now, could be optimized with proper refetch
+          }}
+        />
+
+        {/* Event Details Modal */}
+        {selectedEvent && (
+          <EventDetailsModal
+            event={selectedEvent}
+            isOpen={eventDetailsModalOpen}
+            onClose={() => {
+              setEventDetailsModalOpen(false);
+              setSelectedEvent(null);
+            }}
+          />
+        )}
       </div>
     </>
   );

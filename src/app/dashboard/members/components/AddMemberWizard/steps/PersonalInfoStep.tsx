@@ -11,7 +11,10 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
   updateFormData,
   onNext,
   onPrev,
-  isFirstStep
+  onSubmit,
+  isSubmitting,
+  isFirstStep,
+  isLastStep
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 

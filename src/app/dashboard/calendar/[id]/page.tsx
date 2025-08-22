@@ -11,13 +11,15 @@ import {
   MapPinIcon,
   UserGroupIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 import { Divider } from "@tremor/react";
 import { useEvent, useEventMutations } from "@/graphql/hooks/useEvents";
-import { EventType, Status, EventRegistration } from "@/graphql/types/event";
+import { EventType, EventStatus, EventRegistration, EventRegistrationStatus } from "@/graphql/types/event";
 import Loading from "@/components/ui/Loading";
 import EditEventModal from "@/components/EditEventModal";
+import { EventNotesModal } from "@/components/events/EventNotesModal";
 
 export default function EventDetail() {
   const params = useParams();
@@ -27,6 +29,7 @@ export default function EventDetail() {
   const { deleteEvent } = useEventMutations();
   const [isDeleting, setIsDeleting] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
 
   // Defensive date formatting
   const formatEventDate = (dateString: string | Date | null | undefined) => {
@@ -48,6 +51,14 @@ export default function EventDetail() {
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
     return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
   };
+
+  // Helper function to check if event has ended
+  const isEventEnded = (endDate: string | Date | null | undefined) => {
+    if (!endDate) return false;
+    const end = new Date(endDate);
+    if (isNaN(end.getTime())) return false;
+    return end < new Date();
+  };
   const getEventTypeColor = (type: string) => {
     switch(type) {
       case EventType.SERVICE: return "blue";
@@ -62,11 +73,10 @@ export default function EventDetail() {
   };
   const getStatusColor = (status: string) => {
     switch(status) {
-      case Status.ACTIVE: return "green";
-      case Status.PENDING: return "yellow";
-      case Status.CANCELLED: return "red";
-      case Status.COMPLETED: return "blue";
-      case Status.DRAFT: return "gray";
+      case EventStatus.PUBLISHED: return "green";
+      case EventStatus.DRAFT: return "yellow";
+      case EventStatus.CANCELLED: return "red";
+      case EventStatus.COMPLETED: return "blue";
       default: return "gray";
     }
   };
@@ -135,6 +145,13 @@ export default function EventDetail() {
         }}
         onEventUpdated={refetch}
       />
+      <EventNotesModal
+        isOpen={notesModalOpen}
+        onClose={() => setNotesModalOpen(false)}
+        eventId={event.id}
+        eventTitle={event.title}
+        existingNotes={event.postEventNotes || ''}
+      />
       <div className="p-6 max-w-7xl mx-auto">
         {/* Navigation and Actions Header */}
         <div className="sticky top-0 z-10 bg-white bg-opacity-90 backdrop-blur-md border-b border-gray-100 -mx-6 px-6 py-4 mb-8 flex justify-between items-center">
@@ -145,6 +162,16 @@ export default function EventDetail() {
             <span className="text-gray-600 group-hover:text-indigo-600 font-medium transition-all duration-300">Back to Calendar</span>
           </Link>
           <div className="flex space-x-3">
+            {isEventEnded(event.endDate) && (
+              <button
+                type="button"
+                onClick={() => setNotesModalOpen(true)}
+                className="flex items-center px-4 py-2 rounded-full bg-gray-100 hover:bg-green-50 text-gray-700 hover:text-green-600 font-medium transition-all duration-300"
+              >
+                <DocumentTextIcon className="h-4 w-4 mr-2" />
+                {event.postEventNotes ? "Edit Notes" : "Add Notes"}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setEditOpen(true)}
@@ -308,6 +335,38 @@ export default function EventDetail() {
             </div>
           </div>
         </div>
+        
+        {/* Post-Event Notes Section */}
+        {event.postEventNotes && (
+          <div className="mt-8">
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+              <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/60 flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <span className="w-1.5 h-5 bg-green-500 rounded-full mr-3"></span>
+                  Post-Event Notes
+                </h3>
+                <div className="text-sm text-gray-500 flex items-center">
+                  {event.postEventNotesAuthor && (
+                    <span className="mr-2">
+                      By {event.postEventNotesAuthor.firstName} {event.postEventNotesAuthor.lastName}
+                    </span>
+                  )}
+                  {event.postEventNotesDate && (
+                    <span>
+                      on {formatEventDate(event.postEventNotesDate)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
+                  {event.postEventNotes}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Registrations Section */}
         {event.registrationRequired && event.registrations && event.registrations.length > 0 && (
           <div className="mt-10">
@@ -352,16 +411,16 @@ export default function EventDetail() {
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            registration.status === Status.ACTIVE ? "bg-green-100 text-green-800" : 
-                            registration.status === Status.PENDING ? "bg-amber-100 text-amber-800" : 
-                            registration.status === Status.CANCELLED ? "bg-red-100 text-red-800" : 
-                            registration.status === Status.COMPLETED ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                            registration.status === EventRegistrationStatus.APPROVED ? "bg-green-100 text-green-800" : 
+                            registration.status === EventRegistrationStatus.PENDING ? "bg-amber-100 text-amber-800" : 
+                            registration.status === EventRegistrationStatus.CANCELLED ? "bg-red-100 text-red-800" : 
+                            registration.status === EventRegistrationStatus.ATTENDING ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                              registration.status === Status.ACTIVE ? "bg-green-500" : 
-                              registration.status === Status.PENDING ? "bg-amber-500" : 
-                              registration.status === Status.CANCELLED ? "bg-red-500" : 
-                              registration.status === Status.COMPLETED ? "bg-blue-500" : "bg-gray-500"
+                              registration.status === EventRegistrationStatus.APPROVED ? "bg-green-500" : 
+                              registration.status === EventRegistrationStatus.PENDING ? "bg-amber-500" : 
+                              registration.status === EventRegistrationStatus.CANCELLED ? "bg-red-500" : 
+                              registration.status === EventRegistrationStatus.ATTENDING ? "bg-blue-500" : "bg-gray-500"
                             }`}></span>
                             {registration.status}
                           </span>

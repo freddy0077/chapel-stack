@@ -1,7 +1,7 @@
 import { useQuery, gql } from '@apollo/client';
 
 const GET_BRANCH_EVENTS = gql`
-  query GetBranchEvents($branchId: ID!, $organisationId: ID) {
+  query GetBranchEvents($branchId: String!, $organisationId: String) {
     events(branchId: $branchId, organisationId: $organisationId) {
       id
       title

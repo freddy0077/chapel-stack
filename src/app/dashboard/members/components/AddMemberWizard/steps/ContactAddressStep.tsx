@@ -10,7 +10,10 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
   updateFormData,
   onNext,
   onPrev,
-  isFirstStep
+  onSubmit,
+  isSubmitting,
+  isFirstStep,
+  isLastStep
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -178,55 +181,7 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
           />
         </div>
 
-        {/* State/Region */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            State/Region
-          </label>
-          <input
-            type="text"
-            value={formData.state || ''}
-            onChange={(e) => handleInputChange('state', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            placeholder="State, region, or province"
-          />
-        </div>
 
-        {/* Postal Code */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Postal Code
-          </label>
-          <input
-            type="text"
-            value={formData.postalCode || ''}
-            onChange={(e) => handleInputChange('postalCode', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            placeholder="ZIP or postal code"
-          />
-        </div>
-
-        {/* Country */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Country
-          </label>
-          <select
-            value={formData.country || ''}
-            onChange={(e) => handleInputChange('country', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            <option value="">Select Country</option>
-            <option value="Ghana">Ghana</option>
-            <option value="Nigeria">Nigeria</option>
-            <option value="United States">United States</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Canada">Canada</option>
-            <option value="South Africa">South Africa</option>
-            <option value="Kenya">Kenya</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
 
         {/* Preferred Language */}
         <div className="md:col-span-2">

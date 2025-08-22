@@ -1,7 +1,7 @@
 import { useQuery, gql } from '@apollo/client';
 
 export const DASHBOARD_DATA_QUERY = gql`
-  query DashboardData($branchId: ID, $dashboardType: DashboardType!, $organisationId: ID) {
+  query DashboardData($branchId: String, $dashboardType: DashboardType!, $organisationId: String) {
     dashboardData(
       branchId: $branchId
       dashboardType: $dashboardType

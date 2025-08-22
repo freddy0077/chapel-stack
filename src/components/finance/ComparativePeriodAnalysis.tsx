@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@apollo/client';
 import { 
@@ -9,7 +9,14 @@ import {
   ChartBarIcon,
   InformationCircleIcon 
 } from '@heroicons/react/24/outline';
-import { COMPARATIVE_PERIOD_ANALYSIS, ComparativePeriodAnalysisInput, ComparativePeriodAnalysisResult } from '../../graphql/queries/analytics';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useOrganizationBranchFilter } from "@/hooks";
+import { 
+  COMPARATIVE_PERIOD_ANALYSIS, 
+  ComparativePeriodAnalysisInput, 
+  ComparativePeriodAnalysisResult 
+} from '../../graphql/queries/analytics';
 
 // Dynamically import Recharts components to prevent SSR issues
 const ResponsiveContainer = dynamic(
@@ -68,36 +75,48 @@ const Line = dynamic(
 );
 
 interface ComparativePeriodAnalysisProps {
-  organisationId: string;
-  branchId?: string;
   fundId?: string;
 }
 
 const ComparativePeriodAnalysis: React.FC<ComparativePeriodAnalysisProps> = ({
-  organisationId,
-  branchId,
   fundId,
 }) => {
   const [comparisonType, setComparisonType] = useState<'YEAR_OVER_YEAR' | 'MONTH_OVER_MONTH' | 'QUARTER_OVER_QUARTER'>('YEAR_OVER_YEAR');
   const [periods, setPeriods] = useState(12);
   const [isClient, setIsClient] = useState(false);
 
-  // Prepare GraphQL input
-  const comparativeInput: ComparativePeriodAnalysisInput = {
-    organisationId,
-    branchId,
-    comparisonType,
-    periods,
-    fundId,
-  };
+  // Get organisationId and branchId using the same pattern as branch-finances page
+  const { state } = useAuth();
+  const user = state.user;
+  const { organisationId, branchId: defaultBranchId } = useOrganizationBranchFilter();
+  console.log("ComparativePeriodAnalysis OrganisationId", organisationId);
+  
+  // Use the same super admin logic as the branch-finances page
+  const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
+  const effectiveBranchId = isSuperAdmin ? undefined : defaultBranchId; // For super admin, don't restrict by branch
+
+  // Memoize GraphQL input to prevent unnecessary re-renders - only when we have valid data
+  const comparativeInput: ComparativePeriodAnalysisInput | null = useMemo(() => {
+    if (!organisationId) {
+      return null;
+    }
+    return {
+      organisationId,
+      branchId: effectiveBranchId,
+      comparisonType,
+      periods,
+      fundId,
+    };
+  }, [organisationId, effectiveBranchId, comparisonType, periods, fundId]);
 
   // GraphQL query for comparative period analysis
-  const { data, loading, error, refetch } = useQuery<{ comparativePeriodAnalysis: ComparativePeriodAnalysisResult }>(
+  const { data, loading, error } = useQuery<{ comparativePeriodAnalysis: ComparativePeriodAnalysisResult }>(
     COMPARATIVE_PERIOD_ANALYSIS,
     {
       variables: { input: comparativeInput },
-      skip: !organisationId,
+      skip: !organisationId || !comparativeInput, // Skip if organisationId is undefined or input is null
       errorPolicy: 'all',
+      notifyOnNetworkStatusChange: true,
     }
   );
 
@@ -105,11 +124,29 @@ const ComparativePeriodAnalysis: React.FC<ComparativePeriodAnalysisProps> = ({
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (organisationId) {
-      refetch();
-    }
-  }, [organisationId, branchId, comparisonType, periods, fundId, refetch]);
+  // Debug logging
+  console.log('ComparativePeriodAnalysis Debug:', {
+    organisationId,
+    branchId: effectiveBranchId,
+    fundId,
+    hasOrganisationId: !!organisationId,
+    inputValid: !!comparativeInput,
+    querySkipped: !organisationId || !comparativeInput
+  });
+
+  // Show loading state
+  if (!organisationId) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading organization data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -155,7 +192,7 @@ const ComparativePeriodAnalysis: React.FC<ComparativePeriodAnalysisProps> = ({
             {error.message || 'Unable to load comparative period analysis. Please try again.'}
           </p>
           <button
-            onClick={() => refetch()}
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Retry

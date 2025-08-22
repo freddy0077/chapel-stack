@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 export const GET_EVENTS_BY_BRANCH = gql`
-  query Events($branchId: ID, $organisationId: ID) {
+  query Events($branchId: String, $organisationId: String) {
     events(branchId: $branchId, organisationId: $organisationId) {
       id
       title
@@ -29,6 +29,15 @@ export const GET_EVENTS_BY_BRANCH = gql`
       organisationId
       createdBy
       updatedBy
+      postEventNotes
+      postEventNotesBy
+      postEventNotesDate
+      postEventNotesAuthor {
+        id
+        firstName
+        lastName
+        email
+      }
       createdAt
       updatedAt
     }
@@ -105,6 +114,15 @@ export const GET_EVENT_BY_ID = gql`
       organisationId
       createdBy
       updatedBy
+      postEventNotes
+      postEventNotesBy
+      postEventNotesDate
+      postEventNotesAuthor {
+        id
+        firstName
+        lastName
+        email
+      }
       createdAt
       updatedAt
       eventRegistrations {
@@ -136,7 +154,7 @@ export const GET_EVENT_BY_ID = gql`
         guestEmail
         status
         numberOfGuests
-        rsvpDate
+        responseDate
         createdAt
       }
     }
@@ -357,7 +375,7 @@ export const GET_VOLUNTEER_ROLES = gql`
  * Query to fetch events filtered by branchId and organisationId
  */
 export const GET_EVENTS_FILTERED = gql`
-  query EventsFiltered($branchId: ID, $organisationId: ID) {
+  query EventsFiltered($branchId: String, $organisationId: String) {
     events(branchId: $branchId, organisationId: $organisationId) {
       id
       title
@@ -395,7 +413,7 @@ export const GET_EVENTS_FILTERED = gql`
  * Query to fetch events within a specific date range
  */
 export const GET_EVENTS_BY_DATE_RANGE = gql`
-  query GetEventsByDateRange($startDate: DateTime!, $endDate: DateTime!, $branchId: ID, $organisationId: ID) {
+  query GetEventsByDateRange($startDate: DateTime!, $endDate: DateTime!, $branchId: String, $organisationId: String) {
     events(branchId: $branchId, organisationId: $organisationId, startDate: $startDate, endDate: $endDate) {
       id
       title
@@ -437,7 +455,7 @@ export const GET_EVENTS_BY_DATE_RANGE = gql`
         memberId
         status
         numberOfGuests
-        rsvpDate
+        responseDate
       }
     }
   }

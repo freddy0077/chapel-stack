@@ -36,7 +36,8 @@ export default function PastoralCarePage() {
   const { careRequests, loading: requestsLoading, error: requestsError, refetch: refetchRequests } = useCareRequests();
   const { updateCareRequest, loading: updating } = useUpdateCareRequest();
   const { pastoralVisits, loading: visitsLoading, error: visitsError } = usePastoralVisits();
-  const { counselingSessions, loading: sessionsLoading, error: sessionsError } = useCounselingSessions();
+  // Counseling sessions are care requests with requestType = "COUNSELING"
+  const { careRequests: counselingRequests, loading: sessionsLoading, error: sessionsError } = useCareRequests({ requestType: 'COUNSELING' });
   const { followUpReminders, loading: remindersLoading, error: remindersError } = useFollowUpReminders();
 
   // Handle the case where recent activity has data integrity issues
@@ -197,7 +198,7 @@ export default function PastoralCarePage() {
         )}
 
         {activeTab === 'counseling' && (
-          <CounselingSessionsList sessions={counselingSessions} loading={sessionsLoading} />
+          <CounselingSessionsList sessions={counselingRequests} loading={sessionsLoading} />
         )}
 
         {activeTab === 'reminders' && (

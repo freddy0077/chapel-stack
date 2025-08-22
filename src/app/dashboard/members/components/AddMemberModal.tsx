@@ -13,10 +13,14 @@ import {
   CheckIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContextEnhanced';
 import { useCreateMember } from '@/hooks/useCreateMember';
 import { CreateMemberInput, Gender, MaritalStatus, MembershipStatus, MembershipType, PrivacyLevel } from '../types/member.types';
+import ImageUpload from '@/components/ui/ImageUpload';
+import PhoneInput from '@/components/ui/PhoneInput';
+import { SORTED_COUNTRIES } from '@/constants/countries';
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -72,6 +76,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     motherOccupation: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    profileImageUrl: '',
   });
 
   const handleInputChange = (field: keyof CreateMemberInput, value: any) => {
@@ -145,12 +150,28 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
       case 1:
         return (
           <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              {/* Fields for Step 1 */}
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm font-medium text-gray-600">First Name *</label>
-                <input type="text" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+            <div className="space-y-6">
+              {/* Profile Image Upload */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-600 mb-3">Profile Image</label>
+                <ImageUpload
+                  value={formData.profileImageUrl || null}
+                  onChange={(imageUrl) => handleInputChange('profileImageUrl', imageUrl)}
+                  size="lg"
+                  placeholder="Upload member profile image"
+                  className="mb-6"
+                  branchId={branchId}
+                  organisationId={organisationId}
+                  description="Member profile image"
+                />
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                {/* Fields for Step 1 */}
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-600">First Name *</label>
+                  <input type="text" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
+                </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-sm font-medium text-gray-600">Last Name *</label>
                 <input type="text" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
@@ -165,7 +186,34 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Title</label>
-                <input type="text" value={formData.title || ''} onChange={(e) => handleInputChange('title', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Mr, Mrs, Dr" />
+                <select 
+                  value={formData.title || ''} 
+                  onChange={(e) => handleInputChange('title', e.target.value)} 
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Title</option>
+                  <option value="Mr">Mr</option>
+                  <option value="Mrs">Mrs</option>
+                  <option value="Ms">Ms</option>
+                  <option value="Miss">Miss</option>
+                  <option value="Dr">Dr</option>
+                  <option value="Prof">Prof</option>
+                  <option value="Rev">Rev</option>
+                  <option value="Pastor">Pastor</option>
+                  <option value="Elder">Elder</option>
+                  <option value="Deacon">Deacon</option>
+                  <option value="Deaconess">Deaconess</option>
+                  <option value="Bishop">Bishop</option>
+                  <option value="Apostle">Apostle</option>
+                  <option value="Prophet">Prophet</option>
+                  <option value="Evangelist">Evangelist</option>
+                  <option value="Minister">Minister</option>
+                  <option value="Sir">Sir</option>
+                  <option value="Madam">Madam</option>
+                  <option value="Hon">Hon</option>
+                  <option value="Chief">Chief</option>
+                  <option value="Nana">Nana</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Gender</label>
@@ -183,13 +231,25 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Nationality</label>
-                <input type="text" value={formData.nationality || ''} onChange={(e) => handleInputChange('nationality', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                <select 
+                  value={formData.nationality || ''} 
+                  onChange={(e) => handleInputChange('nationality', e.target.value)} 
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Nationality</option>
+                  {SORTED_COUNTRIES.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Marital Status</label>
                 <select value={formData.maritalStatus} onChange={(e) => handleInputChange('maritalStatus', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                   {Object.values(MaritalStatus).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+              </div>
               </div>
             </div>
           </motion.div>
@@ -204,8 +264,13 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 <input type="email" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm font-medium text-gray-600">Phone Number</label>
-                <input type="tel" value={formData.phoneNumber || ''} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                <PhoneInput
+                  value={formData.phoneNumber || ''}
+                  onChange={(phone) => handleInputChange('phoneNumber', phone)}
+                  label="Phone Number"
+                  placeholder="Enter phone number"
+                  className=""
+                />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-600">Address</label>
@@ -247,8 +312,13 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 <input type="text" value={formData.emergencyContactName || ''} onChange={(e) => handleInputChange('emergencyContactName', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Contact Phone</label>
-                <input type="tel" value={formData.emergencyContactPhone || ''} onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                <PhoneInput
+                  value={formData.emergencyContactPhone || ''}
+                  onChange={(phone) => handleInputChange('emergencyContactPhone', phone)}
+                  label="Contact Phone"
+                  placeholder="Enter emergency contact phone"
+                  className=""
+                />
               </div>
             </div>
           </motion.div>
@@ -307,9 +377,19 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
             exit={{ y: 50, opacity: 0 }}
             className="bg-gray-50 rounded-2xl shadow-2xl w-full max-w-3xl mx-auto overflow-hidden"
           >
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-800">Add New Member</h2>
-              <p className="text-sm text-gray-500 mt-1">Complete the steps below to add a new member to the system.</p>
+            <div className="p-8 flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Add New Member</h2>
+                <p className="text-sm text-gray-500 mt-1">Complete the steps below to add a new member to the system.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                title="Close modal"
+              >
+                <XMarkIcon className="w-5 h-5 text-gray-500" />
+              </button>
             </div>
 
             {/* Progress Bar */}

@@ -16,7 +16,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
-import { CounselingSession } from '@/graphql/hooks/usePastoralCare';
+import { CareRequest } from '@/graphql/hooks/usePastoralCare';
 import CreateSessionForm from './forms/CreateSessionForm';
 import EditSessionForm from './forms/EditSessionForm';
 import DetailModal from './DetailModal';
@@ -24,7 +24,7 @@ import AdvancedFilters, { FilterState } from './AdvancedFilters';
 import Pagination from './Pagination';
 
 interface CounselingSessionsListProps {
-  sessions?: CounselingSession[];
+  sessions?: CareRequest[];
   loading: boolean;
   onCreateSession?: () => void;
   onUpdateSession?: (id: string, updates: any) => void;
@@ -56,18 +56,16 @@ function getStatusColor(status: string) {
   }
 }
 
-function getSessionTypeIcon(sessionType: string) {
-  switch (sessionType.toLowerCase()) {
-    case 'individual':
-      return '👤';
-    case 'couples':
-      return '💑';
-    case 'family':
-      return '👨‍👩‍👧‍👦';
-    case 'group':
-      return '👥';
+function getRequestTypeIcon(requestType: string) {
+  switch (requestType.toLowerCase()) {
+    case 'counseling':
+      return '💬';
     case 'crisis':
       return '🚨';
+    case 'spiritual':
+      return '🙏';
+    case 'family':
+      return '👨‍👩‍👧‍👦';
     default:
       return '💬';
   }
@@ -107,10 +105,10 @@ function CounselingSessionCard({
   onEdit, 
   onViewDetails 
 }: { 
-  session: CounselingSession; 
+  session: CareRequest; 
   onUpdate?: (id: string, updates: any) => void;
-  onEdit?: (session: CounselingSession) => void;
-  onViewDetails?: (session: CounselingSession) => void;
+  onEdit?: (session: CareRequest) => void;
+  onViewDetails?: (session: CareRequest) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -124,29 +122,120 @@ function CounselingSessionCard({
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3 flex-1">
-          <div className="text-2xl">{getSessionTypeIcon(session.sessionType)}</div>
+          <div className="text-2xl">{getRequestTypeIcon(session.requestType)}</div>
           <div className="flex-1">
-            <h3 className="font-medium text-gray-900">{session.title || `${session.sessionType} Session`}</h3>
-            <div className="flex items-center text-sm text-gray-600 mt-1">
-              <CalendarDaysIcon className="h-4 w-4 mr-1" />
-              <span>Scheduled: {formatDate(session.scheduledDate)}</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-600 mt-1">
-              <UserIcon className="h-4 w-4 mr-1" />
-              <span>Member ID: {session.memberId}</span>
-              <span className="mx-2">•</span>
-              <span>Counselor ID: {session.counselorId}</span>
-            </div>
-            {session.duration && (
+            <h3 className="font-medium text-gray-900">{session.title}</h3>
+            {session.requester && (
               <div className="flex items-center text-sm text-gray-600 mt-1">
-                <ClockIcon className="h-4 w-4 mr-1" />
-                <span>Duration: {session.duration} minutes</span>
+                <UserIcon className="h-4 w-4 mr-1" />
+                <span>{session.requester.firstName} {session.requester.lastName}</span>
               </div>
             )}
-            {session.description && isExpanded && (
-              <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded">
-                {session.description}
-              </p>
+            <div className="flex items-center text-sm text-gray-600 mt-1">
+              <CalendarDaysIcon className="h-4 w-4 mr-1" />
+              <span>Requested: {formatDate(session.requestDate)}</span>
+            </div>
+            {(session.assignedPastor || session.assistantId) && (
+              <div className="flex items-center text-sm text-gray-600 mt-1">
+                <UserIcon className="h-4 w-4 mr-1" />
+                {session.assignedPastor && (
+                  <span>Assigned Pastor: {session.assignedPastor.firstName} {session.assignedPastor.lastName}</span>
+                )}
+                {session.assignedPastor && session.assistantId && (
+                  <span className="mx-2">•</span>
+                )}
+                {session.assistantId && (
+                  <span>Assistant: {session.assistantId}</span>
+                )}
+              </div>
+            )}
+            <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                session.priority === 'HIGH' ? 'bg-red-100 text-red-800' :
+                session.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                Priority: {session.priority}
+              </span>
+              {session.urgentNotes && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                  🚨 Urgent
+                </span>
+              )}
+            </div>
+            {session.contactInfo && (
+              <div className="flex items-center text-sm text-gray-600 mt-1">
+                <span className="font-medium">Contact:</span>
+                <span className="ml-1">{session.contactInfo}</span>
+                {session.preferredContactMethod && (
+                  <span className="ml-2 text-gray-500">({session.preferredContactMethod})</span>
+                )}
+              </div>
+            )}
+            {session.assignedDate && (
+              <div className="flex items-center text-sm text-gray-600 mt-1">
+                <CalendarDaysIcon className="h-4 w-4 mr-1" />
+                <span>Assigned: {formatDate(session.assignedDate)}</span>
+              </div>
+            )}
+            {session.responseDate && (
+              <div className="flex items-center text-sm text-gray-600 mt-1">
+                <CalendarDaysIcon className="h-4 w-4 mr-1" />
+                <span>Response: {formatDate(session.responseDate)}</span>
+              </div>
+            )}
+            {isExpanded && (
+              <div className="mt-3 space-y-2">
+                {session.requester && (session.requester.email || session.requester.phoneNumber) && (
+                  <div className="bg-blue-50 p-3 rounded">
+                    <h4 className="font-medium text-blue-900 mb-1">Member Contact</h4>
+                    <div className="text-sm text-blue-800 space-y-1">
+                      {session.requester.email && (
+                        <div>Email: {session.requester.email}</div>
+                      )}
+                      {session.requester.phoneNumber && (
+                        <div>Phone: {session.requester.phoneNumber}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {session.description && (
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h4 className="font-medium text-gray-900 mb-1">Description</h4>
+                    <p className="text-sm text-gray-600">{session.description}</p>
+                  </div>
+                )}
+                {session.urgentNotes && (
+                  <div className="bg-orange-50 p-3 rounded border border-orange-200">
+                    <h4 className="font-medium text-orange-900 mb-1">🚨 Urgent Notes</h4>
+                    <p className="text-sm text-orange-800">{session.urgentNotes}</p>
+                  </div>
+                )}
+                {session.responseNotes && (
+                  <div className="bg-blue-50 p-3 rounded">
+                    <h4 className="font-medium text-blue-900 mb-1">Response Notes</h4>
+                    <p className="text-sm text-blue-800">{session.responseNotes}</p>
+                  </div>
+                )}
+                {session.actionsTaken && (
+                  <div className="bg-green-50 p-3 rounded">
+                    <h4 className="font-medium text-green-900 mb-1">Actions Taken</h4>
+                    <p className="text-sm text-green-800">{session.actionsTaken}</p>
+                  </div>
+                )}
+                {session.resolutionNotes && (
+                  <div className="bg-purple-50 p-3 rounded">
+                    <h4 className="font-medium text-purple-900 mb-1">Resolution Notes</h4>
+                    <p className="text-sm text-purple-800">{session.resolutionNotes}</p>
+                  </div>
+                )}
+                {session.notes && (
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h4 className="font-medium text-gray-900 mb-1">Additional Notes</h4>
+                    <p className="text-sm text-gray-600">{session.notes}</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -228,8 +317,8 @@ export default function CounselingSessionsList({ sessions, loading, onCreateSess
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   
   // New state for advanced features
-  const [editingSession, setEditingSession] = useState<CounselingSession | null>(null);
-  const [selectedSession, setSelectedSession] = useState<CounselingSession | null>(null);
+  const [editingSession, setEditingSession] = useState<CareRequest | null>(null);
+  const [selectedSession, setSelectedSession] = useState<CareRequest | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: '',
     status: [],
@@ -244,7 +333,7 @@ export default function CounselingSessionsList({ sessions, loading, onCreateSess
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
   // Apply advanced filtering
-  const applyFilters = (sessions: CounselingSession[]) => {
+  const applyFilters = (sessions: CareRequest[]) => {
     return sessions.filter(session => {
       // Search term filter
       if (filters.searchTerm) {
@@ -261,14 +350,19 @@ export default function CounselingSessionsList({ sessions, loading, onCreateSess
         return false;
       }
 
-      // Type filter
-      if (filters.type.length > 0 && !filters.type.includes(session.sessionType)) {
+      // Type filter (using requestType for care requests)
+      if (filters.type.length > 0 && !filters.type.includes(session.requestType)) {
         return false;
       }
 
-      // Date range filter
+      // Priority filter
+      if (filters.priority.length > 0 && !filters.priority.includes(session.priority)) {
+        return false;
+      }
+
+      // Date range filter (using requestDate for care requests)
       if (filters.dateRange) {
-        const sessionDate = new Date(session.scheduledDate);
+        const sessionDate = new Date(session.requestDate);
         if (filters.dateRange.startDate) {
           const startDate = new Date(filters.dateRange.startDate);
           if (sessionDate < startDate) return false;

@@ -7,10 +7,13 @@ import { WizardStepProps } from '../types/WizardTypes';
 
 const ReviewSubmitStep: React.FC<WizardStepProps> = ({
   formData,
+  updateFormData,
+  onNext,
   onPrev,
   onSubmit,
   isSubmitting,
-  isFirstStep
+  isFirstStep,
+  isLastStep
 }) => {
 
   const formatDate = (date?: Date) => {
@@ -106,7 +109,7 @@ const ReviewSubmitStep: React.FC<WizardStepProps> = ({
               <span className="font-medium text-gray-700">Address:</span>
               <p className="text-gray-900">
                 {formData.address ? (
-                  `${formData.address}${formData.city ? `, ${formData.city}` : ''}${formData.state ? `, ${formData.state}` : ''}${formData.postalCode ? ` ${formData.postalCode}` : ''}${formData.country ? `, ${formData.country}` : ''}`
+                  `${formData.address}${formData.city ? `, ${formData.city}` : ''}`
                 ) : 'Not provided'}
               </p>
             </div>

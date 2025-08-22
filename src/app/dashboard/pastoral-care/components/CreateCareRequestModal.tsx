@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { useCreateCareRequest } from '@/graphql/hooks/usePastoralCare';
 import { useSearchMembers } from '@/graphql/hooks/useSearchMembers';
-import { useSearchPastoralStaff } from '@/graphql/hooks/useSearchPastoralStaff';
+import { useSearchPastoralStaff, useSearchPastors } from '@/graphql/hooks/useSearchPastoralStaff';
 import { XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface CreateCareRequestModalProps {
@@ -40,6 +40,7 @@ interface PastoralStaffUser {
 
 const requestTypes = [
   { value: 'PRAYER_REQUEST', label: 'Prayer Request' },
+  { value: 'MASS_INTENTION', label: 'Mass Intention' },
   { value: 'HOSPITAL_VISIT', label: 'Hospital Visit' },
   { value: 'HOME_VISIT', label: 'Home Visit' },
   { value: 'COUNSELING', label: 'Counseling' },
@@ -71,6 +72,7 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
     priority: 'MEDIUM',
     requestDate: new Date().toISOString().split('T')[0],
     assignedPastorId: '',
+    assistantId: '',
     notes: '',
   });
 
@@ -84,20 +86,33 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
   const [selectedPastor, setSelectedPastor] = useState<PastoralStaffUser | null>(null);
   const [showPastorDropdown, setShowPastorDropdown] = useState(false);
 
+  // Assistant search state
+  const [assistantSearch, setAssistantSearch] = useState('');
+  const [selectedAssistant, setSelectedAssistant] = useState<PastoralStaffUser | null>(null);
+  const [showAssistantDropdown, setShowAssistantDropdown] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Search for members
-  const { members, loading: memberLoading } = useSearchMembers(
+  const { data: members, loading: memberLoading, error: memberError } = useSearchMembers(
     memberSearch,
     organisationId || '',
     branchId
   );
 
-  // Search for pastors (using pastoral staff search hook)
-  const { pastoralStaff: pastors, loading: pastorLoading } = useSearchPastoralStaff(
+  // Search for pastors (using dedicated pastor search hook)
+  const { pastoralStaff: pastors, loading: pastorLoading } = useSearchPastors(
     pastorSearch,
     organisationId || '',
     branchId
+  );
+
+  // Search for assistants (using pastoral staff search hook for broader roles)
+  const { pastoralStaff: assistants, loading: assistantLoading } = useSearchPastoralStaff(
+    assistantSearch,
+    organisationId || '',
+    branchId,
+    ['PASTOR', 'BRANCH_ADMIN', 'STAFF'] // All pastoral roles for assistants
   );
 
   const handleMemberSelect = (member: Member) => {
@@ -116,6 +131,13 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
     setFormData(prev => ({ ...prev, assignedPastorId: pastor.id }));
     setPastorSearch(`${pastor.firstName} ${pastor.lastName}`);
     setShowPastorDropdown(false);
+  };
+
+  const handleAssistantSelect = (assistant: PastoralStaffUser) => {
+    setSelectedAssistant(assistant);
+    setFormData(prev => ({ ...prev, assistantId: assistant.id }));
+    setAssistantSearch(`${assistant.firstName} ${assistant.lastName}`);
+    setShowAssistantDropdown(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -143,6 +165,16 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
     if (selectedPastor && value !== `${selectedPastor.firstName} ${selectedPastor.lastName}`) {
       setSelectedPastor(null);
       setFormData(prev => ({ ...prev, assignedPastorId: '' }));
+    }
+  };
+
+  const handleAssistantSearchChange = (value: string) => {
+    setAssistantSearch(value);
+    setShowAssistantDropdown(value.length > 0);
+    // Clear selection if user is typing a new search
+    if (selectedAssistant && value !== `${selectedAssistant.firstName} ${selectedAssistant.lastName}`) {
+      setSelectedAssistant(null);
+      setFormData(prev => ({ ...prev, assistantId: '' }));
     }
   };
 
@@ -175,6 +207,7 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
       priority: 'MEDIUM',
       requestDate: new Date().toISOString().split('T')[0],
       assignedPastorId: '',
+      assistantId: '',
       notes: '',
     });
     setMemberSearch('');
@@ -183,6 +216,9 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
     setPastorSearch('');
     setSelectedPastor(null);
     setShowPastorDropdown(false);
+    setAssistantSearch('');
+    setSelectedAssistant(null);
+    setShowAssistantDropdown(false);
     setErrors({});
   };
 
@@ -207,6 +243,7 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
         priority: formData.priority,
         requestDate: formData.requestDate,
         assignedPastorId: formData.assignedPastorId.trim() || undefined,
+        assistantId: formData.assistantId.trim() || undefined,
         notes: formData.notes.trim() || undefined,
         organisationId,
         branchId: branchId || undefined,
@@ -511,6 +548,82 @@ export default function CreateCareRequestModal({ isOpen, onClose, onSuccess }: C
                     <div 
                       className="fixed inset-0 z-20" 
                       onClick={() => setShowPastorDropdown(false)}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Assistant/Delegate */}
+              <div>
+                <label htmlFor="assistant" className="block text-sm font-medium text-gray-700 mb-2">
+                  Assistant/Delegate (Optional)
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Assign a group head or member to assist the pastor with this request
+                </p>
+                <div className="relative">
+                  <div className="relative">
+                    <UserIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      id="assistant"
+                      value={assistantSearch}
+                      onChange={(e) => handleAssistantSearchChange(e.target.value)}
+                      onFocus={() => setShowAssistantDropdown(assistantSearch.length > 0)}
+                      className="w-full rounded-xl border-2 bg-gray-50 py-4 pl-12 pr-4 text-gray-900 placeholder-gray-500 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/20 border-gray-200"
+                      placeholder="Search for assistant or delegate"
+                    />
+                  </div>
+                  
+                  {showAssistantDropdown && assistantSearch.length > 0 && (
+                    <div className="absolute z-30 mt-2 w-full rounded-xl bg-white border border-gray-200 shadow-xl max-h-64 overflow-auto">
+                      {assistantLoading && (
+                        <div className="p-4 text-center">
+                          <div className="inline-flex items-center gap-3 text-gray-600">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-600 border-t-transparent"></div>
+                            <span className="text-sm font-medium">Searching assistants...</span>
+                          </div>
+                        </div>
+                      )}
+                      {!assistantLoading && assistants.length === 0 && (
+                        <div className="p-4 text-center text-gray-500">
+                          <UserIcon className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+                          <p className="text-sm font-medium">No assistants found</p>
+                        </div>
+                      )}
+                      {!assistantLoading && assistants.length > 0 && assistants.map((assistant) => (
+                        <button
+                          key={assistant.id}
+                          type="button"
+                          onClick={() => handleAssistantSelect(assistant)}
+                          className="w-full text-left px-4 py-3 hover:bg-indigo-50 focus:bg-indigo-100 focus:outline-none transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                              <UserIcon className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-900 truncate">
+                                {assistant.firstName} {assistant.lastName}
+                              </p>
+                              {assistant.email && (
+                                <p className="text-sm text-gray-500 truncate">{assistant.email}</p>
+                              )}
+                              <p className="text-xs text-green-600 font-medium">
+                                Assistant/Delegate
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Click outside to close dropdown */}
+                  {showAssistantDropdown && (
+                    <div 
+                      className="fixed inset-0 z-20" 
+                      onClick={() => setShowAssistantDropdown(false)}
                     />
                   )}
                 </div>

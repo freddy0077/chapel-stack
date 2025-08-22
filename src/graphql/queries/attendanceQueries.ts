@@ -187,6 +187,9 @@ export const GET_FILTERED_ATTENDANCE_SESSIONS = gql`
       organisationId
       createdAt
       updatedAt
+      attendanceRecords {
+        id
+      }
     }
   }
 `;
@@ -265,5 +268,138 @@ export const RECORD_ATTENDANCE = gql`
 export const RECORD_BULK_ATTENDANCE = gql`
   mutation RecordBulkAttendance($input: RecordBulkAttendanceInput!) {
     recordBulkAttendance(input: $input)
+  }
+`;
+
+// Update attendance record mutation (now supported by backend)
+export const UPDATE_ATTENDANCE_RECORD = gql`
+  mutation UpdateAttendanceRecord($id: ID!, $input: UpdateAttendanceRecordInput!) {
+    updateAttendanceRecord(id: $id, input: $input) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      session {
+        id
+        name
+        date
+        startTime
+        endTime
+      }
+      event {
+        id
+        title
+        startDate
+        endDate
+      }
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy {
+        id
+      }
+      branch {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// Delete attendance record mutation (now supported by backend)
+export const DELETE_ATTENDANCE_RECORD = gql`
+  mutation DeleteAttendanceRecord($id: ID!) {
+    deleteAttendanceRecord(id: $id)
+  }
+`;
+
+// Single attendance record query (now supported by backend)
+export const GET_ATTENDANCE_RECORD_DETAILS = gql`
+  query GetAttendanceRecordDetails($id: ID!) {
+    attendanceRecord(id: $id) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      session {
+        id
+        name
+        date
+        type
+        location
+      }
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+        category
+      }
+      member {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy {
+        id
+        firstName
+        lastName
+      }
+      branch {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// Check-out functionality (still available)
+export const CHECK_OUT_ATTENDANCE = gql`
+  mutation CheckOut($input: CheckOutInput!) {
+    checkOut(input: $input) {
+      id
+      checkInTime
+      checkOutTime
+      checkInMethod
+      notes
+      session {
+        id
+        name
+      }
+      event {
+        id
+        title
+      }
+      member {
+        id
+        firstName
+        lastName
+      }
+      visitorName
+      visitorEmail
+      visitorPhone
+      recordedBy { id }
+      branch { id }
+      createdAt
+      updatedAt
+    }
   }
 `;

@@ -172,7 +172,7 @@ export interface EventRSVP {
   guestEmail?: string;
   guestPhone?: string;
   status: RSVPStatus;
-  rsvpDate: string | Date;
+  responseDate: string | Date;
   numberOfGuests: number;
   message?: string;
 

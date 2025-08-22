@@ -65,8 +65,8 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
       );
     }
 
-    // Apply sorting
-    filtered.sort((a, b) => {
+    // Apply sorting (create a copy to avoid mutating read-only array)
+    const sorted = [...filtered].sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
       
@@ -80,7 +80,7 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
       return sortDirection === 'desc' ? -comparison : comparison;
     });
 
-    return filtered;
+    return sorted;
   }, [records, searchTerm, sortField, sortDirection]);
 
   // Pagination

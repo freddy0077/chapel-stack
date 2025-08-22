@@ -8,6 +8,11 @@ import { XMarkIcon, UserIcon, PhoneIcon, UsersIcon, IdentificationIcon, ShieldCh
 import { Member, UpdateMemberInput, MembershipStatus, MembershipType, Gender, MaritalStatus, PrivacyLevel, CommunicationPreferences } from '../types/member.types';
 import { useUpdateMember } from '../hooks/useMemberOperations';
 import { useCommunicationPrefs } from '../hooks/useMemberOperations';
+import { useFilteredSmallGroups } from '@/graphql/hooks/useSmallGroups';
+import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import ImageUpload from '@/components/ui/ImageUpload';
+import PhoneInput from '@/components/ui/PhoneInput';
+import { SORTED_COUNTRIES } from '@/constants/countries';
 
 interface EditMemberModalProps {
   isOpen: boolean;
@@ -34,9 +39,17 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 }) => {
   const { updateMember } = useUpdateMember();
   const { updateCommunicationPrefs } = useCommunicationPrefs();
+  const { organisationId, branchId } = useOrganisationBranch();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [formData, setFormData] = useState<UpdateMemberInput>({} as any);
   const [loading, setLoading] = useState(false);
+
+  // Fetch available groups for multi-select
+  const { smallGroups, loading: groupsLoading } = useFilteredSmallGroups({
+    branchId,
+    organisationId,
+    status: 'ACTIVE'
+  }, !branchId || !organisationId);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,11 +65,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         alternativeEmail: member.alternativeEmail || '',
         alternatePhone: member.alternatePhone || '',
         address: member.address || '',
-        addressLine2: member.addressLine2 || '',
         city: member.city || '',
-        state: member.state || '',
-        postalCode: member.postalCode || '',
-        country: member.country || '',
         district: member.district || '',
         region: member.region || '',
         digitalAddress: member.digitalAddress || '',
@@ -85,6 +94,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         consentDate: member.consentDate,
         consentVersion: member.consentVersion || '',
         communicationPrefs: member.communicationPrefs || {},
+        specialGifts: member.specialGifts || '',
+        groupIds: member.groupIds || [],
+        profileImageUrl: member.profileImageUrl || '',
       });
     }
   }, [isOpen, member]);
@@ -196,6 +208,21 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               {currentStep === 1 && (
                 <div className="step-card">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">Basic Information</h4>
+                  
+                  {/* Profile Image Upload */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-600 mb-3">Profile Image</label>
+                    <ImageUpload
+                      value={formData.profileImageUrl || null}
+                      onChange={(imageUrl) => handleChange('profileImageUrl', imageUrl)}
+                      size="lg"
+                      placeholder="Update member profile image"
+                      branchId={branchId}
+                      organisationId={organisationId}
+                      description="Member profile image"
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">First Name</label>
@@ -215,7 +242,34 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Title</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.title || ''} onChange={(e) => handleChange('title', e.target.value)} />
+                      <select 
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                        value={formData.title || ''} 
+                        onChange={(e) => handleChange('title', e.target.value)}
+                      >
+                        <option value="">Select Title</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Ms">Ms</option>
+                        <option value="Miss">Miss</option>
+                        <option value="Dr">Dr</option>
+                        <option value="Prof">Prof</option>
+                        <option value="Rev">Rev</option>
+                        <option value="Pastor">Pastor</option>
+                        <option value="Elder">Elder</option>
+                        <option value="Deacon">Deacon</option>
+                        <option value="Deaconess">Deaconess</option>
+                        <option value="Bishop">Bishop</option>
+                        <option value="Apostle">Apostle</option>
+                        <option value="Prophet">Prophet</option>
+                        <option value="Evangelist">Evangelist</option>
+                        <option value="Minister">Minister</option>
+                        <option value="Sir">Sir</option>
+                        <option value="Madam">Madam</option>
+                        <option value="Hon">Hon</option>
+                        <option value="Chief">Chief</option>
+                        <option value="Nana">Nana</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Gender</label>
@@ -243,7 +297,18 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Nationality</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.nationality || ''} onChange={(e) => handleChange('nationality', e.target.value.trim())} />
+                      <select 
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                        value={formData.nationality || ''} 
+                        onChange={(e) => handleChange('nationality', e.target.value)}
+                      >
+                        <option value="">Select Nationality</option>
+                        {SORTED_COUNTRIES.map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Place of Birth</label>
@@ -266,20 +331,26 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <input type="email" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.alternativeEmail || ''} onChange={(e) => handleChange('alternativeEmail', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Phone</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.phoneNumber || ''} onChange={(e) => handleChange('phoneNumber', e.target.value)} />
+                      <PhoneInput
+                        value={formData.phoneNumber || ''}
+                        onChange={(phone) => handleChange('phoneNumber', phone)}
+                        label="Phone"
+                        placeholder="Enter phone number"
+                        className=""
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Alternative Phone</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.alternatePhone || ''} onChange={(e) => handleChange('alternatePhone', e.target.value)} />
+                      <PhoneInput
+                        value={formData.alternatePhone || ''}
+                        onChange={(phone) => handleChange('alternatePhone', phone)}
+                        label="Alternative Phone"
+                        placeholder="Enter alternative phone"
+                        className=""
+                      />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="block text-sm text-gray-600 mb-1">Address</label>
                       <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.address || ''} onChange={(e) => handleChange('address', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Address Line 2</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.addressLine2 || ''} onChange={(e) => handleChange('addressLine2', e.target.value)} />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">District</label>
@@ -292,18 +363,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">City</label>
                       <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.city || ''} onChange={(e) => handleChange('city', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">State</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.state || ''} onChange={(e) => handleChange('state', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Postal Code</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.postalCode || ''} onChange={(e) => handleChange('postalCode', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">Country</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.country || ''} onChange={(e) => handleChange('country', e.target.value)} />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Digital Address</label>
@@ -326,8 +385,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.emergencyContactName || ''} onChange={(e) => handleChange('emergencyContactName', e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Emergency Contact Phone</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.emergencyContactPhone || ''} onChange={(e) => handleChange('emergencyContactPhone', e.target.value)} />
+                      <PhoneInput
+                        value={formData.emergencyContactPhone || ''}
+                        onChange={(phone) => handleChange('emergencyContactPhone', phone)}
+                        label="Emergency Contact Phone"
+                        placeholder="Enter emergency contact phone"
+                        className=""
+                      />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">Emergency Contact Relation</label>
@@ -381,6 +445,64 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <label className="block text-sm text-gray-600 mb-1">Profession</label>
                       <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.occupation || ''} onChange={(e) => handleChange('occupation', e.target.value)} />
                     </div>
+                    
+                    {/* Special Gifts Field */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm text-gray-600 mb-1">Special Gifts & Talents</label>
+                      <textarea 
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                        rows={3}
+                        value={formData.specialGifts || ''} 
+                        onChange={(e) => handleChange('specialGifts', e.target.value)}
+                        placeholder="e.g., singing, drumming, teaching, counseling, etc."
+                      />
+                      <p className="text-xs text-gray-500 mt-1">List any special gifts, talents, or skills this member has</p>
+                    </div>
+
+                    {/* Groups Multi-Select Field */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm text-gray-600 mb-2">Group Memberships</label>
+                      {groupsLoading ? (
+                        <div className="text-sm text-gray-500">Loading groups...</div>
+                      ) : (
+                        <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
+                          {smallGroups.length === 0 ? (
+                            <div className="text-sm text-gray-500">No groups available</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {smallGroups.map((group) => (
+                                <div key={group.id} className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`group-${group.id}`}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    checked={formData.groupIds?.includes(group.id) || false}
+                                    onChange={(e) => {
+                                      const currentGroups = formData.groupIds || [];
+                                      if (e.target.checked) {
+                                        handleChange('groupIds', [...currentGroups, group.id]);
+                                      } else {
+                                        handleChange('groupIds', currentGroups.filter(id => id !== group.id));
+                                      }
+                                    }}
+                                  />
+                                  <label htmlFor={`group-${group.id}`} className="text-sm text-gray-700 flex-1">
+                                    <span className="font-medium">{group.name}</span>
+                                    {group.description && (
+                                      <span className="text-gray-500 ml-2">- {group.description}</span>
+                                    )}
+                                    {group.ministry && (
+                                      <span className="text-blue-600 ml-2 text-xs">({group.ministry.name})</span>
+                                    )}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Select all groups this member belongs to</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -431,11 +553,26 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <strong>Phone:</strong> {formData.phoneNumber || '—'}
                     </p>
                     <p>
-                      <strong>Address:</strong> {formData.address || '—'}, {formData.city || ''} {formData.country || ''}
+                      <strong>Address:</strong> {formData.address ? `${formData.address}${formData.city ? `, ${formData.city}` : ''}` : '—'}
                     </p>
                     <p>
                       <strong>Membership:</strong> {formData.membershipStatus} / {formData.membershipType || '—'}
                     </p>
+                    {formData.specialGifts && (
+                      <p>
+                        <strong>Special Gifts:</strong> {formData.specialGifts}
+                      </p>
+                    )}
+                    {formData.groupIds && formData.groupIds.length > 0 && (
+                      <p>
+                        <strong>Group Memberships:</strong> {
+                          formData.groupIds.map(groupId => {
+                            const group = smallGroups.find(g => g.id === groupId);
+                            return group ? group.name : groupId;
+                          }).join(', ')
+                        }
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

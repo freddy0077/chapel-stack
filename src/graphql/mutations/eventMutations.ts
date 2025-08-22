@@ -113,9 +113,28 @@ export const UPDATE_EVENT = gql`
  */
 export const DELETE_EVENT = gql`
   mutation DeleteEvent($id: ID!) {
-    removeEvent(id: $id) {
+    removeEvent(id: $id)
+  }
+`;
+
+/**
+ * Mutation to add post-event notes
+ */
+export const ADD_EVENT_NOTES = gql`
+  mutation AddEventNotes($addEventNotesInput: AddEventNotesInput!) {
+    addEventNotes(addEventNotesInput: $addEventNotesInput) {
       id
       title
+      postEventNotes
+      postEventNotesBy
+      postEventNotesDate
+      postEventNotesAuthor {
+        id
+        firstName
+        lastName
+        email
+      }
+      updatedAt
     }
   }
 `;
@@ -219,7 +238,7 @@ export const CREATE_EVENT_RSVP = gql`
       guestEmail
       guestPhone
       status
-      rsvpDate
+      responseDate
       numberOfGuests
       message
       rsvpSource
@@ -248,7 +267,7 @@ export const UPDATE_EVENT_RSVP = gql`
       guestEmail
       guestPhone
       status
-      rsvpDate
+      responseDate
       numberOfGuests
       message
       rsvpSource

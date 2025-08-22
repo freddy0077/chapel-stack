@@ -14,10 +14,14 @@ import {
 
 interface ModernDeathRegisterStatsProps {
   stats?: {
-    totalDeaths?: number;
+    total?: number;
     thisYear?: number;
     thisMonth?: number;
     averageAge?: number;
+    burialCount?: number;
+    cremationCount?: number;
+    familyNotifiedCount?: number;
+    funeralServicesHeld?: number;
     pendingNotifications?: number;
     lastYearComparison?: number; // percentage change from last year
     averageAgeChange?: number; // change in average age
@@ -32,7 +36,7 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
   const statsData = [
     {
       title: 'Total Deaths',
-      value: stats?.totalDeaths || 0,
+      value: stats?.total || 0,
       subtitle: 'All time records',
       icon: UserMinusIcon,
       gradient: 'from-blue-500 to-blue-600',

@@ -37,12 +37,26 @@ export const UPDATE_MEMBER = gql`
       phoneNumber
       address
       status
+      profileImageUrl
       customFields
       memberId
       memberIdGeneratedAt
       cardIssued
       cardIssuedAt
       cardType
+      specialGifts
+      groupMemberships {
+        id
+        role
+        ministry {
+          id
+          name
+        }
+        smallGroup {
+          id
+          name
+        }
+      }
       updatedAt
     }
   }

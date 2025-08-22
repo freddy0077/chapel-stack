@@ -50,6 +50,14 @@ export interface FundMappingConfiguration {
   availableFunds: FundInfo[];
 }
 
+export interface ContributionTypeFundMappingFilterInput {
+  branchId?: string;
+  organisationId?: string;
+  contributionTypeId?: string;
+  fundId?: string;
+  isActive?: boolean;
+}
+
 export interface CreateContributionTypeFundMappingInput {
   contributionTypeId: string;
   fundId: string;
@@ -60,14 +68,6 @@ export interface CreateContributionTypeFundMappingInput {
 
 export interface UpdateContributionTypeFundMappingInput {
   id: string;
-  fundId?: string;
-  isActive?: boolean;
-}
-
-export interface ContributionTypeFundMappingFilterInput {
-  branchId?: string;
-  organisationId?: string;
-  contributionTypeId?: string;
   fundId?: string;
   isActive?: boolean;
 }
@@ -267,6 +267,19 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
   const deleteMapping = useDeleteFundMapping();
   const createDefaults = useCreateDefaultFundMappings();
 
+  const openCreateModal = () => setIsCreateModalOpen(true);
+  const closeCreateModal = () => setIsCreateModalOpen(false);
+  
+  const openEditModal = (mapping: ContributionTypeFundMapping) => {
+    setSelectedMapping(mapping);
+    setIsEditModalOpen(true);
+  };
+  
+  const closeEditModal = () => {
+    setSelectedMapping(null);
+    setIsEditModalOpen(false);
+  };
+
   const handleCreate = async (input: CreateContributionTypeFundMappingInput) => {
     const result = await createMapping.create({
       ...input,
@@ -285,30 +298,15 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
   };
 
   const handleDelete = async (id: string) => {
-    const result = await deleteMapping.delete(id);
-    setSelectedMapping(null);
-    return result;
+    return await deleteMapping.delete(id);
   };
 
   const handleCreateDefaults = async () => {
     return await createDefaults.createDefaultMappings(branchId, organisationId);
   };
 
-  const openCreateModal = () => setIsCreateModalOpen(true);
-  const closeCreateModal = () => setIsCreateModalOpen(false);
-
-  const openEditModal = (mapping: ContributionTypeFundMapping) => {
-    setSelectedMapping(mapping);
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedMapping(null);
-  };
-
   return {
-    // Data
+    // Configuration data
     configuration: configuration.configuration,
     loading: configuration.loading,
     error: configuration.error,

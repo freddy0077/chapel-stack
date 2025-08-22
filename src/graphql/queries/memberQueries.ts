@@ -355,6 +355,7 @@ export const SEARCH_MEMBERS = gql`
       email
       phoneNumber
       memberId
+      gender
       branch {
         id
         name

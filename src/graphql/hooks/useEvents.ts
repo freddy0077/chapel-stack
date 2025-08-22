@@ -149,7 +149,7 @@ export const useEventMutations = () => {
 
   const handleUpdateEvent = async (input: UpdateEventInput) => {
     try {
-      const { data } = await updateEvent({ variables: { input } });
+      const { data } = await updateEvent({ variables: { updateEventInput: input } });
       return data.updateEvent;
     } catch (error) {
       console.error('Error updating event:', error);

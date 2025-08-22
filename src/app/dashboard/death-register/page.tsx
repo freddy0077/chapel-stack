@@ -341,7 +341,7 @@ export default function DeathRegisterPage() {
             if (recordToDelete) {
               setIsDeleting(true);
               try {
-                await deleteDeathRegister(recordToDelete.id);
+                await deleteDeathRegister(recordToDelete.id, organisationId, branchId);
                 toast.success('Death record deleted successfully', {
                   icon: '✅',
                   style: {

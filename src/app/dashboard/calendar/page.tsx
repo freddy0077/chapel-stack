@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { format, startOfMonth, endOfMonth, addMonths, subMonths, isToday, getDay, isSameMonth, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths, subMonths, isToday, getDay, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameWeek, eachDayOfInterval } from "date-fns";
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -43,6 +43,7 @@ const isClient = typeof window !== 'undefined';
 // View modes
 const VIEW_MODES = {
   MONTH: 'month',
+  WEEK: 'week',
   LIST: 'list'
 } as const;
 
@@ -95,7 +96,7 @@ function CalendarContent() {
   const [showAttendeesView, setShowAttendeesView] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const { canManageEvents, isBranchAdmin } = usePermissions();
+  const { canManageEvents, isBranchAdmin, isSuperAdmin } = usePermissions();
 
   const { state } = useAuth();
   const user = state.user;
@@ -146,9 +147,13 @@ function CalendarContent() {
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
 
-  // Get events data
-  const firstDay = startOfMonth(currentDate);
-  const lastDay = endOfMonth(currentDate);
+  // Get events data based on view mode
+  const firstDay = viewMode === VIEW_MODES.WEEK 
+    ? startOfWeek(currentDate, { weekStartsOn: 0 }) // Sunday start
+    : startOfMonth(currentDate);
+  const lastDay = viewMode === VIEW_MODES.WEEK 
+    ? endOfWeek(currentDate, { weekStartsOn: 0 })
+    : endOfMonth(currentDate);
   
   const { 
     events = [], 
@@ -189,6 +194,20 @@ function CalendarContent() {
       direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
     );
   };
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => 
+      direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
+    );
+  };
+
+  const navigate = (direction: 'prev' | 'next') => {
+    if (viewMode === VIEW_MODES.WEEK) {
+      navigateWeek(direction);
+    } else {
+      navigateMonth(direction);
+    }
+  };
   
   // Reset all filters
   const resetFilters = () => {
@@ -197,15 +216,19 @@ function CalendarContent() {
     setSelectedLocation("all");
   };
   
-  // Effect to refetch events when month changes
+  // Effect to refetch events when date or view mode changes
   useEffect(() => {
-    const newFirstDay = startOfMonth(currentDate);
-    const newLastDay = endOfMonth(currentDate);
+    const newFirstDay = viewMode === VIEW_MODES.WEEK 
+      ? startOfWeek(currentDate, { weekStartsOn: 0 })
+      : startOfMonth(currentDate);
+    const newLastDay = viewMode === VIEW_MODES.WEEK 
+      ? endOfWeek(currentDate, { weekStartsOn: 0 })
+      : endOfMonth(currentDate);
     refetch({
       startDate: newFirstDay,
       endDate: newLastDay
     });
-  }, [currentDate, refetch]);
+  }, [currentDate, viewMode, refetch]);
   
   // Filter events based on selected filters
   const filteredEvents = events.filter(event => {
@@ -229,31 +252,53 @@ function CalendarContent() {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
   
+  // Month view grid
   const daysInMonth = getDaysInMonth(currentDate);
   const startDay = getDay(startOfMonth(currentDate));
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  
   const calendarGrid = [...Array(startDay).fill(null), ...days];
+
+  // Week view grid
+  const weekDays = eachDayOfInterval({
+    start: startOfWeek(currentDate, { weekStartsOn: 0 }),
+    end: endOfWeek(currentDate, { weekStartsOn: 0 })
+  });
   
-  // Get events for a specific day
-  const getEventsForDay = (day: number | null) => {
+  // Get events for a specific day (handles both number for month view and Date for week view)
+  const getEventsForDay = (day: number | Date | null) => {
     if (day === null) return [];
+    
+    let targetDate: Date;
+    if (typeof day === 'number') {
+      // Month view - day is a number
+      targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    } else {
+      // Week view - day is already a Date object
+      targetDate = day;
+    }
     
     const eventsForDay = filteredEvents.filter(event => {
       const eventStart = new Date(event.startDate);
-      return eventStart.getDate() === day && 
-             eventStart.getMonth() === currentDate.getMonth() && 
-             eventStart.getFullYear() === currentDate.getFullYear();
+      return isSameDay(eventStart, targetDate);
     });
     
     return eventsForDay;
   };
   
-  // Check if a day is today
-  const isDayToday = (day: number | null) => {
+  // Check if a day is today (handles both number for month view and Date for week view)
+  const isDayToday = (day: number | Date | null) => {
     if (day === null) return false;
-    const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return isToday(dayDate);
+    
+    let targetDate: Date;
+    if (typeof day === 'number') {
+      // Month view - day is a number
+      targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    } else {
+      // Week view - day is already a Date object
+      targetDate = day;
+    }
+    
+    return isToday(targetDate);
   };
 
   // Get event type color
@@ -298,22 +343,25 @@ function CalendarContent() {
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-400/10 to-blue-400/10 rounded-full translate-y-12 -translate-x-12"></div>
         
         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Month Navigation */}
+          {/* Date Navigation */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-1 shadow-inner">
               <button
-                onClick={() => navigateMonth('prev')}
+                onClick={() => navigate('prev')}
                 className="p-3 hover:bg-white rounded-lg transition-all duration-200 hover:shadow-md group"
               >
                 <ChevronLeftIcon className="h-5 w-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
               </button>
               <div className="px-6 py-3 min-w-[220px] text-center">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  {format(currentDate, 'MMMM yyyy')}
+                  {viewMode === VIEW_MODES.WEEK 
+                    ? `${format(startOfWeek(currentDate, { weekStartsOn: 0 }), 'MMM d')} - ${format(endOfWeek(currentDate, { weekStartsOn: 0 }), 'MMM d, yyyy')}`
+                    : format(currentDate, 'MMMM yyyy')
+                  }
                 </h2>
               </div>
               <button
-                onClick={() => navigateMonth('next')}
+                onClick={() => navigate('next')}
                 className="p-3 hover:bg-white rounded-lg transition-all duration-200 hover:shadow-md group"
               >
                 <ChevronRightIcon className="h-5 w-5 text-gray-600 group-hover:text-gray-900 transition-colors" />
@@ -337,6 +385,17 @@ function CalendarContent() {
                 Month
               </button>
               <button
+                onClick={() => setViewMode(VIEW_MODES.WEEK)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  viewMode === VIEW_MODES.WEEK
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <CalendarDaysIcon className="h-4 w-4 inline mr-2" />
+                Week
+              </button>
+              <button
                 onClick={() => setViewMode(VIEW_MODES.LIST)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   viewMode === VIEW_MODES.LIST
@@ -349,18 +408,20 @@ function CalendarContent() {
               </button>
             </div>
 
-            {/* Filter Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm border ${
-                showFilters
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-md'
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <FunnelIcon className="h-4 w-4 inline mr-2" />
-              Filters
-            </button>
+            {/* Filter Toggle - Only show for Super Admin */}
+            {isSuperAdmin && (
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm border ${
+                  showFilters
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <FunnelIcon className="h-4 w-4 inline mr-2" />
+                Filters
+              </button>
+            )}
 
             {/* Refresh Button */}
             <button
@@ -384,8 +445,8 @@ function CalendarContent() {
           </div>
         </div>
 
-        {/* Filters Panel */}
-        {showFilters && (
+        {/* Filters Panel - Only show for Super Admin */}
+        {showFilters && isSuperAdmin && (
           <div className="relative mt-6 pt-6 border-t border-gray-200/50">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* Event Type Filter */}
@@ -441,11 +502,27 @@ function CalendarContent() {
         )}
       </div>
 
-      {/* Calendar Grid or List View */}
+      {/* Calendar Grid, Week View, or List View */}
       {viewMode === VIEW_MODES.MONTH ? (
         <MonthView 
           calendarGrid={calendarGrid}
           currentDate={currentDate}
+          getEventsForDay={getEventsForDay}
+          isDayToday={isDayToday}
+          getEventTypeColor={getEventTypeColor}
+          getEventTimeRange={getEventTimeRange}
+          handleEventRegistration={handleEventRegistration}
+          handleEventRSVP={handleEventRSVP}
+          handleEventDetails={handleEventDetails}
+          setSelectedEvent={setSelectedEvent}
+          setShowAttendeesView={setShowAttendeesView}
+          setShowRegistrationModal={setShowRegistrationModal}
+          setShowRSVPModal={setShowRSVPModal}
+          setShowEventDetailsModal={setShowEventDetailsModal}
+        />
+      ) : viewMode === VIEW_MODES.WEEK ? (
+        <WeekView 
+          weekDays={weekDays}
           getEventsForDay={getEventsForDay}
           isDayToday={isDayToday}
           getEventTypeColor={getEventTypeColor}
@@ -677,6 +754,115 @@ function MonthView({
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg pointer-events-none"></div>
                 </div>
               )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// WeekView Component
+interface WeekViewProps {
+  weekDays: Date[];
+  getEventsForDay: (day: Date) => Event[];
+  isDayToday: (day: Date) => boolean;
+  getEventTypeColor: (category: string) => string;
+  getEventTimeRange: (event: Event) => string;
+  handleEventRegistration: (event: Event) => void;
+  handleEventRSVP: (event: Event) => void;
+  handleEventDetails: (event: Event) => void;
+  setSelectedEvent: (event: Event | null) => void;
+  setShowAttendeesView: (show: boolean) => void;
+  setShowRegistrationModal: (show: boolean) => void;
+  setShowRSVPModal: (show: boolean) => void;
+  setShowEventDetailsModal: (show: boolean) => void;
+}
+
+function WeekView({ 
+  weekDays, 
+  getEventsForDay, 
+  isDayToday, 
+  getEventTypeColor, 
+  getEventTimeRange,
+  handleEventRegistration,
+  handleEventRSVP,
+  handleEventDetails,
+  setSelectedEvent,
+  setShowAttendeesView,
+  setShowRegistrationModal,
+  setShowRSVPModal,
+  setShowEventDetailsModal
+}: WeekViewProps) {
+  return (
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-indigo-50/30"></div>
+      
+      {/* Week Header */}
+      <div className="relative grid grid-cols-7 border-b border-gray-200/50">
+        {weekDays.map((day, index) => (
+          <div key={index} className="p-4 text-center border-r border-gray-200/50 last:border-r-0 bg-gradient-to-b from-gray-50/80 to-gray-100/80 backdrop-blur-sm">
+            <div className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+              {format(day, 'EEE')}
+            </div>
+            <div className={`text-2xl font-bold mt-2 transition-all duration-200 ${
+              isDayToday(day) 
+                ? 'text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full w-10 h-10 flex items-center justify-center mx-auto shadow-lg transform scale-110' 
+                : 'text-gray-900 hover:text-blue-600'
+            }`}>
+              {format(day, 'd')}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Week Grid */}
+      <div className="relative grid grid-cols-7 min-h-[600px]">
+        {weekDays.map((day, index) => {
+          const dayEvents = getEventsForDay(day);
+          const isToday = isDayToday(day);
+          
+          return (
+            <div 
+              key={index} 
+              className={`border-r border-gray-200/50 last:border-r-0 p-3 transition-all duration-300 ${
+                isToday ? 'bg-gradient-to-br from-blue-50/60 to-indigo-50/60' : 'hover:bg-gray-50/40'
+              }`}
+            >
+              <div className="space-y-2 h-full">
+                {dayEvents.map((event, eventIndex) => (
+                  <div
+                    key={eventIndex}
+                    className={`p-3 rounded-lg text-sm cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 transform ${getEventTypeColor(event.eventType || event.category || 'OTHER')} group relative overflow-hidden`}
+                    onClick={() => handleEventDetails(event)}
+                  >
+                    {/* Event background pattern */}
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                    
+                    <div className="relative">
+                      <div className="font-bold text-white truncate mb-1 group-hover:text-white">
+                        {event.title}
+                      </div>
+                      <div className="text-white/90 text-xs font-medium">
+                        {getEventTimeRange(event)}
+                      </div>
+                      {event.location && (
+                        <div className="text-white/80 text-xs mt-1 truncate">
+                          📍 {event.location}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Empty state for days with no events */}
+                {dayEvents.length === 0 && (
+                  <div className="text-center text-gray-400 text-sm mt-8 italic">
+                    No events
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

@@ -109,17 +109,19 @@ function CareRequestCard({ request, onUpdate }: { request: CareRequest; onUpdate
             </div>
             
             <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
-              <span className="flex items-center">
-                <UserIcon className="h-3 w-3 mr-1" />
-                {request.memberName || `Member ID: ${request.memberId}`}
-              </span>
+              {request.requester && (
+                <span className="flex items-center">
+                  <UserIcon className="h-3 w-3 mr-1" />
+                  {request.requester.firstName} {request.requester.lastName}
+                </span>
+              )}
               <span className="flex items-center">
                 <CalendarDaysIcon className="h-3 w-3 mr-1" />
                 {formatDate(request.requestDate)}
               </span>
-              {request.assignedPastorName && (
+              {request.assignedPastor && (
                 <span className="flex items-center">
-                  Pastor: {request.assignedPastorName}
+                  Pastor: {request.assignedPastor.firstName} {request.assignedPastor.lastName}
                 </span>
               )}
             </div>
