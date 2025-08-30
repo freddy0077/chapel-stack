@@ -55,7 +55,7 @@ export default function MemberGivingHistory({ isOpen, onClose }: MemberGivingHis
     variables: {
       organisationId,
       branchId,
-      searchTerm: memberSearch || undefined,
+      search: memberSearch || undefined,
       skip: 0,
       take: 50,
     },
@@ -63,10 +63,10 @@ export default function MemberGivingHistory({ isOpen, onClose }: MemberGivingHis
   });
 
   // Prepare member giving analysis input
-  const memberGivingInput: MemberGivingAnalysisInput | null = selectedMemberId ? {
+  const memberGivingInput: MemberGivingAnalysisInput | null = selectedMemberId && organisationId && dateRange.startDate && dateRange.endDate ? {
     memberId: selectedMemberId,
     organisationId,
-    branchId,
+    branchId: branchId || undefined,
     dateRange: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -80,12 +80,16 @@ export default function MemberGivingHistory({ isOpen, onClose }: MemberGivingHis
     MEMBER_GIVING_ANALYSIS,
     {
       variables: { input: memberGivingInput },
-      skip: !memberGivingInput,
+      skip: !memberGivingInput || !selectedMemberId || !organisationId || !dateRange.startDate || !dateRange.endDate,
       errorPolicy: 'all',
+      onError: (error) => {
+        console.error('Member giving analysis error:', error);
+        console.error('Input variables:', { input: memberGivingInput });
+      },
     }
   );
 
-  const members = memberResults?.getMembers?.items || [];
+  const members = memberResults?.members || [];
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return members.slice(0, 10);
     return members.filter((member: any) =>

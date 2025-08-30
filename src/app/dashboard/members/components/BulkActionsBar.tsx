@@ -54,20 +54,20 @@ const bulkActions: BulkActionOption[] = [
     color: 'green',
     description: 'Remove selected members from a group'
   },
-  {
-    type: 'addToMinistry',
-    label: 'Add to Ministry',
-    icon: UserPlusIcon,
-    color: 'purple',
-    description: 'Add selected members to a ministry'
-  },
-  {
-    type: 'removeFromMinistry',
-    label: 'Remove from Ministry',
-    icon: UserMinusIcon,
-    color: 'purple',
-    description: 'Remove selected members from a ministry'
-  },
+  // {
+  //   type: 'addToMinistry',
+  //   label: 'Add to Ministry',
+  //   icon: UserPlusIcon,
+  //   color: 'purple',
+  //   description: 'Add selected members to a ministry'
+  // },
+  // {
+  //   type: 'removeFromMinistry',
+  //   label: 'Remove from Ministry',
+  //   icon: UserMinusIcon,
+  //   color: 'purple',
+  //   description: 'Remove selected members from a ministry'
+  // },
   {
     type: 'recordSacrament',
     label: 'Record Sacrament',

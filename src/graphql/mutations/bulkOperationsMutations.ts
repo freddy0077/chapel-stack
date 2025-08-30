@@ -66,13 +66,7 @@ export const BULK_DELETE_MEMBERS = gql`
 
 export const BULK_EXPORT_MEMBERS = gql`
   mutation BulkExportMembers($bulkExportInput: BulkExportInput!) {
-    bulkExportMembers(bulkExportInput: $bulkExportInput) {
-      downloadUrl
-      filename
-      format
-      recordCount
-      expiresAt
-    }
+    bulkExportMembers(bulkExportInput: $bulkExportInput)
   }
 `;
 
@@ -92,11 +86,7 @@ export interface BulkOperationError {
 }
 
 export interface BulkExportResult {
-  downloadUrl: string;
-  filename: string;
-  format: string;
-  recordCount: number;
-  expiresAt: string;
+  bulkExportMembers: string; // The backend now returns CSV content directly as a string
 }
 
 export interface BulkStatusUpdateInput {
@@ -122,8 +112,31 @@ export interface BulkBranchTransferInput {
   reason?: string;
 }
 
+export interface MemberFiltersInput {
+  organisationId?: string;
+  branchId?: string;
+  search?: string;
+  gender?: string[];
+  maritalStatus?: string[];
+  membershipStatus?: string[];
+  membershipType?: string[];
+  memberStatus?: string[];
+  minAge?: number;
+  maxAge?: number;
+  joinedAfter?: string;
+  joinedBefore?: string;
+  hasProfileImage?: boolean;
+  hasEmail?: boolean;
+  hasPhone?: boolean;
+  isRegularAttendee?: boolean;
+  hasMemberId?: boolean;
+}
+
 export interface BulkExportInput {
-  memberIds: string[];
-  format: 'csv' | 'excel' | 'pdf';
+  memberIds?: string[];
+  filters?: MemberFiltersInput;
+  format?: 'CSV' | 'EXCEL' | 'PDF';
   fields?: string[];
+  includeHeaders?: boolean;
+  includeImages?: boolean;
 }

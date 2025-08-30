@@ -300,7 +300,6 @@ export default function OrganizationsManagement() {
     setRenewalOrgId(organizationId);
     try {
       // This would typically open a modal or navigate to subscription creation
-      console.log('Creating subscription for organization:', organizationId);
       // await createOrganizationSubscription(organizationId, planId, options);
       // refetch();
     } catch (error) {

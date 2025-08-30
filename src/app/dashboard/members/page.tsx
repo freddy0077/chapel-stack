@@ -11,7 +11,8 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   TableCellsIcon,
-  AdjustmentsHorizontalIcon
+  AdjustmentsHorizontalIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 
 // Components
@@ -26,6 +27,7 @@ import AddSacramentModal from './components/AddSacramentModal';
 import BulkActionsBar from './components/BulkActionsBar';
 import ViewModeToggle from './components/ViewModeToggle';
 import BulkActionSelectionDialog from './components/BulkActionSelectionDialog';
+import ExportModal, { ExportOptions } from './components/ExportModal';
 
 // Hooks
 import { useMembers } from './hooks/useMembers';
@@ -60,6 +62,7 @@ const MembersPage: React.FC = () => {
   const [showEditMemberModal, setShowEditMemberModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [selectionDialogData, setSelectionDialogData] = useState<{
     actionType: BulkActionType | null;
     options: { id: string; name: string }[];
@@ -301,108 +304,34 @@ const MembersPage: React.FC = () => {
             variables: {
               bulkExportInput: {
                 memberIds: selectedMembers,
-                format: data?.format || 'CSV', // Default to CSV
+                format: data?.format || 'CSV',
               },
             },
           });
 
-          const downloadUrl: string | undefined = result?.data?.bulkExportMembers;
-          if (downloadUrl) {
-            // Some backends may return the CSV content directly (not a URL). Detect and handle.
-            const looksLikeUrl = /^(https?:)?\/\//i.test(downloadUrl) || downloadUrl.startsWith('/');
-            const looksLikeCsv = /,/.test(downloadUrl) || /\n/.test(downloadUrl);
-            if (!looksLikeUrl && looksLikeCsv) {
-              try {
-                // If the string is URL-encoded, decode it safely
-                const maybeDecoded = decodeURIComponent(downloadUrl);
-                const csvText = maybeDecoded;
-                const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                const inferredExt = (data?.format || 'CSV').toLowerCase();
-                link.href = url;
-                link.download = `members-export.${inferredExt}`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                break;
-              } catch {
-                // Fall through to URL-based handling below
-              }
-            }
+          const exportContent: string | undefined = result?.data?.bulkExportMembers;
+          if (exportContent) {
             try {
-              // Normalize relative URLs
-              const finalUrl = new URL(downloadUrl, window.location.origin).toString();
-
-              // If the URL was constructed but actually contains CSV in the path (e.g., http://host/ID,Name,...),
-              // treat it as CSV content instead of fetching.
-              try {
-                const u = new URL(finalUrl);
-                const path = u.pathname || '';
-                const pathLooksLikeCsv = /,/.test(path) || /%2C/i.test(path) || /\n/.test(path);
-                if (pathLooksLikeCsv && path.length > 1) {
-                  const csvText = decodeURIComponent(path.slice(1));
-                  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  const inferredExt = (data?.format || 'CSV').toLowerCase();
-                  link.href = url;
-                  link.download = `members-export.${inferredExt}`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
-                  break;
-                }
-              } catch {}
-
-              // Try authenticated fetch (covers protected endpoints and preserves cookies)
-              const headers: Record<string, string> = {};
-              // Attempt to include a bearer token if your app uses one
-              const token =
-                (typeof window !== 'undefined' && (localStorage.getItem('authToken') || localStorage.getItem('accessToken'))) ||
-                undefined;
-              if (token) headers['Authorization'] = `Bearer ${token}`;
-
-              const resp = await fetch(finalUrl, {
-                method: 'GET',
-                headers,
-                credentials: 'include',
-              });
-
-              if (resp.ok) {
-                const blob = await resp.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                // Try to infer filename from Content-Disposition header
-                const cd = resp.headers.get('Content-Disposition') || '';
-                const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
-                const inferredExt = (data?.format || 'CSV').toLowerCase();
-                const fallbackName = `members-export.${inferredExt}`;
-                const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackName);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-              } else {
-                // If direct fetch fails (CORS/protection), fall back to opening the URL
-                window.open(finalUrl, '_blank', 'noopener');
-              }
-            } catch (err) {
-              // As a last resort, attempt a simple anchor click
+              // The backend now returns CSV content directly as a string
+              const format = data?.format || 'CSV';
+              const mimeType = format === 'PDF' ? 'application/pdf' : 'text/csv;charset=utf-8;';
+              const blob = new Blob([exportContent], { type: mimeType });
+              const url = URL.createObjectURL(blob);
               const link = document.createElement('a');
-              link.href = downloadUrl;
-              const inferredExt = (data?.format || 'CSV').toLowerCase();
-              link.download = `members-export.${inferredExt}`;
+              const extension = format.toLowerCase();
+              link.href = url;
+              link.download = `members-export-${new Date().toISOString().split('T')[0]}.${extension}`;
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              toast.success(`Successfully exported ${selectedMembers.length} members`);
+            } catch (error) {
+              console.error('Error processing export content:', error);
+              toast.error('Failed to process export data');
             }
           } else {
-            toast.error('Export succeeded but no download URL was returned.');
+            toast.error('Export failed: No data returned');
           }
           break;
         }
@@ -460,6 +389,102 @@ const MembersPage: React.FC = () => {
       toast.error(e.message || 'An error occurred during the bulk action.');
     } finally {
       setIsSelectionDialogOpen(false);
+    }
+  };
+
+  const handleExport = async (exportOptions: ExportOptions) => {
+    try {
+      let exportInput: any;
+
+      switch (exportOptions.scope) {
+        case 'selected':
+          exportInput = {
+            memberIds: selectedMembers,
+            format: exportOptions.format,
+            fields: exportOptions.fields,
+            includeHeaders: exportOptions.includeHeaders,
+            includeImages: exportOptions.includeImages
+          };
+          break;
+        case 'filtered':
+          exportInput = {
+            filters: {
+              ...filters,
+              organisationId,
+              branchId
+            },
+            format: exportOptions.format,
+            fields: exportOptions.fields,
+            includeHeaders: exportOptions.includeHeaders,
+            includeImages: exportOptions.includeImages
+          };
+          break;
+        case 'all':
+          exportInput = {
+            filters: {
+              organisationId,
+              branchId
+            },
+            format: exportOptions.format,
+            fields: exportOptions.fields,
+            includeHeaders: exportOptions.includeHeaders,
+            includeImages: exportOptions.includeImages
+          };
+          break;
+      }
+
+      // Use the existing bulk export function for now, but we'll need to update it
+      const result = await bulkExportMembers({
+        variables: {
+          bulkExportInput: exportInput,
+        },
+      });
+
+      const exportContent: string | undefined = result?.data?.bulkExportMembers;
+      if (exportContent) {
+        try {
+          // The backend now returns export content directly as a string
+          const format = exportOptions.format;
+          const mimeType = format === 'PDF' ? 'application/pdf' : 'text/csv;charset=utf-8;';
+          const blob = new Blob([exportContent], { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const extension = format.toLowerCase();
+          
+          // Generate filename based on export scope
+          let filename = '';
+          switch (exportOptions.scope) {
+            case 'selected':
+              filename = `members-export-selected-${selectedMembers.length}-${new Date().toISOString().split('T')[0]}.${extension}`;
+              break;
+            case 'filtered':
+              filename = `members-export-filtered-${new Date().toISOString().split('T')[0]}.${extension}`;
+              break;
+            case 'all':
+              filename = `members-export-all-${new Date().toISOString().split('T')[0]}.${extension}`;
+              break;
+          }
+          
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          // Show success message based on scope
+          const scopeText = exportOptions.scope === 'selected' ? `${selectedMembers.length} selected members` : 
+                           exportOptions.scope === 'filtered' ? 'filtered members' : 'all members';
+          toast.success(`Successfully exported ${scopeText}`);
+        } catch (error) {
+          console.error('Error processing export content:', error);
+          toast.error('Failed to process export data');
+        }
+      } else {
+        toast.error('Export failed: No data returned');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed. Please try again.');
     }
   };
 
@@ -575,6 +600,15 @@ const MembersPage: React.FC = () => {
                   }`}
                 >
                   <FunnelIcon className="w-5 h-5" />
+                </button>
+
+                {/* Export Button */}
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                >
+                  <DocumentArrowDownIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Export</span>
                 </button>
 
                 {/* Add Member Button */}
@@ -755,6 +789,20 @@ const MembersPage: React.FC = () => {
               title={selectionDialogData.title}
               label={selectionDialogData.label}
               options={selectionDialogData.options}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showExportModal && (
+            <ExportModal
+              isOpen={showExportModal}
+              onClose={() => setShowExportModal(false)}
+              onExport={handleExport}
+              filters={filters}
+              selectedCount={selectedMembers.length}
+              totalFilteredCount={pageInfo.totalCount}
+              loading={bulkLoading.bulkExportMembersLoading}
             />
           )}
         </AnimatePresence>

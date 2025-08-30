@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { format, startOfMonth, endOfMonth, addMonths, subMonths, isToday, getDay, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameWeek, eachDayOfInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths, subMonths, isToday, getDay, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameWeek, eachDayOfInterval, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -278,8 +278,14 @@ function CalendarContent() {
     }
     
     const eventsForDay = filteredEvents.filter(event => {
-      const eventStart = new Date(event.startDate);
-      return isSameDay(eventStart, targetDate);
+      const eventStart = startOfDay(new Date(event.startDate));
+      const eventEnd = startOfDay(new Date(event.endDate));
+      const targetDay = startOfDay(targetDate);
+      
+      // Check if the target day falls within the event's date range (inclusive)
+      return isWithinInterval(targetDay, { start: eventStart, end: eventEnd }) ||
+             isSameDay(targetDay, eventStart) ||
+             isSameDay(targetDay, eventEnd);
     });
     
     return eventsForDay;

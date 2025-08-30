@@ -5,7 +5,12 @@ import {
   GiftIcon,
   HeartIcon,
   UserGroupIcon,
+  HandRaisedIcon,
+  PlusCircleIcon,
+  AcademicCapIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/outline";
+import { SACRAMENT_TYPES, SACRAMENT_DISPLAY_NAMES, SACRAMENT_COLORS } from "@/constants/sacramentTypes";
 import { SacramentStatsLoader } from "../SacramentStatsLoader";
 
 interface StatsCardProps {
@@ -75,8 +80,8 @@ export default function SacramentStatsOverview({ period = "all" }: SacramentStat
         {(stats: any[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
           if (loading) {
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {[...Array(9)].map((_, i) => (
                   <div key={i} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-pulse">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
@@ -102,44 +107,90 @@ export default function SacramentStatsOverview({ period = "all" }: SacramentStat
             );
           }
 
+          // Define sacrament configurations with icons and descriptions
+          const sacramentConfigs = [
+            {
+              type: SACRAMENT_TYPES.BAPTISM,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.BAPTISM],
+              description: "Sacred initiations",
+              icon: SparklesIcon,
+              color: "text-blue-600"
+            },
+            {
+              type: SACRAMENT_TYPES.COMMUNION,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.COMMUNION],
+              description: "First Eucharist receptions",
+              icon: GiftIcon,
+              color: "text-amber-600"
+            },
+            {
+              type: SACRAMENT_TYPES.CONFIRMATION,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.CONFIRMATION],
+              description: "Faith strengthened",
+              icon: HeartIcon,
+              color: "text-purple-600"
+            },
+            {
+              type: SACRAMENT_TYPES.MARRIAGE,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.MARRIAGE],
+              description: "Sacred unions blessed",
+              icon: UserGroupIcon,
+              color: "text-rose-600"
+            },
+            {
+              type: SACRAMENT_TYPES.RECONCILIATION,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.RECONCILIATION],
+              description: "First confessions",
+              icon: HandRaisedIcon,
+              color: "text-green-600"
+            },
+            {
+              type: SACRAMENT_TYPES.ANOINTING,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.ANOINTING],
+              description: "Healing sacrament",
+              icon: PlusCircleIcon,
+              color: "text-indigo-600"
+            },
+            {
+              type: SACRAMENT_TYPES.DIACONATE,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.DIACONATE],
+              description: "Deacon ordinations",
+              icon: AcademicCapIcon,
+              color: "text-violet-600"
+            },
+            {
+              type: SACRAMENT_TYPES.PRIESTHOOD,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.PRIESTHOOD],
+              description: "Priest ordinations",
+              icon: AcademicCapIcon,
+              color: "text-violet-700"
+            },
+            {
+              type: SACRAMENT_TYPES.RCIA,
+              title: SACRAMENT_DISPLAY_NAMES[SACRAMENT_TYPES.RCIA],
+              description: "Adult initiations",
+              icon: BookOpenIcon,
+              color: "text-teal-600"
+            }
+          ];
+
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard
-                title="Total Baptisms"
-                value={stats.find(s => s.sacramentType === 'BAPTISM')?.count || 0}
-                description="Sacred initiations"
-                icon={SparklesIcon}
-                iconColor="text-blue-600"
-                trend={stats.find(s => s.sacramentType === 'BAPTISM')?.trend || 'neutral'}
-                percentage={stats.find(s => s.sacramentType === 'BAPTISM')?.percentage || 0}
-              />
-              <StatsCard
-                title="First Communions"
-                value={stats.find(s => s.sacramentType === 'EUCHARIST_FIRST_COMMUNION')?.count || 0}
-                description="First Eucharist receptions"
-                icon={GiftIcon}
-                iconColor="text-amber-600"
-                trend={stats.find(s => s.sacramentType === 'EUCHARIST_FIRST_COMMUNION')?.trend || 'neutral'}
-                percentage={stats.find(s => s.sacramentType === 'EUCHARIST_FIRST_COMMUNION')?.percentage || 0}
-              />
-              <StatsCard
-                title="Confirmations"
-                value={stats.find(s => s.sacramentType === 'CONFIRMATION')?.count || 0}
-                description="Faith strengthened"
-                icon={HeartIcon}
-                iconColor="text-purple-600"
-                trend={stats.find(s => s.sacramentType === 'CONFIRMATION')?.trend || 'neutral'}
-                percentage={stats.find(s => s.sacramentType === 'CONFIRMATION')?.percentage || 0}
-              />
-              <StatsCard
-                title="Marriages"
-                value={stats.find(s => s.sacramentType === 'MATRIMONY')?.count || 0}
-                description="Sacred unions blessed"
-                icon={UserGroupIcon}
-                iconColor="text-rose-600"
-                trend={stats.find(s => s.sacramentType === 'MATRIMONY')?.trend || 'neutral'}
-                percentage={stats.find(s => s.sacramentType === 'MATRIMONY')?.percentage || 0}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {sacramentConfigs.map((config) => {
+                const sacramentStats = stats.find(s => s.sacramentType === config.type);
+                return (
+                  <StatsCard
+                    key={config.type}
+                    title={config.title}
+                    value={sacramentStats?.count || 0}
+                    description={config.description}
+                    icon={config.icon}
+                    iconColor={config.color}
+                    trend={sacramentStats?.trend || 'neutral'}
+                    percentage={sacramentStats?.percentage || 0}
+                  />
+                );
+              })}
             </div>
           );
         }}

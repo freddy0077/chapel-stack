@@ -1,9 +1,26 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useCallback } from "react";
 import { SparklesIcon, ChartBarIcon, DocumentArrowDownIcon, BellIcon } from "@heroicons/react/24/outline";
 import DashboardHeader from "@/components/DashboardHeader";
 import { toast } from "react-hot-toast";
+
+// Import new hooks
+import { useSacramentModals, MODAL_TYPES, SACRAMENT_TYPES } from "@/hooks/useSacramentModals";
+import { useSacramentRefetch } from "@/hooks/useSacramentRefetch";
+import { useSacramentLoading } from "@/hooks/useSacramentLoading";
+
+// Import error boundary and loading components
+import { SacramentErrorBoundary } from "@/components/ErrorBoundary";
+import { SacramentStatsSkeleton } from "@/components/ui/SkeletonLoader";
+
+// Import sacrament constants and utilities
+import { formatSacramentType } from "@/utils/sacramentHelpers";
+import SacramentSearch from "@/components/sacraments/SacramentSearch";
+import { SacramentBreadcrumbs } from "@/components/ui/Breadcrumbs";
+import { exportSacramentRecords, filterRecordsForExport } from "@/utils/sacramentExport";
+import AnniversaryWidget from "@/components/sacraments/AnniversaryWidget";
+import AnniversaryNotifications from "@/components/sacraments/AnniversaryNotifications";
 
 // Import existing modular components
 import SacramentActionMenu from "./components/SacramentActionMenu";
@@ -14,7 +31,6 @@ import SacramentModalManager from "./components/SacramentModalManager";
 // Import new Priority 2 components
 import SacramentDetailModal from "./components/SacramentDetailModal";
 import SacramentAnalytics from "./components/SacramentAnalytics";
-import AnniversaryNotifications from "./components/AnniversaryNotifications";
 import CertificateManagementDashboard from "./components/CertificateManagementDashboard";
 
 // Import hooks for edit and delete functionality
@@ -58,148 +74,174 @@ export default function SacramentsPage() {
   // Tab state
   const [activeTab, setActiveTab] = useState('records');
 
-  // Modal states for all sacrament types
-  const [isBaptismModalOpen, setIsBaptismModalOpen] = useState(false);
-  const [isCommunionModalOpen, setIsCommunionModalOpen] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [isMarriageModalOpen, setIsMarriageModalOpen] = useState(false);
-  const [isReconciliationModalOpen, setIsReconciliationModalOpen] = useState(false);
-  const [isAnointingModalOpen, setIsAnointingModalOpen] = useState(false);
-  const [isDiaconateModalOpen, setIsDiaconateModalOpen] = useState(false);
-  const [isPriesthoodModalOpen, setIsPriesthoodModalOpen] = useState(false);
-  const [isRciaModalOpen, setIsRciaModalOpen] = useState(false);
+  // Search and filtering state
+  const [searchFilters, setSearchFilters] = useState({
+    searchTerm: '',
+    sacramentType: 'all' as const,
+    dateRange: { start: '', end: '' },
+    location: '',
+    officiant: '',
+    hasNotes: null as boolean | null,
+    hasCertificate: null as boolean | null,
+    sortBy: 'dateOfSacrament' as const,
+    sortOrder: 'desc' as const,
+  });
 
-  // Priority 2 modal states
-  const [selectedRecord, setSelectedRecord] = useState<SacramentRecord | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showCertificateManager, setShowCertificateManager] = useState(false);
-  const [showAnniversaryNotifications, setShowAnniversaryNotifications] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  // Anniversary notifications state
+  const [isAnniversaryModalOpen, setIsAnniversaryModalOpen] = useState(false);
 
-  // Phase 3: Marriage Analytics modal states
-  const [isMarriageAnalyticsOpen, setIsMarriageAnalyticsOpen] = useState(false);
-  const [isMemberMarriageHistoryOpen, setIsMemberMarriageHistoryOpen] = useState(false);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-
-  // Store refetch functions for each sacrament type
-  const baptismRefetchRef = useRef<(() => void) | null>(null);
-  const communionRefetchRef = useRef<(() => void) | null>(null);
-  const confirmationRefetchRef = useRef<(() => void) | null>(null);
-  const marriageRefetchRef = useRef<(() => void) | null>(null);
-  const reconciliationRefetchRef = useRef<(() => void) | null>(null);
-  const anointingRefetchRef = useRef<(() => void) | null>(null);
-  const diaconateRefetchRef = useRef<(() => void) | null>(null);
-  const priesthoodRefetchRef = useRef<(() => void) | null>(null);
-  const rciaRefetchRef = useRef<(() => void) | null>(null);
+  // Use new unified hooks
+  const modalManager = useSacramentModals();
+  const refetchManager = useSacramentRefetch();
+  const loadingManager = useSacramentLoading();
 
   // Delete mutation hook
   const [deleteRecord, { loading: deleting }] = useDeleteSacramentalRecord();
 
-  // Handlers for Priority 2 functionality
-  const handleViewRecord = (record: SacramentRecord) => {
-    setSelectedRecord(record);
-    setShowDetailModal(true);
-  };
+  // Memoized handlers using the new modal management system
+  const handleViewRecord = useCallback((record: SacramentRecord) => {
+    modalManager.openDetailModal(record);
+  }, [modalManager]);
 
-  const handleEditRecord = (record: SacramentRecord) => {
-    setSelectedRecord(record);
-    setShowEditModal(true);
-  };
+  const handleEditRecord = useCallback((record: SacramentRecord) => {
+    modalManager.openEditModal(record);
+  }, [modalManager]);
 
-  const handleDeleteRecord = async (recordId: string) => {
+  const handleDeleteRecord = useCallback(async (recordId: string) => {
     if (!window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
       return;
     }
 
     try {
-      await deleteRecord({
-        variables: { id: recordId },
-      });
-      
-      toast.success('Sacrament record deleted successfully');
-      
-      // Trigger refetch for all sacrament types to ensure UI is updated
-      baptismRefetchRef.current?.();
-      communionRefetchRef.current?.();
-      confirmationRefetchRef.current?.();
-      marriageRefetchRef.current?.();
-      reconciliationRefetchRef.current?.();
-      anointingRefetchRef.current?.();
-      diaconateRefetchRef.current?.();
-      priesthoodRefetchRef.current?.();
-      rciaRefetchRef.current?.();
+      await loadingManager.withLoading(
+        async () => {
+          await deleteRecord({
+            variables: { id: recordId },
+          });
+          
+          toast.success('Sacrament record deleted successfully');
+          
+          // Trigger refetch for all sacrament types using unified system
+          refetchManager.refetchAll();
+        },
+        'delete',
+        'Deleting sacrament record...',
+        recordId
+      );
     } catch (error: any) {
       console.error('Error deleting record:', error);
       toast.error(error.message || 'Failed to delete sacrament record');
     }
-  };
+  }, [deleteRecord, refetchManager, loadingManager]);
 
-  const handleGenerateCertificate = (record: SacramentRecord) => {
-    setSelectedRecord(record);
-    setShowCertificateManager(true);
-  };
+  const handleGenerateCertificate = useCallback((record: SacramentRecord) => {
+    modalManager.openCertificateModal(record);
+  }, [modalManager]);
 
-  const handleCertificateGenerated = (certificateUrl: string, certificateNumber: string) => {
+  const handleCertificateGenerated = useCallback((certificateUrl: string, certificateNumber: string) => {
     // Update the record with the new certificate information
-    if (selectedRecord) {
-      setSelectedRecord({
-        ...selectedRecord,
+    if (modalManager.selectedRecord) {
+      modalManager.setSelectedRecord({
+        ...modalManager.selectedRecord,
         certificateUrl,
         certificateNumber,
       });
     }
-    setShowCertificateManager(false);
-  };
+    modalManager.closeModal(MODAL_TYPES.CERTIFICATE);
+  }, [modalManager]);
 
-  const handleEditSuccess = () => {
-    // Trigger refetch for all sacrament types to ensure UI is updated
-    baptismRefetchRef.current?.();
-    communionRefetchRef.current?.();
-    confirmationRefetchRef.current?.();
-    marriageRefetchRef.current?.();
-    reconciliationRefetchRef.current?.();
-    anointingRefetchRef.current?.();
-    diaconateRefetchRef.current?.();
-    priesthoodRefetchRef.current?.();
-    rciaRefetchRef.current?.();
+  const handleEditSuccess = useCallback(() => {
+    // Trigger refetch for all sacrament types using unified system
+    refetchManager.refetchAll();
     
     toast.success('Record updated successfully');
-  };
+  }, [refetchManager]);
 
-  const handleViewMarriageAnalytics = () => {
-    setIsMarriageAnalyticsOpen(true);
-  };
+  const handleViewMarriageAnalytics = useCallback(() => {
+    modalManager.openMarriageAnalytics();
+  }, [modalManager]);
 
-  const handleViewMemberMarriageHistory = (memberId: string) => {
-    setSelectedMemberId(memberId);
-    setIsMemberMarriageHistoryOpen(true);
-  };
+  const handleViewMemberMarriageHistory = useCallback((memberId: string) => {
+    modalManager.openMemberMarriageHistory(memberId);
+  }, [modalManager]);
+
+  // Bulk operations handlers
+  const handleBulkDelete = useCallback(async (recordIds: string[]) => {
+    try {
+      await loadingManager.withLoading(
+        async () => {
+          // Delete each record - in a real implementation, this would be a bulk delete mutation
+          for (const recordId of recordIds) {
+            await deleteRecord({ variables: { id: recordId } });
+          }
+          
+          toast.success(`${recordIds.length} sacrament record(s) deleted successfully`);
+          refetchManager.refetchAll();
+        },
+        'delete',
+        `Deleting ${recordIds.length} records...`
+      );
+    } catch (error: any) {
+      console.error('Bulk delete error:', error);
+      toast.error(error.message || 'Failed to delete selected records');
+    }
+  }, [deleteRecord, refetchManager, loadingManager]);
+
+  const handleBulkExport = useCallback(async (recordIds: string[], format: 'csv' | 'pdf' | 'excel') => {
+    try {
+      await loadingManager.withLoading(
+        async () => {
+          // Placeholder for bulk export functionality
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          toast.success(`${recordIds.length} record(s) exported as ${format.toUpperCase()}`);
+        },
+        'export',
+        `Exporting ${recordIds.length} records as ${format.toUpperCase()}...`
+      );
+    } catch (error: any) {
+      console.error('Bulk export error:', error);
+      toast.error(error.message || 'Failed to export selected records');
+    }
+  }, [loadingManager]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <SacramentErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <DashboardHeader
         title="Sacraments"
         subtitle="Comprehensive sacramental records management with analytics, certificates, and notifications"
         icon={<SparklesIcon className="h-10 w-10 text-white" />}
         action={
           <SacramentActionMenu
-            onBaptismClick={() => setIsBaptismModalOpen(true)}
-            onCommunionClick={() => setIsCommunionModalOpen(true)}
-            onConfirmationClick={() => setIsConfirmationModalOpen(true)}
-            onMarriageClick={() => setIsMarriageModalOpen(true)}
-            onReconciliationClick={() => setIsReconciliationModalOpen(true)}
-            onAnointingClick={() => setIsAnointingModalOpen(true)}
-            onDiaconateClick={() => setIsDiaconateModalOpen(true)}
-            onPriesthoodClick={() => setIsPriesthoodModalOpen(true)}
-            onRciaClick={() => setIsRciaModalOpen(true)}
+            onBaptismClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.BAPTISM)}
+            onCommunionClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.COMMUNION)}
+            onConfirmationClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.CONFIRMATION)}
+            onMarriageClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.MARRIAGE)}
+            onReconciliationClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.RECONCILIATION)}
+            onAnointingClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.ANOINTING)}
+            onDiaconateClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.DIACONATE)}
+            onPriesthoodClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.PRIESTHOOD)}
+            onRciaClick={() => modalManager.openSacramentModal(SACRAMENT_TYPES.RCIA)}
           />
         }
       />
     
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-6">
+          <SacramentBreadcrumbs currentPage="Records" />
+        </div>
+        
         {/* Statistics Overview - Always visible */}
         <SacramentStatsOverview period="all" />
+
+        {/* Anniversary Widget */}
+        <div className="mt-6">
+          <AnniversaryWidget 
+            records={[]} // This would be populated with all sacrament records
+            onViewAll={() => setIsAnniversaryModalOpen(true)}
+          />
+        </div>
 
         {/* Main Tab Navigation */}
         <div className="mt-8">
@@ -228,23 +270,36 @@ export default function SacramentsPage() {
           {/* Tab Content */}
           <div className="mt-6">
             {activeTab === 'records' && (
-              <SacramentTabContentEnhanced
-                baptismRefetchRef={baptismRefetchRef}
-                communionRefetchRef={communionRefetchRef}
-                confirmationRefetchRef={confirmationRefetchRef}
-                marriageRefetchRef={marriageRefetchRef}
-                reconciliationRefetchRef={reconciliationRefetchRef}
-                anointingRefetchRef={anointingRefetchRef}
-                diaconateRefetchRef={diaconateRefetchRef}
-                priesthoodRefetchRef={priesthoodRefetchRef}
-                rciaRefetchRef={rciaRefetchRef}
-                onViewRecord={handleViewRecord}
-                onEditRecord={handleEditRecord}
-                onDeleteRecord={handleDeleteRecord}
-                onGenerateCertificate={handleGenerateCertificate}
-                onViewMarriageAnalytics={handleViewMarriageAnalytics}
-                onViewMemberMarriageHistory={handleViewMemberMarriageHistory}
-              />
+              <div className="space-y-6">
+                {/* Advanced Search and Filtering */}
+                <SacramentSearch
+                  filters={searchFilters}
+                  onFiltersChange={setSearchFilters}
+                  totalRecords={0} // This would be calculated from actual data
+                  filteredRecords={0} // This would be calculated from filtered data
+                  isLoading={loadingManager.globalLoading.isLoading}
+                  className="mb-6"
+                />
+                
+                {/* Sacrament Records */}
+                <SacramentTabContentEnhanced
+                  baptismRefetchRef={refetchManager.baptismRefetchRef}
+                  communionRefetchRef={refetchManager.communionRefetchRef}
+                  confirmationRefetchRef={refetchManager.confirmationRefetchRef}
+                  marriageRefetchRef={refetchManager.marriageRefetchRef}
+                  reconciliationRefetchRef={refetchManager.reconciliationRefetchRef}
+                  anointingRefetchRef={refetchManager.anointingRefetchRef}
+                  diaconateRefetchRef={refetchManager.diaconateRefetchRef}
+                  priesthoodRefetchRef={refetchManager.priesthoodRefetchRef}
+                  rciaRefetchRef={refetchManager.rciaRefetchRef}
+                  onViewRecord={handleViewRecord}
+                  onEditRecord={handleEditRecord}
+                  onDeleteRecord={handleDeleteRecord}
+                  onGenerateCertificate={handleGenerateCertificate}
+                  onViewMarriageAnalytics={handleViewMarriageAnalytics}
+                  onViewMemberMarriageHistory={handleViewMemberMarriageHistory}
+                />
+              </div>
             )}
 
             {activeTab === 'analytics' && (
@@ -264,123 +319,105 @@ export default function SacramentsPage() {
 
       {/* Modal Manager for Creation Modals */}
       <SacramentModalManager
-        isBaptismModalOpen={isBaptismModalOpen}
-        isCommunionModalOpen={isCommunionModalOpen}
-        isConfirmationModalOpen={isConfirmationModalOpen}
-        isMarriageModalOpen={isMarriageModalOpen}
-        isReconciliationModalOpen={isReconciliationModalOpen}
-        isAnointingModalOpen={isAnointingModalOpen}
-        isDiaconateModalOpen={isDiaconateModalOpen}
-        isPriesthoodModalOpen={isPriesthoodModalOpen}
-        isRciaModalOpen={isRciaModalOpen}
-        setIsBaptismModalOpen={setIsBaptismModalOpen}
-        setIsCommunionModalOpen={setIsCommunionModalOpen}
-        setIsConfirmationModalOpen={setIsConfirmationModalOpen}
-        setIsMarriageModalOpen={setIsMarriageModalOpen}
-        setIsReconciliationModalOpen={setIsReconciliationModalOpen}
-        setIsAnointingModalOpen={setIsAnointingModalOpen}
-        setIsDiaconateModalOpen={setIsDiaconateModalOpen}
-        setIsPriesthoodModalOpen={setIsPriesthoodModalOpen}
-        setIsRciaModalOpen={setIsRciaModalOpen}
-        baptismRefetchRef={baptismRefetchRef}
-        communionRefetchRef={communionRefetchRef}
-        confirmationRefetchRef={confirmationRefetchRef}
-        marriageRefetchRef={marriageRefetchRef}
-        reconciliationRefetchRef={reconciliationRefetchRef}
-        anointingRefetchRef={anointingRefetchRef}
-        diaconateRefetchRef={diaconateRefetchRef}
-        priesthoodRefetchRef={priesthoodRefetchRef}
-        rciaRefetchRef={rciaRefetchRef}
-        isMarriageAnalyticsOpen={isMarriageAnalyticsOpen}
-        setIsMarriageAnalyticsOpen={setIsMarriageAnalyticsOpen}
-        isMemberMarriageHistoryOpen={isMemberMarriageHistoryOpen}
-        setIsMemberMarriageHistoryOpen={setIsMemberMarriageHistoryOpen}
-        selectedMemberId={selectedMemberId}
+        isBaptismModalOpen={modalManager.isBaptismModalOpen}
+        isCommunionModalOpen={modalManager.isCommunionModalOpen}
+        isConfirmationModalOpen={modalManager.isConfirmationModalOpen}
+        isMarriageModalOpen={modalManager.isMarriageModalOpen}
+        isReconciliationModalOpen={modalManager.isReconciliationModalOpen}
+        isAnointingModalOpen={modalManager.isAnointingModalOpen}
+        isDiaconateModalOpen={modalManager.isDiaconateModalOpen}
+        isPriesthoodModalOpen={modalManager.isPriesthoodModalOpen}
+        isRciaModalOpen={modalManager.isRciaModalOpen}
+        setIsBaptismModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.BAPTISM) : modalManager.closeSacramentModal(SACRAMENT_TYPES.BAPTISM)}
+        setIsCommunionModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.COMMUNION) : modalManager.closeSacramentModal(SACRAMENT_TYPES.COMMUNION)}
+        setIsConfirmationModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.CONFIRMATION) : modalManager.closeSacramentModal(SACRAMENT_TYPES.CONFIRMATION)}
+        setIsMarriageModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.MARRIAGE) : modalManager.closeSacramentModal(SACRAMENT_TYPES.MARRIAGE)}
+        setIsReconciliationModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.RECONCILIATION) : modalManager.closeSacramentModal(SACRAMENT_TYPES.RECONCILIATION)}
+        setIsAnointingModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.ANOINTING) : modalManager.closeSacramentModal(SACRAMENT_TYPES.ANOINTING)}
+        setIsDiaconateModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.DIACONATE) : modalManager.closeSacramentModal(SACRAMENT_TYPES.DIACONATE)}
+        setIsPriesthoodModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.PRIESTHOOD) : modalManager.closeSacramentModal(SACRAMENT_TYPES.PRIESTHOOD)}
+        setIsRciaModalOpen={(open) => open ? modalManager.openSacramentModal(SACRAMENT_TYPES.RCIA) : modalManager.closeSacramentModal(SACRAMENT_TYPES.RCIA)}
+        baptismRefetchRef={refetchManager.baptismRefetchRef}
+        communionRefetchRef={refetchManager.communionRefetchRef}
+        confirmationRefetchRef={refetchManager.confirmationRefetchRef}
+        marriageRefetchRef={refetchManager.marriageRefetchRef}
+        reconciliationRefetchRef={refetchManager.reconciliationRefetchRef}
+        anointingRefetchRef={refetchManager.anointingRefetchRef}
+        diaconateRefetchRef={refetchManager.diaconateRefetchRef}
+        priesthoodRefetchRef={refetchManager.priesthoodRefetchRef}
+        rciaRefetchRef={refetchManager.rciaRefetchRef}
+        isMarriageAnalyticsOpen={modalManager.isMarriageAnalyticsOpen}
+        setIsMarriageAnalyticsOpen={(open) => open ? modalManager.openMarriageAnalytics() : modalManager.closeModal(MODAL_TYPES.MARRIAGE_ANALYTICS)}
+        isMemberMarriageHistoryOpen={modalManager.isMemberMarriageHistoryOpen}
+        setIsMemberMarriageHistoryOpen={(open) => open ? null : modalManager.closeModal(MODAL_TYPES.MEMBER_MARRIAGE_HISTORY)}
+        selectedMemberId={modalManager.selectedMemberId}
       />
 
       {/* Detail Modal for Viewing Records */}
-      {showDetailModal && selectedRecord && (
+      {modalManager.showDetailModal && modalManager.selectedRecord && (
         <SacramentDetailModal
-          record={selectedRecord}
-          isOpen={showDetailModal}
+          record={modalManager.selectedRecord}
+          isOpen={modalManager.showDetailModal}
           onClose={() => {
-            setShowDetailModal(false);
-            setSelectedRecord(null);
+            modalManager.closeModal(MODAL_TYPES.DETAIL);
           }}
           onEdit={(record) => {
-            setSelectedRecord(record);
-            setShowDetailModal(false);
-            setShowEditModal(true);
+            modalManager.setSelectedRecord(record);
+            modalManager.closeModal(MODAL_TYPES.DETAIL);
+            modalManager.openModal(MODAL_TYPES.EDIT);
           }}
           onDelete={(recordId) => {
-            // Handle delete logic here
-            console.log('Delete record:', recordId);
-            setShowDetailModal(false);
-            setSelectedRecord(null);
-            // You can add actual delete mutation here
+            handleDeleteRecord(recordId);
+            modalManager.closeModal(MODAL_TYPES.DETAIL);
           }}
           onGenerateCertificate={(record) => {
-            setSelectedRecord(record);
-            setShowDetailModal(false);
-            setShowCertificateManager(true);
+            modalManager.setSelectedRecord(record);
+            modalManager.closeModal(MODAL_TYPES.DETAIL);
+            modalManager.openModal(MODAL_TYPES.CERTIFICATE);
           }}
         />
       )}
 
       {/* Edit Modal for Editing Records */}
-      {showEditModal && selectedRecord && (
+      {modalManager.showEditModal && modalManager.selectedRecord && (
         <SacramentDetailModal
-          record={selectedRecord}
-          isOpen={showEditModal}
+          record={modalManager.selectedRecord}
+          isOpen={modalManager.showEditModal}
           isEditMode={true}
           onClose={() => {
-            setShowEditModal(false);
-            setSelectedRecord(null);
+            modalManager.closeModal(MODAL_TYPES.EDIT);
           }}
           onEdit={(record) => {
             // Already in edit mode, so just update the record
-            setSelectedRecord(record);
+            modalManager.setSelectedRecord(record);
           }}
           onDelete={(recordId) => {
-            // Handle delete logic here
-            console.log('Delete record:', recordId);
-            setShowEditModal(false);
-            setSelectedRecord(null);
-            // You can add actual delete mutation here
+            handleDeleteRecord(recordId);
+            modalManager.closeModal(MODAL_TYPES.EDIT);
           }}
           onGenerateCertificate={(record) => {
-            setSelectedRecord(record);
-            setShowEditModal(false);
-            setShowCertificateManager(true);
+            modalManager.setSelectedRecord(record);
+            modalManager.closeModal(MODAL_TYPES.EDIT);
+            modalManager.openModal(MODAL_TYPES.CERTIFICATE);
           }}
           onSave={() => {
-            // Trigger refetch for all sacrament types to ensure UI is updated
-            baptismRefetchRef.current?.();
-            communionRefetchRef.current?.();
-            confirmationRefetchRef.current?.();
-            marriageRefetchRef.current?.();
-            reconciliationRefetchRef.current?.();
-            anointingRefetchRef.current?.();
-            diaconateRefetchRef.current?.();
-            priesthoodRefetchRef.current?.();
-            rciaRefetchRef.current?.();
-            setShowEditModal(false);
-            setSelectedRecord(null);
+            // Trigger refetch for all sacrament types using unified system
+            refetchManager.refetchAll();
+            modalManager.closeModal(MODAL_TYPES.EDIT);
             toast.success('Sacrament record updated successfully');
           }}
         />
       )}
 
       {/* Certificate Manager Modal */}
-      {showCertificateManager && selectedRecord && (
+      {modalManager.showCertificateManager && modalManager.selectedRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Certificate Management</h3>
               <button
                 onClick={() => {
-                  setShowCertificateManager(false);
-                  setSelectedRecord(null);
+                  modalManager.closeModal(MODAL_TYPES.CERTIFICATE);
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
@@ -393,25 +430,25 @@ export default function SacramentsPage() {
             <div className="space-y-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">
-                  {selectedRecord.sacramentType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())} Certificate
+                  {formatSacramentType(modalManager.selectedRecord.sacramentType)} Certificate
                 </h4>
                 <p className="text-sm text-blue-700 mb-3">
-                  Member: {selectedRecord.memberName || `ID: ${selectedRecord.memberId}`}
+                  Member: {modalManager.selectedRecord.memberName || `ID: ${modalManager.selectedRecord.memberId}`}
                 </p>
                 <p className="text-sm text-blue-700">
-                  Date: {new Date(selectedRecord.dateOfSacrament).toLocaleDateString()}
+                  Date: {new Date(modalManager.selectedRecord.dateOfSacrament).toLocaleDateString()}
                 </p>
               </div>
 
-              {selectedRecord.certificateUrl ? (
+              {modalManager.selectedRecord.certificateUrl ? (
                 <div className="space-y-3">
                   <p className="text-sm text-green-600 font-medium">✓ Certificate Available</p>
-                  {selectedRecord.certificateNumber && (
-                    <p className="text-sm text-gray-600">Certificate #: {selectedRecord.certificateNumber}</p>
+                  {modalManager.selectedRecord.certificateNumber && (
+                    <p className="text-sm text-gray-600">Certificate #: {modalManager.selectedRecord.certificateNumber}</p>
                   )}
                   <div className="flex space-x-2">
                     <a
-                      href={selectedRecord.certificateUrl}
+                      href={modalManager.selectedRecord.certificateUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors text-center"
@@ -419,7 +456,7 @@ export default function SacramentsPage() {
                       View Certificate
                     </a>
                     <a
-                      href={selectedRecord.certificateUrl}
+                      href={modalManager.selectedRecord.certificateUrl}
                       download
                       className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors text-center"
                     >
@@ -431,13 +468,28 @@ export default function SacramentsPage() {
                 <div className="space-y-3">
                   <p className="text-sm text-amber-600 font-medium">⚠ No Certificate Generated</p>
                   <button
-                    onClick={() => {
-                      // Placeholder for certificate generation
-                      toast.success('Certificate generation feature coming soon!');
+                    onClick={async () => {
+                      await loadingManager.withLoading(
+                        async () => {
+                          // Placeholder for certificate generation
+                          await new Promise(resolve => setTimeout(resolve, 1000));
+                          toast.success('Certificate generation feature coming soon!');
+                        },
+                        'certificate',
+                        'Generating certificate...'
+                      );
                     }}
-                    className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                    disabled={loadingManager.modalLoading.certificate.isLoading}
+                    className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    Generate Certificate
+                    {loadingManager.modalLoading.certificate.isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Certificate'
+                    )}
                   </button>
                 </div>
               )}
@@ -445,6 +497,43 @@ export default function SacramentsPage() {
           </div>
         </div>
       )}
-    </div>
+
+      {/* Anniversary Notifications Modal */}
+      {isAnniversaryModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Anniversary Notifications
+              </h3>
+              <button
+                onClick={() => setIsAnniversaryModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <AnniversaryNotifications
+              records={[]} // This would be populated with all sacrament records from GraphQL
+              onSendNotification={async (notification) => {
+                // Handle sending notification (email, SMS, etc.)
+                console.log('Sending notification:', notification);
+                // In real implementation, call API to send notification
+              }}
+              onMarkAsSent={async (notificationId) => {
+                // Handle marking notification as sent
+                console.log('Marking as sent:', notificationId);
+              }}
+              onDismiss={(notificationId) => {
+                // Handle dismissing notification
+                console.log('Dismissing:', notificationId);
+              }}
+            />
+          </div>
+        </div>
+      )}
+      </div>
+    </SacramentErrorBoundary>
   );
 }

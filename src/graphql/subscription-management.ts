@@ -706,3 +706,81 @@ export interface SubscriptionLifecycleResult {
   cancelledCount: number;
   warningsCount: number;
 }
+
+// Dashboard Statistics Types
+export interface SubscriptionDashboardStats {
+  totalOrganizations: number;
+  activeSubscriptions: number;
+  expiredSubscriptions: number;
+  expiringSoon: number;
+  monthlyRevenue: number;
+  totalRevenue: number;
+  organizationGrowthRate: number;
+  subscriptionGrowthRate: number;
+  revenueGrowthRate: number;
+  trialSubscriptions: number;
+  gracePeriodSubscriptions: number;
+}
+
+export interface SubscriptionActivityItem {
+  id: string;
+  type: string;
+  description: string;
+  organizationName: string;
+  timestamp: string;
+  metadata?: any;
+}
+
+export interface SubscriptionTabCounts {
+  activeSubscriptions: number;
+  expiredSubscriptions: number;
+  trialSubscriptions: number;
+  gracePeriodSubscriptions: number;
+  pendingRenewals: number;
+  cancelledSubscriptions: number;
+}
+
+// Dashboard GraphQL Queries
+export const GET_SUBSCRIPTION_DASHBOARD_STATS = gql`
+  query GetSubscriptionDashboardStats {
+    subscriptionDashboardStats {
+      totalOrganizations
+      activeSubscriptions
+      expiredSubscriptions
+      expiringSoon
+      monthlyRevenue
+      totalRevenue
+      organizationGrowthRate
+      subscriptionGrowthRate
+      revenueGrowthRate
+      trialSubscriptions
+      gracePeriodSubscriptions
+    }
+  }
+`;
+
+export const GET_SUBSCRIPTION_RECENT_ACTIVITY = gql`
+  query GetSubscriptionRecentActivity($limit: Int) {
+    subscriptionRecentActivity(limit: $limit) {
+      id
+      type
+      description
+      organizationName
+      timestamp
+      metadata
+    }
+  }
+`;
+
+export const GET_SUBSCRIPTION_TAB_COUNTS = gql`
+  query GetSubscriptionTabCounts {
+    subscriptionTabCounts {
+      activeSubscriptions
+      expiredSubscriptions
+      trialSubscriptions
+      gracePeriodSubscriptions
+      pendingRenewals
+      cancelledSubscriptions
+    }
+  }
+`;

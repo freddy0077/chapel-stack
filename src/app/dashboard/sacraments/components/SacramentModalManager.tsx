@@ -162,7 +162,6 @@ export default function SacramentModalManager({
 
       {/* Marriage analytics dashboard modal */}
       <Dialog open={isMarriageAnalyticsOpen} onOpenChange={setIsMarriageAnalyticsOpen}>
-        <DialogTitle>Marriage Analytics Dashboard</DialogTitle>
         <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <MarriageAnalyticsDashboard
             onClose={() => setIsMarriageAnalyticsOpen(false)}
@@ -172,7 +171,6 @@ export default function SacramentModalManager({
 
       {/* Member marriage history modal */}
       <Dialog open={isMemberMarriageHistoryOpen} onOpenChange={setIsMemberMarriageHistoryOpen}>
-        <DialogTitle>Member Marriage History</DialogTitle>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <MemberMarriageHistoryCard
             memberId={selectedMemberId || ''}

@@ -11,6 +11,7 @@ import {
   BulkGroupAssignmentInput,
   BulkBranchTransferInput,
   BulkExportInput,
+  MemberFiltersInput,
 } from '../mutations/bulkOperationsMutations';
 import { GET_MEMBERS } from '../queries/memberQueries';
 
@@ -44,7 +45,7 @@ export const useBulkOperations = () => {
   });
 
   const [bulkExportMutation, { loading: exportLoading }] = useMutation<
-    { bulkExportMembers: BulkExportResult },
+    { bulkExportMembers: string },
     { bulkExportInput: BulkExportInput }
   >(BULK_EXPORT_MEMBERS);
 
@@ -120,17 +121,11 @@ export const useBulkOperations = () => {
   };
 
   const bulkExport = async (
-    memberIds: string[],
-    format: 'csv' | 'excel' | 'pdf',
-    fields?: string[]
-  ): Promise<BulkExportResult> => {
+    exportInput: BulkExportInput
+  ): Promise<string> => {
     const { data } = await bulkExportMutation({
       variables: {
-        bulkExportInput: {
-          memberIds,
-          format,
-          fields,
-        },
+        bulkExportInput: exportInput,
       },
     });
     return data!.bulkExportMembers;

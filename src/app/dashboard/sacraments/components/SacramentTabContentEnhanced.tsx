@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Tabs,
   TabsContent,
@@ -34,6 +34,14 @@ import { UpcomingAnniversariesLoader } from "../UpcomingAnniversariesLoader";
 import SacramentSearchFilters from "./SacramentSearchFilters";
 import SacramentPagination from "./SacramentPagination";
 
+// Import enhanced components and hooks
+import BulkOperations from "@/components/sacraments/BulkOperations";
+import { SacramentRecordSkeleton } from "@/components/ui/SkeletonLoader";
+import { SacramentErrorBoundary } from "@/components/ErrorBoundary";
+import { SACRAMENT_TYPES, type SacramentType } from "@/constants/sacramentTypes";
+import { formatSacramentType } from "@/utils/sacramentHelpers";
+import type { useSacramentLoading } from "@/hooks/useSacramentLoading";
+
 // Define SearchFilters interface locally
 interface SearchFilters {
   searchTerm: string;
@@ -42,6 +50,12 @@ interface SearchFilters {
   officiant: string;
   location: string;
   sacramentType: string;
+}
+
+// Selection state interface for bulk operations
+interface SelectionState {
+  selectedRecords: string[];
+  isSelectAll: boolean;
 }
 
 // Enhanced record display component with pagination and search
@@ -545,29 +559,36 @@ const BaptismRecords = ({
   onDeleteRecord, 
   onGenerateCertificate 
 }: { 
-  refetch?: () => void; 
+  refetch?: React.MutableRefObject<(() => void) | null>; 
   onViewRecord?: (record: any) => void; 
   onEditRecord?: (record: any) => void; 
   onDeleteRecord?: (recordId: string) => void; 
   onGenerateCertificate?: (record: any) => void; 
 }) => (
   <BaptismRecordsLoader>
-    {(records: BaptismRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
-      <EnhancedRecordDisplay
-        records={records}
-        loading={loading}
-        error={error}
-        icon={SparklesIcon}
-        title="Baptism Records"
-        description="Sacred water baptisms and initiations"
-        color="from-blue-50 to-indigo-50"
-        sacramentType="BAPTISM"
-        onViewRecord={onViewRecord}
-        onEditRecord={onEditRecord}
-        onDeleteRecord={onDeleteRecord}
-        onGenerateCertificate={onGenerateCertificate}
-      />
-    )}
+    {(records: BaptismRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+      // Store refetch function
+      if (refetch && loaderRefetch) {
+        refetch.current = loaderRefetch;
+      }
+
+      return (
+        <EnhancedRecordDisplay
+          records={records}
+          loading={loading}
+          error={error}
+          icon={SparklesIcon}
+          title="Baptism Records"
+          description="Sacred water baptisms and initiations"
+          color="from-blue-50 to-indigo-50"
+          sacramentType="BAPTISM"
+          onViewRecord={onViewRecord}
+          onEditRecord={onEditRecord}
+          onDeleteRecord={onDeleteRecord}
+          onGenerateCertificate={onGenerateCertificate}
+        />
+      );
+    }}
   </BaptismRecordsLoader>
 );
 
@@ -578,29 +599,36 @@ const CommunionRecords = ({
   onDeleteRecord, 
   onGenerateCertificate 
 }: { 
-  refetch?: () => void; 
+  refetch?: React.MutableRefObject<(() => void) | null>; 
   onViewRecord?: (record: any) => void; 
   onEditRecord?: (record: any) => void; 
   onDeleteRecord?: (recordId: string) => void; 
   onGenerateCertificate?: (record: any) => void; 
 }) => (
   <CommunionRecordsLoader>
-    {(records: CommunionRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
-      <EnhancedRecordDisplay
-        records={records}
-        loading={loading}
-        error={error}
-        icon={GiftIcon}
-        title="First Communion Records"
-        description="First reception of the Eucharist"
-        color="from-amber-50 to-yellow-50"
-        sacramentType="EUCHARIST_FIRST_COMMUNION"
-        onViewRecord={onViewRecord}
-        onEditRecord={onEditRecord}
-        onDeleteRecord={onDeleteRecord}
-        onGenerateCertificate={onGenerateCertificate}
-      />
-    )}
+    {(records: CommunionRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+      // Store refetch function
+      if (refetch && loaderRefetch) {
+        refetch.current = loaderRefetch;
+      }
+
+      return (
+        <EnhancedRecordDisplay
+          records={records}
+          loading={loading}
+          error={error}
+          icon={GiftIcon}
+          title="First Communion Records"
+          description="First reception of the Eucharist"
+          color="from-amber-50 to-yellow-50"
+          sacramentType="EUCHARIST_FIRST_COMMUNION"
+          onViewRecord={onViewRecord}
+          onEditRecord={onEditRecord}
+          onDeleteRecord={onDeleteRecord}
+          onGenerateCertificate={onGenerateCertificate}
+        />
+      );
+    }}
   </CommunionRecordsLoader>
 );
 
@@ -611,29 +639,36 @@ const ConfirmationRecords = ({
   onDeleteRecord, 
   onGenerateCertificate 
 }: { 
-  refetch?: () => void; 
+  refetch?: React.MutableRefObject<(() => void) | null>; 
   onViewRecord?: (record: any) => void; 
   onEditRecord?: (record: any) => void; 
   onDeleteRecord?: (recordId: string) => void; 
   onGenerateCertificate?: (record: any) => void; 
 }) => (
   <ConfirmationRecordsLoader>
-    {(records: ConfirmationRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
-      <EnhancedRecordDisplay
-        records={records}
-        loading={loading}
-        error={error}
-        icon={HeartIcon}
-        title="Confirmation Records"
-        description="Strengthening of faith through the Spirit"
-        color="from-purple-50 to-indigo-50"
-        sacramentType="CONFIRMATION"
-        onViewRecord={onViewRecord}
-        onEditRecord={onEditRecord}
-        onDeleteRecord={onDeleteRecord}
-        onGenerateCertificate={onGenerateCertificate}
-      />
-    )}
+    {(records: ConfirmationRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+      // Store refetch function
+      if (refetch && loaderRefetch) {
+        refetch.current = loaderRefetch;
+      }
+
+      return (
+        <EnhancedRecordDisplay
+          records={records}
+          loading={loading}
+          error={error}
+          icon={HeartIcon}
+          title="Confirmation Records"
+          description="Strengthening of faith through the Spirit"
+          color="from-purple-50 to-indigo-50"
+          sacramentType="CONFIRMATION"
+          onViewRecord={onViewRecord}
+          onEditRecord={onEditRecord}
+          onDeleteRecord={onDeleteRecord}
+          onGenerateCertificate={onGenerateCertificate}
+        />
+      );
+    }}
   </ConfirmationRecordsLoader>
 );
 
@@ -646,7 +681,7 @@ const MarriageRecords = ({
   onViewMarriageAnalytics,
   onViewMemberMarriageHistory,
 }: { 
-  refetch?: () => void; 
+  refetch?: React.MutableRefObject<(() => void) | null>; 
   onViewRecord?: (record: any) => void; 
   onEditRecord?: (record: any) => void; 
   onDeleteRecord?: (recordId: string) => void; 
@@ -821,7 +856,7 @@ export default function SacramentTabContentEnhanced({
       <div className="mt-6">
         <TabsContent value="baptism" className="mt-0">
           <BaptismRecords 
-            refetch={() => baptismRefetchRef.current?.()}
+            refetch={baptismRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
             onDeleteRecord={onDeleteRecord}
@@ -831,7 +866,7 @@ export default function SacramentTabContentEnhanced({
 
         <TabsContent value="communion" className="mt-0">
           <CommunionRecords 
-            refetch={() => communionRefetchRef.current?.()}
+            refetch={communionRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
             onDeleteRecord={onDeleteRecord}
@@ -841,7 +876,7 @@ export default function SacramentTabContentEnhanced({
 
         <TabsContent value="confirmation" className="mt-0">
           <ConfirmationRecords 
-            refetch={() => confirmationRefetchRef.current?.()}
+            refetch={confirmationRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
             onDeleteRecord={onDeleteRecord}
@@ -851,7 +886,7 @@ export default function SacramentTabContentEnhanced({
 
         <TabsContent value="marriage" className="mt-0">
           <MarriageRecords 
-            refetch={() => marriageRefetchRef.current?.()}
+            refetch={marriageRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
             onDeleteRecord={onDeleteRecord}

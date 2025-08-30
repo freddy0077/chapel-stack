@@ -34,7 +34,7 @@ import {
   getDeleteConfirmationMessage,
   filterTransactionsBySearch
 } from '@/utils/financeHelpers';
-import SharedModal from '@/components/finance/modals/SharedModal';
+import TransactionModal from '@/components/finance/modals/TransactionModal';
 import AddFundModal from '@/components/finance/modals/AddFundModal';
 import BatchOfferingModal from '@/components/finance/modals/BatchOfferingModal';
 import FinancialHealthIndicator from '@/components/finance/indicators/FinancialHealthIndicator';
@@ -724,7 +724,7 @@ export default function BranchFinancesPage({ selectedBranch }: { selectedBranch?
         )}
 
         {/* Modals */}
-        <SharedModal
+        <TransactionModal
           isOpen={showTransactionModal}
           onClose={() => setShowTransactionModal(false)}
           modalForm={modalForm}

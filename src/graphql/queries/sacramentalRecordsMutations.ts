@@ -133,8 +133,6 @@ export const DELETE_SACRAMENTAL_RECORD = gql`
   mutation DeleteSacramentalRecord($id: ID!) {
     deleteSacramentalRecord(id: $id) {
       id
-      success
-      message
     }
   }
 `;
