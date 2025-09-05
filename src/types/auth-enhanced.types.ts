@@ -43,8 +43,11 @@ export interface Member {
   id: string;
   firstName: string;
   lastName: string;
+  email?: string;
+  phoneNumber?: string;
   profileImageUrl?: string;
   status: string;
+  memberId?: string;
 }
 
 export interface AuthTokens {
@@ -97,36 +100,39 @@ export interface RefreshResult {
 export interface AuthContextType {
   // State
   state: AuthState;
-  
+
   // Core Authentication Actions
   login: (credentials: LoginCredentials) => Promise<LoginResult>;
   logout: (options?: LogoutOptions) => Promise<void>;
   refreshToken: () => Promise<RefreshResult>;
-  
+
   // User Management
   updateUser: (updates: Partial<AuthUser>) => Promise<void>;
   verifyEmail: (token: string) => Promise<boolean>;
-  
+
   // Password Management
   requestPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
-  
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<boolean>;
+
   // MFA Management
   enableMFA: () => Promise<{ qrCode: string; backupCodes: string[] }>;
   disableMFA: (password: string) => Promise<boolean>;
   verifyMFA: (token: string, mfaCode: string) => Promise<LoginResult>;
-  
+
   // Session Management
   clearError: () => void;
   checkSession: () => Promise<boolean>;
-  
+
   // Role & Permission Checks
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   canAccessRoute: (route: string) => boolean;
   canAccessDashboard: (dashboard: string) => boolean;
-  
+
   // Navigation Helpers
   getPrimaryRole: () => string | null;
   getAllowedDashboards: () => string[];
@@ -156,15 +162,15 @@ export interface AuthProviderProps {
 
 // Action Types for Auth Reducer
 export enum AuthActionType {
-  SET_LOADING = 'SET_LOADING',
-  SET_HYDRATED = 'SET_HYDRATED',
-  SET_USER = 'SET_USER',
-  SET_TOKENS = 'SET_TOKENS',
-  SET_ERROR = 'SET_ERROR',
-  CLEAR_ERROR = 'CLEAR_ERROR',
-  SET_REFRESHING = 'SET_REFRESHING',
-  LOGOUT = 'LOGOUT',
-  UPDATE_USER = 'UPDATE_USER',
+  SET_LOADING = "SET_LOADING",
+  SET_HYDRATED = "SET_HYDRATED",
+  SET_USER = "SET_USER",
+  SET_TOKENS = "SET_TOKENS",
+  SET_ERROR = "SET_ERROR",
+  CLEAR_ERROR = "CLEAR_ERROR",
+  SET_REFRESHING = "SET_REFRESHING",
+  LOGOUT = "LOGOUT",
+  UPDATE_USER = "UPDATE_USER",
 }
 
 export interface AuthAction {
@@ -174,19 +180,19 @@ export interface AuthAction {
 
 // Storage Keys
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'chapel_access_token',
-  REFRESH_TOKEN: 'chapel_refresh_token',
-  USER_DATA: 'chapel_user_data',
-  SESSION_ID: 'chapel_session_id',
-  REMEMBER_ME: 'chapel_remember_me',
-  LAST_ACTIVITY: 'chapel_last_activity',
+  ACCESS_TOKEN: "chapel_access_token",
+  REFRESH_TOKEN: "chapel_refresh_token",
+  USER_DATA: "chapel_user_data",
+  SESSION_ID: "chapel_session_id",
+  REMEMBER_ME: "chapel_remember_me",
+  LAST_ACTIVITY: "chapel_last_activity",
 } as const;
 
 // Cookie Names
 export const COOKIE_NAMES = {
-  ACCESS_TOKEN: 'chapel_auth_token',
-  REFRESH_TOKEN: 'chapel_refresh_token',
-  SESSION_ID: 'chapel_session_id',
+  ACCESS_TOKEN: "chapel_auth_token",
+  REFRESH_TOKEN: "chapel_refresh_token",
+  SESSION_ID: "chapel_session_id",
 } as const;
 
 // Default Configuration
@@ -197,5 +203,5 @@ export const DEFAULT_AUTH_CONFIG: AuthConfig = {
   rememberMeDuration: 30, // 30 days
   enableAutoRefresh: true,
   enableMultiTabSync: true,
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
 };

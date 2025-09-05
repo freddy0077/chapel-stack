@@ -1,9 +1,15 @@
 "use client";
 
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, CalendarIcon } from '@heroicons/react/24/outline';
-import type { TeamMemberProfile } from '../TeamScheduling';
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  XMarkIcon,
+  UserCircleIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+import type { TeamMemberProfile } from "../TeamScheduling";
 
 interface TeamMemberDetailsModalProps {
   teamMember: TeamMemberProfile;
@@ -11,7 +17,11 @@ interface TeamMemberDetailsModalProps {
   onClose: () => void;
 }
 
-export default function TeamMemberDetailsModal({ teamMember, isOpen, onClose }: TeamMemberDetailsModalProps) {
+export default function TeamMemberDetailsModal({
+  teamMember,
+  isOpen,
+  onClose,
+}: TeamMemberDetailsModalProps) {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -49,14 +59,20 @@ export default function TeamMemberDetailsModal({ teamMember, isOpen, onClose }: 
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center">
                     <div className="h-16 w-16 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <UserCircleIcon className="h-10 w-10 text-indigo-600" aria-hidden="true" />
+                      <UserCircleIcon
+                        className="h-10 w-10 text-indigo-600"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div className="ml-4">
-                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-semibold leading-6 text-gray-900"
+                      >
                         {teamMember.name}
                       </Dialog.Title>
                       <p className="text-sm text-gray-500">{teamMember.role}</p>
@@ -64,27 +80,41 @@ export default function TeamMemberDetailsModal({ teamMember, isOpen, onClose }: 
                   </div>
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
-                    <h4 className="text-sm font-medium text-gray-500">Contact Information</h4>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Contact Information
+                    </h4>
                     <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500 flex items-center">
-                          <EnvelopeIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <EnvelopeIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Email
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900">{teamMember.email}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {teamMember.email}
+                        </dd>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500 flex items-center">
-                          <PhoneIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <PhoneIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Phone
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900">{teamMember.phone}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {teamMember.phone}
+                        </dd>
                       </div>
                     </dl>
                   </div>
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
-                    <h4 className="text-sm font-medium text-gray-500">Skills</h4>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Skills
+                    </h4>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {teamMember.skills.map((skill, index) => (
                         <span
@@ -99,26 +129,42 @@ export default function TeamMemberDetailsModal({ teamMember, isOpen, onClose }: 
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
                     <h4 className="text-sm font-medium text-gray-500 flex items-center">
-                      <CalendarIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                      <CalendarIcon
+                        className="mr-1 h-4 w-4"
+                        aria-hidden="true"
+                      />
                       Availability
                     </h4>
-                    <p className="mt-2 text-sm text-gray-900">{teamMember.availability}</p>
+                    <p className="mt-2 text-sm text-gray-900">
+                      {teamMember.availability}
+                    </p>
                   </div>
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
-                    <h4 className="text-sm font-medium text-gray-500">Current Schedule</h4>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Current Schedule
+                    </h4>
                     <div className="mt-2">
                       <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                         <table className="min-w-full divide-y divide-gray-300">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                              <th
+                                scope="col"
+                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                              >
                                 Service
                               </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                              <th
+                                scope="col"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              >
                                 Date
                               </th>
-                              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                              <th
+                                scope="col"
+                                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              >
                                 Role
                               </th>
                             </tr>
@@ -159,12 +205,13 @@ export default function TeamMemberDetailsModal({ teamMember, isOpen, onClose }: 
                     <h4 className="text-sm font-medium text-gray-500">Notes</h4>
                     <div className="mt-2 bg-gray-50 p-4 rounded-md">
                       <p className="text-sm text-gray-700 italic">
-                        Team member notes would be displayed here in a full implementation.
+                        Team member notes would be displayed here in a full
+                        implementation.
                       </p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"

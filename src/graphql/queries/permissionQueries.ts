@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_PERMISSIONS_GROUPED_BY_SUBJECT = gql`
   query PermissionsGroupedBySubject {

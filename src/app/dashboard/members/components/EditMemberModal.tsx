@@ -1,18 +1,37 @@
-'use client';
+"use client";
 
 // Synced from EditMemberModalWizard.tsx
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { XMarkIcon, UserIcon, PhoneIcon, UsersIcon, IdentificationIcon, ShieldCheckIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import { Member, UpdateMemberInput, MembershipStatus, MembershipType, Gender, MaritalStatus, PrivacyLevel, CommunicationPreferences } from '../types/member.types';
-import { useUpdateMember } from '../hooks/useMemberOperations';
-import { useCommunicationPrefs } from '../hooks/useMemberOperations';
-import { useFilteredSmallGroups } from '@/graphql/hooks/useSmallGroups';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import ImageUpload from '@/components/ui/ImageUpload';
-import PhoneInput from '@/components/ui/PhoneInput';
-import { SORTED_COUNTRIES } from '@/constants/countries';
+import React, { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  XMarkIcon,
+  UserIcon,
+  PhoneIcon,
+  UsersIcon,
+  IdentificationIcon,
+  ShieldCheckIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
+import {
+  Member,
+  UpdateMemberInput,
+  MembershipStatus,
+  MembershipType,
+  Gender,
+  MaritalStatus,
+  PrivacyLevel,
+  CommunicationPreferences,
+} from "../types/member.types";
+import { useUpdateMember } from "../hooks/useMemberOperations";
+import { useCommunicationPrefs } from "../hooks/useMemberOperations";
+import { useFilteredSmallGroups } from "@/graphql/hooks/useSmallGroups";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import ImageUpload from "@/components/ui/ImageUpload";
+import PhoneInput from "@/components/ui/PhoneInput";
+import { SORTED_COUNTRIES } from "@/constants/countries";
+import FamilyRelationshipManager from "@/components/members/FamilyRelationshipManager";
 
 interface EditMemberModalProps {
   isOpen: boolean;
@@ -23,12 +42,13 @@ interface EditMemberModalProps {
 
 // Wizard steps aligned with Add Member modal
 const steps = [
-  { id: 1, name: 'Personal Info', icon: UserIcon },
-  { id: 2, name: 'Contact & Address', icon: PhoneIcon },
-  { id: 3, name: 'Emergency & Family', icon: UsersIcon },
-  { id: 4, name: 'Church & Membership', icon: IdentificationIcon },
-  { id: 5, name: 'Communication Prefs', icon: ShieldCheckIcon },
-  { id: 6, name: 'Review & Save', icon: ShieldCheckIcon },
+  { id: 1, name: "Personal Info", icon: UserIcon },
+  { id: 2, name: "Contact & Address", icon: PhoneIcon },
+  { id: 3, name: "Emergency & Family", icon: UsersIcon },
+  { id: 4, name: "Church & Membership", icon: IdentificationIcon },
+  { id: 5, name: "Family Relationships", icon: UsersIcon },
+  { id: 6, name: "Communication Prefs", icon: ShieldCheckIcon },
+  { id: 7, name: "Review & Save", icon: ShieldCheckIcon },
 ];
 
 const EditMemberModal: React.FC<EditMemberModalProps> = ({
@@ -45,38 +65,41 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   // Fetch available groups for multi-select
-  const { smallGroups, loading: groupsLoading } = useFilteredSmallGroups({
-    branchId,
-    organisationId,
-    status: 'ACTIVE'
-  }, !branchId || !organisationId);
+  const { smallGroups, loading: groupsLoading } = useFilteredSmallGroups(
+    {
+      branchId,
+      organisationId,
+      status: "ACTIVE",
+    },
+    !branchId || !organisationId,
+  );
 
   useEffect(() => {
     if (isOpen) {
       setFormData({
         id: member.id,
-        firstName: member.firstName || '',
-        middleName: member.middleName || '',
-        lastName: member.lastName || '',
-        preferredName: member.preferredName || '',
-        title: member.title || '',
-        email: member.email || '',
-        phoneNumber: member.phoneNumber || '',
-        alternativeEmail: member.alternativeEmail || '',
-        alternatePhone: member.alternatePhone || '',
-        address: member.address || '',
-        city: member.city || '',
-        district: member.district || '',
-        region: member.region || '',
-        digitalAddress: member.digitalAddress || '',
-        landmark: member.landmark || '',
-        placeOfBirth: member.placeOfBirth || '',
-        nationality: member.nationality || '',
-        nlbNumber: member.nlbNumber || '',
-        occupation: member.occupation || '',
-        emergencyContactName: member.emergencyContactName || '',
-        emergencyContactPhone: member.emergencyContactPhone || '',
-        emergencyContactRelation: member.emergencyContactRelation || '',
+        firstName: member.firstName || "",
+        middleName: member.middleName || "",
+        lastName: member.lastName || "",
+        preferredName: member.preferredName || "",
+        title: member.title || "",
+        email: member.email || "",
+        phoneNumber: member.phoneNumber || "",
+        alternativeEmail: member.alternativeEmail || "",
+        alternatePhone: member.alternatePhone || "",
+        address: member.address || "",
+        city: member.city || "",
+        district: member.district || "",
+        region: member.region || "",
+        digitalAddress: member.digitalAddress || "",
+        landmark: member.landmark || "",
+        placeOfBirth: member.placeOfBirth || "",
+        nationality: member.nationality || "",
+        nlbNumber: member.nlbNumber || "",
+        occupation: member.occupation || "",
+        emergencyContactName: member.emergencyContactName || "",
+        emergencyContactPhone: member.emergencyContactPhone || "",
+        emergencyContactRelation: member.emergencyContactRelation || "",
         membershipStatus: member.membershipStatus || MembershipStatus.MEMBER,
         membershipType: member.membershipType || MembershipType.REGULAR,
         gender: member.gender || Gender.NOT_SPECIFIED,
@@ -89,14 +112,14 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         baptismDate: member.baptismDate,
         headOfHousehold: member.headOfHousehold || false,
         isRegularAttendee: member.isRegularAttendee || false,
-        rfidCardId: member.rfidCardId || '',
-        nfcId: member.nfcId || '',
+        rfidCardId: member.rfidCardId || "",
+        nfcId: member.nfcId || "",
         consentDate: member.consentDate,
-        consentVersion: member.consentVersion || '',
+        consentVersion: member.consentVersion || "",
         communicationPrefs: member.communicationPrefs || {},
-        specialGifts: member.specialGifts || '',
+        specialGifts: member.specialGifts || "",
         groupIds: member.groupIds || [],
-        profileImageUrl: member.profileImageUrl || '',
+        profileImageUrl: member.profileImageUrl || "",
       });
     }
   }, [isOpen, member]);
@@ -116,7 +139,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const handleNestedChange = (path: string, value: any) => {
     setFormData((prev) => {
       const next: any = { ...prev } as any;
-      const parts = path.split('.');
+      const parts = path.split(".");
       let cur: any = next;
       for (let i = 0; i < parts.length - 1; i++) {
         cur[parts[i]] = cur[parts[i]] ? { ...cur[parts[i]] } : {};
@@ -143,12 +166,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       setLoading(true);
       const sanitizedFormData = { ...formData };
       Object.keys(sanitizedFormData).forEach((key) => {
-        if (sanitizedFormData[key] === '') {
+        if (sanitizedFormData[key] === "") {
           sanitizedFormData[key] = null;
         }
       });
 
-      const { communicationPrefs, previousChurch, ...updatePayload } = sanitizedFormData;
+      const { communicationPrefs, previousChurch, ...updatePayload } =
+        sanitizedFormData;
 
       await updateMember(formData.id, updatePayload);
 
@@ -159,7 +183,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       setLoading(false);
       onClose();
     } catch (err) {
-      console.error('Failed to update member', err);
+      console.error("Failed to update member", err);
       setLoading(false);
     }
   };
@@ -183,7 +207,10 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <div className="px-6 py-4 border-b">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Edit Member</h3>
-                <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-lg hover:bg-gray-100"
+                >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
@@ -191,12 +218,18 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                 <ol className="flex items-center w-full">
                   {steps.map((step, idx) => (
                     <li key={step.id} className="flex-1 flex items-center">
-                      <div className={`flex items-center gap-2 ${currentStep >= step.id ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div
+                        className={`flex items-center gap-2 ${currentStep >= step.id ? "text-blue-600" : "text-gray-400"}`}
+                      >
                         <step.icon className="w-4 h-4" />
-                        <span className="text-xs font-medium whitespace-nowrap">{step.name}</span>
+                        <span className="text-xs font-medium whitespace-nowrap">
+                          {step.name}
+                        </span>
                       </div>
                       {idx < steps.length - 1 && (
-                        <div className={`mx-2 h-px flex-1 ${currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'}`} />
+                        <div
+                          className={`mx-2 h-px flex-1 ${currentStep > step.id ? "bg-blue-600" : "bg-gray-200"}`}
+                        />
                       )}
                     </li>
                   ))}
@@ -204,17 +237,26 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="modal-content p-6 space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="modal-content p-6 space-y-6"
+            >
               {currentStep === 1 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Basic Information</h4>
-                  
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Basic Information
+                  </h4>
+
                   {/* Profile Image Upload */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-600 mb-3">Profile Image</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-3">
+                      Profile Image
+                    </label>
                     <ImageUpload
                       value={formData.profileImageUrl || null}
-                      onChange={(imageUrl) => handleChange('profileImageUrl', imageUrl)}
+                      onChange={(imageUrl) =>
+                        handleChange("profileImageUrl", imageUrl)
+                      }
                       size="lg"
                       placeholder="Update member profile image"
                       branchId={branchId}
@@ -225,27 +267,63 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">First Name</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.firstName || ''} onChange={(e) => handleChange('firstName', e.target.value)} required />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        First Name
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.firstName || ""}
+                        onChange={(e) =>
+                          handleChange("firstName", e.target.value)
+                        }
+                        required
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Last Name</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.lastName || ''} onChange={(e) => handleChange('lastName', e.target.value)} required />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Last Name
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.lastName || ""}
+                        onChange={(e) =>
+                          handleChange("lastName", e.target.value)
+                        }
+                        required
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Middle Name</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.middleName || ''} onChange={(e) => handleChange('middleName', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Middle Name
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.middleName || ""}
+                        onChange={(e) =>
+                          handleChange("middleName", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Preferred Name</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.preferredName || ''} onChange={(e) => handleChange('preferredName', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Preferred Name
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.preferredName || ""}
+                        onChange={(e) =>
+                          handleChange("preferredName", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Title</label>
-                      <select 
-                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
-                        value={formData.title || ''} 
-                        onChange={(e) => handleChange('title', e.target.value)}
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Title
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.title || ""}
+                        onChange={(e) => handleChange("title", e.target.value)}
                       >
                         <option value="">Select Title</option>
                         <option value="Mr">Mr</option>
@@ -272,8 +350,16 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Gender</label>
-                      <select className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.gender || ''} onChange={(e) => handleChange('gender', e.target.value as Gender)}>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Gender
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.gender || ""}
+                        onChange={(e) =>
+                          handleChange("gender", e.target.value as Gender)
+                        }
+                      >
                         {Object.values(Gender).map((g) => (
                           <option key={g} value={g}>
                             {g}
@@ -282,12 +368,43 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                      <input type="date" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''} onChange={(e) => handleChange('dateOfBirth', e.target.value ? new Date(e.target.value) : undefined)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          formData.dateOfBirth
+                            ? new Date(formData.dateOfBirth)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            "dateOfBirth",
+                            e.target.value
+                              ? new Date(e.target.value)
+                              : undefined,
+                          )
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Marital Status</label>
-                      <select className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.maritalStatus || ''} onChange={(e) => handleChange('maritalStatus', e.target.value as MaritalStatus)}>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Marital Status
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.maritalStatus || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            "maritalStatus",
+                            e.target.value as MaritalStatus,
+                          )
+                        }
+                      >
                         {Object.values(MaritalStatus).map((ms) => (
                           <option key={ms} value={ms}>
                             {ms}
@@ -296,11 +413,15 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Nationality</label>
-                      <select 
-                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
-                        value={formData.nationality || ''} 
-                        onChange={(e) => handleChange('nationality', e.target.value)}
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Nationality
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.nationality || ""}
+                        onChange={(e) =>
+                          handleChange("nationality", e.target.value)
+                        }
                       >
                         <option value="">Select Nationality</option>
                         {SORTED_COUNTRIES.map((country) => (
@@ -311,8 +432,16 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Place of Birth</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.placeOfBirth || ''} onChange={(e) => handleChange('placeOfBirth', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Place of Birth
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.placeOfBirth || ""}
+                        onChange={(e) =>
+                          handleChange("placeOfBirth", e.target.value)
+                        }
+                      />
                     </div>
                   </div>
                 </div>
@@ -320,20 +449,38 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
               {currentStep === 2 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Contact & Address</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Contact & Address
+                  </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Email</label>
-                      <input type="email" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.email || ''} onChange={(e) => handleChange('email', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.email || ""}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Alternative Email</label>
-                      <input type="email" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.alternativeEmail || ''} onChange={(e) => handleChange('alternativeEmail', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Alternative Email
+                      </label>
+                      <input
+                        type="email"
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.alternativeEmail || ""}
+                        onChange={(e) =>
+                          handleChange("alternativeEmail", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
                       <PhoneInput
-                        value={formData.phoneNumber || ''}
-                        onChange={(phone) => handleChange('phoneNumber', phone)}
+                        value={formData.phoneNumber || ""}
+                        onChange={(phone) => handleChange("phoneNumber", phone)}
                         label="Phone"
                         placeholder="Enter phone number"
                         className=""
@@ -341,36 +488,82 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     </div>
                     <div>
                       <PhoneInput
-                        value={formData.alternatePhone || ''}
-                        onChange={(phone) => handleChange('alternatePhone', phone)}
+                        value={formData.alternatePhone || ""}
+                        onChange={(phone) =>
+                          handleChange("alternatePhone", phone)
+                        }
                         label="Alternative Phone"
                         placeholder="Enter alternative phone"
                         className=""
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm text-gray-600 mb-1">Address</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.address || ''} onChange={(e) => handleChange('address', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Address
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.address || ""}
+                        onChange={(e) =>
+                          handleChange("address", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">District</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.district || ''} onChange={(e) => handleChange('district', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        District
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.district || ""}
+                        onChange={(e) =>
+                          handleChange("district", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Region</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.region || ''} onChange={(e) => handleChange('region', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Region
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.region || ""}
+                        onChange={(e) => handleChange("region", e.target.value)}
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">City</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.city || ''} onChange={(e) => handleChange('city', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        City
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.city || ""}
+                        onChange={(e) => handleChange("city", e.target.value)}
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Digital Address</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.digitalAddress || ''} onChange={(e) => handleChange('digitalAddress', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Digital Address
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.digitalAddress || ""}
+                        onChange={(e) =>
+                          handleChange("digitalAddress", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Landmark</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.landmark || ''} onChange={(e) => handleChange('landmark', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Landmark
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.landmark || ""}
+                        onChange={(e) =>
+                          handleChange("landmark", e.target.value)
+                        }
+                      />
                     </div>
                   </div>
                 </div>
@@ -378,28 +571,64 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
               {currentStep === 3 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Emergency & Family</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Emergency & Family
+                  </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Emergency Contact Name</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.emergencyContactName || ''} onChange={(e) => handleChange('emergencyContactName', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Emergency Contact Name
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.emergencyContactName || ""}
+                        onChange={(e) =>
+                          handleChange("emergencyContactName", e.target.value)
+                        }
+                      />
                     </div>
                     <div>
                       <PhoneInput
-                        value={formData.emergencyContactPhone || ''}
-                        onChange={(phone) => handleChange('emergencyContactPhone', phone)}
+                        value={formData.emergencyContactPhone || ""}
+                        onChange={(phone) =>
+                          handleChange("emergencyContactPhone", phone)
+                        }
                         label="Emergency Contact Phone"
                         placeholder="Enter emergency contact phone"
                         className=""
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Emergency Contact Relation</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.emergencyContactRelation || ''} onChange={(e) => handleChange('emergencyContactRelation', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Emergency Contact Relation
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.emergencyContactRelation || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            "emergencyContactRelation",
+                            e.target.value,
+                          )
+                        }
+                      />
                     </div>
                     <div className="flex items-center gap-2">
-                      <input id="headOfHousehold" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.headOfHousehold)} onChange={(e) => handleChange('headOfHousehold', e.target.checked)} />
-                      <label htmlFor="headOfHousehold" className="text-sm text-gray-700">Head of Household</label>
+                      <input
+                        id="headOfHousehold"
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={Boolean(formData.headOfHousehold)}
+                        onChange={(e) =>
+                          handleChange("headOfHousehold", e.target.checked)
+                        }
+                      />
+                      <label
+                        htmlFor="headOfHousehold"
+                        className="text-sm text-gray-700"
+                      >
+                        Head of Household
+                      </label>
                     </div>
                     {/*<div>*/}
                     {/*  <label className="block text-sm text-gray-600 mb-1">Family ID</label>*/}
@@ -411,88 +640,197 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
               {currentStep === 4 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Church & Membership</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Church & Membership
+                  </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Status</label>
-                      <select className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.membershipStatus} onChange={(e) => handleChange('membershipStatus', e.target.value as MembershipStatus)}>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Status
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.membershipStatus}
+                        onChange={(e) =>
+                          handleChange(
+                            "membershipStatus",
+                            e.target.value as MembershipStatus,
+                          )
+                        }
+                      >
                         {Object.values(MembershipStatus).map((s) => (
                           <option key={s} value={s}>
-                            {s.replace(/_/g, ' ')}
+                            {s.replace(/_/g, " ")}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Type</label>
-                      <select className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.membershipType || ''} onChange={(e) => handleChange('membershipType', e.target.value as MembershipType)}>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Type
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.membershipType || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            "membershipType",
+                            e.target.value as MembershipType,
+                          )
+                        }
+                      >
                         {Object.values(MembershipType).map((t) => (
                           <option key={t} value={t}>
-                            {t.replace(/_/g, ' ')}
+                            {t.replace(/_/g, " ")}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Date Joined</label>
-                      <input type="date" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.membershipDate ? new Date(formData.membershipDate).toISOString().split('T')[0] : ''} onChange={(e) => handleChange('membershipDate', e.target.value ? new Date(e.target.value) : undefined)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Date Joined
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          formData.membershipDate
+                            ? new Date(formData.membershipDate)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            "membershipDate",
+                            e.target.value
+                              ? new Date(e.target.value)
+                              : undefined,
+                          )
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Date Baptized</label>
-                      <input type="date" className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.baptismDate ? new Date(formData.baptismDate).toISOString().split('T')[0] : ''} onChange={(e) => handleChange('baptismDate', e.target.value ? new Date(e.target.value) : undefined)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Date Baptized
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          formData.baptismDate
+                            ? new Date(formData.baptismDate)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            "baptismDate",
+                            e.target.value
+                              ? new Date(e.target.value)
+                              : undefined,
+                          )
+                        }
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Profession</label>
-                      <input className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.occupation || ''} onChange={(e) => handleChange('occupation', e.target.value)} />
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Profession
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.occupation || ""}
+                        onChange={(e) =>
+                          handleChange("occupation", e.target.value)
+                        }
+                      />
                     </div>
-                    
+
                     {/* Special Gifts Field */}
                     <div className="sm:col-span-2">
-                      <label className="block text-sm text-gray-600 mb-1">Special Gifts & Talents</label>
-                      <textarea 
-                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Special Gifts & Talents
+                      </label>
+                      <textarea
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                         rows={3}
-                        value={formData.specialGifts || ''} 
-                        onChange={(e) => handleChange('specialGifts', e.target.value)}
+                        value={formData.specialGifts || ""}
+                        onChange={(e) =>
+                          handleChange("specialGifts", e.target.value)
+                        }
                         placeholder="e.g., singing, drumming, teaching, counseling, etc."
                       />
-                      <p className="text-xs text-gray-500 mt-1">List any special gifts, talents, or skills this member has</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        List any special gifts, talents, or skills this member
+                        has
+                      </p>
                     </div>
 
                     {/* Groups Multi-Select Field */}
                     <div className="sm:col-span-2">
-                      <label className="block text-sm text-gray-600 mb-2">Group Memberships</label>
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Group Memberships
+                      </label>
                       {groupsLoading ? (
-                        <div className="text-sm text-gray-500">Loading groups...</div>
+                        <div className="text-sm text-gray-500">
+                          Loading groups...
+                        </div>
                       ) : (
                         <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
                           {smallGroups.length === 0 ? (
-                            <div className="text-sm text-gray-500">No groups available</div>
+                            <div className="text-sm text-gray-500">
+                              No groups available
+                            </div>
                           ) : (
                             <div className="space-y-2">
                               {smallGroups.map((group) => (
-                                <div key={group.id} className="flex items-center gap-2">
+                                <div
+                                  key={group.id}
+                                  className="flex items-center gap-2"
+                                >
                                   <input
                                     type="checkbox"
                                     id={`group-${group.id}`}
                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    checked={formData.groupIds?.includes(group.id) || false}
+                                    checked={
+                                      formData.groupIds?.includes(group.id) ||
+                                      false
+                                    }
                                     onChange={(e) => {
-                                      const currentGroups = formData.groupIds || [];
+                                      const currentGroups =
+                                        formData.groupIds || [];
                                       if (e.target.checked) {
-                                        handleChange('groupIds', [...currentGroups, group.id]);
+                                        handleChange("groupIds", [
+                                          ...currentGroups,
+                                          group.id,
+                                        ]);
                                       } else {
-                                        handleChange('groupIds', currentGroups.filter(id => id !== group.id));
+                                        handleChange(
+                                          "groupIds",
+                                          currentGroups.filter(
+                                            (id) => id !== group.id,
+                                          ),
+                                        );
                                       }
                                     }}
                                   />
-                                  <label htmlFor={`group-${group.id}`} className="text-sm text-gray-700 flex-1">
-                                    <span className="font-medium">{group.name}</span>
+                                  <label
+                                    htmlFor={`group-${group.id}`}
+                                    className="text-sm text-gray-700 flex-1"
+                                  >
+                                    <span className="font-medium">
+                                      {group.name}
+                                    </span>
                                     {group.description && (
-                                      <span className="text-gray-500 ml-2">- {group.description}</span>
+                                      <span className="text-gray-500 ml-2">
+                                        - {group.description}
+                                      </span>
                                     )}
                                     {group.ministry && (
-                                      <span className="text-blue-600 ml-2 text-xs">({group.ministry.name})</span>
+                                      <span className="text-blue-600 ml-2 text-xs">
+                                        ({group.ministry.name})
+                                      </span>
                                     )}
                                   </label>
                                 </div>
@@ -501,7 +839,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                           )}
                         </div>
                       )}
-                      <p className="text-xs text-gray-500 mt-1">Select all groups this member belongs to</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select all groups this member belongs to
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -509,54 +849,162 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
               {currentStep === 5 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Communication Preferences</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Family Relationships
+                  </h4>
+                  <FamilyRelationshipManager
+                    memberId={member.id}
+                    memberName={`${member.firstName} ${member.lastName}`}
+                    onRelationshipsChange={() => {
+                      // Optional: Handle relationship changes if needed
+                    }}
+                  />
+                </div>
+              )}
+
+              {currentStep === 6 && (
+                <div className="step-card">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Communication Preferences
+                  </h4>
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <input id="consentDate" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.consentDate)} onChange={(e) => handleChange('consentDate', e.target.checked ? new Date() : undefined)} />
-                      <label htmlFor="consentDate" className="text-sm text-gray-700">GDPR Consent Given</label>
+                      <input
+                        id="consentDate"
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={Boolean(formData.consentDate)}
+                        onChange={(e) =>
+                          handleChange(
+                            "consentDate",
+                            e.target.checked ? new Date() : undefined,
+                          )
+                        }
+                      />
+                      <label
+                        htmlFor="consentDate"
+                        className="text-sm text-gray-700"
+                      >
+                        GDPR Consent Given
+                      </label>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-1">Communication Preference</label>
-                      <select className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" value={formData.communicationPrefs?.preferredContactTime || ''} onChange={(e) => handleNestedChange('communicationPrefs.preferredContactTime', e.target.value)}>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Communication Preference
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={
+                          formData.communicationPrefs?.preferredContactTime ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "communicationPrefs.preferredContactTime",
+                            e.target.value,
+                          )
+                        }
+                      >
                         <option value="EMAIL">Email</option>
                         <option value="PHONE">Phone</option>
                         <option value="MAIL">Mail</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-2">
-                      <input id="canEmail" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.communicationPrefs?.emailNotifications)} onChange={(e) => handleNestedChange('communicationPrefs.emailNotifications', e.target.checked)} />
-                      <label htmlFor="canEmail" className="text-sm text-gray-700">Can Email</label>
+                      <input
+                        id="canEmail"
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={Boolean(
+                          formData.communicationPrefs?.emailNotifications,
+                        )}
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "communicationPrefs.emailNotifications",
+                            e.target.checked,
+                          )
+                        }
+                      />
+                      <label
+                        htmlFor="canEmail"
+                        className="text-sm text-gray-700"
+                      >
+                        Can Email
+                      </label>
                     </div>
                     <div className="flex items-center gap-2">
-                      <input id="canPhone" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.communicationPrefs?.phoneCallsAllowed)} onChange={(e) => handleNestedChange('communicationPrefs.phoneCallsAllowed', e.target.checked)} />
-                      <label htmlFor="canPhone" className="text-sm text-gray-700">Can Phone</label>
+                      <input
+                        id="canPhone"
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={Boolean(
+                          formData.communicationPrefs?.phoneCallsAllowed,
+                        )}
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "communicationPrefs.phoneCallsAllowed",
+                            e.target.checked,
+                          )
+                        }
+                      />
+                      <label
+                        htmlFor="canPhone"
+                        className="text-sm text-gray-700"
+                      >
+                        Can Phone
+                      </label>
                     </div>
                     <div className="flex items-center gap-2">
-                      <input id="canMail" type="checkbox" className="rounded border-gray-300" checked={Boolean(formData.communicationPrefs?.mailNotifications)} onChange={(e) => handleNestedChange('communicationPrefs.mailNotifications', e.target.checked)} />
-                      <label htmlFor="canMail" className="text-sm text-gray-700">Can Mail</label>
+                      <input
+                        id="canMail"
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={Boolean(
+                          formData.communicationPrefs?.mailNotifications,
+                        )}
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "communicationPrefs.mailNotifications",
+                            e.target.checked,
+                          )
+                        }
+                      />
+                      <label
+                        htmlFor="canMail"
+                        className="text-sm text-gray-700"
+                      >
+                        Can Mail
+                      </label>
                     </div>
                   </div>
                 </div>
               )}
 
-              {currentStep === 6 && (
+              {currentStep === 7 && (
                 <div className="step-card">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Review & Save</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Review & Save
+                  </h4>
                   <div className="text-sm text-gray-700 space-y-1">
                     <p>
-                      <strong>Name:</strong> {formData.firstName} {formData.middleName} {formData.lastName}
+                      <strong>Name:</strong> {formData.firstName}{" "}
+                      {formData.middleName} {formData.lastName}
                     </p>
                     <p>
-                      <strong>Email:</strong> {formData.email || '—'}
+                      <strong>Email:</strong> {formData.email || "—"}
                     </p>
                     <p>
-                      <strong>Phone:</strong> {formData.phoneNumber || '—'}
+                      <strong>Phone:</strong> {formData.phoneNumber || "—"}
                     </p>
                     <p>
-                      <strong>Address:</strong> {formData.address ? `${formData.address}${formData.city ? `, ${formData.city}` : ''}` : '—'}
+                      <strong>Address:</strong>{" "}
+                      {formData.address
+                        ? `${formData.address}${formData.city ? `, ${formData.city}` : ""}`
+                        : "—"}
                     </p>
                     <p>
-                      <strong>Membership:</strong> {formData.membershipStatus} / {formData.membershipType || '—'}
+                      <strong>Membership:</strong> {formData.membershipStatus} /{" "}
+                      {formData.membershipType || "—"}
                     </p>
                     {formData.specialGifts && (
                       <p>
@@ -565,12 +1013,15 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     )}
                     {formData.groupIds && formData.groupIds.length > 0 && (
                       <p>
-                        <strong>Group Memberships:</strong> {
-                          formData.groupIds.map(groupId => {
-                            const group = smallGroups.find(g => g.id === groupId);
+                        <strong>Group Memberships:</strong>{" "}
+                        {formData.groupIds
+                          .map((groupId) => {
+                            const group = smallGroups.find(
+                              (g) => g.id === groupId,
+                            );
                             return group ? group.name : groupId;
-                          }).join(', ')
-                        }
+                          })
+                          .join(", ")}
                       </p>
                     )}
                   </div>
@@ -604,7 +1055,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
                     disabled={loading}
                   >
-                    {loading ? 'Saving...' : 'Save Changes'}
+                    {loading ? "Saving..." : "Save Changes"}
                   </button>
                 )}
               </div>

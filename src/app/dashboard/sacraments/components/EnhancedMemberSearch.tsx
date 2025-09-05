@@ -53,7 +53,11 @@ export default function EnhancedMemberSearch({
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data, loading, error: queryError } = useQuery(GET_MEMBERS, {
+  const {
+    data,
+    loading,
+    error: queryError,
+  } = useQuery(GET_MEMBERS, {
     variables: {
       filters: {
         search: query,
@@ -71,18 +75,20 @@ export default function EnhancedMemberSearch({
   const members = data?.members?.items || [];
 
   // Filter members based on query
-  const filteredMembers = query === "" 
-    ? members.slice(0, 10) 
-    : members.filter((member: Member) => {
-        const fullName = `${member.firstName} ${member.middleName || ''} ${member.lastName}`.toLowerCase();
-        const searchQuery = query.toLowerCase();
-        return (
-          fullName.includes(searchQuery) ||
-          member.email?.toLowerCase().includes(searchQuery) ||
-          member.phoneNumber?.includes(searchQuery) ||
-          member.memberId?.toLowerCase().includes(searchQuery)
-        );
-      });
+  const filteredMembers =
+    query === ""
+      ? members.slice(0, 10)
+      : members.filter((member: Member) => {
+          const fullName =
+            `${member.firstName} ${member.middleName || ""} ${member.lastName}`.toLowerCase();
+          const searchQuery = query.toLowerCase();
+          return (
+            fullName.includes(searchQuery) ||
+            member.email?.toLowerCase().includes(searchQuery) ||
+            member.phoneNumber?.includes(searchQuery) ||
+            member.memberId?.toLowerCase().includes(searchQuery)
+          );
+        });
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -91,7 +97,7 @@ export default function EnhancedMemberSearch({
   }, [autoFocus]);
 
   const getDisplayName = (member: Member) => {
-    return `${member.firstName} ${member.middleName ? member.middleName + ' ' : ''}${member.lastName}`;
+    return `${member.firstName} ${member.middleName ? member.middleName + " " : ""}${member.lastName}`;
   };
 
   const getMemberSubtitle = (member: Member) => {
@@ -99,7 +105,7 @@ export default function EnhancedMemberSearch({
     if (member.memberId) parts.push(`ID: ${member.memberId}`);
     if (member.email) parts.push(member.email);
     if (member.phoneNumber) parts.push(member.phoneNumber);
-    return parts.join(' • ');
+    return parts.join(" • ");
   };
 
   const clearSelection = () => {
@@ -120,7 +126,9 @@ export default function EnhancedMemberSearch({
               <Combobox.Input
                 ref={inputRef}
                 className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0 focus:outline-none"
-                displayValue={(member: Member) => member ? getDisplayName(member) : ""}
+                displayValue={(member: Member) =>
+                  member ? getDisplayName(member) : ""
+                }
                 onChange={(event) => setQuery(event.target.value)}
                 onFocus={() => setIsOpen(true)}
                 placeholder={placeholder}
@@ -145,9 +153,7 @@ export default function EnhancedMemberSearch({
             </div>
           </div>
 
-          {error && (
-            <p className="mt-1 text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
 
           <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
             {loading && query.length >= 2 && (
@@ -185,7 +191,7 @@ export default function EnhancedMemberSearch({
                 key={member.id}
                 className={({ active }) =>
                   `relative cursor-default select-none py-3 px-4 ${
-                    active ? 'bg-indigo-50 text-indigo-900' : 'text-gray-900'
+                    active ? "bg-indigo-50 text-indigo-900" : "text-gray-900"
                   }`
                 }
                 value={member}
@@ -203,12 +209,14 @@ export default function EnhancedMemberSearch({
                         <UserIcon className="h-4 w-4 text-gray-500" />
                       </div>
                     )}
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-sm font-medium truncate ${
-                          selected ? 'font-semibold' : ''
-                        }`}>
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            selected ? "font-semibold" : ""
+                          }`}
+                        >
                           {getDisplayName(member)}
                         </p>
                         {selected && (
@@ -219,13 +227,15 @@ export default function EnhancedMemberSearch({
                         {getMemberSubtitle(member)}
                       </p>
                       {member.membershipStatus && (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
-                          member.membershipStatus === 'ACTIVE' 
-                            ? 'bg-green-100 text-green-800'
-                            : member.membershipStatus === 'INACTIVE'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                            member.membershipStatus === "ACTIVE"
+                              ? "bg-green-100 text-green-800"
+                              : member.membershipStatus === "INACTIVE"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {member.membershipStatus}
                         </span>
                       )}
@@ -253,42 +263,47 @@ export default function EnhancedMemberSearch({
                 <UserIcon className="h-6 w-6 text-gray-500" />
               </div>
             )}
-            
+
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-semibold text-gray-900">
                 {getDisplayName(selectedMember)}
               </h4>
-              
+
               <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
                 {selectedMember.memberId && (
                   <div>
-                    <span className="font-medium">Member ID:</span> {selectedMember.memberId}
+                    <span className="font-medium">Member ID:</span>{" "}
+                    {selectedMember.memberId}
                   </div>
                 )}
                 {selectedMember.email && (
                   <div>
-                    <span className="font-medium">Email:</span> {selectedMember.email}
+                    <span className="font-medium">Email:</span>{" "}
+                    {selectedMember.email}
                   </div>
                 )}
                 {selectedMember.phoneNumber && (
                   <div>
-                    <span className="font-medium">Phone:</span> {selectedMember.phoneNumber}
+                    <span className="font-medium">Phone:</span>{" "}
+                    {selectedMember.phoneNumber}
                   </div>
                 )}
                 {selectedMember.dateOfBirth && (
                   <div>
-                    <span className="font-medium">Date of Birth:</span>{' '}
+                    <span className="font-medium">Date of Birth:</span>{" "}
                     {new Date(selectedMember.dateOfBirth).toLocaleDateString()}
                   </div>
                 )}
                 {selectedMember.gender && (
                   <div>
-                    <span className="font-medium">Gender:</span> {selectedMember.gender}
+                    <span className="font-medium">Gender:</span>{" "}
+                    {selectedMember.gender}
                   </div>
                 )}
                 {selectedMember.maritalStatus && (
                   <div>
-                    <span className="font-medium">Marital Status:</span> {selectedMember.maritalStatus}
+                    <span className="font-medium">Marital Status:</span>{" "}
+                    {selectedMember.maritalStatus}
                   </div>
                 )}
               </div>

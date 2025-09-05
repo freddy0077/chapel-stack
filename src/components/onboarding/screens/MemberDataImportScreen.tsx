@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Title, Text, Button, Card, Badge } from '@tremor/react';
-import { 
-  ArrowRightIcon, 
-  ArrowLeftIcon, 
+import React from "react";
+import { motion } from "framer-motion";
+import { Title, Text, Button, Card, Badge } from "@tremor/react";
+import {
+  ArrowRightIcon,
+  ArrowLeftIcon,
   DocumentArrowDownIcon,
-  ExclamationCircleIcon 
-} from '@heroicons/react/24/outline';
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 interface MemberDataImportScreenProps {
   onNext: () => void;
@@ -25,15 +25,15 @@ interface MemberDataImportScreenProps {
  * Member data import screen component for the onboarding flow
  * Allows users to download a template and upload member data
  */
-const MemberDataImportScreen = ({ 
-  onNext, 
+const MemberDataImportScreen = ({
+  onNext,
   onBack,
   isLoading,
   memberFile,
   setMemberFile,
   memberImportError,
   onDownloadTemplate,
-  isTemplateLoading
+  isTemplateLoading,
 }: MemberDataImportScreenProps) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -42,7 +42,7 @@ const MemberDataImportScreen = ({
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -100 }}
@@ -51,15 +51,16 @@ const MemberDataImportScreen = ({
       <Title className="text-2xl font-bold text-gray-900 mb-6">
         Import Member Data
       </Title>
-      
+
       <Card className="mb-6 p-6">
         <div className="space-y-6">
           <div>
             <Text className="text-gray-600 mb-4">
-              Import your existing member data to quickly set up your church management system.
-              This step is optional - you can always import member data later.
+              Import your existing member data to quickly set up your church
+              management system. This step is optional - you can always import
+              member data later.
             </Text>
-            
+
             <div className="mt-4">
               <Button
                 color="indigo"
@@ -72,16 +73,18 @@ const MemberDataImportScreen = ({
               >
                 Download Template
               </Button>
-              
+
               <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
                 {memberFile ? (
                   <div>
-                    <Badge color="green" className="mb-2">File Selected</Badge>
+                    <Badge color="green" className="mb-2">
+                      File Selected
+                    </Badge>
                     <p className="text-sm text-gray-600">{memberFile.name}</p>
-                    <Button 
-                      size="xs" 
-                      color="gray" 
-                      variant="light" 
+                    <Button
+                      size="xs"
+                      color="gray"
+                      variant="light"
                       onClick={() => setMemberFile(null)}
                       className="mt-2"
                     >
@@ -90,14 +93,17 @@ const MemberDataImportScreen = ({
                   </div>
                 ) : (
                   <div>
-                    <label htmlFor="member-file-upload" className="cursor-pointer">
+                    <label
+                      htmlFor="member-file-upload"
+                      className="cursor-pointer"
+                    >
                       <div className="text-center">
                         <DocumentArrowDownIcon className="mx-auto h-12 w-12 text-gray-400" />
                         <div className="mt-2 text-sm text-gray-600">
                           <span className="font-medium text-indigo-600 hover:text-indigo-500">
                             Click to upload
-                          </span>
-                          {' '}or drag and drop
+                          </span>{" "}
+                          or drag and drop
                         </div>
                         <p className="text-xs text-gray-500">
                           CSV, XLS, or XLSX up to 10MB
@@ -115,7 +121,7 @@ const MemberDataImportScreen = ({
                   </div>
                 )}
               </div>
-              
+
               {memberImportError && (
                 <div className="mt-2 text-sm text-red-600">
                   <ExclamationCircleIcon className="inline-block h-4 w-4 mr-1" />
@@ -126,16 +132,12 @@ const MemberDataImportScreen = ({
           </div>
         </div>
       </Card>
-      
+
       <div className="flex justify-between">
-        <Button 
-          color="gray"
-          icon={ArrowLeftIcon}
-          onClick={onBack}
-        >
+        <Button color="gray" icon={ArrowLeftIcon} onClick={onBack}>
           Back
         </Button>
-        <Button 
+        <Button
           color="indigo"
           icon={ArrowRightIcon}
           iconPosition="right"

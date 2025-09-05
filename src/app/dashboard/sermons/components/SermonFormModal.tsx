@@ -1,15 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, CheckCircleIcon, VideoCameraIcon, SpeakerWaveIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Textarea } from '@/components/ui/textarea';
-import { useMutation } from '@apollo/client';
-import { GET_PRESIGNED_UPLOAD_URL } from '@/graphql/mutations/memberMutations';
-import { CreateSermonInput, UpdateSermonInput, ContentStatus, SermonEntity, SpeakerEntity, SeriesEntity, CategoryEntity } from '@/graphql/hooks/useSermon';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  XMarkIcon,
+  CheckCircleIcon,
+  VideoCameraIcon,
+  SpeakerWaveIcon,
+  DocumentIcon,
+} from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation } from "@apollo/client";
+import { GET_PRESIGNED_UPLOAD_URL } from "@/graphql/mutations/memberMutations";
+import {
+  CreateSermonInput,
+  UpdateSermonInput,
+  ContentStatus,
+  SermonEntity,
+  SpeakerEntity,
+  SeriesEntity,
+  CategoryEntity,
+} from "@/graphql/hooks/useSermon";
 
 interface SermonFormModalProps {
   open: boolean;
@@ -36,41 +50,63 @@ export function SermonFormModal({
   isSaving,
   isEditMode,
   user,
-  onUploadComplete
+  onUploadComplete,
 }: SermonFormModalProps) {
   const [form, setForm] = useState(() => {
     if (!initialData) {
       return {
-        title: '',
-        description: '',
-        datePreached: new Date().toISOString().split('T')[0],
-        speakerId: '',
-        seriesId: '',
-        categoryId: '',
-        mainScripture: '',
-        duration: '',
-        audioUrl: '',
-        videoUrl: '',
-        transcriptUrl: '',
-        notesUrl: '',
-        transcriptText: '',
+        title: "",
+        description: "",
+        datePreached: new Date().toISOString().split("T")[0],
+        speakerId: "",
+        seriesId: "",
+        categoryId: "",
+        mainScripture: "",
+        duration: "",
+        audioUrl: "",
+        videoUrl: "",
+        transcriptUrl: "",
+        notesUrl: "",
+        transcriptText: "",
         status: ContentStatus.DRAFT,
-        tags: [] as string[]
+        tags: [] as string[],
       };
     }
     return {
       ...initialData,
-      datePreached: initialData.datePreached ? new Date(initialData.datePreached).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      duration: initialData.duration?.toString() || '',
-      tags: initialData.tags?.map(tag => tag.name) || []
+      datePreached: initialData.datePreached
+        ? new Date(initialData.datePreached).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      duration: initialData.duration?.toString() || "",
+      tags: initialData.tags?.map((tag) => tag.name) || [],
     };
   });
 
-  const [newTag, setNewTag] = useState('');
-  const [uploading, setUploading] = useState({ video: false, audio: false, notes: false, transcript: false });
-  const [uploadProgress, setUploadProgress] = useState({ video: 0, audio: 0, notes: 0, transcript: 0 });
-  const [uploadErrors, setUploadErrors] = useState({ videoUrl: '', audioUrl: '', notesUrl: '', transcriptUrl: '' });
-  const [selectedFiles, setSelectedFiles] = useState({ videoUrl: null as File | null, audioUrl: null as File | null, notesUrl: null as File | null, transcriptUrl: null as File | null });
+  const [newTag, setNewTag] = useState("");
+  const [uploading, setUploading] = useState({
+    video: false,
+    audio: false,
+    notes: false,
+    transcript: false,
+  });
+  const [uploadProgress, setUploadProgress] = useState({
+    video: 0,
+    audio: 0,
+    notes: 0,
+    transcript: 0,
+  });
+  const [uploadErrors, setUploadErrors] = useState({
+    videoUrl: "",
+    audioUrl: "",
+    notesUrl: "",
+    transcriptUrl: "",
+  });
+  const [selectedFiles, setSelectedFiles] = useState({
+    videoUrl: null as File | null,
+    audioUrl: null as File | null,
+    notesUrl: null as File | null,
+    transcriptUrl: null as File | null,
+  });
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -80,30 +116,32 @@ export function SermonFormModal({
   const [getPresignedUploadUrl] = useMutation(GET_PRESIGNED_UPLOAD_URL);
 
   // File upload logic
-  const handleFileSelect = (file: File | null, type: keyof typeof selectedFiles) => {
-    setSelectedFiles(prev => ({ ...prev, [type]: file }));
+  const handleFileSelect = (
+    file: File | null,
+    type: keyof typeof selectedFiles,
+  ) => {
+    setSelectedFiles((prev) => ({ ...prev, [type]: file }));
   };
 
   const uploadToS3 = async (file: File, type: string) => {
     if (!file) return;
-    
+
     // Map the type to the correct state key
-    const stateKey = type.replace('Url', ''); // 'videoUrl' -> 'video', 'audioUrl' -> 'audio', etc.
-    
+    const stateKey = type.replace("Url", ""); // 'videoUrl' -> 'video', 'audioUrl' -> 'audio', etc.
+
     try {
-      setUploading(prev => ({ ...prev, [stateKey]: true }));
-      setUploadProgress(prev => ({ ...prev, [stateKey]: 0 }));
-      setUploadErrors(prev => ({ ...prev, [type]: '' }));
-      
-      
+      setUploading((prev) => ({ ...prev, [stateKey]: true }));
+      setUploadProgress((prev) => ({ ...prev, [stateKey]: 0 }));
+      setUploadErrors((prev) => ({ ...prev, [type]: "" }));
+
       // Determine media type based on file type
-      let mediaType = 'DOCUMENT';
-      if (file.type.startsWith('video/')) {
-        mediaType = 'VIDEO';
-      } else if (file.type.startsWith('audio/')) {
-        mediaType = 'AUDIO';
+      let mediaType = "DOCUMENT";
+      if (file.type.startsWith("video/")) {
+        mediaType = "VIDEO";
+      } else if (file.type.startsWith("audio/")) {
+        mediaType = "AUDIO";
       }
-      
+
       const { data } = await getPresignedUploadUrl({
         variables: {
           input: {
@@ -111,144 +149,168 @@ export function SermonFormModal({
             contentType: file.type,
             mediaType: mediaType,
             branchId: user?.userBranches?.[0]?.branch?.id, // Use user.branchId for file uploads
-            description: `Sermon ${type} file: ${file.name}`
-          }
-        }
+            description: `Sermon ${type} file: ${file.name}`,
+          },
+        },
       });
-      
+
       if (!data || !data.getPresignedUploadUrl) {
-        throw new Error('Failed to get presigned URL');
+        throw new Error("Failed to get presigned URL");
       }
-      
+
       // Use XMLHttpRequest for progress tracking
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('uploadUrl', data.getPresignedUploadUrl.uploadUrl);
-      
+      formData.append("file", file);
+      formData.append("uploadUrl", data.getPresignedUploadUrl.uploadUrl);
+
       // Create XMLHttpRequest for progress tracking
       const xhr = new XMLHttpRequest();
-      
+
       // Set up progress tracking
-      xhr.upload.addEventListener('progress', (event) => {
+      xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(prev => {
+          const percentComplete = Math.round(
+            (event.loaded / event.total) * 100,
+          );
+          setUploadProgress((prev) => {
             const newProgress = { ...prev, [stateKey]: percentComplete };
             return newProgress;
           });
         }
       });
-      
+
       // Send the request
-      xhr.open('POST', '/api/proxy-upload');
-      
+      xhr.open("POST", "/api/proxy-upload");
+
       // Fallback progress simulation in case XMLHttpRequest progress doesn't work
       let progressInterval: NodeJS.Timeout;
       let simulatedProgress = 0;
-      
+
       // Start simulated progress
       progressInterval = setInterval(() => {
         if (simulatedProgress < 90) {
           simulatedProgress += Math.random() * 10;
           if (simulatedProgress > 90) simulatedProgress = 90;
-          setUploadProgress(prev => {
-            const newProgress = { ...prev, [stateKey]: Math.round(simulatedProgress) };
+          setUploadProgress((prev) => {
+            const newProgress = {
+              ...prev,
+              [stateKey]: Math.round(simulatedProgress),
+            };
             return newProgress;
           });
         }
       }, 500);
-      
+
       // Clear interval when upload completes
-      xhr.addEventListener('load', () => {
+      xhr.addEventListener("load", () => {
         clearInterval(progressInterval);
       });
-      
-      xhr.addEventListener('error', () => {
+
+      xhr.addEventListener("error", () => {
         clearInterval(progressInterval);
       });
-      
+
       xhr.send(formData);
-      
+
       // Handle completion
-      xhr.addEventListener('load', () => {
+      xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           const fileUrl = data.getPresignedUploadUrl.fileUrl;
-          setForm(prev => ({ ...prev, [type]: fileUrl }));
-          setUploadProgress(prev => ({ ...prev, [stateKey]: 100 }));
+          setForm((prev) => ({ ...prev, [type]: fileUrl }));
+          setUploadProgress((prev) => ({ ...prev, [stateKey]: 100 }));
           if (onUploadComplete) {
             onUploadComplete(type, fileUrl);
           }
         } else {
-          console.error(`Upload failed for ${type}:`, xhr.status, xhr.statusText);
-          setUploadErrors(prev => ({ ...prev, [type]: `Failed to upload file: ${xhr.statusText}` }));
+          console.error(
+            `Upload failed for ${type}:`,
+            xhr.status,
+            xhr.statusText,
+          );
+          setUploadErrors((prev) => ({
+            ...prev,
+            [type]: `Failed to upload file: ${xhr.statusText}`,
+          }));
         }
       });
-      
+
       // Handle errors
-      xhr.addEventListener('error', () => {
+      xhr.addEventListener("error", () => {
         console.error(`Upload error for ${type}`);
-        setUploadErrors(prev => ({ ...prev, [type]: 'Upload failed due to network error' }));
+        setUploadErrors((prev) => ({
+          ...prev,
+          [type]: "Upload failed due to network error",
+        }));
       });
-      
+
       // Wait for completion
       await new Promise((resolve, reject) => {
-        xhr.addEventListener('load', resolve);
-        xhr.addEventListener('error', reject);
+        xhr.addEventListener("load", resolve);
+        xhr.addEventListener("error", reject);
       });
-      
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
-      setUploadErrors(prev => ({ ...prev, [type]: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` }));
+      setUploadErrors((prev) => ({
+        ...prev,
+        [type]: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      }));
     } finally {
-      setUploading(prev => ({ ...prev, [stateKey]: false }));
+      setUploading((prev) => ({ ...prev, [stateKey]: false }));
     }
   };
 
   // Auto-upload when files are selected
   useEffect(() => {
     if (selectedFiles.videoUrl) {
-      uploadToS3(selectedFiles.videoUrl, 'videoUrl');
+      uploadToS3(selectedFiles.videoUrl, "videoUrl");
     }
   }, [selectedFiles.videoUrl]);
 
   useEffect(() => {
     if (selectedFiles.audioUrl) {
-      uploadToS3(selectedFiles.audioUrl, 'audioUrl');
+      uploadToS3(selectedFiles.audioUrl, "audioUrl");
     }
   }, [selectedFiles.audioUrl]);
 
   useEffect(() => {
     if (selectedFiles.notesUrl) {
-      uploadToS3(selectedFiles.notesUrl, 'notesUrl');
+      uploadToS3(selectedFiles.notesUrl, "notesUrl");
     }
   }, [selectedFiles.notesUrl]);
 
   useEffect(() => {
     if (selectedFiles.transcriptUrl) {
-      uploadToS3(selectedFiles.transcriptUrl, 'transcriptUrl');
+      uploadToS3(selectedFiles.transcriptUrl, "transcriptUrl");
     }
   }, [selectedFiles.transcriptUrl]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleTagAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTag && !form.tags.includes(newTag)) {
-      setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
-      setNewTag('');
+      setForm((prev) => ({ ...prev, tags: [...prev.tags, newTag] }));
+      setNewTag("");
     }
   };
 
   const handleTagRemove = (tagToRemove: string) => {
-    setForm(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
+    setForm((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const submitData = {
       title: form.title,
       description: form.description || undefined,
@@ -263,10 +325,10 @@ export function SermonFormModal({
       transcriptText: form.transcriptText || undefined,
       duration: form.duration ? parseInt(form.duration) : undefined,
       status: form.status,
-      tags: form.tags?.filter(tag => tag.trim()) || [],
+      tags: form.tags?.filter((tag) => tag.trim()) || [],
       categoryId: form.categoryId || undefined,
-      branchId: user?.userBranches?.[0]?.branch?.id || '',
-      organisationId: user?.userBranches?.[0]?.branch?.organisation?.id || '',
+      branchId: user?.userBranches?.[0]?.branch?.id || "",
+      organisationId: user?.userBranches?.[0]?.branch?.organisation?.id || "",
     };
 
     if (isEditMode) {
@@ -284,9 +346,9 @@ export function SermonFormModal({
         <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-white">
-              {isEditMode ? 'Edit Sermon' : 'Create New Sermon'}
+              {isEditMode ? "Edit Sermon" : "Create New Sermon"}
             </h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-white hover:text-gray-200 rounded-full p-2 hover:bg-white/20 transition-colors"
             >
@@ -294,11 +356,14 @@ export function SermonFormModal({
             </button>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="title"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Sermon Title *
             </label>
             <input
@@ -312,34 +377,40 @@ export function SermonFormModal({
               required
             />
           </div>
-          
+
           {/* Two column layout for speaker and date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Speaker */}
             <div>
-              <label htmlFor="speakerId" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="speakerId"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Speaker *
               </label>
               <select
                 id="speakerId"
                 name="speakerId"
-                value={form.speakerId || ''}
+                value={form.speakerId || ""}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               >
                 <option value="">Select a speaker</option>
-                {speakers.map(speaker => (
+                {speakers.map((speaker) => (
                   <option key={speaker.id} value={speaker.id}>
                     {speaker.name}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             {/* Date */}
             <div>
-              <label htmlFor="datePreached" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="datePreached"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Date Preached *
               </label>
               <input
@@ -353,44 +424,50 @@ export function SermonFormModal({
               />
             </div>
           </div>
-          
+
           {/* Two column layout for category and series */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Category */}
             <div>
-              <label htmlFor="categoryId" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="categoryId"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Category
               </label>
               <select
                 id="categoryId"
                 name="categoryId"
-                value={form.categoryId || ''}
+                value={form.categoryId || ""}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="">Select a category</option>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             {/* Series */}
             <div>
-              <label htmlFor="seriesId" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="seriesId"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Series (Optional)
               </label>
               <select
                 id="seriesId"
                 name="seriesId"
-                value={form.seriesId || ''}
+                value={form.seriesId || ""}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="">Select a series</option>
-                {series.map(s => (
+                {series.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.title}
                   </option>
@@ -403,14 +480,17 @@ export function SermonFormModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Main Scripture */}
             <div>
-              <label htmlFor="mainScripture" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="mainScripture"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Main Scripture
               </label>
               <input
                 id="mainScripture"
                 name="mainScripture"
                 type="text"
-                value={form.mainScripture || ''}
+                value={form.mainScripture || ""}
                 onChange={handleChange}
                 placeholder="e.g. John 3:16"
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -419,48 +499,57 @@ export function SermonFormModal({
 
             {/* Duration */}
             <div>
-              <label htmlFor="duration" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="duration"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Duration (minutes)
               </label>
               <input
                 id="duration"
                 name="duration"
                 type="number"
-                value={form.duration || ''}
+                value={form.duration || ""}
                 onChange={handleChange}
                 placeholder="e.g. 45"
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
-          
+
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Description
             </label>
             <Textarea
               id="description"
               name="description"
-              value={form.description || ''}
+              value={form.description || ""}
               onChange={handleChange}
               placeholder="Enter sermon description"
               rows={4}
               className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
-          
+
           {/* Tags */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Tags
             </label>
             <div className="flex flex-wrap gap-2 mb-3">
-              {form.tags.map(tag => (
-                <Badge key={tag} className="bg-blue-100 text-blue-800 flex items-center gap-1 py-1 px-3">
+              {form.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  className="bg-blue-100 text-blue-800 flex items-center gap-1 py-1 px-3"
+                >
                   {tag}
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => handleTagRemove(tag)}
                     className="text-blue-600 hover:text-blue-800 ml-1"
                   >
@@ -486,14 +575,19 @@ export function SermonFormModal({
               </button>
             </div>
           </div>
-          
+
           {/* Media uploads section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Media Files</h3>
-            
+            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Media Files
+            </h3>
+
             {/* Video upload */}
             <div>
-              <label htmlFor="video-upload" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="video-upload"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Video (Optional)
               </label>
               <div className="flex items-center">
@@ -503,7 +597,9 @@ export function SermonFormModal({
                   ref={videoInputRef}
                   accept="video/*"
                   className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files?.[0] || null, 'videoUrl')}
+                  onChange={(e) =>
+                    handleFileSelect(e.target.files?.[0] || null, "videoUrl")
+                  }
                 />
                 <button
                   type="button"
@@ -512,7 +608,9 @@ export function SermonFormModal({
                   disabled={uploading.video}
                 >
                   <VideoCameraIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.video ? `Uploading... (${uploadProgress.video}%)` : 'Upload Video'}
+                  {uploading.video
+                    ? `Uploading... (${uploadProgress.video}%)`
+                    : "Upload Video"}
                 </button>
                 {form.videoUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -527,7 +625,7 @@ export function SermonFormModal({
                     <span>{uploadProgress.video}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress.video}%` }}
                     ></div>
@@ -535,13 +633,18 @@ export function SermonFormModal({
                 </div>
               )}
               {uploadErrors.videoUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.videoUrl}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {uploadErrors.videoUrl}
+                </p>
               )}
             </div>
-            
+
             {/* Audio upload */}
             <div>
-              <label htmlFor="audio-upload" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="audio-upload"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Audio (Optional)
               </label>
               <div className="flex items-center">
@@ -551,7 +654,9 @@ export function SermonFormModal({
                   ref={audioInputRef}
                   accept="audio/*"
                   className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files?.[0] || null, 'audioUrl')}
+                  onChange={(e) =>
+                    handleFileSelect(e.target.files?.[0] || null, "audioUrl")
+                  }
                 />
                 <button
                   type="button"
@@ -560,7 +665,9 @@ export function SermonFormModal({
                   disabled={uploading.audio}
                 >
                   <SpeakerWaveIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.audio ? `Uploading... (${uploadProgress.audio}%)` : 'Upload Audio'}
+                  {uploading.audio
+                    ? `Uploading... (${uploadProgress.audio}%)`
+                    : "Upload Audio"}
                 </button>
                 {form.audioUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -575,7 +682,7 @@ export function SermonFormModal({
                     <span>{uploadProgress.audio}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress.audio}%` }}
                     ></div>
@@ -583,13 +690,18 @@ export function SermonFormModal({
                 </div>
               )}
               {uploadErrors.audioUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.audioUrl}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {uploadErrors.audioUrl}
+                </p>
               )}
             </div>
-            
+
             {/* Notes upload */}
             <div>
-              <label htmlFor="notes-upload" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="notes-upload"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Notes PDF (Optional)
               </label>
               <div className="flex items-center">
@@ -599,7 +711,9 @@ export function SermonFormModal({
                   ref={notesInputRef}
                   accept=".pdf"
                   className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files?.[0] || null, 'notesUrl')}
+                  onChange={(e) =>
+                    handleFileSelect(e.target.files?.[0] || null, "notesUrl")
+                  }
                 />
                 <button
                   type="button"
@@ -608,7 +722,9 @@ export function SermonFormModal({
                   disabled={uploading.notes}
                 >
                   <DocumentIcon className="h-5 w-5 mr-2 text-gray-500" />
-                  {uploading.notes ? `Uploading... (${uploadProgress.notes}%)` : 'Upload Notes'}
+                  {uploading.notes
+                    ? `Uploading... (${uploadProgress.notes}%)`
+                    : "Upload Notes"}
                 </button>
                 {form.notesUrl && (
                   <span className="ml-3 text-sm text-green-600 flex items-center">
@@ -623,7 +739,7 @@ export function SermonFormModal({
                     <span>{uploadProgress.notes}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress.notes}%` }}
                     ></div>
@@ -631,13 +747,18 @@ export function SermonFormModal({
                 </div>
               )}
               {uploadErrors.notesUrl && (
-                <p className="mt-1 text-sm text-red-600">{uploadErrors.notesUrl}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {uploadErrors.notesUrl}
+                </p>
               )}
             </div>
 
             {/* Status */}
             <div>
-              <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="status"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Status
               </label>
               <select
@@ -649,12 +770,14 @@ export function SermonFormModal({
               >
                 <option value={ContentStatus.DRAFT}>Draft</option>
                 <option value={ContentStatus.PUBLISHED}>Published</option>
-                <option value={ContentStatus.PENDING_REVIEW}>Pending Review</option>
+                <option value={ContentStatus.PENDING_REVIEW}>
+                  Pending Review
+                </option>
                 <option value={ContentStatus.ARCHIVED}>Archived</option>
               </select>
             </div>
           </div>
-          
+
           {/* Form actions */}
           <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
             <button
@@ -666,10 +789,20 @@ export function SermonFormModal({
             </button>
             <button
               type="submit"
-              disabled={isSaving || uploading.video || uploading.audio || uploading.notes || uploading.transcript}
+              disabled={
+                isSaving ||
+                uploading.video ||
+                uploading.audio ||
+                uploading.notes ||
+                uploading.transcript
+              }
               className="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300 font-medium transition-colors"
             >
-              {isSaving ? 'Saving...' : (isEditMode ? 'Update Sermon' : 'Create Sermon')}
+              {isSaving
+                ? "Saving..."
+                : isEditMode
+                  ? "Update Sermon"
+                  : "Create Sermon"}
             </button>
           </div>
         </form>

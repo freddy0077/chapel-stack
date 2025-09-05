@@ -48,7 +48,9 @@ export interface CommunicationStatsData {
 }
 
 export function useCommunicationStats() {
-  const { data, loading, error, refetch } = useQuery<{ communicationStats: CommunicationStatsData }>(GET_COMMUNICATION_STATS, {
+  const { data, loading, error, refetch } = useQuery<{
+    communicationStats: CommunicationStatsData;
+  }>(GET_COMMUNICATION_STATS, {
     fetchPolicy: "cache-and-network",
   });
 

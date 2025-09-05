@@ -1,31 +1,33 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Mutation to create a new small group
 export const CREATE_SMALL_GROUP = gql`
   mutation CreateSmallGroup(
-    $name: String!,
-    $description: String,
-    $type: String!,
-    $meetingSchedule: String,
-    $location: String,
-    $maximumCapacity: Int,
-    $status: String!,
-    $branchId: String,
-    $ministryId: String,
+    $name: String!
+    $description: String
+    $type: String!
+    $meetingSchedule: String
+    $location: String
+    $maximumCapacity: Int
+    $status: String!
+    $branchId: String
+    $ministryId: String
     $organisationId: String
   ) {
-    createSmallGroup(input: {
-      name: $name
-      description: $description
-      type: $type
-      meetingSchedule: $meetingSchedule
-      location: $location
-      maximumCapacity: $maximumCapacity
-      status: $status
-      branchId: $branchId
-      ministryId: $ministryId
-      organisationId: $organisationId
-    }) {
+    createSmallGroup(
+      input: {
+        name: $name
+        description: $description
+        type: $type
+        meetingSchedule: $meetingSchedule
+        location: $location
+        maximumCapacity: $maximumCapacity
+        status: $status
+        branchId: $branchId
+        ministryId: $ministryId
+        organisationId: $organisationId
+      }
+    ) {
       id
       name
       description
@@ -90,13 +92,13 @@ export const DELETE_SMALL_GROUP = gql`
 // Mutation to add a member to a small group
 export const ADD_MEMBER_TO_GROUP = gql`
   mutation AddMemberToGroup(
-    $groupId: ID!,
-    $memberId: ID!,
+    $groupId: ID!
+    $memberId: ID!
     $roleInGroup: String
   ) {
     addMemberToGroup(
-      groupId: $groupId,
-      memberId: $memberId,
+      groupId: $groupId
+      memberId: $memberId
       roleInGroup: $roleInGroup
     ) {
       id

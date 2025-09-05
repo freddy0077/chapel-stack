@@ -2,7 +2,6 @@
 
 import React from "react";
 
-
 export interface DashboardHeaderProps {
   title: string;
   subtitle?: string;
@@ -21,7 +20,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div
       className={`sticky top-0 z-10 -mx-6 mb-10 pb-4 bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 shadow-lg backdrop-blur-md rounded-b-3xl ${className}`}
-
     >
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>

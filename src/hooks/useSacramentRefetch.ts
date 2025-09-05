@@ -1,5 +1,5 @@
-import { useRef, useCallback } from 'react';
-import { SACRAMENT_TYPES, type SacramentType } from './useSacramentModals';
+import { useRef, useCallback } from "react";
+import { SACRAMENT_TYPES, type SacramentType } from "./useSacramentModals";
 
 // Type for refetch function
 type RefetchFunction = (() => void) | null;
@@ -7,14 +7,17 @@ type RefetchFunction = (() => void) | null;
 // Interface for refetch manager
 interface SacramentRefetchManager {
   // Register refetch functions
-  registerRefetch: (sacramentType: SacramentType, refetchFn: RefetchFunction) => void;
-  
+  registerRefetch: (
+    sacramentType: SacramentType,
+    refetchFn: RefetchFunction,
+  ) => void;
+
   // Trigger refetch for specific sacrament
   refetchSacrament: (sacramentType: SacramentType) => void;
-  
+
   // Trigger refetch for all sacraments
   refetchAll: () => void;
-  
+
   // Get individual refs for backward compatibility
   baptismRefetchRef: React.MutableRefObject<RefetchFunction>;
   communionRefetchRef: React.MutableRefObject<RefetchFunction>;
@@ -40,25 +43,30 @@ export function useSacramentRefetch(): SacramentRefetchManager {
   const rciaRefetchRef = useRef<RefetchFunction>(null);
 
   // Map sacrament types to their corresponding refs
-  const refMap = useRef(new Map<SacramentType, React.MutableRefObject<RefetchFunction>>([
-    [SACRAMENT_TYPES.BAPTISM, baptismRefetchRef],
-    [SACRAMENT_TYPES.COMMUNION, communionRefetchRef],
-    [SACRAMENT_TYPES.CONFIRMATION, confirmationRefetchRef],
-    [SACRAMENT_TYPES.MARRIAGE, marriageRefetchRef],
-    [SACRAMENT_TYPES.RECONCILIATION, reconciliationRefetchRef],
-    [SACRAMENT_TYPES.ANOINTING, anointingRefetchRef],
-    [SACRAMENT_TYPES.DIACONATE, diaconateRefetchRef],
-    [SACRAMENT_TYPES.PRIESTHOOD, priesthoodRefetchRef],
-    [SACRAMENT_TYPES.RCIA, rciaRefetchRef],
-  ]));
+  const refMap = useRef(
+    new Map<SacramentType, React.MutableRefObject<RefetchFunction>>([
+      [SACRAMENT_TYPES.BAPTISM, baptismRefetchRef],
+      [SACRAMENT_TYPES.COMMUNION, communionRefetchRef],
+      [SACRAMENT_TYPES.CONFIRMATION, confirmationRefetchRef],
+      [SACRAMENT_TYPES.MARRIAGE, marriageRefetchRef],
+      [SACRAMENT_TYPES.RECONCILIATION, reconciliationRefetchRef],
+      [SACRAMENT_TYPES.ANOINTING, anointingRefetchRef],
+      [SACRAMENT_TYPES.DIACONATE, diaconateRefetchRef],
+      [SACRAMENT_TYPES.PRIESTHOOD, priesthoodRefetchRef],
+      [SACRAMENT_TYPES.RCIA, rciaRefetchRef],
+    ]),
+  );
 
   // Register a refetch function for a specific sacrament type
-  const registerRefetch = useCallback((sacramentType: SacramentType, refetchFn: RefetchFunction) => {
-    const ref = refMap.current.get(sacramentType);
-    if (ref) {
-      ref.current = refetchFn;
-    }
-  }, []);
+  const registerRefetch = useCallback(
+    (sacramentType: SacramentType, refetchFn: RefetchFunction) => {
+      const ref = refMap.current.get(sacramentType);
+      if (ref) {
+        ref.current = refetchFn;
+      }
+    },
+    [],
+  );
 
   // Trigger refetch for a specific sacrament type
   const refetchSacrament = useCallback((sacramentType: SacramentType) => {
@@ -90,7 +98,7 @@ export function useSacramentRefetch(): SacramentRefetchManager {
     registerRefetch,
     refetchSacrament,
     refetchAll,
-    
+
     // Individual refs for backward compatibility
     baptismRefetchRef,
     communionRefetchRef,

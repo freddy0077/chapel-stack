@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { 
+import {
   CurrencyDollarIcon,
   BuildingOfficeIcon,
-  CalendarIcon
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 // Types
@@ -38,7 +38,7 @@ interface OfferingCountFormProps {
 const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
   branches,
   onSubmit,
-  isProcessing
+  isProcessing,
 }) => {
   const [formData, setFormData] = useState({
     branchId: "",
@@ -50,75 +50,89 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
     otherAmount: 0,
     countedBy: [""],
     verifiedBy: "",
-    notes: ""
+    notes: "",
   });
-  
+
   // Calculate total
-  const totalAmount = 
-    Number(formData.cashAmount || 0) + 
-    Number(formData.checkAmount || 0) + 
-    Number(formData.electronicAmount || 0) + 
+  const totalAmount =
+    Number(formData.cashAmount || 0) +
+    Number(formData.checkAmount || 0) +
+    Number(formData.electronicAmount || 0) +
     Number(formData.otherAmount || 0);
-  
+
   // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
-  
+
   // Handle counter name changes
   const handleCounterChange = (index: number, value: string) => {
     const newCounters = [...formData.countedBy];
     newCounters[index] = value;
     setFormData({
       ...formData,
-      countedBy: newCounters
+      countedBy: newCounters,
     });
   };
-  
+
   // Add another counter
   const addCounter = () => {
     setFormData({
       ...formData,
-      countedBy: [...formData.countedBy, ""]
+      countedBy: [...formData.countedBy, ""],
     });
   };
-  
+
   // Remove counter
   const removeCounter = (index: number) => {
     const newCounters = [...formData.countedBy];
     newCounters.splice(index, 1);
     setFormData({
       ...formData,
-      countedBy: newCounters
+      countedBy: newCounters,
     });
   };
-  
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Remove empty counter names
-    const validCounters = formData.countedBy.filter(counter => counter.trim() !== "");
+    const validCounters = formData.countedBy.filter(
+      (counter) => counter.trim() !== "",
+    );
     onSubmit({
       ...formData,
-      countedBy: validCounters
+      countedBy: validCounters,
     });
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">New Offering Count</h3>
-          <p className="mt-1 text-sm text-gray-500">Record offering details including cash, checks, and electronic giving.</p>
-          
+          <h3 className="text-lg font-medium leading-6 text-gray-900">
+            New Offering Count
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Record offering details including cash, checks, and electronic
+            giving.
+          </p>
+
           <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             {/* Branch Select */}
             <div className="sm:col-span-3">
-              <label htmlFor="branchId" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="branchId"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Branch
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
@@ -142,10 +156,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 </select>
               </div>
             </div>
-            
+
             {/* Date Collected */}
             <div className="sm:col-span-3">
-              <label htmlFor="dateCollected" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="dateCollected"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Date Collected
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
@@ -163,10 +180,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 />
               </div>
             </div>
-            
+
             {/* Service Type */}
             <div className="sm:col-span-3">
-              <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="serviceType"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Service/Event Type
               </label>
               <div className="mt-1">
@@ -182,12 +202,15 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 />
               </div>
             </div>
-            
+
             <div className="sm:col-span-6">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-4">
                 {/* Cash Amount */}
                 <div>
-                  <label htmlFor="cashAmount" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="cashAmount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Cash
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
@@ -210,10 +233,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Check Amount */}
                 <div>
-                  <label htmlFor="checkAmount" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="checkAmount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Checks
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
@@ -236,10 +262,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Electronic Amount */}
                 <div>
-                  <label htmlFor="electronicAmount" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="electronicAmount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Electronic
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
@@ -262,10 +291,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Other Amount */}
                 <div>
-                  <label htmlFor="otherAmount" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="otherAmount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Other
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
@@ -290,25 +322,27 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 </div>
               </div>
             </div>
-            
+
             {/* Total */}
             <div className="sm:col-span-3">
               <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-500">Total Amount:</span>
+                  <span className="text-sm font-medium text-gray-500">
+                    Total Amount:
+                  </span>
                   <span className="text-lg font-semibold text-gray-900">
                     ${totalAmount.toFixed(2)}
                   </span>
                 </div>
               </div>
             </div>
-            
+
             {/* Counted By */}
             <div className="sm:col-span-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Counted By (at least two people)
               </label>
-              
+
               {formData.countedBy.map((counter, index) => (
                 <div key={index} className="flex space-x-2 mb-2">
                   <input
@@ -319,7 +353,7 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     required={index < 2} // At least 2 counters required
                   />
-                  
+
                   {formData.countedBy.length > 1 && (
                     <button
                       type="button"
@@ -331,7 +365,7 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                   )}
                 </div>
               ))}
-              
+
               <button
                 type="button"
                 onClick={addCounter}
@@ -340,10 +374,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 Add Counter
               </button>
             </div>
-            
+
             {/* Verified By */}
             <div className="sm:col-span-3">
-              <label htmlFor="verifiedBy" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="verifiedBy"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Verified By (optional)
               </label>
               <div className="mt-1">
@@ -358,10 +395,13 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
                 />
               </div>
             </div>
-            
+
             {/* Notes */}
             <div className="sm:col-span-6">
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="notes"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Notes (optional)
               </label>
               <div className="mt-1">
@@ -378,7 +418,7 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
           <button
             type="submit"
@@ -387,9 +427,25 @@ const OfferingCountForm: React.FC<OfferingCountFormProps> = ({
           >
             {isProcessing ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Processing...
               </>

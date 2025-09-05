@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { useSpotify } from '@/lib/spotify/spotifyContext';
-import { MusicalNoteIcon, MagnifyingGlassIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
-import SpotifySongModal from './modals/SpotifySongModal';
+import { useState } from "react";
+import { useSpotify } from "@/lib/spotify/spotifyContext";
+import {
+  MusicalNoteIcon,
+  MagnifyingGlassIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/24/outline";
+import SpotifySongModal from "./modals/SpotifySongModal";
 
 // Define the song interface
 interface SongData {
@@ -21,7 +25,11 @@ interface SongData {
 }
 
 // Component for integrating Spotify features into the Song Library
-export default function SpotifyIntegration({ onAddSongToLibrary }: { onAddSongToLibrary?: (song: SongData) => void }) {
+export default function SpotifyIntegration({
+  onAddSongToLibrary,
+}: {
+  onAddSongToLibrary?: (song: SongData) => void;
+}) {
   const { isAuthenticated, login } = useSpotify();
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
 
@@ -44,7 +52,8 @@ export default function SpotifyIntegration({ onAddSongToLibrary }: { onAddSongTo
                 Spotify Integration
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Search for worship songs, create service playlists, and play music directly within the app.
+                Search for worship songs, create service playlists, and play
+                music directly within the app.
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -79,11 +88,16 @@ export default function SpotifyIntegration({ onAddSongToLibrary }: { onAddSongTo
                 <li>Import songs from Spotify to your library</li>
                 <li>Play and listen to songs directly in the app</li>
               </ul>
-              <p className="mt-3 italic">Click &quot;Search Spotify&quot; to get started.</p>
+              <p className="mt-3 italic">
+                Click &quot;Search Spotify&quot; to get started.
+              </p>
             </div>
           ) : (
             <div className="mt-2 text-gray-600">
-              <p>Connect your Spotify account to enhance your worship planning experience:</p>
+              <p>
+                Connect your Spotify account to enhance your worship planning
+                experience:
+              </p>
               <ul className="mt-2 list-disc list-inside space-y-1">
                 <li>Find new worship songs to add to your services</li>
                 <li>Create playlists for your worship team to rehearse</li>

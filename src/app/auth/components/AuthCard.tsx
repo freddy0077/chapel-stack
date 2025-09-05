@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from 'react';
-import Image from 'next/image';
-import './AuthStyles.css';
+import { ReactNode } from "react";
+import Image from "next/image";
+import "./AuthStyles.css";
 
 interface AuthCardProps {
   title: string;
@@ -12,15 +12,17 @@ interface AuthCardProps {
   withAnimation?: boolean;
 }
 
-export default function AuthCard({ 
-  title, 
-  subtitle, 
-  children, 
+export default function AuthCard({
+  title,
+  subtitle,
+  children,
   logo = "/images/logo.png",
-  withAnimation = true
+  withAnimation = true,
 }: AuthCardProps) {
   return (
-    <div className={`auth-card p-8 sm:p-10 max-w-md w-full ${withAnimation ? 'animate-fadeIn' : ''}`}>
+    <div
+      className={`auth-card p-8 sm:p-10 max-w-md w-full ${withAnimation ? "animate-fadeIn" : ""}`}
+    >
       <div className="auth-header">
         <div className="auth-logo">
           <div className="logo-circle">

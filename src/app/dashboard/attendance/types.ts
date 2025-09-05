@@ -5,9 +5,9 @@ export interface MemberCard {
   memberId: string;
   cardNumber: string;
   issueDate: Date;
-  status: 'active' | 'inactive' | 'lost';
+  status: "active" | "inactive" | "lost";
   lastUsed?: Date;
-  cardType: 'rfid' | 'nfc' | 'qr';
+  cardType: "rfid" | "nfc" | "qr";
   assignedBy: string;
   notes?: string;
 }
@@ -17,10 +17,10 @@ export interface CardDevice {
   name: string;
   locationId: string;
   branchId: string;
-  status: 'online' | 'offline' | 'maintenance';
+  status: "online" | "offline" | "maintenance";
   lastConnected: Date;
   assignedEventId?: string;
-  deviceType: 'wall-mounted' | 'kiosk' | 'mobile' | 'admin';
+  deviceType: "wall-mounted" | "kiosk" | "mobile" | "admin";
   ipAddress?: string;
   firmwareVersion?: string;
   batteryLevel?: number;
@@ -71,31 +71,31 @@ export interface AttendanceRecord {
   eventId?: string;
   eventName?: string;
   timestamp?: Date;
-  method?: 'card_scan' | 'manual_entry' | 'mobile_app' | 'qr_code';
+  method?: "card_scan" | "manual_entry" | "mobile_app" | "qr_code";
   deviceId?: string;
   locationId?: string;
-  status?: 'checked_in' | 'checked_out' | 'pending';
+  status?: "checked_in" | "checked_out" | "pending";
   checkedOutTimestamp?: Date;
   familyCheckIn?: boolean;
   familyMembers?: {
     memberId: string;
     memberName: string;
-    status: 'checked_in' | 'checked_out' | 'pending';
+    status: "checked_in" | "checked_out" | "pending";
   }[];
 }
 
 export interface AttendanceEvent {
   id: string;
   name: string;
-  type: 'service' | 'meeting' | 'class' | 'special' | 'other';
+  type: "service" | "meeting" | "class" | "special" | "other";
   startTime: Date;
   endTime: Date;
   locationId: string;
   branchId: string;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
   expectedAttendees?: number;
   recurringId?: string;
-  recurrencePattern?: 'weekly' | 'monthly' | 'custom';
+  recurrencePattern?: "weekly" | "monthly" | "custom";
   dayOfWeek?: number;
   createdBy: string;
   allowFamilyCheckIn: boolean;
@@ -160,7 +160,7 @@ export interface Member {
   email?: string;
   phone?: string;
   photoUrl?: string;
-  status: 'active' | 'inactive' | 'visitor' | 'former';
+  status: "active" | "inactive" | "visitor" | "former";
   joinDate?: Date;
   lastAttendance?: Date;
   homeAddress?: string;
@@ -182,7 +182,7 @@ export interface AbsenceAlert {
   memberName: string;
   lastAttendanceDate: Date;
   missedEvents: number;
-  status: 'new' | 'in_progress' | 'resolved' | 'dismissed';
+  status: "new" | "in_progress" | "resolved" | "dismissed";
   assignedTo?: string;
   notes?: string;
   createdAt: Date;

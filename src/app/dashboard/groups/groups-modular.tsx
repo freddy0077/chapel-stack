@@ -1,72 +1,75 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Dialog } from '@headlessui/react';
+import React, { useState } from "react";
+import { Dialog } from "@headlessui/react";
 import {
   Bars4Icon,
   Squares2X2Icon,
   PlusIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { useAuth } from '../../../contexts/AuthContext';
+} from "@heroicons/react/24/outline";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   useFilteredSmallGroups,
   useSmallGroupMutations,
   GroupType,
   GroupStatus,
-  SmallGroup
-} from '../../../graphql/hooks/useSmallGroups';
+  SmallGroup,
+} from "../../../graphql/hooks/useSmallGroups";
 
 // Import components
-import GroupFilters from './components/GroupFilters';
-import GroupsGridView from './components/GroupsGridView';
-import GroupsListView from './components/GroupsListView';
-import CreateGroupModal from './components/CreateGroupModal';
-import GroupDetailsModal from './components/GroupDetailsModal';
-import LoadingState from './components/LoadingState';
-import ErrorState from './components/ErrorState';
-import EmptyState from './components/EmptyState';
+import GroupFilters from "./components/GroupFilters";
+import GroupsGridView from "./components/GroupsGridView";
+import GroupsListView from "./components/GroupsListView";
+import CreateGroupModal from "./components/CreateGroupModal";
+import GroupDetailsModal from "./components/GroupDetailsModal";
+import LoadingState from "./components/LoadingState";
+import ErrorState from "./components/ErrorState";
+import EmptyState from "./components/EmptyState";
 
 export default function Groups() {
   const { user } = useAuth();
-  
+
   // Get branch ID from user object according to updated structure
-  const branchId = user?.userBranches && user.userBranches.length > 0
-    ? user.userBranches[0].branch.id
-    : null;
+  const branchId =
+    user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : null;
 
   // State for filtering and view mode
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<GroupType | 'ALL'>('ALL');
-  const [selectedStatus, setSelectedStatus] = useState<GroupStatus | 'ALL'>('ALL');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<GroupType | "ALL">("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<GroupStatus | "ALL">(
+    "ALL",
+  );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  
+
   // Prepare filters object
   const filters: any = { branchId };
   if (searchTerm) filters.search = searchTerm;
-  if (selectedType !== 'ALL') filters.type = selectedType;
-  if (selectedStatus !== 'ALL') filters.status = selectedStatus;
+  if (selectedType !== "ALL") filters.type = selectedType;
+  if (selectedStatus !== "ALL") filters.status = selectedStatus;
 
   // Fetch filtered groups
   const { groups, loading, error } = useFilteredSmallGroups(filters);
-  
+
   // Handle clicking on a group
   const handleGroupClick = (groupId: string) => {
     setSelectedGroupId(groupId);
   };
-  
+
   // Close group details modal
   const handleCloseDetails = () => {
     setSelectedGroupId(null);
   };
 
   // Find selected group details
-  const selectedGroup = selectedGroupId 
-    ? groups.find(group => group.id === selectedGroupId) || null 
+  const selectedGroup = selectedGroupId
+    ? groups.find((group) => group.id === selectedGroupId) || null
     : null;
 
   return (
@@ -88,22 +91,22 @@ export default function Groups() {
           <div className="bg-white rounded-md border border-gray-300 flex items-center">
             <button
               type="button"
-              className={`p-1.5 rounded-l-md ${viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-l-md ${viewMode === "grid" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
+              onClick={() => setViewMode("grid")}
             >
               <Squares2X2Icon className="h-5 w-5" />
               <span className="sr-only">Grid view</span>
             </button>
             <button
               type="button"
-              className={`p-1.5 rounded-r-md ${viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-r-md ${viewMode === "list" ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
+              onClick={() => setViewMode("list")}
             >
               <Bars4Icon className="h-5 w-5" />
               <span className="sr-only">List view</span>
             </button>
           </div>
-          
+
           {/* Add group button */}
           <button
             type="button"
@@ -128,25 +131,31 @@ export default function Groups() {
               <ErrorState error={error} />
             ) : groups.length === 0 ? (
               <EmptyState setIsAddModalOpen={setIsAddModalOpen} />
-            ) : viewMode === 'grid' ? (
-              <GroupsGridView groups={groups} handleGroupClick={handleGroupClick} />
+            ) : viewMode === "grid" ? (
+              <GroupsGridView
+                groups={groups}
+                handleGroupClick={handleGroupClick}
+              />
             ) : (
-              <GroupsListView groups={groups} handleGroupClick={handleGroupClick} />
+              <GroupsListView
+                groups={groups}
+                handleGroupClick={handleGroupClick}
+              />
             )}
           </div>
         </div>
       </div>
-      
+
       {/* Add group modal */}
-      <CreateGroupModal 
-        isOpen={isAddModalOpen} 
-        setIsOpen={setIsAddModalOpen} 
-        branchId={branchId} 
+      <CreateGroupModal
+        isOpen={isAddModalOpen}
+        setIsOpen={setIsAddModalOpen}
+        branchId={branchId}
       />
-      
+
       {/* Group details modal */}
-      <GroupDetailsModal 
-        isOpen={selectedGroupId !== null} 
+      <GroupDetailsModal
+        isOpen={selectedGroupId !== null}
         onClose={handleCloseDetails}
         group={selectedGroup}
       />

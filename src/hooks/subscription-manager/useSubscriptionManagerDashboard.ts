@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 // Mock data interfaces - will be replaced with real GraphQL types
 interface SubscriptionManagerStats {
@@ -54,69 +54,68 @@ export function useSubscriptionManagerDashboard() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - replace with real API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setStats({
         totalOrganizations: 156,
         activeSubscriptions: 134,
         totalRevenue: 45670.99,
-        failedPayments: 8
+        failedPayments: 8,
       });
 
       setOrganizations([
         {
-          id: '1',
-          name: 'Grace Community Church',
-          email: 'admin@gracechurch.org',
-          state: 'ACTIVE',
-          subscriptionStatus: 'ACTIVE',
-          planName: 'Professional',
+          id: "1",
+          name: "Grace Community Church",
+          email: "admin@gracechurch.org",
+          state: "ACTIVE",
+          subscriptionStatus: "ACTIVE",
+          planName: "Professional",
           memberCount: 245,
-          createdAt: '2024-01-15'
+          createdAt: "2024-01-15",
         },
         {
-          id: '2',
-          name: 'Faith Baptist Church',
-          email: 'contact@faithbaptist.org',
-          state: 'SUSPENDED',
-          subscriptionStatus: 'PAST_DUE',
-          planName: 'Growth',
+          id: "2",
+          name: "Faith Baptist Church",
+          email: "contact@faithbaptist.org",
+          state: "SUSPENDED",
+          subscriptionStatus: "PAST_DUE",
+          planName: "Growth",
           memberCount: 156,
-          createdAt: '2023-11-20'
-        }
+          createdAt: "2023-11-20",
+        },
       ]);
 
       setSubscriptions([
         {
-          id: '1',
-          organizationName: 'Grace Community Church',
-          planName: 'Professional',
-          status: 'ACTIVE',
+          id: "1",
+          organizationName: "Grace Community Church",
+          planName: "Professional",
+          status: "ACTIVE",
           amount: 299.99,
-          currency: 'GHS',
-          interval: 'MONTHLY',
-          nextBillingDate: '2024-07-15'
-        }
+          currency: "GHS",
+          interval: "MONTHLY",
+          nextBillingDate: "2024-07-15",
+        },
       ]);
 
       setPayments([
         {
-          id: '1',
-          organizationName: 'Grace Community Church',
+          id: "1",
+          organizationName: "Grace Community Church",
           amount: 299.99,
-          currency: 'GHS',
-          status: 'SUCCESSFUL',
-          paymentMethod: 'CARD',
-          createdAt: '2024-07-01T10:30:00Z'
-        }
+          currency: "GHS",
+          status: "SUCCESSFUL",
+          paymentMethod: "CARD",
+          createdAt: "2024-07-01T10:30:00Z",
+        },
       ]);
 
       setError(null);
     } catch (err) {
-      setError('Failed to fetch subscription manager data');
-      console.error('Error fetching subscription manager data:', err);
+      setError("Failed to fetch subscription manager data");
     } finally {
       setLoading(false);
     }
@@ -138,7 +137,7 @@ export function useSubscriptionManagerDashboard() {
     organizations,
     subscriptions,
     payments,
-    refetch
+    refetch,
   };
 }
 

@@ -1,7 +1,10 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GENERATE_ATTENDANCE_REPORT = gql`
-  query GenerateAttendanceReport($input: AttendanceReportInput!, $generatedBy: String) {
+  query GenerateAttendanceReport(
+    $input: AttendanceReportInput!
+    $generatedBy: String
+  ) {
     generateAttendanceReport(input: $input, generatedBy: $generatedBy) {
       id
       reportType

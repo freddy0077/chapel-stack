@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import React, { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface RoleRouteProps {
   children: React.ReactNode;
@@ -11,52 +11,63 @@ interface RoleRouteProps {
   fallbackRoute?: string;
 }
 
-export function RoleRoute({ 
-  children, 
-  requiredRole, 
-  allowedRoles, 
-  fallbackRoute 
+export function RoleRoute({
+  children,
+  requiredRole,
+  allowedRoles,
+  fallbackRoute,
 }: RoleRouteProps) {
   const { state, canAccessRoute, getDefaultRoute } = useAuth();
   const { user, isAuthenticated, isLoading, isHydrated } = state;
   const router = useRouter();
   const pathname = usePathname();
-  
+
   useEffect(() => {
     // Removed console.log for performance
-    
+
     // Wait for authentication context to be fully initialized
     if (isLoading || !isHydrated) {
       return;
     }
-    
+
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      router.push("/auth/login");
       return;
     }
-    
+
     // Check role access
     if (requiredRole && user?.primaryRole !== requiredRole) {
       const defaultRoute = getDefaultRoute();
-      router.push(fallbackRoute || defaultRoute || '/dashboard');
+      router.push(fallbackRoute || defaultRoute || "/dashboard");
       return;
     }
-    
-    if (allowedRoles && !allowedRoles.includes(user?.primaryRole || '')) {
+
+    if (allowedRoles && !allowedRoles.includes(user?.primaryRole || "")) {
       const defaultRoute = getDefaultRoute();
-      router.push(fallbackRoute || defaultRoute || '/dashboard');
+      router.push(fallbackRoute || defaultRoute || "/dashboard");
       return;
     }
-    
+
     // Check route access
     if (!canAccessRoute(pathname)) {
       const defaultRoute = getDefaultRoute();
-      router.push(fallbackRoute || defaultRoute || '/dashboard');
+      router.push(fallbackRoute || defaultRoute || "/dashboard");
       return;
     }
-    
-  }, [isAuthenticated, isLoading, isHydrated, user, pathname, requiredRole, allowedRoles, fallbackRoute, canAccessRoute, getDefaultRoute, router]);
-  
+  }, [
+    isAuthenticated,
+    isLoading,
+    isHydrated,
+    user,
+    pathname,
+    requiredRole,
+    allowedRoles,
+    fallbackRoute,
+    canAccessRoute,
+    getDefaultRoute,
+    router,
+  ]);
+
   // Show loading state while authentication is being checked
   if (isLoading || !isHydrated) {
     return (
@@ -68,10 +79,10 @@ export function RoleRoute({
       </div>
     );
   }
-  
+
   if (!isAuthenticated) {
     return null;
   }
-  
+
   return <>{children}</>;
 }

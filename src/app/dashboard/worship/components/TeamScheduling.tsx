@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { UserCircleIcon, CalendarIcon, ClockIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useState } from "react";
+import {
+  UserCircleIcon,
+  CalendarIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 // Mock data for team members
 export const mockTeamMembers = [
@@ -14,7 +20,7 @@ export const mockTeamMembers = [
     phone: "(555) 123-4567",
     availability: "Sunday mornings, Wednesday evenings",
     status: "Active",
-    scheduledServices: 2
+    scheduledServices: 2,
   },
   {
     id: 2,
@@ -25,7 +31,7 @@ export const mockTeamMembers = [
     phone: "(555) 234-5678",
     availability: "Sunday mornings, Sunday evenings",
     status: "Active",
-    scheduledServices: 2
+    scheduledServices: 2,
   },
   {
     id: 3,
@@ -36,7 +42,7 @@ export const mockTeamMembers = [
     phone: "(555) 345-6789",
     availability: "Sunday mornings, Special events",
     status: "Active",
-    scheduledServices: 2
+    scheduledServices: 2,
   },
   {
     id: 4,
@@ -47,7 +53,7 @@ export const mockTeamMembers = [
     phone: "(555) 456-7890",
     availability: "Sunday mornings",
     status: "Active",
-    scheduledServices: 2
+    scheduledServices: 2,
   },
   {
     id: 5,
@@ -58,7 +64,7 @@ export const mockTeamMembers = [
     phone: "(555) 567-8901",
     availability: "Sunday mornings, Wednesday evenings",
     status: "Active",
-    scheduledServices: 2
+    scheduledServices: 2,
   },
   {
     id: 6,
@@ -69,7 +75,7 @@ export const mockTeamMembers = [
     phone: "(555) 678-9012",
     availability: "Wednesday evenings",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 7,
@@ -80,7 +86,7 @@ export const mockTeamMembers = [
     phone: "(555) 789-0123",
     availability: "Wednesday evenings, Special events",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 8,
@@ -91,7 +97,7 @@ export const mockTeamMembers = [
     phone: "(555) 890-1234",
     availability: "Wednesday evenings, Sunday evenings",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 9,
@@ -102,7 +108,7 @@ export const mockTeamMembers = [
     phone: "(555) 901-2345",
     availability: "Sunday mornings, Special events",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 10,
@@ -113,7 +119,7 @@ export const mockTeamMembers = [
     phone: "(555) 012-3456",
     availability: "Special events only",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 11,
@@ -124,7 +130,7 @@ export const mockTeamMembers = [
     phone: "(555) 123-7890",
     availability: "Youth services, Special events",
     status: "Active",
-    scheduledServices: 1
+    scheduledServices: 1,
   },
   {
     id: 12,
@@ -135,8 +141,8 @@ export const mockTeamMembers = [
     phone: "(555) 234-8901",
     availability: "Youth services, Sunday evenings",
     status: "Active",
-    scheduledServices: 1
-  }
+    scheduledServices: 1,
+  },
 ];
 
 // Mock data for upcoming schedules
@@ -150,7 +156,7 @@ export const mockSchedules = [
     teamMemberName: "Sarah Williams",
     role: "Worship Leader",
     confirmed: true,
-    rehearsalDate: "2025-04-12T18:00:00Z"
+    rehearsalDate: "2025-04-12T18:00:00Z",
   },
   {
     id: 2,
@@ -161,7 +167,7 @@ export const mockSchedules = [
     teamMemberName: "David Chen",
     role: "Acoustic Guitar",
     confirmed: true,
-    rehearsalDate: "2025-04-12T18:00:00Z"
+    rehearsalDate: "2025-04-12T18:00:00Z",
   },
   {
     id: 3,
@@ -172,7 +178,7 @@ export const mockSchedules = [
     teamMemberName: "Michelle Johnson",
     role: "Vocals",
     confirmed: true,
-    rehearsalDate: "2025-04-12T18:00:00Z"
+    rehearsalDate: "2025-04-12T18:00:00Z",
   },
   {
     id: 4,
@@ -183,7 +189,7 @@ export const mockSchedules = [
     teamMemberName: "James Wilson",
     role: "Drums",
     confirmed: false,
-    rehearsalDate: "2025-04-12T18:00:00Z"
+    rehearsalDate: "2025-04-12T18:00:00Z",
   },
   {
     id: 5,
@@ -194,7 +200,7 @@ export const mockSchedules = [
     teamMemberName: "Tiffany Rodriguez",
     role: "Keys",
     confirmed: true,
-    rehearsalDate: "2025-04-12T18:00:00Z"
+    rehearsalDate: "2025-04-12T18:00:00Z",
   },
   {
     id: 6,
@@ -205,7 +211,7 @@ export const mockSchedules = [
     teamMemberName: "Thomas Anderson",
     role: "Worship Leader",
     confirmed: true,
-    rehearsalDate: "2025-04-09T18:00:00Z"
+    rehearsalDate: "2025-04-09T18:00:00Z",
   },
   {
     id: 7,
@@ -216,7 +222,7 @@ export const mockSchedules = [
     teamMemberName: "Lisa Brown",
     role: "Keys",
     confirmed: true,
-    rehearsalDate: "2025-04-09T18:00:00Z"
+    rehearsalDate: "2025-04-09T18:00:00Z",
   },
   {
     id: 8,
@@ -227,7 +233,7 @@ export const mockSchedules = [
     teamMemberName: "Mark Taylor",
     role: "Acoustic Guitar",
     confirmed: true,
-    rehearsalDate: "2025-04-09T18:00:00Z"
+    rehearsalDate: "2025-04-09T18:00:00Z",
   },
   {
     id: 9,
@@ -238,7 +244,7 @@ export const mockSchedules = [
     teamMemberName: "Sarah Williams",
     role: "Worship Leader",
     confirmed: true,
-    rehearsalDate: "2025-04-19T18:00:00Z"
+    rehearsalDate: "2025-04-19T18:00:00Z",
   },
   {
     id: 10,
@@ -249,8 +255,8 @@ export const mockSchedules = [
     teamMemberName: "David Chen",
     role: "Acoustic Guitar",
     confirmed: false,
-    rehearsalDate: "2025-04-19T18:00:00Z"
-  }
+    rehearsalDate: "2025-04-19T18:00:00Z",
+  },
 ];
 
 export interface TeamMemberProfile {
@@ -261,7 +267,7 @@ export interface TeamMemberProfile {
   email: string;
   phone: string;
   availability: string;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   scheduledServices: number;
 }
 
@@ -285,85 +291,97 @@ interface TeamSchedulingProps {
   onManageSchedule: (serviceId: number) => void;
 }
 
-export default function TeamScheduling({ 
-  teamMembers, 
-  schedules, 
-  onViewTeamMember, 
+export default function TeamScheduling({
+  teamMembers,
+  schedules,
+  onViewTeamMember,
   onAddTeamMember,
-  onManageSchedule
+  onManageSchedule,
 }: TeamSchedulingProps) {
-  const [activeView, setActiveView] = useState<'team' | 'schedule'>('team');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [skillFilter, setSkillFilter] = useState('All Skills');
+  const [activeView, setActiveView] = useState<"team" | "schedule">("team");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [skillFilter, setSkillFilter] = useState("All Skills");
 
   // Get all unique skills from team members
-  const allSkills = ['All Skills', ...new Set(teamMembers.flatMap(member => member.skills))].sort();
+  const allSkills = [
+    "All Skills",
+    ...new Set(teamMembers.flatMap((member) => member.skills)),
+  ].sort();
 
   // Filter team members based on search term and skill
-  const filteredTeamMembers = teamMembers.filter(member => {
-    const matchesSearch = 
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredTeamMembers = teamMembers.filter((member) => {
+    const matchesSearch =
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.role.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesSkill = skillFilter === 'All Skills' || member.skills.includes(skillFilter);
-    
+
+    const matchesSkill =
+      skillFilter === "All Skills" || member.skills.includes(skillFilter);
+
     return matchesSearch && matchesSkill;
   });
 
   // Group schedules by service
-  const schedulesByService = schedules.reduce((acc, schedule) => {
-    const key = `${schedule.serviceId}`;
-    if (!acc[key]) {
-      acc[key] = {
-        serviceId: schedule.serviceId,
-        serviceTitle: schedule.serviceTitle,
-        serviceDate: schedule.serviceDate,
-        rehearsalDate: schedule.rehearsalDate,
-        team: []
-      };
-    }
-    acc[key].team.push({
-      memberId: schedule.teamMemberId,
-      memberName: schedule.teamMemberName,
-      role: schedule.role,
-      confirmed: schedule.confirmed
-    });
-    return acc;
-  }, {} as Record<string, {
-    serviceId: number;
-    serviceTitle: string;
-    serviceDate: string;
-    rehearsalDate: string;
-    team: Array<{
-      memberId: number;
-      memberName: string;
-      role: string;
-      confirmed: boolean;
-    }>;
-  }>);
+  const schedulesByService = schedules.reduce(
+    (acc, schedule) => {
+      const key = `${schedule.serviceId}`;
+      if (!acc[key]) {
+        acc[key] = {
+          serviceId: schedule.serviceId,
+          serviceTitle: schedule.serviceTitle,
+          serviceDate: schedule.serviceDate,
+          rehearsalDate: schedule.rehearsalDate,
+          team: [],
+        };
+      }
+      acc[key].team.push({
+        memberId: schedule.teamMemberId,
+        memberName: schedule.teamMemberName,
+        role: schedule.role,
+        confirmed: schedule.confirmed,
+      });
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        serviceId: number;
+        serviceTitle: string;
+        serviceDate: string;
+        rehearsalDate: string;
+        team: Array<{
+          memberId: number;
+          memberName: string;
+          role: string;
+          confirmed: boolean;
+        }>;
+      }
+    >,
+  );
 
   // Convert to array for rendering
   const serviceSchedules = Object.values(schedulesByService).sort((a, b) => {
-    return new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime();
+    return (
+      new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime()
+    );
   });
 
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
     });
   };
 
   // Format time for display
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -379,7 +397,10 @@ export default function TeamScheduling({
           onClick={onAddTeamMember}
           className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          <UserCircleIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+          <UserCircleIcon
+            className="-ml-0.5 mr-1.5 h-5 w-5"
+            aria-hidden="true"
+          />
           Add Team Member
         </button>
       </div>
@@ -422,17 +443,24 @@ export default function TeamScheduling({
             <div className="p-6">
               <div className="flex items-center">
                 <div className="h-12 w-12 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <UserCircleIcon className="h-8 w-8 text-indigo-600" aria-hidden="true" />
+                  <UserCircleIcon
+                    className="h-8 w-8 text-indigo-600"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">{member.name}</h3>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {member.name}
+                  </h3>
                   <p className="text-sm text-gray-500">{member.role}</p>
                 </div>
               </div>
               <div className="mt-4">
                 <dl className="grid grid-cols-1 gap-x-4 gap-y-2">
                   <div className="col-span-1">
-                    <dt className="text-sm font-medium text-gray-500">Skills</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Skills
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900 flex flex-wrap gap-1">
                       {member.skills.map((skill) => (
                         <span
@@ -445,12 +473,20 @@ export default function TeamScheduling({
                     </dd>
                   </div>
                   <div className="col-span-1">
-                    <dt className="text-sm font-medium text-gray-500">Availability</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{member.availability}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Availability
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {member.availability}
+                    </dd>
                   </div>
                   <div className="col-span-1">
-                    <dt className="text-sm font-medium text-gray-500">Scheduled Services</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{member.scheduledServices}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Scheduled Services
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {member.scheduledServices}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -475,17 +511,27 @@ export default function TeamScheduling({
     <div>
       <div className="space-y-8">
         {serviceSchedules.map((service) => (
-          <div key={service.serviceId} className="overflow-hidden bg-white shadow sm:rounded-lg">
+          <div
+            key={service.serviceId}
+            className="overflow-hidden bg-white shadow sm:rounded-lg"
+          >
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-medium leading-6 text-gray-900">{service.serviceTitle}</h3>
+                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                  {service.serviceTitle}
+                </h3>
                 <div className="mt-1 flex items-center text-sm text-gray-500">
-                  <CalendarIcon className="mr-1 h-4 w-4 text-gray-400" aria-hidden="true" />
-                  {formatDate(service.serviceDate)} at {formatTime(service.serviceDate)}
+                  <CalendarIcon
+                    className="mr-1 h-4 w-4 text-gray-400"
+                    aria-hidden="true"
+                  />
+                  {formatDate(service.serviceDate)} at{" "}
+                  {formatTime(service.serviceDate)}
                 </div>
                 <div className="text-xs text-gray-400 flex items-center">
                   <ClockIcon className="mr-1 h-3 w-3" aria-hidden="true" />
-                  Rehearsal: {formatDate(service.rehearsalDate)} at {formatTime(service.rehearsalDate)}
+                  Rehearsal: {formatDate(service.rehearsalDate)} at{" "}
+                  {formatTime(service.rehearsalDate)}
                 </div>
               </div>
               <button
@@ -499,23 +545,39 @@ export default function TeamScheduling({
             <div className="border-t border-gray-200">
               <ul role="list" className="divide-y divide-gray-200">
                 {service.team.map((member) => (
-                  <li key={member.memberId} className="px-4 py-4 sm:px-6 flex justify-between items-center">
+                  <li
+                    key={member.memberId}
+                    className="px-4 py-4 sm:px-6 flex justify-between items-center"
+                  >
                     <div>
                       <div className="flex items-center">
-                        <UserCircleIcon className="h-5 w-5 text-gray-400 mr-2" aria-hidden="true" />
-                        <p className="font-medium text-gray-900">{member.memberName}</p>
+                        <UserCircleIcon
+                          className="h-5 w-5 text-gray-400 mr-2"
+                          aria-hidden="true"
+                        />
+                        <p className="font-medium text-gray-900">
+                          {member.memberName}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500 ml-7">{member.role}</p>
+                      <p className="text-sm text-gray-500 ml-7">
+                        {member.role}
+                      </p>
                     </div>
                     <div>
                       {member.confirmed ? (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          <CheckCircleIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <CheckCircleIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Confirmed
                         </span>
                       ) : (
                         <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-                          <XCircleIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <XCircleIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Pending
                         </span>
                       )}
@@ -542,7 +604,9 @@ export default function TeamScheduling({
             name="view-tabs"
             className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             value={activeView}
-            onChange={(e) => setActiveView(e.target.value as 'team' | 'schedule')}
+            onChange={(e) =>
+              setActiveView(e.target.value as "team" | "schedule")
+            }
           >
             <option value="team">Team Members</option>
             <option value="schedule">Schedules</option>
@@ -553,21 +617,21 @@ export default function TeamScheduling({
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
                 className={`${
-                  activeView === 'team'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  activeView === "team"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 } whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium`}
-                onClick={() => setActiveView('team')}
+                onClick={() => setActiveView("team")}
               >
                 Team Members
               </button>
               <button
                 className={`${
-                  activeView === 'schedule'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  activeView === "schedule"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 } whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium`}
-                onClick={() => setActiveView('schedule')}
+                onClick={() => setActiveView("schedule")}
               >
                 Schedules
               </button>
@@ -576,7 +640,7 @@ export default function TeamScheduling({
         </div>
       </div>
 
-      {activeView === 'team' ? renderTeamView() : renderScheduleView()}
+      {activeView === "team" ? renderTeamView() : renderScheduleView()}
     </div>
   );
 }

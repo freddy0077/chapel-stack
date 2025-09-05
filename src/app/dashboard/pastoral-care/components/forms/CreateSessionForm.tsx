@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   XMarkIcon,
   ChatBubbleLeftRightIcon,
@@ -12,21 +12,24 @@ import {
   DocumentTextIcon,
   EyeSlashIcon,
   EyeIcon,
-} from '@heroicons/react/24/outline';
-import { useCreateCounselingSession } from '@/graphql/hooks/usePastoralCare';
+} from "@heroicons/react/24/outline";
+import { useCreateCounselingSession } from "@/graphql/hooks/usePastoralCare";
 
 // Validation schema
 const createSessionSchema = z.object({
-  memberId: z.string().min(1, 'Member is required'),
-  counselorId: z.string().min(1, 'Counselor is required'),
-  title: z.string().min(1, 'Title is required'),
+  memberId: z.string().min(1, "Member is required"),
+  counselorId: z.string().min(1, "Counselor is required"),
+  title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  sessionType: z.string().min(1, 'Session type is required'),
-  scheduledDate: z.string().min(1, 'Scheduled date is required'),
-  duration: z.number().min(15, 'Duration must be at least 15 minutes').optional(),
+  sessionType: z.string().min(1, "Session type is required"),
+  scheduledDate: z.string().min(1, "Scheduled date is required"),
+  duration: z
+    .number()
+    .min(15, "Duration must be at least 15 minutes")
+    .optional(),
   isConfidential: z.boolean().default(false),
   notes: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
 });
 
 type CreateSessionFormData = z.infer<typeof createSessionSchema>;
@@ -39,31 +42,31 @@ interface CreateSessionFormProps {
 }
 
 const sessionTypes = [
-  { value: 'INDIVIDUAL', label: 'Individual Counseling' },
-  { value: 'COUPLE', label: 'Couples Counseling' },
-  { value: 'FAMILY', label: 'Family Counseling' },
-  { value: 'GROUP', label: 'Group Counseling' },
-  { value: 'CRISIS', label: 'Crisis Counseling' },
-  { value: 'GRIEF', label: 'Grief Counseling' },
-  { value: 'ADDICTION', label: 'Addiction Counseling' },
-  { value: 'MARRIAGE', label: 'Marriage Counseling' },
-  { value: 'YOUTH', label: 'Youth Counseling' },
-  { value: 'OTHER', label: 'Other' },
+  { value: "INDIVIDUAL", label: "Individual Counseling" },
+  { value: "COUPLE", label: "Couples Counseling" },
+  { value: "FAMILY", label: "Family Counseling" },
+  { value: "GROUP", label: "Group Counseling" },
+  { value: "CRISIS", label: "Crisis Counseling" },
+  { value: "GRIEF", label: "Grief Counseling" },
+  { value: "ADDICTION", label: "Addiction Counseling" },
+  { value: "MARRIAGE", label: "Marriage Counseling" },
+  { value: "YOUTH", label: "Youth Counseling" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const priorities = [
-  { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-800' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-800' },
-  { value: 'HIGH', label: 'High', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-800' },
+  { value: "LOW", label: "Low", color: "bg-gray-100 text-gray-800" },
+  { value: "MEDIUM", label: "Medium", color: "bg-blue-100 text-blue-800" },
+  { value: "HIGH", label: "High", color: "bg-yellow-100 text-yellow-800" },
+  { value: "URGENT", label: "Urgent", color: "bg-red-100 text-red-800" },
 ];
 
 const durationOptions = [
-  { value: 30, label: '30 minutes' },
-  { value: 45, label: '45 minutes' },
-  { value: 60, label: '1 hour' },
-  { value: 90, label: '1.5 hours' },
-  { value: 120, label: '2 hours' },
+  { value: 30, label: "30 minutes" },
+  { value: 45, label: "45 minutes" },
+  { value: 60, label: "1 hour" },
+  { value: 90, label: "1.5 hours" },
+  { value: 120, label: "2 hours" },
 ];
 
 export default function CreateSessionForm({
@@ -85,20 +88,20 @@ export default function CreateSessionForm({
   } = useForm<CreateSessionFormData>({
     resolver: zodResolver(createSessionSchema),
     defaultValues: {
-      memberId: preselectedMemberId || '',
-      priority: 'MEDIUM',
+      memberId: preselectedMemberId || "",
+      priority: "MEDIUM",
       isConfidential: false,
       duration: 60,
     },
   });
 
-  const watchedPriority = watch('priority');
-  const watchedIsConfidential = watch('isConfidential');
+  const watchedPriority = watch("priority");
+  const watchedIsConfidential = watch("isConfidential");
 
   const onSubmit = async (data: CreateSessionFormData) => {
     try {
       setIsSubmitting(true);
-      
+
       await createCounselingSession({
         ...data,
         scheduledDate: new Date(data.scheduledDate).toISOString(),
@@ -108,7 +111,7 @@ export default function CreateSessionForm({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Failed to create counseling session:', error);
+      console.error("Failed to create counseling session:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +127,10 @@ export default function CreateSessionForm({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleClose} />
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          onClick={handleClose}
+        />
 
         <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -156,12 +162,15 @@ export default function CreateSessionForm({
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Member Selection */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="memberId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="memberId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <UserIcon className="inline h-4 w-4 mr-1" />
                     Member *
                   </label>
                   <select
-                    {...register('memberId')}
+                    {...register("memberId")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   >
                     <option value="">Select a member...</option>
@@ -170,18 +179,23 @@ export default function CreateSessionForm({
                     <option value="member-2">Jane Smith</option>
                   </select>
                   {errors.memberId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.memberId.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.memberId.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Counselor Selection */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="counselorId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="counselorId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <UserIcon className="inline h-4 w-4 mr-1" />
                     Counselor *
                   </label>
                   <select
-                    {...register('counselorId')}
+                    {...register("counselorId")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   >
                     <option value="">Select a counselor...</option>
@@ -190,34 +204,44 @@ export default function CreateSessionForm({
                     <option value="counselor-2">Pastor Williams</option>
                   </select>
                   {errors.counselorId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.counselorId.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.counselorId.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Title */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                     Session Title *
                   </label>
                   <input
                     type="text"
-                    {...register('title')}
+                    {...register("title")}
                     placeholder="e.g., Marriage Counseling Session, Grief Support"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   />
                   {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Session Type */}
                 <div>
-                  <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="sessionType"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Session Type *
                   </label>
                   <select
-                    {...register('sessionType')}
+                    {...register("sessionType")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   >
                     <option value="">Select type...</option>
@@ -228,17 +252,22 @@ export default function CreateSessionForm({
                     ))}
                   </select>
                   {errors.sessionType && (
-                    <p className="mt-1 text-sm text-red-600">{errors.sessionType.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.sessionType.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Priority */}
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="priority"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Priority
                   </label>
                   <select
-                    {...register('priority')}
+                    {...register("priority")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   >
                     {priorities.map((priority) => (
@@ -248,37 +277,49 @@ export default function CreateSessionForm({
                     ))}
                   </select>
                   <div className="mt-1">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      priorities.find(p => p.value === watchedPriority)?.color || 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {priorities.find(p => p.value === watchedPriority)?.label || 'Medium'}
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        priorities.find((p) => p.value === watchedPriority)
+                          ?.color || "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {priorities.find((p) => p.value === watchedPriority)
+                        ?.label || "Medium"}
                     </span>
                   </div>
                 </div>
 
                 {/* Scheduled Date */}
                 <div>
-                  <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="scheduledDate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <ClockIcon className="inline h-4 w-4 mr-1" />
                     Scheduled Date & Time *
                   </label>
                   <input
                     type="datetime-local"
-                    {...register('scheduledDate')}
+                    {...register("scheduledDate")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   />
                   {errors.scheduledDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.scheduledDate.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.scheduledDate.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Duration */}
                 <div>
-                  <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="duration"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Duration
                   </label>
                   <select
-                    {...register('duration', { valueAsNumber: true })}
+                    {...register("duration", { valueAsNumber: true })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
                   >
                     {durationOptions.map((option) => (
@@ -294,10 +335,13 @@ export default function CreateSessionForm({
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      {...register('isConfidential')}
+                      {...register("isConfidential")}
                       className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="isConfidential" className="ml-2 block text-sm text-gray-900">
+                    <label
+                      htmlFor="isConfidential"
+                      className="ml-2 block text-sm text-gray-900"
+                    >
                       <span className="flex items-center">
                         {watchedIsConfidential ? (
                           <EyeSlashIcon className="h-4 w-4 mr-1 text-purple-600" />
@@ -315,11 +359,14 @@ export default function CreateSessionForm({
 
                 {/* Description */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Description
                   </label>
                   <textarea
-                    {...register('description')}
+                    {...register("description")}
                     rows={3}
                     placeholder="Brief description of the session purpose and goals..."
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
@@ -328,11 +375,14 @@ export default function CreateSessionForm({
 
                 {/* Notes */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Additional Notes
                   </label>
                   <textarea
-                    {...register('notes')}
+                    {...register("notes")}
                     rows={2}
                     placeholder="Any additional notes, preparation requirements, or special instructions..."
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
@@ -350,14 +400,29 @@ export default function CreateSessionForm({
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Creating...
                   </>
                 ) : (
-                  'Create Session'
+                  "Create Session"
                 )}
               </button>
               <button

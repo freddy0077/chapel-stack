@@ -2,25 +2,27 @@
 // This file handles communication with the Spotify Web API
 
 // Define API endpoints
-const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
-const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
-const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
+const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
+const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
+const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
 // Scopes needed for the worship page functionality
 const SCOPES = [
-  'user-read-private',
-  'user-read-email',
-  'playlist-read-private',
-  'playlist-read-collaborative',
-  'playlist-modify-private',
-  'playlist-modify-public',
-  'user-library-read',
-  'user-library-modify'
-].join('%20');
+  "user-read-private",
+  "user-read-email",
+  "playlist-read-private",
+  "playlist-read-collaborative",
+  "playlist-modify-private",
+  "playlist-modify-public",
+  "user-library-read",
+  "user-library-modify",
+].join("%20");
 
 // Spotify API configuration using environment variables
-const CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '';
-const REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || `${typeof window !== 'undefined' ? window.location.origin : ''}/spotify-callback`;
+const CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "";
+const REDIRECT_URI =
+  process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI ||
+  `${typeof window !== "undefined" ? window.location.origin : ""}/spotify-callback`;
 
 /**
  * Generates the Spotify authorization URL
@@ -37,16 +39,16 @@ export const getAuthUrl = () => {
  */
 export const getAccessToken = async (code: string) => {
   const response = await fetch(SPOTIFY_TOKEN_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${btoa(`${CLIENT_ID}:YOUR_CLIENT_SECRET`)}` // Should use environment variables
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${CLIENT_ID}:YOUR_CLIENT_SECRET`)}`, // Should use environment variables
     },
     body: new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
-      redirect_uri: REDIRECT_URI
-    })
+      redirect_uri: REDIRECT_URI,
+    }),
   });
 
   return response.json();
@@ -59,15 +61,15 @@ export const getAccessToken = async (code: string) => {
  */
 export const refreshAccessToken = async (refreshToken: string) => {
   const response = await fetch(SPOTIFY_TOKEN_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${btoa(`${CLIENT_ID}:YOUR_CLIENT_SECRET`)}` // Should use environment variables
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${CLIENT_ID}:YOUR_CLIENT_SECRET`)}`, // Should use environment variables
     },
     body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken
-    })
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
   });
 
   return response.json();
@@ -84,43 +86,65 @@ export const refreshAccessToken = async (refreshToken: string) => {
 export const callSpotifyApi = async (
   endpoint: string,
   accessToken: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-  body?: Record<string, unknown>
+  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  body?: Record<string, unknown>,
 ) => {
   const response = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
     method,
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
   });
 
   return response.json();
 };
 
 // Music search functionality
-export const searchSpotify = async (query: string, accessToken: string, type: 'track' | 'album' | 'artist' | 'playlist' = 'track') => {
-  return callSpotifyApi(`/search?q=${encodeURIComponent(query)}&type=${type}&limit=20`, accessToken);
+export const searchSpotify = async (
+  query: string,
+  accessToken: string,
+  type: "track" | "album" | "artist" | "playlist" = "track",
+) => {
+  return callSpotifyApi(
+    `/search?q=${encodeURIComponent(query)}&type=${type}&limit=20`,
+    accessToken,
+  );
 };
 
 // Playlist management
 export const getUserPlaylists = async (accessToken: string) => {
-  return callSpotifyApi('/me/playlists', accessToken);
+  return callSpotifyApi("/me/playlists", accessToken);
 };
 
-export const createPlaylist = async (accessToken: string, userId: string, name: string, description: string, isPublic: boolean = false) => {
-  return callSpotifyApi(`/users/${userId}/playlists`, accessToken, 'POST', {
+export const createPlaylist = async (
+  accessToken: string,
+  userId: string,
+  name: string,
+  description: string,
+  isPublic: boolean = false,
+) => {
+  return callSpotifyApi(`/users/${userId}/playlists`, accessToken, "POST", {
     name,
     description,
-    public: isPublic
+    public: isPublic,
   });
 };
 
-export const addTracksToPlaylist = async (accessToken: string, playlistId: string, trackUris: string[]) => {
-  return callSpotifyApi(`/playlists/${playlistId}/tracks`, accessToken, 'POST', {
-    uris: trackUris
-  });
+export const addTracksToPlaylist = async (
+  accessToken: string,
+  playlistId: string,
+  trackUris: string[],
+) => {
+  return callSpotifyApi(
+    `/playlists/${playlistId}/tracks`,
+    accessToken,
+    "POST",
+    {
+      uris: trackUris,
+    },
+  );
 };
 
 // Track information
@@ -128,6 +152,9 @@ export const getTrack = async (accessToken: string, trackId: string) => {
   return callSpotifyApi(`/tracks/${trackId}`, accessToken);
 };
 
-export const getAudioFeatures = async (accessToken: string, trackId: string) => {
+export const getAudioFeatures = async (
+  accessToken: string,
+  trackId: string,
+) => {
   return callSpotifyApi(`/audio-features/${trackId}`, accessToken);
 };

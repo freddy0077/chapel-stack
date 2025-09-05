@@ -1,18 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { 
-  CalendarDaysIcon, 
-  HeartIcon, 
+import React, { useState, useMemo } from "react";
+import {
+  CalendarDaysIcon,
+  HeartIcon,
   UserIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
-  CameraIcon
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday, addMonths, subMonths } from 'date-fns';
-import { MemorialDate } from '../../types/deathRegister';
+  CameraIcon,
+} from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  isSameMonth,
+  isToday,
+  addMonths,
+  subMonths,
+} from "date-fns";
+import { MemorialDate } from "../../types/deathRegister";
 
 interface MemorialCalendarViewProps {
   upcomingMemorials: MemorialDate[];
@@ -32,27 +42,29 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
   upcomingMemorials,
   loading,
   year = new Date().getFullYear(),
-  onYearChange
+  onYearChange,
 }) => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [selectedMemorial, setSelectedMemorial] = useState<MemorialDate | null>(null);
+  const [selectedMemorial, setSelectedMemorial] = useState<MemorialDate | null>(
+    null,
+  );
 
   // Generate calendar days for the selected month
   const calendarDays = useMemo(() => {
     const start = startOfMonth(selectedMonth);
     const end = endOfMonth(selectedMonth);
     const days = eachDayOfInterval({ start, end });
-    
-    return days.map(date => {
-      const dayMemorials = (upcomingMemorials || []).filter(memorial => 
-        isSameDay(new Date(memorial.dateOfDeath), date)
+
+    return days.map((date) => {
+      const dayMemorials = (upcomingMemorials || []).filter((memorial) =>
+        isSameDay(new Date(memorial.dateOfDeath), date),
       );
-      
+
       return {
         date,
         isCurrentMonth: isSameMonth(date, selectedMonth),
         isToday: isToday(date),
-        memorials: dayMemorials
+        memorials: dayMemorials,
       };
     });
   }, [selectedMonth, upcomingMemorials]);
@@ -60,34 +72,41 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
   // Get upcoming memorials for the next 30 days
   const upcomingAnniversaries = useMemo(() => {
     const today = new Date();
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
-    return (upcomingMemorials || []).filter(memorial => {
-      const memorialDate = new Date(memorial.dateOfDeath);
-      return memorialDate >= today && memorialDate <= thirtyDaysFromNow;
-    })
-    .sort((a, b) => new Date(a.dateOfDeath).getTime() - new Date(b.dateOfDeath).getTime())
-    .slice(0, 5);
+    const thirtyDaysFromNow = new Date(
+      today.getTime() + 30 * 24 * 60 * 60 * 1000,
+    );
+
+    return (upcomingMemorials || [])
+      .filter((memorial) => {
+        const memorialDate = new Date(memorial.dateOfDeath);
+        return memorialDate >= today && memorialDate <= thirtyDaysFromNow;
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.dateOfDeath).getTime() - new Date(b.dateOfDeath).getTime(),
+      )
+      .slice(0, 5);
   }, [upcomingMemorials]);
 
   const handlePreviousMonth = () => {
-    setSelectedMonth(prev => subMonths(prev, 1));
+    setSelectedMonth((prev) => subMonths(prev, 1));
   };
 
   const handleNextMonth = () => {
-    setSelectedMonth(prev => addMonths(prev, 1));
+    setSelectedMonth((prev) => addMonths(prev, 1));
   };
 
   const handleYearChange = (newYear: number) => {
-    setSelectedMonth(prev => new Date(newYear, prev.getMonth(), 1));
+    setSelectedMonth((prev) => new Date(newYear, prev.getMonth(), 1));
     onYearChange?.(newYear);
   };
 
   const getMemorialColor = (yearsAgo: number) => {
-    if (yearsAgo <= 1) return 'bg-red-100 border-red-300 text-red-800';
-    if (yearsAgo <= 5) return 'bg-orange-100 border-orange-300 text-orange-800';
-    if (yearsAgo <= 10) return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-    return 'bg-purple-100 border-purple-300 text-purple-800';
+    if (yearsAgo <= 1) return "bg-red-100 border-red-300 text-red-800";
+    if (yearsAgo <= 5) return "bg-orange-100 border-orange-300 text-orange-800";
+    if (yearsAgo <= 10)
+      return "bg-yellow-100 border-yellow-300 text-yellow-800";
+    return "bg-purple-100 border-purple-300 text-purple-800";
   };
 
   if (loading) {
@@ -109,11 +128,15 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
           <div className="flex items-center space-x-3">
             <HeartSolidIcon className="h-8 w-8 text-purple-600" />
             <div>
-              <h2 className="text-2xl font-bold text-purple-900">Memorial Calendar</h2>
-              <p className="text-purple-700">Honoring the memory of our departed members</p>
+              <h2 className="text-2xl font-bold text-purple-900">
+                Memorial Calendar
+              </h2>
+              <p className="text-purple-700">
+                Honoring the memory of our departed members
+              </p>
             </div>
           </div>
-          
+
           {/* Year Selector */}
           <div className="flex items-center space-x-2">
             <button
@@ -141,31 +164,37 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
               <HeartIcon className="h-6 w-6 text-red-500" />
               <div>
                 <p className="text-sm text-gray-600">Total Memorials</p>
-                <p className="text-2xl font-bold text-gray-900">{(upcomingMemorials || []).length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {(upcomingMemorials || []).length}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg p-4 border border-purple-200">
             <div className="flex items-center space-x-3">
               <ClockIcon className="h-6 w-6 text-orange-500" />
               <div>
                 <p className="text-sm text-gray-600">This Month</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {(upcomingMemorials || []).filter(m => 
-                    isSameMonth(new Date(m.dateOfDeath), selectedMonth)
-                  ).length}
+                  {
+                    (upcomingMemorials || []).filter((m) =>
+                      isSameMonth(new Date(m.dateOfDeath), selectedMonth),
+                    ).length
+                  }
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg p-4 border border-purple-200">
             <div className="flex items-center space-x-3">
               <CalendarDaysIcon className="h-6 w-6 text-blue-500" />
               <div>
                 <p className="text-sm text-gray-600">Next 30 Days</p>
-                <p className="text-2xl font-bold text-gray-900">{upcomingAnniversaries.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {upcomingAnniversaries.length}
+                </p>
               </div>
             </div>
           </div>
@@ -184,11 +213,11 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
               >
                 <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
               </button>
-              
+
               <h3 className="text-lg font-semibold text-gray-900">
-                {format(selectedMonth, 'MMMM yyyy')}
+                {format(selectedMonth, "MMMM yyyy")}
               </h3>
-              
+
               <button
                 onClick={handleNextMonth}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -201,11 +230,16 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
             <div className="p-4">
               {/* Weekday Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
-                    {day}
-                  </div>
-                ))}
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                  (day) => (
+                    <div
+                      key={day}
+                      className="p-2 text-center text-sm font-medium text-gray-500"
+                    >
+                      {day}
+                    </div>
+                  ),
+                )}
               </div>
 
               {/* Calendar Days */}
@@ -216,8 +250,8 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                     className={`
                       relative p-2 min-h-[60px] border border-gray-100 rounded-lg cursor-pointer
                       transition-colors hover:bg-gray-50
-                      ${day.isToday ? 'bg-blue-50 border-blue-200' : ''}
-                      ${!day.isCurrentMonth ? 'opacity-50' : ''}
+                      ${day.isToday ? "bg-blue-50 border-blue-200" : ""}
+                      ${!day.isCurrentMonth ? "opacity-50" : ""}
                     `}
                     onClick={() => {
                       if (day.memorials.length > 0) {
@@ -226,9 +260,9 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                     }}
                   >
                     <div className="text-sm font-medium text-gray-900">
-                      {format(day.date, 'd')}
+                      {format(day.date, "d")}
                     </div>
-                    
+
                     {/* Memorial Indicators */}
                     {day.memorials.length > 0 && (
                       <div className="absolute bottom-1 left-1 right-1">
@@ -238,7 +272,7 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                               key={idx}
                               className={`
                                 w-2 h-2 rounded-full
-                                ${getMemorialColor(memorial.yearsAgo).split(' ')[0]}
+                                ${getMemorialColor(memorial.yearsAgo).split(" ")[0]}
                               `}
                               title={`${memorial.memberName} - ${memorial.yearsAgo} years ago`}
                             />
@@ -268,7 +302,7 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                 Upcoming Anniversaries
               </h3>
             </div>
-            
+
             <div className="p-4">
               {upcomingAnniversaries.length > 0 ? (
                 <div className="space-y-4">
@@ -289,20 +323,23 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                           <UserIcon className="h-5 w-5 text-gray-500" />
                         </div>
                       )}
-                      
+
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {memorial.memberName}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {format(new Date(memorial.dateOfDeath), 'MMM d')} • {memorial.yearsAgo} years ago
+                          {format(new Date(memorial.dateOfDeath), "MMM d")} •{" "}
+                          {memorial.yearsAgo} years ago
                         </p>
                       </div>
-                      
-                      <div className={`
+
+                      <div
+                        className={`
                         px-2 py-1 rounded-full text-xs font-medium border
                         ${getMemorialColor(memorial.yearsAgo)}
-                      `}>
+                      `}
+                      >
                         {memorial.yearsAgo}y
                       </div>
                     </div>
@@ -311,7 +348,9 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
               ) : (
                 <div className="text-center py-6">
                   <CalendarDaysIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">No upcoming anniversaries</p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    No upcoming anniversaries
+                  </p>
                 </div>
               )}
             </div>
@@ -320,9 +359,11 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
           {/* Memorial Legend */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Memorial Legend</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Memorial Legend
+              </h3>
             </div>
-            
+
             <div className="p-4 space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-4 h-4 rounded-full bg-red-100 border border-red-300"></div>
@@ -351,17 +392,29 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Memorial Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Memorial Details
+                </h3>
                 <button
                   onClick={() => setSelectedMemorial(null)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="text-center">
                 {selectedMemorial.photoUrl ? (
                   <img
@@ -374,26 +427,31 @@ const MemorialCalendarView: React.FC<MemorialCalendarViewProps> = ({
                     <UserIcon className="h-10 w-10 text-gray-500" />
                   </div>
                 )}
-                
+
                 <h4 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedMemorial.memberName}
                 </h4>
-                
+
                 <div className="space-y-2 text-sm text-gray-600">
                   <p>
-                    <span className="font-medium">Date of Passing:</span>{' '}
-                    {format(new Date(selectedMemorial.dateOfDeath), 'MMMM d, yyyy')}
+                    <span className="font-medium">Date of Passing:</span>{" "}
+                    {format(
+                      new Date(selectedMemorial.dateOfDeath),
+                      "MMMM d, yyyy",
+                    )}
                   </p>
                   <p>
-                    <span className="font-medium">Years Since:</span>{' '}
+                    <span className="font-medium">Years Since:</span>{" "}
                     {selectedMemorial.yearsAgo} years
                   </p>
                 </div>
-                
-                <div className={`
+
+                <div
+                  className={`
                   inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border mt-4
                   ${getMemorialColor(selectedMemorial.yearsAgo)}
-                `}>
+                `}
+                >
                   <HeartIcon className="h-4 w-4 mr-1" />
                   Memorial Anniversary
                 </div>

@@ -1,16 +1,28 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Search, 
-  Filter, 
-  Eye, 
-  Download, 
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  Search,
+  Filter,
+  Eye,
+  Download,
   Star,
   Church,
   Award,
@@ -24,8 +36,8 @@ import {
   ArrowRight,
   Zap,
   Crown,
-  Shield
-} from 'lucide-react';
+  Shield,
+} from "lucide-react";
 
 interface StandardTemplateSelectorProps {
   onTemplateSelect?: (templateId: string) => void;
@@ -54,8 +66,10 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
   sacramentTypes,
   loading,
 }) => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(
+    new Set(),
+  );
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter templates based on search and filters
@@ -64,21 +78,30 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
 
     // Apply search filter
     if (searchTerm && searchTerm.length >= 2) {
-      filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.denomination.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (template) =>
+          template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          template.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          template.denomination
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       );
     }
 
     // Apply denomination filter
-    if (selectedDenomination && selectedDenomination !== 'ALL') {
-      filtered = filtered.filter(template => template.denomination === selectedDenomination);
+    if (selectedDenomination && selectedDenomination !== "ALL") {
+      filtered = filtered.filter(
+        (template) => template.denomination === selectedDenomination,
+      );
     }
 
     // Apply sacrament type filter
-    if (selectedSacramentType && selectedSacramentType !== 'ALL') {
-      filtered = filtered.filter(template => template.sacramentType === selectedSacramentType);
+    if (selectedSacramentType && selectedSacramentType !== "ALL") {
+      filtered = filtered.filter(
+        (template) => template.sacramentType === selectedSacramentType,
+      );
     }
 
     // Sort by default templates first, then by name
@@ -91,12 +114,14 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
 
   // Get denomination display name
   const getDenominationDisplayName = (denomination: string) => {
-    return denomination.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return denomination
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   // Get sacrament type display name
   const getSacramentTypeDisplayName = (type: string) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   // Handle template selection
@@ -110,7 +135,7 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
   const handleTemplatePreview = (template: any) => {
     // Open preview in new window/modal
     if (template.previewUrl) {
-      window.open(template.previewUrl, '_blank');
+      window.open(template.previewUrl, "_blank");
     }
   };
 
@@ -132,7 +157,8 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
         <div>
           <h3 className="text-lg font-semibold">Certificate Templates</h3>
           <p className="text-sm text-muted-foreground">
-            Choose from {templates.length} professional templates across {denominations.length} denominations
+            Choose from {templates.length} professional templates across{" "}
+            {denominations.length} denominations
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -153,7 +179,10 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
             className="pl-10"
           />
         </div>
-        <Select value={selectedDenomination} onValueChange={onDenominationChange}>
+        <Select
+          value={selectedDenomination}
+          onValueChange={onDenominationChange}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Denominations" />
           </SelectTrigger>
@@ -166,7 +195,10 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
             ))}
           </SelectContent>
         </Select>
-        <Select value={selectedSacramentType} onValueChange={onSacramentTypeChange}>
+        <Select
+          value={selectedSacramentType}
+          onValueChange={onSacramentTypeChange}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Sacraments" />
           </SelectTrigger>
@@ -189,12 +221,12 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
           <p className="text-muted-foreground mb-4">
             Try adjusting your search criteria or filters
           </p>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => {
-              onSearchChange('');
-              onDenominationChange('');
-              onSacramentTypeChange('');
+              onSearchChange("");
+              onDenominationChange("");
+              onSacramentTypeChange("");
             }}
           >
             Clear Filters
@@ -203,7 +235,10 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredTemplates.map((template) => (
-            <Card key={template.id} className="group hover:shadow-lg transition-shadow cursor-pointer">
+            <Card
+              key={template.id}
+              className="group hover:shadow-lg transition-shadow cursor-pointer"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -233,13 +268,15 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
                 {/* Template Preview */}
                 <div className="aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg mb-4 flex items-center justify-center">
                   {template.previewUrl ? (
-                    <img 
-                      src={template.previewUrl} 
+                    <img
+                      src={template.previewUrl}
                       alt={template.name}
                       className="w-full h-full object-cover rounded-lg"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.nextElementSibling?.classList.remove(
+                          "hidden",
+                        );
                       }}
                     />
                   ) : null}
@@ -250,37 +287,46 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
                 </div>
 
                 {/* Template Features */}
-                {template.liturgicalElements && template.liturgicalElements.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Features:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {template.liturgicalElements.slice(0, 3).map((element: any, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {element.type?.replace('_', ' ') || 'Feature'}
-                        </Badge>
-                      ))}
-                      {template.liturgicalElements.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{template.liturgicalElements.length - 3} more
-                        </Badge>
-                      )}
+                {template.liturgicalElements &&
+                  template.liturgicalElements.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Features:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {template.liturgicalElements
+                          .slice(0, 3)
+                          .map((element: any, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {element.type?.replace("_", " ") || "Feature"}
+                            </Badge>
+                          ))}
+                        {template.liturgicalElements.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{template.liturgicalElements.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => handleTemplatePreview(template)}
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Preview
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1"
                     onClick={() => handleTemplateSelect(template)}
                   >
@@ -298,22 +344,30 @@ const StandardTemplateSelector: React.FC<StandardTemplateSelectorProps> = ({
       <div className="border-t pt-6">
         <div className="grid gap-4 md:grid-cols-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{templates.length}</div>
+            <div className="text-2xl font-bold text-primary">
+              {templates.length}
+            </div>
             <div className="text-sm text-muted-foreground">Total Templates</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{denominations.length}</div>
+            <div className="text-2xl font-bold text-primary">
+              {denominations.length}
+            </div>
             <div className="text-sm text-muted-foreground">Denominations</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{sacramentTypes.length}</div>
+            <div className="text-2xl font-bold text-primary">
+              {sacramentTypes.length}
+            </div>
             <div className="text-sm text-muted-foreground">Sacrament Types</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">
-              {templates.filter(t => t.isDefault).length}
+              {templates.filter((t) => t.isDefault).length}
             </div>
-            <div className="text-sm text-muted-foreground">Default Templates</div>
+            <div className="text-sm text-muted-foreground">
+              Default Templates
+            </div>
           </div>
         </div>
       </div>

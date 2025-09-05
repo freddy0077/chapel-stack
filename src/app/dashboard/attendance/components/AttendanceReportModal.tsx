@@ -52,14 +52,16 @@ export default function AttendanceReportModal({
 
   const handleGenerateReport = () => {
     setIsGenerating(true);
-    
+
     // Simulate report generation
     setTimeout(() => {
       setIsGenerating(false);
       onClose();
-      
+
       // In a real app, this would trigger a download or open a new window
-      alert("Report generated successfully! In a real app, this would download the report.");
+      alert(
+        "Report generated successfully! In a real app, this would download the report.",
+      );
     }, 2000);
   };
 
@@ -102,7 +104,10 @@ export default function AttendanceReportModal({
                 </div>
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-base font-semibold leading-6 text-gray-900"
+                    >
                       Generate Attendance Report
                     </Dialog.Title>
                     <div className="mt-4 space-y-6">
@@ -189,7 +194,10 @@ export default function AttendanceReportModal({
                               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                               value={dateRange.start}
                               onChange={(e) =>
-                                setDateRange({ ...dateRange, start: e.target.value })
+                                setDateRange({
+                                  ...dateRange,
+                                  start: e.target.value,
+                                })
                               }
                             />
                           </div>
@@ -204,7 +212,10 @@ export default function AttendanceReportModal({
                               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                               value={dateRange.end}
                               onChange={(e) =>
-                                setDateRange({ ...dateRange, end: e.target.value })
+                                setDateRange({
+                                  ...dateRange,
+                                  end: e.target.value,
+                                })
                               }
                             />
                           </div>
@@ -224,7 +235,9 @@ export default function AttendanceReportModal({
                               type="checkbox"
                               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               checked={includeOptions.demographics}
-                              onChange={() => handleOptionChange("demographics")}
+                              onChange={() =>
+                                handleOptionChange("demographics")
+                              }
                             />
                             <label
                               htmlFor="demographics"
@@ -337,7 +350,10 @@ export default function AttendanceReportModal({
                       </>
                     ) : (
                       <>
-                        <ArrowDownTrayIcon className="-ml-0.5 mr-1.5 h-4 w-4" aria-hidden="true" />
+                        <ArrowDownTrayIcon
+                          className="-ml-0.5 mr-1.5 h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Generate Report
                       </>
                     )}

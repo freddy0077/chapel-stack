@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Death Register Queries
 export const GET_DEATH_REGISTERS = gql`
@@ -180,7 +180,11 @@ export const GET_DEATH_REGISTER_STATS = gql`
 
 export const GET_MEMORIAL_CALENDAR = gql`
   query GetMemorialCalendar($year: Int!, $organisationId: ID, $branchId: ID) {
-    memorialCalendar(year: $year, organisationId: $organisationId, branchId: $branchId) {
+    memorialCalendar(
+      year: $year
+      organisationId: $organisationId
+      branchId: $branchId
+    ) {
       memberId
       memberName
       dateOfDeath

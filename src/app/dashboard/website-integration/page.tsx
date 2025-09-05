@@ -1,30 +1,34 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Tab } from '@headlessui/react';
-import { 
-  GlobeAltIcon, 
-  CodeBracketIcon, 
-  CalendarIcon, 
-  DocumentTextIcon, 
+import { useState } from "react";
+import { Tab } from "@headlessui/react";
+import {
+  GlobeAltIcon,
+  CodeBracketIcon,
+  CalendarIcon,
+  DocumentTextIcon,
   UserGroupIcon,
-  PhotoIcon 
-} from '@heroicons/react/24/outline';
-import PageHeader from '../components/PageHeader';
-import GeneralIntegration from './components/GeneralIntegration';
-import APISettings from './components/APISettings';
-import EventsIntegration from './components/EventsIntegration';
-import SermonIntegration from './components/SermonIntegration';
-import MemberPortalIntegration from './components/MemberPortalIntegration';
-import MediaIntegration from './components/MediaIntegration';
+  PhotoIcon,
+} from "@heroicons/react/24/outline";
+import PageHeader from "../components/PageHeader";
+import GeneralIntegration from "./components/GeneralIntegration";
+import APISettings from "./components/APISettings";
+import EventsIntegration from "./components/EventsIntegration";
+import SermonIntegration from "./components/SermonIntegration";
+import MemberPortalIntegration from "./components/MemberPortalIntegration";
+import MediaIntegration from "./components/MediaIntegration";
 
 const tabs = [
-  { name: 'General', icon: GlobeAltIcon, component: GeneralIntegration },
-  { name: 'API Access', icon: CodeBracketIcon, component: APISettings },
-  { name: 'Events', icon: CalendarIcon, component: EventsIntegration },
-  { name: 'Sermons', icon: DocumentTextIcon, component: SermonIntegration },
-  { name: 'Member Portal', icon: UserGroupIcon, component: MemberPortalIntegration },
-  { name: 'Media', icon: PhotoIcon, component: MediaIntegration },
+  { name: "General", icon: GlobeAltIcon, component: GeneralIntegration },
+  { name: "API Access", icon: CodeBracketIcon, component: APISettings },
+  { name: "Events", icon: CalendarIcon, component: EventsIntegration },
+  { name: "Sermons", icon: DocumentTextIcon, component: SermonIntegration },
+  {
+    name: "Member Portal",
+    icon: UserGroupIcon,
+    component: MemberPortalIntegration,
+  },
+  { name: "Media", icon: PhotoIcon, component: MediaIntegration },
 ];
 
 export default function WebsiteIntegrationPage() {
@@ -36,8 +40,11 @@ export default function WebsiteIntegrationPage() {
         title="Website Integration"
         description="Configure how your church management system integrates with your public website"
         breadcrumbs={[
-          { name: 'Dashboard', href: '/dashboard' },
-          { name: 'Website Integration', href: '/dashboard/website-integration' },
+          { name: "Dashboard", href: "/dashboard" },
+          {
+            name: "Website Integration",
+            href: "/dashboard/website-integration",
+          },
         ]}
       />
 
@@ -53,12 +60,15 @@ export default function WebsiteIntegrationPage() {
                 className={({ selected }) =>
                   `flex items-center border-b-2 px-3 py-2 text-sm font-medium focus:outline-none ${
                     selected
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }`
                 }
               >
-                <tab.icon className="mr-2 h-5 w-5 flex-shrink-0" aria-hidden="true" />
+                <tab.icon
+                  className="mr-2 h-5 w-5 flex-shrink-0"
+                  aria-hidden="true"
+                />
                 {tab.name}
               </Tab>
             ))}
@@ -67,7 +77,10 @@ export default function WebsiteIntegrationPage() {
             {tabs.map((tab, idx) => {
               const TabComponent = tab.component;
               return (
-                <Tab.Panel key={tab.name} className={idx === selectedTabIndex ? 'block' : 'hidden'}>
+                <Tab.Panel
+                  key={tab.name}
+                  className={idx === selectedTabIndex ? "block" : "hidden"}
+                >
                   <TabComponent />
                 </Tab.Panel>
               );

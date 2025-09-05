@@ -1,17 +1,36 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
+import React, { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Plus,
   Search,
   Filter,
@@ -25,50 +44,54 @@ import {
   User,
   Calendar,
   Settings,
-  FileText
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { 
-  GET_CARE_REQUESTS, 
-  CREATE_CARE_REQUEST, 
-  UPDATE_CARE_REQUEST, 
+  FileText,
+} from "lucide-react";
+import { format } from "date-fns";
+import {
+  GET_CARE_REQUESTS,
+  CREATE_CARE_REQUEST,
+  UPDATE_CARE_REQUEST,
   DELETE_CARE_REQUEST,
-  CareRequest 
-} from '@/graphql/pastoral-care';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import Loading from '@/components/ui/Loading';
-import EmptyState from '@/components/ui/empty-state';
-import { useToast } from '@/hooks/use-toast';
+  CareRequest,
+} from "@/graphql/pastoral-care";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import Loading from "@/components/ui/Loading";
+import EmptyState from "@/components/ui/empty-state";
+import { useToast } from "@/hooks/use-toast";
 
 interface CareRequestsManagementProps {
   className?: string;
 }
 
-export function CareRequestsManagement({ className }: CareRequestsManagementProps) {
+export function CareRequestsManagement({
+  className,
+}: CareRequestsManagementProps) {
   const { organisationId, branchId } = useOrganisationBranch();
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<CareRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<CareRequest | null>(
+    null,
+  );
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
 
   // Form state
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    requestType: 'COUNSELING',
-    priority: 'MEDIUM',
-    status: 'SUBMITTED',
-    notes: '',
-    requestDate: new Date().toISOString().split('T')[0],
-    requesterId: '',
-    assignedPastorId: '',
-    expectedCompletionDate: '',
-    completionDate: ''
+    title: "",
+    description: "",
+    requestType: "COUNSELING",
+    priority: "MEDIUM",
+    status: "SUBMITTED",
+    notes: "",
+    requestDate: new Date().toISOString().split("T")[0],
+    requesterId: "",
+    assignedPastorId: "",
+    expectedCompletionDate: "",
+    completionDate: "",
   });
 
   const { data, loading, error, refetch } = useQuery(GET_CARE_REQUESTS, {
@@ -76,53 +99,59 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
       filter: {
         organisationId,
         branchId,
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(priorityFilter !== 'all' && { priority: priorityFilter }),
-        ...(searchTerm && { title: searchTerm })
+        ...(statusFilter !== "all" && { status: statusFilter }),
+        ...(priorityFilter !== "all" && { priority: priorityFilter }),
+        ...(searchTerm && { title: searchTerm }),
       },
       skip: currentPage * pageSize,
-      take: pageSize
+      take: pageSize,
     },
     skip: !organisationId,
   });
 
-  const [createRequest, { loading: createLoading }] = useMutation(CREATE_CARE_REQUEST, {
-    onCompleted: () => {
-      toast({
-        title: "Success",
-        description: "Care request created successfully",
-      });
-      setIsCreateModalOpen(false);
-      resetForm();
-      refetch();
+  const [createRequest, { loading: createLoading }] = useMutation(
+    CREATE_CARE_REQUEST,
+    {
+      onCompleted: () => {
+        toast({
+          title: "Success",
+          description: "Care request created successfully",
+        });
+        setIsCreateModalOpen(false);
+        resetForm();
+        refetch();
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  );
 
-  const [updateRequest, { loading: updateLoading }] = useMutation(UPDATE_CARE_REQUEST, {
-    onCompleted: () => {
-      toast({
-        title: "Success",
-        description: "Care request updated successfully",
-      });
-      setIsEditModalOpen(false);
-      resetForm();
-      refetch();
+  const [updateRequest, { loading: updateLoading }] = useMutation(
+    UPDATE_CARE_REQUEST,
+    {
+      onCompleted: () => {
+        toast({
+          title: "Success",
+          description: "Care request updated successfully",
+        });
+        setIsEditModalOpen(false);
+        resetForm();
+        refetch();
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  );
 
   const [deleteRequest] = useMutation(DELETE_CARE_REQUEST, {
     onCompleted: () => {
@@ -143,17 +172,17 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      description: '',
-      requestType: 'COUNSELING',
-      priority: 'MEDIUM',
-      status: 'SUBMITTED',
-      notes: '',
-      requestDate: new Date().toISOString().split('T')[0],
-      requesterId: '',
-      assignedPastorId: '',
-      expectedCompletionDate: '',
-      completionDate: ''
+      title: "",
+      description: "",
+      requestType: "COUNSELING",
+      priority: "MEDIUM",
+      status: "SUBMITTED",
+      notes: "",
+      requestDate: new Date().toISOString().split("T")[0],
+      requesterId: "",
+      assignedPastorId: "",
+      expectedCompletionDate: "",
+      completionDate: "",
     });
     setSelectedRequest(null);
   };
@@ -167,17 +196,17 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
             organisationId,
             branchId,
             requestDate: new Date(formData.requestDate).toISOString(),
-          }
-        }
+          },
+        },
       });
     } catch (error) {
-      console.error('Error creating request:', error);
+      console.error("Error creating request:", error);
     }
   };
 
   const handleUpdateRequest = async () => {
     if (!selectedRequest) return;
-    
+
     try {
       await updateRequest({
         variables: {
@@ -185,20 +214,20 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
             id: selectedRequest.id,
             ...formData,
             requestDate: new Date(formData.requestDate).toISOString(),
-          }
-        }
+          },
+        },
       });
     } catch (error) {
-      console.error('Error updating request:', error);
+      console.error("Error updating request:", error);
     }
   };
 
   const handleDeleteRequest = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this care request?')) {
+    if (window.confirm("Are you sure you want to delete this care request?")) {
       try {
         await deleteRequest({ variables: { id } });
       } catch (error) {
-        console.error('Error deleting request:', error);
+        console.error("Error deleting request:", error);
       }
     }
   };
@@ -207,29 +236,29 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
     setSelectedRequest(request);
     setFormData({
       title: request.title,
-      description: request.description || '',
+      description: request.description || "",
       requestType: request.requestType,
       priority: request.priority,
       status: request.status,
-      notes: request.notes || '',
-      requestDate: format(new Date(request.requestDate), 'yyyy-MM-dd'),
+      notes: request.notes || "",
+      requestDate: format(new Date(request.requestDate), "yyyy-MM-dd"),
       requesterId: request.requesterId,
-      assignedPastorId: request.assignedPastorId || '',
-      expectedCompletionDate: request.expectedCompletionDate || '',
-      completionDate: request.completionDate || ''
+      assignedPastorId: request.assignedPastorId || "",
+      expectedCompletionDate: request.expectedCompletionDate || "",
+      completionDate: request.completionDate || "",
     });
     setIsEditModalOpen(true);
   };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'URGENT':
+      case "URGENT":
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'HIGH':
+      case "HIGH":
         return <AlertTriangle className="h-4 w-4 text-orange-500" />;
-      case 'MEDIUM':
+      case "MEDIUM":
         return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'LOW':
+      case "LOW":
         return <Clock className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -238,28 +267,28 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'HIGH':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'LOW':
-        return 'bg-green-100 text-green-800 border-green-200';
+      case "URGENT":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "HIGH":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "MEDIUM":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "LOW":
+        return "bg-green-100 text-green-800 border-green-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case "COMPLETED":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'IN_PROGRESS':
+      case "IN_PROGRESS":
         return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'SUBMITTED':
+      case "SUBMITTED":
         return <User className="h-4 w-4 text-purple-500" />;
-      case 'CANCELLED':
+      case "CANCELLED":
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -268,16 +297,16 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'IN_PROGRESS':
-        return 'bg-blue-100 text-blue-800';
-      case 'SUBMITTED':
-        return 'bg-purple-100 text-purple-800';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+      case "COMPLETED":
+        return "bg-green-100 text-green-800";
+      case "IN_PROGRESS":
+        return "bg-blue-100 text-blue-800";
+      case "SUBMITTED":
+        return "bg-purple-100 text-purple-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -294,7 +323,9 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Care Requests</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Error Loading Care Requests
+          </h3>
           <p className="text-gray-600">{error.message}</p>
         </div>
       </div>
@@ -310,7 +341,9 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Care Requests</h2>
-          <p className="text-gray-600 mt-1">Manage and track care requests from members</p>
+          <p className="text-gray-600 mt-1">
+            Manage and track care requests from members
+          </p>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
@@ -328,8 +361,12 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                   <Heart className="w-8 h-8 text-rose-600" />
                 </div>
                 <DialogHeader className="text-center">
-                  <DialogTitle className="text-2xl font-bold text-white mb-2">Create Care Request</DialogTitle>
-                  <p className="text-pink-100">Submit a new care request for member support</p>
+                  <DialogTitle className="text-2xl font-bold text-white mb-2">
+                    Create Care Request
+                  </DialogTitle>
+                  <p className="text-pink-100">
+                    Submit a new care request for member support
+                  </p>
                 </DialogHeader>
               </div>
             </div>
@@ -339,26 +376,45 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
                 <div className="flex items-center mb-3">
                   <User className="w-5 h-5 text-blue-600 mr-2" />
-                  <Label className="text-sm font-semibold text-blue-900">Request Information</Label>
+                  <Label className="text-sm font-semibold text-blue-900">
+                    Request Information
+                  </Label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="title" className="text-sm text-gray-700 mb-1 block">Request Title</Label>
+                    <Label
+                      htmlFor="title"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Request Title
+                    </Label>
                     <Input
                       id="title"
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
                       placeholder="Request title"
                       className="bg-white border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="requestDate" className="text-sm text-gray-700 mb-1 block">Request Date</Label>
+                    <Label
+                      htmlFor="requestDate"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Request Date
+                    </Label>
                     <Input
                       id="requestDate"
                       type="date"
                       value={formData.requestDate}
-                      onChange={(e) => setFormData({ ...formData, requestDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          requestDate: e.target.value,
+                        })
+                      }
                       className="bg-white border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                     />
                   </div>
@@ -369,29 +425,61 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
                 <div className="flex items-center mb-3">
                   <Settings className="w-5 h-5 text-purple-600 mr-2" />
-                  <Label className="text-sm font-semibold text-purple-900">Request Configuration</Label>
+                  <Label className="text-sm font-semibold text-purple-900">
+                    Request Configuration
+                  </Label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="requestType" className="text-sm text-gray-700 mb-1 block">Request Type</Label>
-                    <Select value={formData.requestType} onValueChange={(value) => setFormData({ ...formData, requestType: value })}>
+                    <Label
+                      htmlFor="requestType"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Request Type
+                    </Label>
+                    <Select
+                      value={formData.requestType}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, requestType: value })
+                      }
+                    >
                       <SelectTrigger className="bg-white border-purple-200 focus:border-purple-400 focus:ring-purple-400">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="COUNSELING">💬 Counseling</SelectItem>
+                        <SelectItem value="COUNSELING">
+                          💬 Counseling
+                        </SelectItem>
                         <SelectItem value="PRAYER">🙏 Prayer</SelectItem>
-                        <SelectItem value="HOSPITAL_VISIT">🏥 Hospital Visit</SelectItem>
-                        <SelectItem value="HOME_VISIT">🏠 Home Visit</SelectItem>
-                        <SelectItem value="FINANCIAL_ASSISTANCE">💰 Financial Assistance</SelectItem>
-                        <SelectItem value="SPIRITUAL_GUIDANCE">✨ Spiritual Guidance</SelectItem>
+                        <SelectItem value="HOSPITAL_VISIT">
+                          🏥 Hospital Visit
+                        </SelectItem>
+                        <SelectItem value="HOME_VISIT">
+                          🏠 Home Visit
+                        </SelectItem>
+                        <SelectItem value="FINANCIAL_ASSISTANCE">
+                          💰 Financial Assistance
+                        </SelectItem>
+                        <SelectItem value="SPIRITUAL_GUIDANCE">
+                          ✨ Spiritual Guidance
+                        </SelectItem>
                         <SelectItem value="OTHER">📋 Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="priority" className="text-sm text-gray-700 mb-1 block">Priority</Label>
-                    <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                    <Label
+                      htmlFor="priority"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Priority
+                    </Label>
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, priority: value })
+                      }
+                    >
                       <SelectTrigger className="bg-white border-purple-200 focus:border-purple-400 focus:ring-purple-400">
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
@@ -404,14 +492,26 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="status" className="text-sm text-gray-700 mb-1 block">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                    <Label
+                      htmlFor="status"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Status
+                    </Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, status: value })
+                      }
+                    >
                       <SelectTrigger className="bg-white border-purple-200 focus:border-purple-400 focus:ring-purple-400">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="SUBMITTED">📝 Submitted</SelectItem>
-                        <SelectItem value="IN_PROGRESS">⏳ In Progress</SelectItem>
+                        <SelectItem value="IN_PROGRESS">
+                          ⏳ In Progress
+                        </SelectItem>
                         <SelectItem value="COMPLETED">✅ Completed</SelectItem>
                         <SelectItem value="CANCELLED">❌ Cancelled</SelectItem>
                       </SelectContent>
@@ -424,26 +524,45 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
                 <div className="flex items-center mb-3">
                   <FileText className="w-5 h-5 text-green-600 mr-2" />
-                  <Label className="text-sm font-semibold text-green-900">Request Details</Label>
+                  <Label className="text-sm font-semibold text-green-900">
+                    Request Details
+                  </Label>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="description" className="text-sm text-gray-700 mb-1 block">Description</Label>
+                    <Label
+                      htmlFor="description"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Description
+                    </Label>
                     <Textarea
                       id="description"
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       placeholder="Detailed description of the care request..."
                       rows={4}
                       className="bg-white border-green-200 focus:border-green-400 focus:ring-green-400 resize-none"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="notes" className="text-sm text-gray-700 mb-1 block">Additional Notes</Label>
+                    <Label
+                      htmlFor="notes"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Additional Notes
+                    </Label>
                     <Textarea
                       id="notes"
                       value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notes: e.target.value })
+                      }
                       placeholder="Any additional notes or context..."
                       rows={3}
                       className="bg-white border-green-200 focus:border-green-400 focus:ring-green-400 resize-none"
@@ -456,26 +575,48 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-xl border border-orange-100">
                 <div className="flex items-center mb-3">
                   <Calendar className="w-5 h-5 text-orange-600 mr-2" />
-                  <Label className="text-sm font-semibold text-orange-900">Completion Information</Label>
+                  <Label className="text-sm font-semibold text-orange-900">
+                    Completion Information
+                  </Label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="expectedCompletionDate" className="text-sm text-gray-700 mb-1 block">Expected Completion Date</Label>
+                    <Label
+                      htmlFor="expectedCompletionDate"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Expected Completion Date
+                    </Label>
                     <Input
                       id="expectedCompletionDate"
                       type="date"
                       value={formData.expectedCompletionDate}
-                      onChange={(e) => setFormData({ ...formData, expectedCompletionDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expectedCompletionDate: e.target.value,
+                        })
+                      }
                       className="bg-white border-orange-200 focus:border-orange-400 focus:ring-orange-400"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="completionDate" className="text-sm text-gray-700 mb-1 block">Actual Completion Date</Label>
+                    <Label
+                      htmlFor="completionDate"
+                      className="text-sm text-gray-700 mb-1 block"
+                    >
+                      Actual Completion Date
+                    </Label>
                     <Input
                       id="completionDate"
                       type="date"
                       value={formData.completionDate}
-                      onChange={(e) => setFormData({ ...formData, completionDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          completionDate: e.target.value,
+                        })
+                      }
                       className="bg-white border-orange-200 focus:border-orange-400 focus:ring-orange-400"
                     />
                   </div>
@@ -484,14 +625,14 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsCreateModalOpen(false)}
                   className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors"
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleCreateRequest}
                   className="px-6 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
@@ -574,7 +715,7 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {request.requestType.replace('_', ' ')}
+                        {request.requestType.replace("_", " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -589,15 +730,15 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(request.status)}
                         <Badge className={getStatusColor(request.status)}>
-                          {request.status.replace('_', ' ')}
+                          {request.status.replace("_", " ")}
                         </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(request.requestDate), 'MMM dd, yyyy')}
+                      {format(new Date(request.requestDate), "MMM dd, yyyy")}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(request.createdAt), 'MMM dd, yyyy')}
+                      {format(new Date(request.createdAt), "MMM dd, yyyy")}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -653,7 +794,9 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                 <Input
                   id="edit-title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   placeholder="Request title"
                 />
               </div>
@@ -663,32 +806,50 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
                   id="edit-requestDate"
                   type="date"
                   value={formData.requestDate}
-                  onChange={(e) => setFormData({ ...formData, requestDate: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, requestDate: e.target.value })
+                  }
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="edit-requestType">Request Type</Label>
-                <Select value={formData.requestType} onValueChange={(value) => setFormData({ ...formData, requestType: value })}>
+                <Select
+                  value={formData.requestType}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, requestType: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="COUNSELING">Counseling</SelectItem>
                     <SelectItem value="PRAYER">Prayer</SelectItem>
-                    <SelectItem value="HOSPITAL_VISIT">Hospital Visit</SelectItem>
+                    <SelectItem value="HOSPITAL_VISIT">
+                      Hospital Visit
+                    </SelectItem>
                     <SelectItem value="HOME_VISIT">Home Visit</SelectItem>
-                    <SelectItem value="FINANCIAL_ASSISTANCE">Financial Assistance</SelectItem>
-                    <SelectItem value="SPIRITUAL_GUIDANCE">Spiritual Guidance</SelectItem>
+                    <SelectItem value="FINANCIAL_ASSISTANCE">
+                      Financial Assistance
+                    </SelectItem>
+                    <SelectItem value="SPIRITUAL_GUIDANCE">
+                      Spiritual Guidance
+                    </SelectItem>
                     <SelectItem value="OTHER">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label htmlFor="edit-priority">Priority</Label>
-                <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, priority: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -702,7 +863,12 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               </div>
               <div>
                 <Label htmlFor="edit-status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, status: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -721,7 +887,9 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <Textarea
                 id="edit-description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Request description"
                 rows={3}
               />
@@ -732,18 +900,23 @@ export function CareRequestsManagement({ className }: CareRequestsManagementProp
               <Textarea
                 id="edit-notes"
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 placeholder="Additional notes"
                 rows={3}
               />
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleUpdateRequest} disabled={updateLoading}>
-                {updateLoading ? 'Updating...' : 'Update Request'}
+                {updateLoading ? "Updating..." : "Update Request"}
               </Button>
             </div>
           </div>

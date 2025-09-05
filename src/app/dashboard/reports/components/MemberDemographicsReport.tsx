@@ -1,13 +1,26 @@
-import React from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_MEMBER_DEMOGRAPHICS_REPORT } from '@/graphql/queries/reports';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { LineChart, Line } from 'recharts';
+import React from "react";
+import { useQuery } from "@apollo/client";
+import { GET_MEMBER_DEMOGRAPHICS_REPORT } from "@/graphql/queries/reports";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { LineChart, Line } from "recharts";
 
 interface MemberDemographicsReportProps {
   branchId?: string;
@@ -52,21 +65,28 @@ interface MemberDemographicsData {
   membershipStatus: MembershipStatus[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#82ca9d",
+];
 
-export const MemberDemographicsReport: React.FC<MemberDemographicsReportProps> = ({
-  branchId,
-  organisationId,
-  dateRange,
-}) => {
+export const MemberDemographicsReport: React.FC<
+  MemberDemographicsReportProps
+> = ({ branchId, organisationId, dateRange }) => {
   const { loading, error, data } = useQuery(GET_MEMBER_DEMOGRAPHICS_REPORT, {
     variables: {
-      branchId: branchId === 'all' ? null : branchId,
-      organisationId: organisationId === 'all' ? null : organisationId,
-      dateRange: dateRange ? {
-        startDate: dateRange.startDate?.toISOString(),
-        endDate: dateRange.endDate?.toISOString(),
-      } : null,
+      branchId: branchId === "all" ? null : branchId,
+      organisationId: organisationId === "all" ? null : organisationId,
+      dateRange: dateRange
+        ? {
+            startDate: dateRange.startDate?.toISOString(),
+            endDate: dateRange.endDate?.toISOString(),
+          }
+        : null,
     },
     skip: !dateRange?.startDate || !dateRange?.endDate,
   });
@@ -136,7 +156,9 @@ export const MemberDemographicsReport: React.FC<MemberDemographicsReportProps> =
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Members
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{reportData.totalMembers}</p>
@@ -144,23 +166,35 @@ export const MemberDemographicsReport: React.FC<MemberDemographicsReportProps> =
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Members</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Members
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{reportData.activeMembers}</p>
               <p className="text-sm text-muted-foreground">
-                {((reportData.activeMembers / reportData.totalMembers) * 100).toFixed(1)}% of total
+                {(
+                  (reportData.activeMembers / reportData.totalMembers) *
+                  100
+                ).toFixed(1)}
+                % of total
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Inactive Members</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Inactive Members
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{reportData.inactiveMembers}</p>
               <p className="text-sm text-muted-foreground">
-                {((reportData.inactiveMembers / reportData.totalMembers) * 100).toFixed(1)}% of total
+                {(
+                  (reportData.inactiveMembers / reportData.totalMembers) *
+                  100
+                ).toFixed(1)}
+                % of total
               </p>
             </CardContent>
           </Card>
@@ -181,13 +215,18 @@ export const MemberDemographicsReport: React.FC<MemberDemographicsReportProps> =
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ gender, percentage }) => `${gender}: ${(percentage * 100).toFixed(0)}%`}
+                      label={({ gender, percentage }) =>
+                        `${gender}: ${(percentage * 100).toFixed(0)}%`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="count"
                     >
                       {reportData.genderDistribution.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => value} />
@@ -272,13 +311,18 @@ export const MemberDemographicsReport: React.FC<MemberDemographicsReportProps> =
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ status, percentage }) => `${status}: ${(percentage * 100).toFixed(0)}%`}
+                    label={({ status, percentage }) =>
+                      `${status}: ${(percentage * 100).toFixed(0)}%`
+                    }
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="count"
                   >
                     {reportData.membershipStatus.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => value} />

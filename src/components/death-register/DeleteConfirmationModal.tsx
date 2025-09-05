@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { 
-  ExclamationTriangleIcon, 
+import React from "react";
+import {
+  ExclamationTriangleIcon,
   XMarkIcon,
-  TrashIcon 
-} from '@heroicons/react/24/outline';
-import { DeathRegister } from '../../types/deathRegister';
+  TrashIcon,
+} from "@heroicons/react/24/outline";
+import { DeathRegister } from "../../types/deathRegister";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -16,18 +16,14 @@ interface DeleteConfirmationModalProps {
   loading?: boolean;
 }
 
-export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
-  isOpen,
-  record,
-  onConfirm,
-  onCancel,
-  loading = false,
-}) => {
+export const DeleteConfirmationModal: React.FC<
+  DeleteConfirmationModalProps
+> = ({ isOpen, record, onConfirm, onCancel, loading = false }) => {
   if (!isOpen || !record) return null;
 
-  const memberName = record.member 
+  const memberName = record.member
     ? `${record.member.firstName} ${record.member.lastName}`
-    : 'Unknown Member';
+    : "Unknown Member";
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -75,14 +71,18 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
                 ) : (
                   <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
                     <span className="text-gray-600 font-medium text-lg">
-                      {memberName.split(' ').map(n => n[0]).join('')}
+                      {memberName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </span>
                   </div>
                 )}
                 <div>
                   <p className="font-semibold text-gray-900">{memberName}</p>
                   <p className="text-sm text-gray-600">
-                    Date of Death: {new Date(record.dateOfDeath).toLocaleDateString()}
+                    Date of Death:{" "}
+                    {new Date(record.dateOfDeath).toLocaleDateString()}
                   </p>
                   {record.placeOfDeath && (
                     <p className="text-sm text-gray-600">
@@ -100,7 +100,9 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
               <div className="text-sm text-yellow-800">
                 <p className="font-medium mb-1">Warning:</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>This will permanently delete all death record information</li>
+                  <li>
+                    This will permanently delete all death record information
+                  </li>
                   <li>Associated documents and files will also be removed</li>
                   <li>Family notification history will be lost</li>
                   <li>This action cannot be reversed</li>

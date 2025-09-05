@@ -1,14 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_CONTRIBUTIONS_REPORT } from '@/graphql/queries/reports';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { formatCurrency } from '@/lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_CONTRIBUTIONS_REPORT } from "@/graphql/queries/reports";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { formatCurrency } from "@/lib/utils";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface ContributionsReportProps {
   branchId?: string;
@@ -45,7 +65,15 @@ interface ContributionsData {
   trendData: TrendDataItem[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+];
 
 export const ContributionsReport: React.FC<ContributionsReportProps> = ({
   branchId,
@@ -55,13 +83,15 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
 }) => {
   const { loading, error, data } = useQuery(GET_CONTRIBUTIONS_REPORT, {
     variables: {
-      branchId: branchId === 'all' ? null : branchId,
-      organisationId: organisationId === 'all' ? null : organisationId,
-      fundId: fundId === 'all' ? null : fundId,
-      dateRange: dateRange ? {
-        startDate: dateRange.startDate?.toISOString(),
-        endDate: dateRange.endDate?.toISOString(),
-      } : null,
+      branchId: branchId === "all" ? null : branchId,
+      organisationId: organisationId === "all" ? null : organisationId,
+      fundId: fundId === "all" ? null : fundId,
+      dateRange: dateRange
+        ? {
+            startDate: dateRange.startDate?.toISOString(),
+            endDate: dateRange.endDate?.toISOString(),
+          }
+        : null,
     },
     skip: !dateRange?.startDate || !dateRange?.endDate,
   });
@@ -71,32 +101,36 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
   useEffect(() => {
     if (data?.generateReport?.data) {
       try {
-        const parsedData = typeof data.generateReport.data === 'string' 
-          ? JSON.parse(data.generateReport.data) 
-          : data.generateReport.data;
-        
+        const parsedData =
+          typeof data.generateReport.data === "string"
+            ? JSON.parse(data.generateReport.data)
+            : data.generateReport.data;
+
         // If we have contributions data in the expected format
-        if (parsedData && typeof parsedData === 'object') {
+        if (parsedData && typeof parsedData === "object") {
           // Create a properly formatted report data object
           const formattedData: ContributionsData = {
             totalAmount: parsedData.totalAmount || parsedData.total || 0,
-            contributionCount: parsedData.contributionCount || parsedData.count || 0,
-            fundBreakdown: Array.isArray(parsedData.fundBreakdown) 
-              ? parsedData.fundBreakdown 
+            contributionCount:
+              parsedData.contributionCount || parsedData.count || 0,
+            fundBreakdown: Array.isArray(parsedData.fundBreakdown)
+              ? parsedData.fundBreakdown
               : [],
-            paymentMethodBreakdown: Array.isArray(parsedData.paymentMethodBreakdown) 
-              ? parsedData.paymentMethodBreakdown 
+            paymentMethodBreakdown: Array.isArray(
+              parsedData.paymentMethodBreakdown,
+            )
+              ? parsedData.paymentMethodBreakdown
               : [],
-            trendData: Array.isArray(parsedData.trendData) 
-              ? parsedData.trendData 
-              : []
+            trendData: Array.isArray(parsedData.trendData)
+              ? parsedData.trendData
+              : [],
           };
           setReportData(formattedData);
         } else {
-          console.error('Invalid report data format:', parsedData);
+          console.error("Invalid report data format:", parsedData);
         }
       } catch (e) {
-        console.error('Error parsing report data:', e);
+        console.error("Error parsing report data:", e);
       }
     }
   }, [data]);
@@ -104,7 +138,10 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
     } catch (e) {
       return dateString;
     }
@@ -140,7 +177,7 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
             <ExclamationTriangleIcon className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
-              {error.message || 'Failed to load contributions report'}
+              {error.message || "Failed to load contributions report"}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -159,7 +196,8 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
           <Alert>
             <AlertTitle>No Data</AlertTitle>
             <AlertDescription>
-              No contributions data available for the selected filters. Try adjusting your date range or other filters.
+              No contributions data available for the selected filters. Try
+              adjusting your date range or other filters.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -174,24 +212,34 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
         <CardDescription>
           {dateRange?.startDate && dateRange?.endDate
             ? `${dateRange.startDate.toLocaleDateString()} - ${dateRange.endDate.toLocaleDateString()}`
-            : 'All time'}
+            : "All time"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 bg-muted rounded-lg">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Contributions</h3>
-            <p className="text-2xl font-bold">{formatCurrency(reportData.totalAmount)}</p>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              Total Contributions
+            </h3>
+            <p className="text-2xl font-bold">
+              {formatCurrency(reportData.totalAmount)}
+            </p>
           </div>
           <div className="p-4 bg-muted rounded-lg">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Number of Contributions</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              Number of Contributions
+            </h3>
             <p className="text-2xl font-bold">{reportData.contributionCount}</p>
           </div>
           <div className="p-4 bg-muted rounded-lg">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Average Contribution</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+              Average Contribution
+            </h3>
             <p className="text-2xl font-bold">
               {reportData.contributionCount > 0
-                ? formatCurrency(reportData.totalAmount / reportData.contributionCount)
+                ? formatCurrency(
+                    reportData.totalAmount / reportData.contributionCount,
+                  )
                 : formatCurrency(0)}
             </p>
           </div>
@@ -213,13 +261,20 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
                       fill="#8884d8"
                       dataKey="amount"
                       nameKey="name"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
                     >
                       {reportData.fundBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                    <Tooltip
+                      formatter={(value) => formatCurrency(value as number)}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -227,34 +282,46 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
             </div>
           )}
 
-          {reportData.paymentMethodBreakdown && reportData.paymentMethodBreakdown.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium mb-4">Payment Method Breakdown</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={reportData.paymentMethodBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="amount"
-                      nameKey="method"
-                      label={({ method, percent }) => `${method}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {reportData.paymentMethodBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+          {reportData.paymentMethodBreakdown &&
+            reportData.paymentMethodBreakdown.length > 0 && (
+              <div>
+                <h3 className="text-lg font-medium mb-4">
+                  Payment Method Breakdown
+                </h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={reportData.paymentMethodBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="amount"
+                        nameKey="method"
+                        label={({ method, percent }) =>
+                          `${method}: ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {reportData.paymentMethodBreakdown.map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ),
+                        )}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => formatCurrency(value as number)}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {reportData.trendData && reportData.trendData.length > 0 && (
@@ -272,12 +339,11 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={formatDate}
-                  />
+                  <XAxis dataKey="date" tickFormatter={formatDate} />
                   <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Tooltip
+                    formatter={(value) => formatCurrency(value as number)}
+                  />
                   <Legend />
                   <Line
                     type="monotone"
@@ -308,8 +374,12 @@ export const ContributionsReport: React.FC<ContributionsReportProps> = ({
                   {reportData.fundBreakdown.map((fund, index) => (
                     <TableRow key={index}>
                       <TableCell>{fund.name}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(fund.amount)}</TableCell>
-                      <TableCell className="text-right">{(fund.percentage * 100).toFixed(1)}%</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(fund.amount)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {(fund.percentage * 100).toFixed(1)}%
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

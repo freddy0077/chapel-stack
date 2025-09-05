@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import { 
+import React, { useState, useCallback } from "react";
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   CalendarDaysIcon,
@@ -12,39 +12,50 @@ import {
   BellIcon,
   DocumentTextIcon,
   HeartIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
-import { useDeathRegisterManagement, useMemorialCalendar } from '../../../hooks/useDeathRegister';
-import { useOrganisationBranch } from '../../../hooks/useOrganisationBranch';
-import { DeathRegister, CreateDeathRegisterInput, UpdateDeathRegisterInput } from '../../../types/deathRegister';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
+import {
+  useDeathRegisterManagement,
+  useMemorialCalendar,
+} from "../../../hooks/useDeathRegister";
+import { useOrganisationBranch } from "../../../hooks/useOrganisationBranch";
+import {
+  DeathRegister,
+  CreateDeathRegisterInput,
+  UpdateDeathRegisterInput,
+} from "../../../types/deathRegister";
+import { toast } from "react-hot-toast";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 // Import modern components
-import { ModernDeathRegisterHeader } from '../../../components/death-register/ModernDeathRegisterHeader';
-import { ModernDeathRegisterStats } from '../../../components/death-register/ModernDeathRegisterStats';
-import { ModernDeathRegisterForm } from '../../../components/death-register/ModernDeathRegisterFormWizard';
-import MemorialCalendarView from '../../../components/death-register/MemorialCalendarView';
-import DeathRegisterAnalyticsView from '../../../components/death-register/DeathRegisterAnalyticsView';
-import { DeleteConfirmationModal } from '../../../components/death-register/DeleteConfirmationModal';
+import { ModernDeathRegisterHeader } from "../../../components/death-register/ModernDeathRegisterHeader";
+import { ModernDeathRegisterStats } from "../../../components/death-register/ModernDeathRegisterStats";
+import { ModernDeathRegisterForm } from "../../../components/death-register/ModernDeathRegisterFormWizard";
+import MemorialCalendarView from "../../../components/death-register/MemorialCalendarView";
+import DeathRegisterAnalyticsView from "../../../components/death-register/DeathRegisterAnalyticsView";
+import { DeleteConfirmationModal } from "../../../components/death-register/DeleteConfirmationModal";
 
 export default function DeathRegisterPage() {
   const { user } = useAuth();
   const { organisationId, branchId } = useOrganisationBranch();
-  
-  const [selectedTab, setSelectedTab] = useState('records');
+
+  const [selectedTab, setSelectedTab] = useState("records");
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
-  const [selectedRecord, setSelectedRecord] = useState<DeathRegister | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterYear, setFilterYear] = useState('');
-  const [sortBy, setSortBy] = useState('dateOfDeath');
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [selectedRecord, setSelectedRecord] = useState<DeathRegister | null>(
+    null,
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+  const [sortBy, setSortBy] = useState("dateOfDeath");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  
+
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState<DeathRegister | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<DeathRegister | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   const {
@@ -59,25 +70,22 @@ export default function DeathRegisterPage() {
     statsLoading,
     refetch,
   } = useDeathRegisterManagement({
-    organisationId: organisationId || '',
-    branchId: branchId || '',
+    organisationId: organisationId || "",
+    branchId: branchId || "",
   });
 
-  const { memorialDates: upcomingMemorials, loading: memorialLoading } = useMemorialCalendar(
-    selectedYear,
-    organisationId || '',
-    branchId || '',
-  );
+  const { memorialDates: upcomingMemorials, loading: memorialLoading } =
+    useMemorialCalendar(selectedYear, organisationId || "", branchId || "");
 
   // Event handlers
   const handleAddRecord = useCallback(() => {
-    setModalMode('create');
+    setModalMode("create");
     setSelectedRecord(null);
     setShowModal(true);
   }, []);
 
   const handleEditRecord = useCallback((record: DeathRegister) => {
-    setModalMode('edit');
+    setModalMode("edit");
     setSelectedRecord(record);
     setShowModal(true);
   }, []);
@@ -87,44 +95,53 @@ export default function DeathRegisterPage() {
     setSelectedRecord(null);
   }, []);
 
-  const handleSubmitRecord = useCallback(async (data: CreateDeathRegisterInput | UpdateDeathRegisterInput) => {
-    try {
-      if (modalMode === 'create') {
-        await createDeathRegister(data as CreateDeathRegisterInput);
-        toast.success('Death record created successfully', {
-          icon: '✅',
+  const handleSubmitRecord = useCallback(
+    async (data: CreateDeathRegisterInput | UpdateDeathRegisterInput) => {
+      try {
+        if (modalMode === "create") {
+          await createDeathRegister(data as CreateDeathRegisterInput);
+          toast.success("Death record created successfully", {
+            icon: "✅",
+            style: {
+              borderRadius: "10px",
+              background: "#10B981",
+              color: "#fff",
+            },
+          });
+        } else if (modalMode === "edit" && selectedRecord) {
+          await updateDeathRegister(data as UpdateDeathRegisterInput);
+          toast.success("Death record updated successfully", {
+            icon: "✅",
+            style: {
+              borderRadius: "10px",
+              background: "#10B981",
+              color: "#fff",
+            },
+          });
+        }
+        setShowModal(false);
+        setSelectedRecord(null);
+        refetch();
+      } catch (err) {
+        const action = modalMode === "create" ? "create" : "update";
+        toast.error(`Failed to ${action} death record`, {
+          icon: "❌",
           style: {
-            borderRadius: '10px',
-            background: '#10B981',
-            color: '#fff',
-          },
-        });
-      } else if (modalMode === 'edit' && selectedRecord) {
-        await updateDeathRegister(data as UpdateDeathRegisterInput);
-        toast.success('Death record updated successfully', {
-          icon: '✅',
-          style: {
-            borderRadius: '10px',
-            background: '#10B981',
-            color: '#fff',
+            borderRadius: "10px",
+            background: "#EF4444",
+            color: "#fff",
           },
         });
       }
-      setShowModal(false);
-      setSelectedRecord(null);
-      refetch();
-    } catch (err) {
-      const action = modalMode === 'create' ? 'create' : 'update';
-      toast.error(`Failed to ${action} death record`, {
-        icon: '❌',
-        style: {
-          borderRadius: '10px',
-          background: '#EF4444',
-          color: '#fff',
-        },
-      });
-    }
-  }, [modalMode, selectedRecord, createDeathRegister, updateDeathRegister, refetch]);
+    },
+    [
+      modalMode,
+      selectedRecord,
+      createDeathRegister,
+      updateDeathRegister,
+      refetch,
+    ],
+  );
 
   // Handle delete record with modal
   const handleDeleteRecord = useCallback((record: DeathRegister) => {
@@ -134,46 +151,66 @@ export default function DeathRegisterPage() {
 
   // Filter and sort records
   const filteredRecords = deathRegisters
-    .filter(record => {
-      const matchesSearch = !searchTerm || 
-        `${record.member?.firstName} ${record.member?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    .filter((record) => {
+      const matchesSearch =
+        !searchTerm ||
+        `${record.member?.firstName} ${record.member?.lastName}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         record.placeOfDeath?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.causeOfDeath?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesYear = !filterYear || 
+
+      const matchesYear =
+        !filterYear ||
         new Date(record.dateOfDeath).getFullYear().toString() === filterYear;
-      
+
       return matchesSearch && matchesYear;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'dateOfDeath':
-          return new Date(b.dateOfDeath).getTime() - new Date(a.dateOfDeath).getTime();
-        case 'name':
+        case "dateOfDeath":
+          return (
+            new Date(b.dateOfDeath).getTime() -
+            new Date(a.dateOfDeath).getTime()
+          );
+        case "name":
           const nameA = `${a.member?.firstName} ${a.member?.lastName}`;
           const nameB = `${b.member?.firstName} ${b.member?.lastName}`;
           return nameA.localeCompare(nameB);
-        case 'funeralDate':
+        case "funeralDate":
           if (!a.funeralDate && !b.funeralDate) return 0;
           if (!a.funeralDate) return 1;
           if (!b.funeralDate) return -1;
-          return new Date(b.funeralDate).getTime() - new Date(a.funeralDate).getTime();
+          return (
+            new Date(b.funeralDate).getTime() -
+            new Date(a.funeralDate).getTime()
+          );
         default:
           return 0;
       }
     });
 
   const tabs = [
-    { id: 'records', name: 'Death Records', icon: DocumentTextIcon, count: deathRegisters.length },
-    { id: 'memorial', name: 'Memorial Calendar', icon: CalendarDaysIcon, count: upcomingMemorials?.length || 0 },
-    { id: 'analytics', name: 'Analytics', icon: ChartBarIcon, count: null },
+    {
+      id: "records",
+      name: "Death Records",
+      icon: DocumentTextIcon,
+      count: deathRegisters.length,
+    },
+    {
+      id: "memorial",
+      name: "Memorial Calendar",
+      icon: CalendarDaysIcon,
+      count: upcomingMemorials?.length || 0,
+    },
+    { id: "analytics", name: "Analytics", icon: ChartBarIcon, count: null },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <ModernDeathRegisterHeader 
+        <ModernDeathRegisterHeader
           onAddRecord={handleAddRecord}
           totalRecords={stats?.totalDeaths || 0}
           thisYearRecords={stats?.thisYear || 0}
@@ -181,10 +218,7 @@ export default function DeathRegisterPage() {
 
         {/* Stats */}
         <div className="mt-8">
-          <ModernDeathRegisterStats 
-            stats={stats}
-            loading={statsLoading}
-          />
+          <ModernDeathRegisterStats stats={stats} loading={statsLoading} />
         </div>
 
         {/* Navigation Tabs */}
@@ -198,18 +232,20 @@ export default function DeathRegisterPage() {
                     onClick={() => setSelectedTab(tab.id)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       selectedTab === tab.id
-                        ? 'bg-white text-purple-700 shadow-md'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? "bg-white text-purple-700 shadow-md"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <tab.icon className="h-4 w-4" />
                     <span>{tab.name}</span>
                     {tab.count !== null && (
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        selectedTab === tab.id
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-gray-200 text-gray-600'
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs ${
+                          selectedTab === tab.id
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
                         {tab.count}
                       </span>
                     )}
@@ -217,14 +253,14 @@ export default function DeathRegisterPage() {
                 ))}
               </div>
 
-              {selectedTab === 'records' && (
+              {selectedTab === "records" && (
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => setShowFilters(!showFilters)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       showFilters
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
                     <FunnelIcon className="h-4 w-4" />
@@ -235,7 +271,7 @@ export default function DeathRegisterPage() {
             </div>
 
             {/* Filters */}
-            {selectedTab === 'records' && showFilters && (
+            {selectedTab === "records" && showFilters && (
               <div className="mb-6 p-4 bg-gray-50 rounded-xl">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -264,10 +300,18 @@ export default function DeathRegisterPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
                       <option value="">All Years</option>
-                      {Array.from(new Set(deathRegisters.map(r => new Date(r.dateOfDeath).getFullYear())))
+                      {Array.from(
+                        new Set(
+                          deathRegisters.map((r) =>
+                            new Date(r.dateOfDeath).getFullYear(),
+                          ),
+                        ),
+                      )
                         .sort((a, b) => b - a)
-                        .map(year => (
-                          <option key={year} value={year.toString()}>{year}</option>
+                        .map((year) => (
+                          <option key={year} value={year.toString()}>
+                            {year}
+                          </option>
                         ))}
                     </select>
                   </div>
@@ -291,8 +335,8 @@ export default function DeathRegisterPage() {
             )}
 
             {/* Content */}
-            {selectedTab === 'records' && (
-              <DeathRecordsTable 
+            {selectedTab === "records" && (
+              <DeathRecordsTable
                 records={filteredRecords}
                 loading={loading}
                 onEdit={handleEditRecord}
@@ -301,8 +345,8 @@ export default function DeathRegisterPage() {
               />
             )}
 
-            {selectedTab === 'memorial' && (
-              <MemorialCalendarView 
+            {selectedTab === "memorial" && (
+              <MemorialCalendarView
                 upcomingMemorials={upcomingMemorials}
                 loading={memorialLoading}
                 year={selectedYear}
@@ -310,8 +354,8 @@ export default function DeathRegisterPage() {
               />
             )}
 
-            {selectedTab === 'analytics' && (
-              <DeathRegisterAnalyticsView 
+            {selectedTab === "analytics" && (
+              <DeathRegisterAnalyticsView
                 stats={stats}
                 records={deathRegisters}
                 loading={statsLoading}
@@ -329,7 +373,7 @@ export default function DeathRegisterPage() {
           onClose={handleCloseModal}
           onSubmit={handleSubmitRecord}
           loading={loading}
-          organisationId={organisationId || ''}
+          organisationId={organisationId || ""}
           branchId={branchId}
         />
 
@@ -341,25 +385,29 @@ export default function DeathRegisterPage() {
             if (recordToDelete) {
               setIsDeleting(true);
               try {
-                await deleteDeathRegister(recordToDelete.id, organisationId, branchId);
-                toast.success('Death record deleted successfully', {
-                  icon: '✅',
+                await deleteDeathRegister(
+                  recordToDelete.id,
+                  organisationId,
+                  branchId,
+                );
+                toast.success("Death record deleted successfully", {
+                  icon: "✅",
                   style: {
-                    borderRadius: '10px',
-                    background: '#10B981',
-                    color: '#fff',
+                    borderRadius: "10px",
+                    background: "#10B981",
+                    color: "#fff",
                   },
                 });
                 refetch();
                 setShowDeleteModal(false);
                 setRecordToDelete(null);
               } catch (err) {
-                toast.error('Failed to delete death record', {
-                  icon: '❌',
+                toast.error("Failed to delete death record", {
+                  icon: "❌",
                   style: {
-                    borderRadius: '10px',
-                    background: '#EF4444',
-                    color: '#fff',
+                    borderRadius: "10px",
+                    background: "#EF4444",
+                    color: "#fff",
                   },
                 });
               } finally {
@@ -415,11 +463,13 @@ const DeathRecordsTable: React.FC<{
     return (
       <div className="text-center py-12">
         <UserMinusIcon className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No death records found</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          No death records found
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           No records match your current search and filter criteria.
         </p>
-    </div>
+      </div>
     );
   }
 
@@ -440,16 +490,25 @@ const DeathRecordsTable: React.FC<{
                   {record.member?.firstName} {record.member?.lastName}
                 </h3>
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
-                  <span>Passed: {new Date(record.dateOfDeath).toLocaleDateString()}</span>
+                  <span>
+                    Passed: {new Date(record.dateOfDeath).toLocaleDateString()}
+                  </span>
                   {record.funeralDate && (
-                    <span>Funeral: {new Date(record.funeralDate).toLocaleDateString()}</span>
+                    <span>
+                      Funeral:{" "}
+                      {new Date(record.funeralDate).toLocaleDateString()}
+                    </span>
                   )}
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    record.familyNotified 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {record.familyNotified ? 'Family Notified' : 'Pending Notification'}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      record.familyNotified
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {record.familyNotified
+                      ? "Family Notified"
+                      : "Pending Notification"}
                   </span>
                 </div>
               </div>
@@ -463,7 +522,7 @@ const DeathRecordsTable: React.FC<{
               >
                 <PencilIcon className="h-4 w-4" />
               </button>
-              
+
               {!record.familyNotified && (
                 <button
                   onClick={() => onMarkNotified(record.id)}
@@ -473,7 +532,7 @@ const DeathRecordsTable: React.FC<{
                   <BellIcon className="h-4 w-4" />
                 </button>
               )}
-              
+
               <button
                 onClick={() => onDelete(record)}
                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

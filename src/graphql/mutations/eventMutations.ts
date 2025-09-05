@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 /**
  * Mutation to create a new event
@@ -143,8 +143,12 @@ export const ADD_EVENT_NOTES = gql`
  * Mutation to create a new event registration
  */
 export const CREATE_EVENT_REGISTRATION = gql`
-  mutation CreateEventRegistration($createEventRegistrationInput: CreateEventRegistrationInput!) {
-    createEventRegistration(createEventRegistrationInput: $createEventRegistrationInput) {
+  mutation CreateEventRegistration(
+    $createEventRegistrationInput: CreateEventRegistrationInput!
+  ) {
+    createEventRegistration(
+      createEventRegistrationInput: $createEventRegistrationInput
+    ) {
       id
       eventId
       memberId
@@ -173,8 +177,12 @@ export const CREATE_EVENT_REGISTRATION = gql`
  * Mutation to update an event registration
  */
 export const UPDATE_EVENT_REGISTRATION = gql`
-  mutation UpdateEventRegistration($updateEventRegistrationInput: UpdateEventRegistrationInput!) {
-    updateEventRegistration(updateEventRegistrationInput: $updateEventRegistrationInput) {
+  mutation UpdateEventRegistration(
+    $updateEventRegistrationInput: UpdateEventRegistrationInput!
+  ) {
+    updateEventRegistration(
+      updateEventRegistrationInput: $updateEventRegistrationInput
+    ) {
       id
       eventId
       memberId

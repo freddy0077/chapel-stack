@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_UPCOMING_SACRAMENT_ANNIVERSARIES } from '../queries/upcomingSacramentAnniversariesQueries';
+import { useQuery } from "@apollo/client";
+import { GET_UPCOMING_SACRAMENT_ANNIVERSARIES } from "../queries/upcomingSacramentAnniversariesQueries";
 
 export interface UpcomingSacramentAnniversary {
   name: string;
@@ -10,15 +10,17 @@ export interface UpcomingSacramentAnniversary {
   timeUntil: string;
 }
 
-export function useUpcomingSacramentAnniversaries(limit?: number, branchId?: string) {
-  const { data, loading, error, refetch } = useQuery<{ upcomingSacramentAnniversaries: UpcomingSacramentAnniversary[] }>(
-    GET_UPCOMING_SACRAMENT_ANNIVERSARIES,
-    {
-      variables: { limit, branchId },
-      skip: !branchId,
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+export function useUpcomingSacramentAnniversaries(
+  limit?: number,
+  branchId?: string,
+) {
+  const { data, loading, error, refetch } = useQuery<{
+    upcomingSacramentAnniversaries: UpcomingSacramentAnniversary[];
+  }>(GET_UPCOMING_SACRAMENT_ANNIVERSARIES, {
+    variables: { limit, branchId },
+    skip: !branchId,
+    fetchPolicy: "cache-and-network",
+  });
 
   return {
     anniversaries: data?.upcomingSacramentAnniversaries ?? [],

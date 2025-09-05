@@ -1,6 +1,6 @@
-import { useQuery } from '@apollo/client';
-import { ADMIN_USERS_QUERY } from '../queries/adminQueries';
-import { useOrganizationBranchFilter } from './useOrganizationBranchFilter';
+import { useQuery } from "@apollo/client";
+import { ADMIN_USERS_QUERY } from "../queries/adminQueries";
+import { useOrganizationBranchFilter } from "./useOrganizationBranchFilter";
 
 export interface AdminUser {
   id: string;
@@ -35,10 +35,10 @@ export function useAdminUsers(variables: AdminUsersVars) {
     },
   };
 
-  const { data, loading, error, refetch } = useQuery<AdminUsersData, AdminUsersVars>(
-    ADMIN_USERS_QUERY,
-    { variables: mergedVariables }
-  );
+  const { data, loading, error, refetch } = useQuery<
+    AdminUsersData,
+    AdminUsersVars
+  >(ADMIN_USERS_QUERY, { variables: mergedVariables });
   return {
     adminUsers: data?.adminUsers.items || [],
     totalCount: data?.adminUsers.totalCount || 0,

@@ -7,7 +7,7 @@ import {
   SACRAMENT_REQUIRED_FIELDS,
   SACRAMENT_FIELD_CONFIGS,
   type SacramentType,
-} from '@/constants/sacramentTypes';
+} from "@/constants/sacramentTypes";
 
 /**
  * Get the display name for a sacrament type
@@ -20,27 +20,29 @@ export function getSacramentDisplayName(sacramentType: SacramentType): string {
  * Get the color scheme for a sacrament type
  */
 export function getSacramentColor(sacramentType: SacramentType): string {
-  return SACRAMENT_COLORS[sacramentType] || 'blue';
+  return SACRAMENT_COLORS[sacramentType] || "blue";
 }
 
 /**
  * Get the gradient color scheme for a sacrament type
  */
 export function getSacramentGradient(sacramentType: SacramentType): string {
-  return SACRAMENT_GRADIENTS[sacramentType] || 'from-blue-50 to-indigo-50';
+  return SACRAMENT_GRADIENTS[sacramentType] || "from-blue-50 to-indigo-50";
 }
 
 /**
  * Get the description for a sacrament type
  */
 export function getSacramentDescription(sacramentType: SacramentType): string {
-  return SACRAMENT_DESCRIPTIONS[sacramentType] || '';
+  return SACRAMENT_DESCRIPTIONS[sacramentType] || "";
 }
 
 /**
  * Get the required fields for a sacrament type
  */
-export function getSacramentRequiredFields(sacramentType: SacramentType): string[] {
+export function getSacramentRequiredFields(
+  sacramentType: SacramentType,
+): string[] {
   return SACRAMENT_REQUIRED_FIELDS[sacramentType] || [];
 }
 
@@ -48,13 +50,15 @@ export function getSacramentRequiredFields(sacramentType: SacramentType): string
  * Get the field configuration for a sacrament type
  */
 export function getSacramentFieldConfig(sacramentType: SacramentType) {
-  return SACRAMENT_FIELD_CONFIGS[sacramentType] || {
-    showGodparents: false,
-    showSponsor: false,
-    showMarriageFields: false,
-    showWitnesses: false,
-    showOrdinationFields: false,
-  };
+  return (
+    SACRAMENT_FIELD_CONFIGS[sacramentType] || {
+      showGodparents: false,
+      showSponsor: false,
+      showMarriageFields: false,
+      showWitnesses: false,
+      showOrdinationFields: false,
+    }
+  );
 }
 
 /**
@@ -63,18 +67,24 @@ export function getSacramentFieldConfig(sacramentType: SacramentType) {
 export function formatSacramentType(sacramentType: string): string {
   // Handle the mapping from backend enum to frontend display
   const typeMapping: Record<string, string> = {
-    'BAPTISM': 'Baptism',
-    'EUCHARIST_FIRST_COMMUNION': 'First Communion',
-    'CONFIRMATION': 'Confirmation',
-    'MATRIMONY': 'Marriage',
-    'RECONCILIATION_FIRST': 'First Reconciliation',
-    'ANOINTING_OF_THE_SICK': 'Anointing of the Sick',
-    'HOLY_ORDERS_DIACONATE': 'Diaconate Ordination',
-    'HOLY_ORDERS_PRIESTHOOD': 'Priesthood Ordination',
-    'RCIA_INITIATION': 'RCIA Initiation',
+    BAPTISM: "Baptism",
+    EUCHARIST_FIRST_COMMUNION: "First Communion",
+    CONFIRMATION: "Confirmation",
+    MATRIMONY: "Marriage",
+    RECONCILIATION_FIRST: "First Reconciliation",
+    ANOINTING_OF_THE_SICK: "Anointing of the Sick",
+    HOLY_ORDERS_DIACONATE: "Diaconate Ordination",
+    HOLY_ORDERS_PRIESTHOOD: "Priesthood Ordination",
+    RCIA_INITIATION: "RCIA Initiation",
   };
 
-  return typeMapping[sacramentType] || sacramentType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  return (
+    typeMapping[sacramentType] ||
+    sacramentType
+      .replace("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+  );
 }
 
 /**
@@ -96,16 +106,16 @@ export function isValidSacramentType(type: string): type is SacramentType {
  */
 export function getSacramentTypeFromKey(key: string): SacramentType | null {
   const keyMapping: Record<string, SacramentType> = {
-    'baptism': SACRAMENT_TYPES.BAPTISM,
-    'communion': SACRAMENT_TYPES.COMMUNION,
-    'confirmation': SACRAMENT_TYPES.CONFIRMATION,
-    'marriage': SACRAMENT_TYPES.MARRIAGE,
-    'matrimony': SACRAMENT_TYPES.MARRIAGE,
-    'reconciliation': SACRAMENT_TYPES.RECONCILIATION,
-    'anointing': SACRAMENT_TYPES.ANOINTING,
-    'diaconate': SACRAMENT_TYPES.DIACONATE,
-    'priesthood': SACRAMENT_TYPES.PRIESTHOOD,
-    'rcia': SACRAMENT_TYPES.RCIA,
+    baptism: SACRAMENT_TYPES.BAPTISM,
+    communion: SACRAMENT_TYPES.COMMUNION,
+    confirmation: SACRAMENT_TYPES.CONFIRMATION,
+    marriage: SACRAMENT_TYPES.MARRIAGE,
+    matrimony: SACRAMENT_TYPES.MARRIAGE,
+    reconciliation: SACRAMENT_TYPES.RECONCILIATION,
+    anointing: SACRAMENT_TYPES.ANOINTING,
+    diaconate: SACRAMENT_TYPES.DIACONATE,
+    priesthood: SACRAMENT_TYPES.PRIESTHOOD,
+    rcia: SACRAMENT_TYPES.RCIA,
   };
 
   return keyMapping[key.toLowerCase()] || null;
@@ -114,15 +124,18 @@ export function getSacramentTypeFromKey(key: string): SacramentType | null {
 /**
  * Generate CSS classes for sacrament type styling
  */
-export function getSacramentTypeClasses(sacramentType: SacramentType, variant: 'button' | 'badge' | 'card' = 'button'): string {
+export function getSacramentTypeClasses(
+  sacramentType: SacramentType,
+  variant: "button" | "badge" | "card" = "button",
+): string {
   const color = getSacramentColor(sacramentType);
-  
+
   switch (variant) {
-    case 'button':
+    case "button":
       return `bg-${color}-600 hover:bg-${color}-700 text-white border-${color}-600 hover:border-${color}-700`;
-    case 'badge':
+    case "badge":
       return `bg-${color}-100 text-${color}-800 border-${color}-200`;
-    case 'card':
+    case "card":
       return `bg-gradient-to-br ${getSacramentGradient(sacramentType)} border-${color}-200`;
     default:
       return `text-${color}-600`;
@@ -132,7 +145,10 @@ export function getSacramentTypeClasses(sacramentType: SacramentType, variant: '
 /**
  * Validate sacrament record data based on type
  */
-export function validateSacramentRecord(sacramentType: SacramentType, data: Record<string, any>): {
+export function validateSacramentRecord(
+  sacramentType: SacramentType,
+  data: Record<string, any>,
+): {
   isValid: boolean;
   missingFields: string[];
   errors: string[];
@@ -142,8 +158,11 @@ export function validateSacramentRecord(sacramentType: SacramentType, data: Reco
   const errors: string[] = [];
 
   // Check required fields
-  requiredFields.forEach(field => {
-    if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === '')) {
+  requiredFields.forEach((field) => {
+    if (
+      !data[field] ||
+      (typeof data[field] === "string" && data[field].trim() === "")
+    ) {
       missingFields.push(field);
     }
   });
@@ -151,10 +170,10 @@ export function validateSacramentRecord(sacramentType: SacramentType, data: Reco
   // Special validation for marriage records
   if (sacramentType === SACRAMENT_TYPES.MARRIAGE) {
     if (!data.groomName && !data.groomMemberId) {
-      errors.push('Groom information is required for marriage records');
+      errors.push("Groom information is required for marriage records");
     }
     if (!data.brideName && !data.brideMemberId) {
-      errors.push('Bride information is required for marriage records');
+      errors.push("Bride information is required for marriage records");
     }
   }
 
@@ -163,7 +182,7 @@ export function validateSacramentRecord(sacramentType: SacramentType, data: Reco
     const sacramentDate = new Date(data.dateOfSacrament);
     const today = new Date();
     if (sacramentDate > today) {
-      errors.push('Sacrament date cannot be in the future');
+      errors.push("Sacrament date cannot be in the future");
     }
   }
 
@@ -181,13 +200,13 @@ export function generateSacramentSummary(record: any): string {
   const sacramentName = formatSacramentType(record.sacramentType);
   const date = new Date(record.dateOfSacrament).toLocaleDateString();
   const memberName = record.memberName || `Member ID: ${record.memberId}`;
-  
+
   let summary = `${sacramentName} for ${memberName} on ${date}`;
-  
+
   if (record.locationOfSacrament) {
     summary += ` at ${record.locationOfSacrament}`;
   }
-  
+
   if (record.officiantName) {
     summary += `, officiated by ${record.officiantName}`;
   }

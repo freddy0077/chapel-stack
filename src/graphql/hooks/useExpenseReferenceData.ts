@@ -49,8 +49,12 @@ const mockDepartments = [
 export function useExpenseReferenceData(branchId?: string) {
   // Simulate loading
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<typeof mockExpenseCategories>([]);
-  const [paymentMethods, setPaymentMethods] = useState<typeof mockPaymentMethods>([]);
+  const [categories, setCategories] = useState<typeof mockExpenseCategories>(
+    [],
+  );
+  const [paymentMethods, setPaymentMethods] = useState<
+    typeof mockPaymentMethods
+  >([]);
   const [departments, setDepartments] = useState<typeof mockDepartments>([]);
 
   useEffect(() => {

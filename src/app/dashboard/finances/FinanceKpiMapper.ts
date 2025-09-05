@@ -11,13 +11,15 @@ export interface FinanceOverviewKpis {
 /**
  * Maps KPI cards from the finance dashboard API to the props expected by the FinancialOverview component.
  */
-export function mapKpiCardsToOverview(kpiCards: KpiCard[]): FinanceOverviewKpis {
+export function mapKpiCardsToOverview(
+  kpiCards: KpiCard[],
+): FinanceOverviewKpis {
   const result: FinanceOverviewKpis = {
     totalDonations: "-",
     totalExpenses: "-",
     currentBalance: "-",
     budgetProgress: 0,
-    monthlyChange: "-"
+    monthlyChange: "-",
   };
 
   kpiCards.forEach((kpi) => {
@@ -32,7 +34,10 @@ export function mapKpiCardsToOverview(kpiCards: KpiCard[]): FinanceOverviewKpis 
         result.currentBalance = kpi.value;
         break;
       case "budget progress":
-        result.budgetProgress = typeof kpi.value === "number" ? kpi.value : parseFloat(kpi.value.replace("%", ""));
+        result.budgetProgress =
+          typeof kpi.value === "number"
+            ? kpi.value
+            : parseFloat(kpi.value.replace("%", ""));
         break;
       case "monthly change":
         result.monthlyChange = kpi.value;

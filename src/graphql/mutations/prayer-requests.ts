@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_PRAYER_REQUEST = gql`
   mutation CreatePrayerRequest($data: CreatePrayerRequestInput!) {

@@ -1,118 +1,157 @@
 "use client";
 
-import { Fragment, useState, useMemo } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { 
-  XMarkIcon, 
-  MusicalNoteIcon, 
-  ChevronRightIcon, 
+import { Fragment, useState, useMemo } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  XMarkIcon,
+  MusicalNoteIcon,
+  ChevronRightIcon,
   ChevronLeftIcon,
   CheckCircleIcon,
   PlusIcon,
   DocumentTextIcon,
   MusicalNoteIcon as MusicNoteOutline,
-  LinkIcon
-} from '@heroicons/react/24/outline';
-import type { Song } from '../SongLibrary';
+  LinkIcon,
+} from "@heroicons/react/24/outline";
+import type { Song } from "../SongLibrary";
 
 interface AddSongModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddSong: (song: Omit<Song, 'id'>) => void;
+  onAddSong: (song: Omit<Song, "id">) => void;
 }
 
-type FormStep = 'basics' | 'musical' | 'content' | 'review';
+type FormStep = "basics" | "musical" | "content" | "review";
 
-export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModalProps) {
+export default function AddSongModal({
+  isOpen,
+  onClose,
+  onAddSong,
+}: AddSongModalProps) {
   // Constants for dropdown options
-  const keys = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B'];
-  const tempos = ['Slow', 'Medium-Slow', 'Medium', 'Medium-Fast', 'Fast'];
-  const timeSignatures = ['2/4', '3/4', '4/4', '5/4', '6/8', '9/8', '12/8'];
-  
+  const keys = [
+    "C",
+    "C#/Db",
+    "D",
+    "D#/Eb",
+    "E",
+    "F",
+    "F#/Gb",
+    "G",
+    "G#/Ab",
+    "A",
+    "A#/Bb",
+    "B",
+  ];
+  const tempos = ["Slow", "Medium-Slow", "Medium", "Medium-Fast", "Fast"];
+  const timeSignatures = ["2/4", "3/4", "4/4", "5/4", "6/8", "9/8", "12/8"];
+
   // Common themes for quick selection
   const commonThemes = [
-    'Worship', 'Praise', 'Adoration', 'Love', 'Grace', 'Faith', 'Hope', 
-    'Forgiveness', 'Salvation', 'Surrender', 'Thanksgiving', 'Easter', 
-    'Christmas', 'Victory', 'Gospel', 'Communion', 'Prayer', 'Holy Spirit'
+    "Worship",
+    "Praise",
+    "Adoration",
+    "Love",
+    "Grace",
+    "Faith",
+    "Hope",
+    "Forgiveness",
+    "Salvation",
+    "Surrender",
+    "Thanksgiving",
+    "Easter",
+    "Christmas",
+    "Victory",
+    "Gospel",
+    "Communion",
+    "Prayer",
+    "Holy Spirit",
   ];
 
   // Multi-step form state
-  const [currentStep, setCurrentStep] = useState<FormStep>('basics');
-  
+  const [currentStep, setCurrentStep] = useState<FormStep>("basics");
+
   // Form data state with improved theme handling
   const [formData, setFormData] = useState({
-    title: '',
-    author: '',
-    defaultKey: 'G',
-    tempo: 'Medium',
-    timeSignature: '4/4',
-    ccli: '',
-    themes: [] as string[],  // Changed to array from string
-    lyrics: '',
-    chordChart: '',
-    audioUrl: '',
-    videoUrl: '',
-    customTheme: ''  // For adding custom themes
+    title: "",
+    author: "",
+    defaultKey: "G",
+    tempo: "Medium",
+    timeSignature: "4/4",
+    ccli: "",
+    themes: [] as string[], // Changed to array from string
+    lyrics: "",
+    chordChart: "",
+    audioUrl: "",
+    videoUrl: "",
+    customTheme: "", // For adding custom themes
   });
-  
+
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form completion status for each step
-  const stepCompletion = useMemo(() => ({
-    basics: formData.title.trim() !== '' && formData.author.trim() !== '',
-    musical: true, // Musical info has default values
-    content: true, // Content is optional
-    review: true // Just for reviewing
-  }), [formData.title, formData.author]);
+  const stepCompletion = useMemo(
+    () => ({
+      basics: formData.title.trim() !== "" && formData.author.trim() !== "",
+      musical: true, // Musical info has default values
+      content: true, // Content is optional
+      review: true, // Just for reviewing
+    }),
+    [formData.title, formData.author],
+  );
 
   // Navigate between form steps
   const goToNextStep = () => {
-    if (currentStep === 'basics') {
+    if (currentStep === "basics") {
       if (!validateBasicInfo()) return;
-      setCurrentStep('musical');
-    } else if (currentStep === 'musical') {
-      setCurrentStep('content');
-    } else if (currentStep === 'content') {
-      setCurrentStep('review');
+      setCurrentStep("musical");
+    } else if (currentStep === "musical") {
+      setCurrentStep("content");
+    } else if (currentStep === "content") {
+      setCurrentStep("review");
     }
   };
 
   const goToPrevStep = () => {
-    if (currentStep === 'musical') {
-      setCurrentStep('basics');
-    } else if (currentStep === 'content') {
-      setCurrentStep('musical');
-    } else if (currentStep === 'review') {
-      setCurrentStep('content');
+    if (currentStep === "musical") {
+      setCurrentStep("basics");
+    } else if (currentStep === "content") {
+      setCurrentStep("musical");
+    } else if (currentStep === "review") {
+      setCurrentStep("content");
     }
   };
 
   // Handle input field changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error for this field if it exists
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
       });
     }
   };
-  
+
   // Handle theme selection (add/remove from array)
   const handleThemeToggle = (theme: string) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const themes = [...prev.themes];
       const themeIndex = themes.indexOf(theme);
-      
+
       if (themeIndex >= 0) {
         // Remove theme if already selected
         themes.splice(themeIndex, 1);
@@ -120,102 +159,102 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
         // Add theme if not already selected
         themes.push(theme);
       }
-      
+
       return { ...prev, themes };
     });
   };
-  
+
   // Add custom theme from input
   const handleAddCustomTheme = () => {
     if (!formData.customTheme.trim()) return;
-    
-    setFormData(prev => {
+
+    setFormData((prev) => {
       // Only add if not already in the list
       if (!prev.themes.includes(prev.customTheme.trim())) {
         return {
           ...prev,
           themes: [...prev.themes, prev.customTheme.trim()],
-          customTheme: ''
+          customTheme: "",
         };
       }
-      return { ...prev, customTheme: '' };
+      return { ...prev, customTheme: "" };
     });
   };
 
   // Validate just the basic info (first step)
   const validateBasicInfo = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
-    
+
     if (!formData.author.trim()) {
-      newErrors.author = 'Author is required';
+      newErrors.author = "Author is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // Validate the entire form before submission
   const validateForm = () => {
     // Start with basic validation
     if (!validateBasicInfo()) return false;
-    
+
     // Add any additional validations for other steps if needed
     return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // Create the new song object
-    const newSong: Omit<Song, 'id'> = {
+    const newSong: Omit<Song, "id"> = {
       title: formData.title,
       author: formData.author,
       defaultKey: formData.defaultKey,
       tempo: formData.tempo,
       timeSignature: formData.timeSignature,
-      ccli: formData.ccli || '',
+      ccli: formData.ccli || "",
       themes: formData.themes, // Already an array in our updated form
-      lastUsed: new Date().toISOString().split('T')[0],
+      lastUsed: new Date().toISOString().split("T")[0],
       lyrics: formData.lyrics || undefined,
       chordChart: formData.chordChart || undefined,
       audioUrl: formData.audioUrl || undefined,
       videoUrl: formData.videoUrl || undefined,
       usageCount: 0,
-      lastReported: new Date().toISOString().split('T')[0]
+      lastReported: new Date().toISOString().split("T")[0],
     };
-    
+
     // Add a slight delay to show loading state (simulates API call)
     setTimeout(() => {
       onAddSong(newSong);
       setIsSubmitting(false);
       onClose();
-      
+
       // Reset form after submission
       setFormData({
-        title: '',
-        author: '',
-        defaultKey: 'G',
-        tempo: 'Medium',
-        timeSignature: '4/4',
-        ccli: '',
+        title: "",
+        author: "",
+        defaultKey: "G",
+        tempo: "Medium",
+        timeSignature: "4/4",
+        ccli: "",
         themes: [],
-        lyrics: '',
-        chordChart: '',
-        audioUrl: '',
-        videoUrl: '',
-        customTheme: ''
+        lyrics: "",
+        chordChart: "",
+        audioUrl: "",
+        videoUrl: "",
+        customTheme: "",
       });
-      setCurrentStep('basics');
+      setCurrentStep("basics");
     }, 500);
   };
 
@@ -257,45 +296,79 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                     <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 {/* Header with progress steps */}
                 <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-6 sm:px-8">
                   <div className="flex items-center mb-2">
-                    <MusicalNoteIcon className="h-7 w-7 text-white" aria-hidden="true" />
-                    <Dialog.Title as="h3" className="ml-2 text-xl font-bold text-white">
+                    <MusicalNoteIcon
+                      className="h-7 w-7 text-white"
+                      aria-hidden="true"
+                    />
+                    <Dialog.Title
+                      as="h3"
+                      className="ml-2 text-xl font-bold text-white"
+                    >
                       Add New Song
                     </Dialog.Title>
                   </div>
-                  
+
                   {/* Progress steps */}
                   <nav aria-label="Progress" className="mt-3">
                     <ol role="list" className="flex items-center">
-                      {[{ id: 'basics', name: 'Song Info' }, { id: 'musical', name: 'Musical Details' }, { id: 'content', name: 'Content & Media' }, { id: 'review', name: 'Review' }].map((step, stepIdx) => {
+                      {[
+                        { id: "basics", name: "Song Info" },
+                        { id: "musical", name: "Musical Details" },
+                        { id: "content", name: "Content & Media" },
+                        { id: "review", name: "Review" },
+                      ].map((step, stepIdx) => {
                         const isCurrent = currentStep === step.id;
                         const isComplete = stepCompletion[step.id as FormStep];
-                        const previousStepsComplete = stepIdx === 0 || [{ id: 'basics' }, { id: 'musical' }, { id: 'content' }, { id: 'review' }].slice(0, stepIdx).every(s => stepCompletion[s.id as FormStep]);
-                        
+                        const previousStepsComplete =
+                          stepIdx === 0 ||
+                          [
+                            { id: "basics" },
+                            { id: "musical" },
+                            { id: "content" },
+                            { id: "review" },
+                          ]
+                            .slice(0, stepIdx)
+                            .every((s) => stepCompletion[s.id as FormStep]);
+
                         return (
-                          <li key={step.id} className={`relative ${stepIdx !== 0 ? 'ml-6' : ''} flex-1`}>
+                          <li
+                            key={step.id}
+                            className={`relative ${stepIdx !== 0 ? "ml-6" : ""} flex-1`}
+                          >
                             {stepIdx !== 0 && (
-                              <div className="absolute inset-0 -left-7 top-3.5 h-0.5 w-6 bg-white/30" aria-hidden="true" />
+                              <div
+                                className="absolute inset-0 -left-7 top-3.5 h-0.5 w-6 bg-white/30"
+                                aria-hidden="true"
+                              />
                             )}
                             <button
                               type="button"
-                              className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold ${isCurrent ? 'border-white bg-white/20 text-white' : isComplete ? 'border-white bg-white text-indigo-600' : 'border-white/40 bg-transparent text-white/60'} ${!previousStepsComplete ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/10'}`}
+                              className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold ${isCurrent ? "border-white bg-white/20 text-white" : isComplete ? "border-white bg-white text-indigo-600" : "border-white/40 bg-transparent text-white/60"} ${!previousStepsComplete ? "cursor-not-allowed opacity-50" : "hover:bg-white/10"}`}
                               disabled={!previousStepsComplete}
-                              onClick={() => previousStepsComplete && setCurrentStep(step.id as FormStep)}
-                              aria-current={isCurrent ? 'step' : undefined}
+                              onClick={() =>
+                                previousStepsComplete &&
+                                setCurrentStep(step.id as FormStep)
+                              }
+                              aria-current={isCurrent ? "step" : undefined}
                             >
                               {isComplete ? (
-                                <CheckCircleIcon className="h-5 w-5" aria-hidden="true" />
+                                <CheckCircleIcon
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
                               ) : (
                                 <span>{stepIdx + 1}</span>
                               )}
                               <span className="sr-only">{step.name}</span>
                             </button>
                             <div className="mt-1.5 text-center">
-                              <span className={`text-xs font-medium ${isCurrent ? 'text-white' : 'text-white/70'}`}>
+                              <span
+                                className={`text-xs font-medium ${isCurrent ? "text-white" : "text-white/70"}`}
+                              >
                                 {step.name}
                               </span>
                             </div>
@@ -305,19 +378,26 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                     </ol>
                   </nav>
                 </div>
-                
+
                 <form onSubmit={handleSubmit}>
                   {/* Step 1: Basic Song Information */}
-                  {currentStep === 'basics' && (
+                  {currentStep === "basics" && (
                     <div className="p-6 sm:p-8">
                       <div className="mb-6">
-                        <h4 className="text-lg font-medium text-gray-900 mb-1">Basic Song Information</h4>
-                        <p className="text-sm text-gray-500">Enter the essential details about the song.</p>
+                        <h4 className="text-lg font-medium text-gray-900 mb-1">
+                          Basic Song Information
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Enter the essential details about the song.
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-5">
                         <div>
-                          <label htmlFor="title" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="title"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             Song Title*
                           </label>
                           <div className="mt-2">
@@ -327,15 +407,22 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               id="title"
                               value={formData.title}
                               onChange={handleChange}
-                              className={`block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.title ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 focus:ring-indigo-600'} placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6`}
+                              className={`block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.title ? "ring-red-500 focus:ring-red-500" : "ring-gray-300 focus:ring-indigo-600"} placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6`}
                               placeholder="Enter song title"
                             />
-                            {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+                            {errors.title && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.title}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="author" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="author"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             Author/Artist*
                           </label>
                           <div className="mt-2">
@@ -345,15 +432,22 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               id="author"
                               value={formData.author}
                               onChange={handleChange}
-                              className={`block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.author ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 focus:ring-indigo-600'} placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6`}
+                              className={`block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.author ? "ring-red-500 focus:ring-red-500" : "ring-gray-300 focus:ring-indigo-600"} placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6`}
                               placeholder="Enter song author or artist"
                             />
-                            {errors.author && <p className="mt-1 text-sm text-red-600">{errors.author}</p>}
+                            {errors.author && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.author}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="ccli" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="ccli"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             CCLI# (optional)
                           </label>
                           <div className="mt-2">
@@ -366,23 +460,32 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               className="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                               placeholder="CCLI license number"
                             />
-                            <p className="mt-1 text-xs text-gray-500">Copyright licensing information for the song</p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              Copyright licensing information for the song
+                            </p>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
                   {/* Step 2: Musical Details */}
-                  {currentStep === 'musical' && (
+                  {currentStep === "musical" && (
                     <div className="p-6 sm:p-8">
                       <div className="mb-6">
-                        <h4 className="text-lg font-medium text-gray-900 mb-1">Musical Details</h4>
-                        <p className="text-sm text-gray-500">Add musical information to help worship team members.</p>
+                        <h4 className="text-lg font-medium text-gray-900 mb-1">
+                          Musical Details
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Add musical information to help worship team members.
+                        </p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <div>
-                          <label htmlFor="defaultKey" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="defaultKey"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             Default Key
                           </label>
                           <div className="mt-2">
@@ -393,17 +496,20 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               onChange={handleChange}
                               className="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             >
-                              {keys.map(key => (
-                                <option key={key} value={key.split('/')[0]}>
+                              {keys.map((key) => (
+                                <option key={key} value={key.split("/")[0]}>
                                   {key}
                                 </option>
                               ))}
                             </select>
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="tempo" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="tempo"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             Tempo
                           </label>
                           <div className="mt-2">
@@ -414,7 +520,7 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               onChange={handleChange}
                               className="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             >
-                              {tempos.map(tempo => (
+                              {tempos.map((tempo) => (
                                 <option key={tempo} value={tempo}>
                                   {tempo}
                                 </option>
@@ -422,9 +528,12 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             </select>
                           </div>
                         </div>
-                        
+
                         <div>
-                          <label htmlFor="timeSignature" className="block text-sm font-medium leading-6 text-gray-900">
+                          <label
+                            htmlFor="timeSignature"
+                            className="block text-sm font-medium leading-6 text-gray-900"
+                          >
                             Time Signature
                           </label>
                           <div className="mt-2">
@@ -435,7 +544,7 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               onChange={handleChange}
                               className="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             >
-                              {timeSignatures.map(sig => (
+                              {timeSignatures.map((sig) => (
                                 <option key={sig} value={sig}>
                                   {sig}
                                 </option>
@@ -444,27 +553,30 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="mt-8">
                         <label className="block text-sm font-medium leading-6 text-gray-900 mb-3">
                           Themes
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {commonThemes.map(theme => (
+                          {commonThemes.map((theme) => (
                             <button
                               key={theme}
                               type="button"
                               onClick={() => handleThemeToggle(theme)}
-                              className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${formData.themes.includes(theme) ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-800'} hover:bg-indigo-50 transition-colors`}
+                              className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${formData.themes.includes(theme) ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-800"} hover:bg-indigo-50 transition-colors`}
                             >
                               {formData.themes.includes(theme) ? (
-                                <CheckCircleIcon className="h-4 w-4 mr-1" aria-hidden="true" />
+                                <CheckCircleIcon
+                                  className="h-4 w-4 mr-1"
+                                  aria-hidden="true"
+                                />
                               ) : null}
                               {theme}
                             </button>
                           ))}
                         </div>
-                        
+
                         <div className="mt-4 flex">
                           <input
                             type="text"
@@ -483,21 +595,31 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             <PlusIcon className="h-5 w-5" aria-hidden="true" />
                           </button>
                         </div>
-                        
+
                         {formData.themes.length > 0 && (
                           <div className="mt-2">
-                            <p className="text-sm text-gray-500 mb-1">Selected themes:</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              Selected themes:
+                            </p>
                             <div className="flex flex-wrap gap-1">
-                              {formData.themes.map(theme => (
-                                <span key={theme} className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">
+                              {formData.themes.map((theme) => (
+                                <span
+                                  key={theme}
+                                  className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
+                                >
                                   {theme}
                                   <button
                                     type="button"
                                     className="ml-1 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:bg-indigo-500 focus:text-white focus:outline-none"
                                     onClick={() => handleThemeToggle(theme)}
                                   >
-                                    <span className="sr-only">Remove {theme}</span>
-                                    <XMarkIcon className="h-3 w-3" aria-hidden="true" />
+                                    <span className="sr-only">
+                                      Remove {theme}
+                                    </span>
+                                    <XMarkIcon
+                                      className="h-3 w-3"
+                                      aria-hidden="true"
+                                    />
                                   </button>
                                 </span>
                               ))}
@@ -508,18 +630,26 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                     </div>
                   )}
                   {/* Step 3: Content & Media */}
-                  {currentStep === 'content' && (
+                  {currentStep === "content" && (
                     <div className="p-6 sm:p-8">
                       <div className="mb-6">
-                        <h4 className="text-lg font-medium text-gray-900 mb-1">Song Content and Media</h4>
-                        <p className="text-sm text-gray-500">Add lyrics, chord charts, and media links to help the team learn the song.</p>
+                        <h4 className="text-lg font-medium text-gray-900 mb-1">
+                          Song Content and Media
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Add lyrics, chord charts, and media links to help the
+                          team learn the song.
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-6">
                         <div>
                           <div className="flex items-center">
                             <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-2" />
-                            <label htmlFor="lyrics" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label
+                              htmlFor="lyrics"
+                              className="block text-sm font-medium leading-6 text-gray-900"
+                            >
                               Lyrics
                             </label>
                           </div>
@@ -535,11 +665,14 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             />
                           </div>
                         </div>
-                        
+
                         <div>
                           <div className="flex items-center">
                             <MusicNoteOutline className="h-5 w-5 text-gray-400 mr-2" />
-                            <label htmlFor="chordChart" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label
+                              htmlFor="chordChart"
+                              className="block text-sm font-medium leading-6 text-gray-900"
+                            >
                               Chord Chart
                             </label>
                           </div>
@@ -555,15 +688,20 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             />
                           </div>
                           <p className="mt-1 text-xs text-gray-500">
-                            Format: Place chords above lyrics (e.g. &quot;G       D        Em        C&quot;). Using a monospaced font helps with alignment.
+                            Format: Place chords above lyrics (e.g. &quot;G D Em
+                            C&quot;). Using a monospaced font helps with
+                            alignment.
                           </p>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-4 border-t border-gray-200">
                           <div>
                             <div className="flex items-center">
                               <LinkIcon className="h-5 w-5 text-gray-400 mr-2" />
-                              <label htmlFor="audioUrl" className="block text-sm font-medium leading-6 text-gray-900">
+                              <label
+                                htmlFor="audioUrl"
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                              >
                                 Audio URL
                               </label>
                             </div>
@@ -579,11 +717,14 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               />
                             </div>
                           </div>
-                          
+
                           <div>
                             <div className="flex items-center">
                               <LinkIcon className="h-5 w-5 text-gray-400 mr-2" />
-                              <label htmlFor="videoUrl" className="block text-sm font-medium leading-6 text-gray-900">
+                              <label
+                                htmlFor="videoUrl"
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                              >
                                 Video URL
                               </label>
                             </div>
@@ -603,60 +744,98 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Step 4: Review */}
-                  {currentStep === 'review' && (
+                  {currentStep === "review" && (
                     <div className="p-6 sm:p-8">
                       <div className="mb-6">
-                        <h4 className="text-lg font-medium text-gray-900 mb-1">Review Song Details</h4>
-                        <p className="text-sm text-gray-500">Review the song information before adding it to the library.</p>
+                        <h4 className="text-lg font-medium text-gray-900 mb-1">
+                          Review Song Details
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Review the song information before adding it to the
+                          library.
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-6">
                         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <h5 className="font-medium text-gray-900 mb-2">Basic Information</h5>
+                          <h5 className="font-medium text-gray-900 mb-2">
+                            Basic Information
+                          </h5>
                           <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                             <div className="sm:col-span-1">
-                              <dt className="text-sm font-medium text-gray-500">Title</dt>
-                              <dd className="mt-1 text-sm text-gray-900">{formData.title || '(Not provided)'}</dd>
+                              <dt className="text-sm font-medium text-gray-500">
+                                Title
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                {formData.title || "(Not provided)"}
+                              </dd>
                             </div>
                             <div className="sm:col-span-1">
-                              <dt className="text-sm font-medium text-gray-500">Author/Artist</dt>
-                              <dd className="mt-1 text-sm text-gray-900">{formData.author || '(Not provided)'}</dd>
+                              <dt className="text-sm font-medium text-gray-500">
+                                Author/Artist
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                {formData.author || "(Not provided)"}
+                              </dd>
                             </div>
                             {formData.ccli && (
                               <div className="sm:col-span-2">
-                                <dt className="text-sm font-medium text-gray-500">CCLI #</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{formData.ccli}</dd>
+                                <dt className="text-sm font-medium text-gray-500">
+                                  CCLI #
+                                </dt>
+                                <dd className="mt-1 text-sm text-gray-900">
+                                  {formData.ccli}
+                                </dd>
                               </div>
                             )}
                           </dl>
                         </div>
-                        
+
                         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <h5 className="font-medium text-gray-900 mb-2">Musical Details</h5>
+                          <h5 className="font-medium text-gray-900 mb-2">
+                            Musical Details
+                          </h5>
                           <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-3">
                             <div className="sm:col-span-1">
-                              <dt className="text-sm font-medium text-gray-500">Key</dt>
-                              <dd className="mt-1 text-sm text-gray-900">{formData.defaultKey}</dd>
+                              <dt className="text-sm font-medium text-gray-500">
+                                Key
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                {formData.defaultKey}
+                              </dd>
                             </div>
                             <div className="sm:col-span-1">
-                              <dt className="text-sm font-medium text-gray-500">Tempo</dt>
-                              <dd className="mt-1 text-sm text-gray-900">{formData.tempo}</dd>
+                              <dt className="text-sm font-medium text-gray-500">
+                                Tempo
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                {formData.tempo}
+                              </dd>
                             </div>
                             <div className="sm:col-span-1">
-                              <dt className="text-sm font-medium text-gray-500">Time Signature</dt>
-                              <dd className="mt-1 text-sm text-gray-900">{formData.timeSignature}</dd>
+                              <dt className="text-sm font-medium text-gray-500">
+                                Time Signature
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900">
+                                {formData.timeSignature}
+                              </dd>
                             </div>
                           </dl>
-                          
+
                           {formData.themes.length > 0 && (
                             <div className="mt-3">
-                              <dt className="text-sm font-medium text-gray-500 mb-1">Themes</dt>
+                              <dt className="text-sm font-medium text-gray-500 mb-1">
+                                Themes
+                              </dt>
                               <dd className="mt-1">
                                 <div className="flex flex-wrap gap-1">
-                                  {formData.themes.map(theme => (
-                                    <span key={theme} className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">
+                                  {formData.themes.map((theme) => (
+                                    <span
+                                      key={theme}
+                                      className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
+                                    >
                                       {theme}
                                     </span>
                                   ))}
@@ -665,13 +844,17 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             </div>
                           )}
                         </div>
-                        
+
                         {(formData.lyrics || formData.chordChart) && (
                           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h5 className="font-medium text-gray-900 mb-2">Content</h5>
+                            <h5 className="font-medium text-gray-900 mb-2">
+                              Content
+                            </h5>
                             {formData.lyrics && (
                               <div className="mb-4">
-                                <dt className="text-sm font-medium text-gray-500 mb-1">Lyrics</dt>
+                                <dt className="text-sm font-medium text-gray-500 mb-1">
+                                  Lyrics
+                                </dt>
                                 <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto p-2 bg-white rounded border border-gray-200">
                                   {formData.lyrics}
                                 </dd>
@@ -679,7 +862,9 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             )}
                             {formData.chordChart && (
                               <div>
-                                <dt className="text-sm font-medium text-gray-500 mb-1">Chord Chart</dt>
+                                <dt className="text-sm font-medium text-gray-500 mb-1">
+                                  Chord Chart
+                                </dt>
                                 <dd className="mt-1 text-sm text-gray-900 font-mono whitespace-pre max-h-32 overflow-y-auto p-2 bg-white rounded border border-gray-200">
                                   {formData.chordChart}
                                 </dd>
@@ -687,16 +872,24 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                             )}
                           </div>
                         )}
-                        
+
                         {(formData.audioUrl || formData.videoUrl) && (
                           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <h5 className="font-medium text-gray-900 mb-2">Media Links</h5>
+                            <h5 className="font-medium text-gray-900 mb-2">
+                              Media Links
+                            </h5>
                             <dl className="grid grid-cols-1 gap-x-4 gap-y-2">
                               {formData.audioUrl && (
                                 <div className="sm:col-span-1">
-                                  <dt className="text-sm font-medium text-gray-500">Audio URL</dt>
+                                  <dt className="text-sm font-medium text-gray-500">
+                                    Audio URL
+                                  </dt>
                                   <dd className="mt-1 text-sm text-blue-600 truncate">
-                                    <a href={formData.audioUrl} target="_blank" rel="noopener noreferrer">
+                                    <a
+                                      href={formData.audioUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
                                       {formData.audioUrl}
                                     </a>
                                   </dd>
@@ -704,9 +897,15 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                               )}
                               {formData.videoUrl && (
                                 <div className="sm:col-span-1">
-                                  <dt className="text-sm font-medium text-gray-500">Video URL</dt>
+                                  <dt className="text-sm font-medium text-gray-500">
+                                    Video URL
+                                  </dt>
                                   <dd className="mt-1 text-sm text-blue-600 truncate">
-                                    <a href={formData.videoUrl} target="_blank" rel="noopener noreferrer">
+                                    <a
+                                      href={formData.videoUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
                                       {formData.videoUrl}
                                     </a>
                                   </dd>
@@ -718,38 +917,44 @@ export default function AddSongModal({ isOpen, onClose, onAddSong }: AddSongModa
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Form navigation buttons */}
                   <div className="px-6 py-4 sm:px-8 border-t border-gray-200 bg-gray-50 flex justify-between rounded-b-xl">
                     <div>
-                      {currentStep !== 'basics' && (
+                      {currentStep !== "basics" && (
                         <button
                           type="button"
                           onClick={goToPrevStep}
                           className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                         >
-                          <ChevronLeftIcon className="-ml-0.5 mr-1 h-5 w-5" aria-hidden="true" />
+                          <ChevronLeftIcon
+                            className="-ml-0.5 mr-1 h-5 w-5"
+                            aria-hidden="true"
+                          />
                           Back
                         </button>
                       )}
                     </div>
                     <div>
-                      {currentStep !== 'review' ? (
+                      {currentStep !== "review" ? (
                         <button
                           type="button"
                           onClick={goToNextStep}
                           className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
                           Next
-                          <ChevronRightIcon className="ml-1 -mr-0.5 h-5 w-5" aria-hidden="true" />
+                          <ChevronRightIcon
+                            className="ml-1 -mr-0.5 h-5 w-5"
+                            aria-hidden="true"
+                          />
                         </button>
                       ) : (
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className={`inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${isSubmitting ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                          className={`inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${isSubmitting ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-500"}`}
                         >
-                          {isSubmitting ? 'Adding Song...' : 'Add Song'}
+                          {isSubmitting ? "Adding Song..." : "Add Song"}
                         </button>
                       )}
                     </div>

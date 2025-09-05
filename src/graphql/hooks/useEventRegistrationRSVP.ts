@@ -1,11 +1,11 @@
-import { useMutation, useQuery } from '@apollo/client';
-import { useCallback } from 'react';
+import { useMutation, useQuery } from "@apollo/client";
+import { useCallback } from "react";
 import {
   GET_EVENT_BY_ID,
   GET_EVENT_REGISTRATIONS,
   GET_EVENT_RSVPS,
   GET_EVENT_STATISTICS,
-} from '../queries/eventQueries';
+} from "../queries/eventQueries";
 import {
   CREATE_EVENT_REGISTRATION,
   UPDATE_EVENT_REGISTRATION,
@@ -13,7 +13,7 @@ import {
   CREATE_EVENT_RSVP,
   UPDATE_EVENT_RSVP,
   DELETE_EVENT_RSVP,
-} from '../mutations/eventMutations';
+} from "../mutations/eventMutations";
 import {
   Event,
   EventRegistration,
@@ -22,7 +22,7 @@ import {
   UpdateEventRegistrationInput,
   CreateEventRSVPInput,
   UpdateEventRSVPInput,
-} from '../types/event';
+} from "../types/event";
 
 /**
  * Hook for fetching event details with registrations and RSVPs
@@ -31,7 +31,7 @@ export const useEventDetails = (eventId: string) => {
   const { loading, error, data, refetch } = useQuery(GET_EVENT_BY_ID, {
     variables: { id: eventId },
     skip: !eventId,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {
@@ -49,7 +49,7 @@ export const useEventRegistrations = (eventId: string) => {
   const { loading, error, data, refetch } = useQuery(GET_EVENT_REGISTRATIONS, {
     variables: { eventId },
     skip: !eventId,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {
@@ -67,7 +67,7 @@ export const useEventRSVPs = (eventId: string) => {
   const { loading, error, data, refetch } = useQuery(GET_EVENT_RSVPS, {
     variables: { eventId },
     skip: !eventId,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {
@@ -85,7 +85,7 @@ export const useEventStatistics = (eventId: string) => {
   const { loading, error, data, refetch } = useQuery(GET_EVENT_STATISTICS, {
     variables: { eventId },
     skip: !eventId,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {
@@ -100,9 +100,15 @@ export const useEventStatistics = (eventId: string) => {
  * Hook for event registration mutations
  */
 export const useEventRegistrationMutations = () => {
-  const [createRegistrationMutation, { loading: creating }] = useMutation(CREATE_EVENT_REGISTRATION);
-  const [updateRegistrationMutation, { loading: updating }] = useMutation(UPDATE_EVENT_REGISTRATION);
-  const [deleteRegistrationMutation, { loading: deleting }] = useMutation(DELETE_EVENT_REGISTRATION);
+  const [createRegistrationMutation, { loading: creating }] = useMutation(
+    CREATE_EVENT_REGISTRATION,
+  );
+  const [updateRegistrationMutation, { loading: updating }] = useMutation(
+    UPDATE_EVENT_REGISTRATION,
+  );
+  const [deleteRegistrationMutation, { loading: deleting }] = useMutation(
+    DELETE_EVENT_REGISTRATION,
+  );
 
   const createRegistration = useCallback(
     async (input: CreateEventRegistrationInput) => {
@@ -110,18 +116,24 @@ export const useEventRegistrationMutations = () => {
         const result = await createRegistrationMutation({
           variables: { createEventRegistrationInput: input },
           refetchQueries: [
-            { query: GET_EVENT_REGISTRATIONS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_REGISTRATIONS,
+              variables: { eventId: input.eventId },
+            },
             { query: GET_EVENT_BY_ID, variables: { id: input.eventId } },
-            { query: GET_EVENT_STATISTICS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_STATISTICS,
+              variables: { eventId: input.eventId },
+            },
           ],
         });
         return result.data?.createEventRegistration;
       } catch (error) {
-        console.error('Error creating event registration:', error);
+        console.error("Error creating event registration:", error);
         throw error;
       }
     },
-    [createRegistrationMutation]
+    [createRegistrationMutation],
   );
 
   const updateRegistration = useCallback(
@@ -130,18 +142,24 @@ export const useEventRegistrationMutations = () => {
         const result = await updateRegistrationMutation({
           variables: { updateEventRegistrationInput: input },
           refetchQueries: [
-            { query: GET_EVENT_REGISTRATIONS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_REGISTRATIONS,
+              variables: { eventId: input.eventId },
+            },
             { query: GET_EVENT_BY_ID, variables: { id: input.eventId } },
-            { query: GET_EVENT_STATISTICS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_STATISTICS,
+              variables: { eventId: input.eventId },
+            },
           ],
         });
         return result.data?.updateEventRegistration;
       } catch (error) {
-        console.error('Error updating event registration:', error);
+        console.error("Error updating event registration:", error);
         throw error;
       }
     },
-    [updateRegistrationMutation]
+    [updateRegistrationMutation],
   );
 
   const deleteRegistration = useCallback(
@@ -157,11 +175,11 @@ export const useEventRegistrationMutations = () => {
         });
         return result.data?.removeEventRegistration;
       } catch (error) {
-        console.error('Error deleting event registration:', error);
+        console.error("Error deleting event registration:", error);
         throw error;
       }
     },
-    [deleteRegistrationMutation]
+    [deleteRegistrationMutation],
   );
 
   return {
@@ -176,9 +194,12 @@ export const useEventRegistrationMutations = () => {
  * Hook for event RSVP mutations
  */
 export const useEventRSVPMutations = () => {
-  const [createRSVPMutation, { loading: creating }] = useMutation(CREATE_EVENT_RSVP);
-  const [updateRSVPMutation, { loading: updating }] = useMutation(UPDATE_EVENT_RSVP);
-  const [deleteRSVPMutation, { loading: deleting }] = useMutation(DELETE_EVENT_RSVP);
+  const [createRSVPMutation, { loading: creating }] =
+    useMutation(CREATE_EVENT_RSVP);
+  const [updateRSVPMutation, { loading: updating }] =
+    useMutation(UPDATE_EVENT_RSVP);
+  const [deleteRSVPMutation, { loading: deleting }] =
+    useMutation(DELETE_EVENT_RSVP);
 
   const createRSVP = useCallback(
     async (input: CreateEventRSVPInput) => {
@@ -188,16 +209,19 @@ export const useEventRSVPMutations = () => {
           refetchQueries: [
             { query: GET_EVENT_RSVPS, variables: { eventId: input.eventId } },
             { query: GET_EVENT_BY_ID, variables: { id: input.eventId } },
-            { query: GET_EVENT_STATISTICS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_STATISTICS,
+              variables: { eventId: input.eventId },
+            },
           ],
         });
         return result.data?.createEventRSVP;
       } catch (error) {
-        console.error('Error creating event RSVP:', error);
+        console.error("Error creating event RSVP:", error);
         throw error;
       }
     },
-    [createRSVPMutation]
+    [createRSVPMutation],
   );
 
   const updateRSVP = useCallback(
@@ -208,16 +232,19 @@ export const useEventRSVPMutations = () => {
           refetchQueries: [
             { query: GET_EVENT_RSVPS, variables: { eventId: input.eventId } },
             { query: GET_EVENT_BY_ID, variables: { id: input.eventId } },
-            { query: GET_EVENT_STATISTICS, variables: { eventId: input.eventId } },
+            {
+              query: GET_EVENT_STATISTICS,
+              variables: { eventId: input.eventId },
+            },
           ],
         });
         return result.data?.updateEventRSVP;
       } catch (error) {
-        console.error('Error updating event RSVP:', error);
+        console.error("Error updating event RSVP:", error);
         throw error;
       }
     },
-    [updateRSVPMutation]
+    [updateRSVPMutation],
   );
 
   const deleteRSVP = useCallback(
@@ -233,11 +260,11 @@ export const useEventRSVPMutations = () => {
         });
         return result.data?.removeEventRSVP;
       } catch (error) {
-        console.error('Error deleting event RSVP:', error);
+        console.error("Error deleting event RSVP:", error);
         throw error;
       }
     },
-    [deleteRSVPMutation]
+    [deleteRSVPMutation],
   );
 
   return {
@@ -265,18 +292,26 @@ export const useEventActions = (eventId: string) => {
     registrations: registrations.registrations,
     rsvps: rsvps.rsvps,
     statistics: statistics.statistics,
-    
+
     // Loading states
-    loading: eventDetails.loading || registrations.loading || rsvps.loading || statistics.loading,
+    loading:
+      eventDetails.loading ||
+      registrations.loading ||
+      rsvps.loading ||
+      statistics.loading,
     mutationLoading: registrationMutations.loading || rsvpMutations.loading,
-    
+
     // Error states
-    error: eventDetails.error || registrations.error || rsvps.error || statistics.error,
-    
+    error:
+      eventDetails.error ||
+      registrations.error ||
+      rsvps.error ||
+      statistics.error,
+
     // Actions
     ...registrationMutations,
     ...rsvpMutations,
-    
+
     // Refetch functions
     refetch: () => {
       eventDetails.refetch();

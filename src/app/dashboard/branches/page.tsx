@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import DashboardHeader from '@/components/DashboardHeader';
-import { 
-  PlusIcon, 
+import DashboardHeader from "@/components/DashboardHeader";
+import {
+  PlusIcon,
   MagnifyingGlassIcon,
   ArrowPathIcon,
   BuildingOfficeIcon,
@@ -16,12 +16,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
-  XMarkIcon
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { 
-  CheckCircleIcon, 
-  XCircleIcon 
-} from "@heroicons/react/20/solid";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/20/solid";
 
 import { BranchLoader } from "./BranchLoader";
 import { useOrganizationBranchFilter } from "@/hooks";
@@ -39,7 +36,7 @@ export default function BranchesPage() {
   // Calculate pagination parameters
   const pagination = {
     take: itemsPerPage,
-    skip: (currentPage - 1) * itemsPerPage
+    skip: (currentPage - 1) * itemsPerPage,
   };
 
   const clearFilters = () => {
@@ -68,26 +65,45 @@ export default function BranchesPage() {
           {(branches, loading, error, refetch, totalCount, hasNextPage) => {
             // Defensive: fallback to [] if undefined
             const branchList = branches ?? [];
-            
+
             // Filter branches based on search and filters
-            const filteredBranches = branchList.filter(branch => {
+            const filteredBranches = branchList.filter((branch) => {
               const matchesSearch =
-                branch.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                branch.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                branch.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                branch.name
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                branch.city
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                branch.address
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
                 branch.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
               // Region is not a standard field; use state or country for filtering
-              const matchesRegion = regionFilter === "all" || branch.state === regionFilter || branch.country === regionFilter;
+              const matchesRegion =
+                regionFilter === "all" ||
+                branch.state === regionFilter ||
+                branch.country === regionFilter;
               // Status uses isActive boolean
-              const matchesStatus = statusFilter === "all" || (statusFilter === "active" ? branch.isActive : !branch.isActive);
+              const matchesStatus =
+                statusFilter === "all" ||
+                (statusFilter === "active"
+                  ? branch.isActive
+                  : !branch.isActive);
 
               return matchesSearch && matchesRegion && matchesStatus;
             });
 
             // Get unique regions for the filter dropdown (using state and country)
-            const states = Array.from(new Set(branchList.map(branch => branch.state).filter(Boolean)));
-            const countries = Array.from(new Set(branchList.map(branch => branch.country).filter(Boolean)));
+            const states = Array.from(
+              new Set(branchList.map((branch) => branch.state).filter(Boolean)),
+            );
+            const countries = Array.from(
+              new Set(
+                branchList.map((branch) => branch.country).filter(Boolean),
+              ),
+            );
             const regions = ["all", ...states, ...countries];
 
             return (
@@ -114,7 +130,8 @@ export default function BranchesPage() {
                         Filters
                         {(regionFilter !== "all" || statusFilter !== "all") && (
                           <span className="ml-2 bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                            {(regionFilter !== "all" ? 1 : 0) + (statusFilter !== "all" ? 1 : 0)}
+                            {(regionFilter !== "all" ? 1 : 0) +
+                              (statusFilter !== "all" ? 1 : 0)}
                           </span>
                         )}
                       </button>
@@ -133,22 +150,28 @@ export default function BranchesPage() {
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <div className="flex flex-wrap gap-4 items-center">
                         <div className="flex-1 min-w-[200px]">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Region
+                          </label>
                           <select
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             value={regionFilter}
                             onChange={(e) => setRegionFilter(e.target.value)}
                           >
                             <option value="all">All Regions</option>
-                            {regions.filter(r => r !== "all").map((region) => (
-                              <option key={region} value={region}>
-                                {region}
-                              </option>
-                            ))}
+                            {regions
+                              .filter((r) => r !== "all")
+                              .map((region) => (
+                                <option key={region} value={region}>
+                                  {region}
+                                </option>
+                              ))}
                           </select>
                         </div>
                         <div className="flex-1 min-w-[200px]">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Status
+                          </label>
                           <select
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             value={statusFilter}
@@ -187,8 +210,13 @@ export default function BranchesPage() {
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4">
                       <XCircleIcon className="h-8 w-8 text-red-500" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load branches</h3>
-                    <p className="text-gray-500 mb-4">There was an error loading the branch data. Please try again.</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Failed to load branches
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      There was an error loading the branch data. Please try
+                      again.
+                    </p>
                     <button
                       onClick={() => refetch()}
                       className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
@@ -205,9 +233,13 @@ export default function BranchesPage() {
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-gray-50 mb-4">
                       <BuildingOfficeIcon className="h-8 w-8 text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No branches found</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No branches found
+                    </h3>
                     <p className="text-gray-500 mb-4">
-                      {searchQuery || regionFilter !== "all" || statusFilter !== "all"
+                      {searchQuery ||
+                      regionFilter !== "all" ||
+                      statusFilter !== "all"
                         ? "Try adjusting your search or filters"
                         : "Get started by creating a new branch"}
                     </p>
@@ -241,65 +273,86 @@ export default function BranchesPage() {
                                   <BuildingOfficeIcon className="h-6 w-6 text-indigo-600" />
                                 </div>
                                 <div>
-                                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{branch.name}</h3>
+                                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                    {branch.name}
+                                  </h3>
                                   <p className="text-xs text-gray-500">
-                                    {branch.establishedAt ? `Est. ${new Date(branch.establishedAt).toLocaleDateString()}` : 'No establishment date'}
+                                    {branch.establishedAt
+                                      ? `Est. ${new Date(branch.establishedAt).toLocaleDateString()}`
+                                      : "No establishment date"}
                                   </p>
                                 </div>
                               </div>
                               <span
                                 className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                                  branch.isActive 
-                                    ? 'bg-green-50 text-green-700 border border-green-200' 
-                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                  branch.isActive
+                                    ? "bg-green-50 text-green-700 border border-green-200"
+                                    : "bg-red-50 text-red-700 border border-red-200"
                                 }`}
                               >
-                                {branch.isActive ? 'Active' : 'Inactive'}
+                                {branch.isActive ? "Active" : "Inactive"}
                               </span>
                             </div>
                           </div>
-                          
+
                           {/* Card body with branch details */}
                           <div className="p-6 flex-1 flex flex-col space-y-4">
                             <div className="flex items-start">
                               <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
                               <span className="ml-2 text-sm text-gray-600 line-clamp-2">
-                                {[branch.address, branch.city, branch.state, branch.country].filter(Boolean).join(', ') || 'No address provided'}
+                                {[
+                                  branch.address,
+                                  branch.city,
+                                  branch.state,
+                                  branch.country,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ") || "No address provided"}
                               </span>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <EnvelopeIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
                               <span className="ml-2 text-sm text-gray-600 truncate">
-                                {branch.email || 'No email provided'}
+                                {branch.email || "No email provided"}
                               </span>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <PhoneIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
                               <span className="ml-2 text-sm text-gray-600">
-                                {branch.phoneNumber || 'No phone provided'}
+                                {branch.phoneNumber || "No phone provided"}
                               </span>
                             </div>
-                            
+
                             {branch.statistics && (
                               <div className="flex items-center">
                                 <UserGroupIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
                                 <div className="ml-2">
                                   <div className="flex items-center space-x-2">
                                     <span className="text-sm text-gray-600">
-                                      <span className="font-medium">{branch.statistics.activeMembers}</span> active
+                                      <span className="font-medium">
+                                        {branch.statistics.activeMembers}
+                                      </span>{" "}
+                                      active
                                     </span>
-                                    <span className="text-xs text-gray-400">•</span>
+                                    <span className="text-xs text-gray-400">
+                                      •
+                                    </span>
                                     <span className="text-sm text-gray-600">
-                                      <span className="font-medium">{branch.statistics.totalMembers}</span> total
+                                      <span className="font-medium">
+                                        {branch.statistics.totalMembers}
+                                      </span>{" "}
+                                      total
                                     </span>
                                   </div>
                                   {branch.statistics.totalMembers > 0 && (
                                     <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                                      <div 
-                                        className="bg-indigo-500 h-1.5 rounded-full" 
-                                        style={{ width: `${Math.min(100, (branch.statistics.activeMembers / branch.statistics.totalMembers) * 100)}%` }}
+                                      <div
+                                        className="bg-indigo-500 h-1.5 rounded-full"
+                                        style={{
+                                          width: `${Math.min(100, (branch.statistics.activeMembers / branch.statistics.totalMembers) * 100)}%`,
+                                        }}
                                       ></div>
                                     </div>
                                   )}
@@ -307,7 +360,7 @@ export default function BranchesPage() {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Card footer with view details button */}
                           <div className="p-6 pt-4 border-t border-gray-50 bg-gray-50 group-hover:bg-indigo-50 transition-colors">
                             <div className="text-sm font-medium text-indigo-600 flex items-center justify-center">
@@ -326,16 +379,23 @@ export default function BranchesPage() {
                   <div className="mt-8 flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
-                        Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+                        Showing{" "}
+                        <span className="font-medium">
+                          {(currentPage - 1) * itemsPerPage + 1}
+                        </span>{" "}
+                        to{" "}
                         <span className="font-medium">
                           {Math.min(currentPage * itemsPerPage, totalCount)}
                         </span>{" "}
-                        of <span className="font-medium">{totalCount}</span> branches
+                        of <span className="font-medium">{totalCount}</span>{" "}
+                        branches
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
                         disabled={currentPage === 1}
                         className={`relative inline-flex items-center px-3 py-2 rounded-lg border ${
                           currentPage === 1

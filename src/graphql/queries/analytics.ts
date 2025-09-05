@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Cash Flow Analysis Query
 export const CASH_FLOW_ANALYSIS = gql`
@@ -121,7 +121,7 @@ export interface CashFlowAnalysisResult {
   organisationId: string;
   periodStart: string;
   periodEnd: string;
-  periodType: 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  periodType: "MONTHLY" | "QUARTERLY" | "YEARLY";
   totalIncome: number;
   totalExpenses: number;
   totalNetFlow: number;
@@ -149,7 +149,10 @@ export interface ComparativePeriodData {
 export interface ComparativePeriodAnalysisResult {
   branchId: string;
   organisationId: string;
-  comparisonType: 'YEAR_OVER_YEAR' | 'MONTH_OVER_MONTH' | 'QUARTER_OVER_QUARTER';
+  comparisonType:
+    | "YEAR_OVER_YEAR"
+    | "MONTH_OVER_MONTH"
+    | "QUARTER_OVER_QUARTER";
   averageIncomeGrowthRate: number;
   averageExpenseGrowthRate: number;
   averageNetGrowthRate: number;
@@ -159,7 +162,7 @@ export interface ComparativePeriodAnalysisResult {
 }
 
 export interface GivingTrend {
-  direction: 'INCREASING' | 'DECREASING' | 'STABLE';
+  direction: "INCREASING" | "DECREASING" | "STABLE";
   changePercent: number;
   consistency: number;
 }
@@ -216,14 +219,17 @@ export interface CashFlowAnalysisInput {
     startDate: string;
     endDate: string;
   };
-  periodType: 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  periodType: "MONTHLY" | "QUARTERLY" | "YEARLY";
   fundId?: string;
 }
 
 export interface ComparativePeriodAnalysisInput {
   organisationId: string;
   branchId?: string;
-  comparisonType: 'YEAR_OVER_YEAR' | 'MONTH_OVER_MONTH' | 'QUARTER_OVER_QUARTER';
+  comparisonType:
+    | "YEAR_OVER_YEAR"
+    | "MONTH_OVER_MONTH"
+    | "QUARTER_OVER_QUARTER";
   periods?: number;
   fundId?: string;
 }

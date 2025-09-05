@@ -1,12 +1,12 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { RichHtmlEditor } from './RichHtmlEditor';
-import SmsPreview from './SmsPreview';
-import EmailPreview from './EmailPreview';
-import AttachmentUploader from '../AttachmentUploader';
-import { EmailTemplate } from './RichHtmlEditor';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RichHtmlEditor } from "./RichHtmlEditor";
+import SmsPreview from "./SmsPreview";
+import EmailPreview from "./EmailPreview";
+import AttachmentUploader from "../AttachmentUploader";
+import { EmailTemplate } from "./RichHtmlEditor";
 
 interface MessageContentProps {
   selectedChannels: string[];
@@ -35,16 +35,16 @@ export default function MessageContent({
   onInsertSmsPlaceholder,
   onInsertEmailPlaceholder,
   getTotalRecipientCount,
-  customPlaceholders = []
+  customPlaceholders = [],
 }: MessageContentProps) {
-  const smsSelected = selectedChannels.includes('sms');
-  const emailSelected = selectedChannels.includes('email');
+  const smsSelected = selectedChannels.includes("sms");
+  const emailSelected = selectedChannels.includes("email");
   const onlyEmailSelected = selectedChannels.length === 1 && emailSelected;
 
   return (
     <Card className="p-8 rounded-3xl shadow-2xl bg-white/90 border-0 space-y-6">
       <h3 className="text-2xl font-bold text-gray-800 mb-2">Content</h3>
-      
+
       {/* Email Subject */}
       {emailSelected && (
         <div>
@@ -55,24 +55,28 @@ export default function MessageContent({
             id="subject"
             placeholder="Enter message subject"
             value={subject}
-            onChange={e => setSubject(e.target.value)}
+            onChange={(e) => setSubject(e.target.value)}
             className="mt-1 rounded-xl border-gray-300 focus:ring-violet-400"
             required={emailSelected}
           />
           {/* Show error if subject is empty and email is selected */}
           {emailSelected && !subject.trim() && (
-            <p className="text-red-500 text-sm mt-1">Subject is required for email.</p>
+            <p className="text-red-500 text-sm mt-1">
+              Subject is required for email.
+            </p>
           )}
         </div>
       )}
 
       {/* Message Body */}
       <div>
-        <label htmlFor="body" className="font-semibold text-gray-700">Message</label>
-        
+        <label htmlFor="body" className="font-semibold text-gray-700">
+          Message
+        </label>
+
         {/* SMS-specific features */}
         {smsSelected && (
-          <SmsPreview 
+          <SmsPreview
             body={body}
             onInsertPlaceholder={onInsertSmsPlaceholder}
             getTotalRecipientCount={getTotalRecipientCount}
@@ -82,7 +86,7 @@ export default function MessageContent({
 
         {/* Email-specific features */}
         {emailSelected && !smsSelected && (
-          <EmailPreview 
+          <EmailPreview
             subject={subject}
             body={body}
             onInsertPlaceholder={onInsertEmailPlaceholder}
@@ -101,12 +105,16 @@ export default function MessageContent({
             setSelectedTemplate={setSelectedTemplate}
           />
         ) : (
-          <Textarea 
-            id="body" 
-            placeholder={smsSelected ? "Type your SMS message here... Use placeholders above for personalization" : "Type your message here..."} 
-            value={body} 
-            onChange={e => setBody(e.target.value)} 
-            className="mt-1 min-h-[150px] rounded-xl border-gray-300 focus:ring-violet-400" 
+          <Textarea
+            id="body"
+            placeholder={
+              smsSelected
+                ? "Type your SMS message here... Use placeholders above for personalization"
+                : "Type your message here..."
+            }
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            className="mt-1 min-h-[150px] rounded-xl border-gray-300 focus:ring-violet-400"
           />
         )}
       </div>

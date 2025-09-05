@@ -1,12 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
-import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, BookOpenIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useGetSeries, useCreateSeries, useUpdateSeries, useDeleteSeries, SeriesEntity } from '@/graphql/hooks/useSermon';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import React, { useState } from "react";
+import {
+  XMarkIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  BookOpenIcon,
+  CalendarDaysIcon,
+} from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  useGetSeries,
+  useCreateSeries,
+  useUpdateSeries,
+  useDeleteSeries,
+  SeriesEntity,
+} from "@/graphql/hooks/useSermon";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface SeriesManagerModalProps {
   open: boolean;
@@ -26,15 +39,19 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingSeries, setEditingSeries] = useState<SeriesEntity | null>(null);
   const [formData, setFormData] = useState<SeriesFormData>({
-    title: '',
-    description: '',
-    artworkUrl: '',
-    startDate: '',
-    endDate: '',
+    title: "",
+    description: "",
+    artworkUrl: "",
+    startDate: "",
+    endDate: "",
     isActive: true,
   });
 
-  const { data: seriesData, loading: seriesLoading, refetch: refetchSeries } = useGetSeries();
+  const {
+    data: seriesData,
+    loading: seriesLoading,
+    refetch: refetchSeries,
+  } = useGetSeries();
   const [createSeries, { loading: createLoading }] = useCreateSeries();
   const [updateSeries, { loading: updateLoading }] = useUpdateSeries();
   const [deleteSeries, { loading: deleteLoading }] = useDeleteSeries();
@@ -47,11 +64,11 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
   const handleAddSeries = () => {
     setEditingSeries(null);
     setFormData({
-      title: '',
-      description: '',
-      artworkUrl: '',
-      startDate: '',
-      endDate: '',
+      title: "",
+      description: "",
+      artworkUrl: "",
+      startDate: "",
+      endDate: "",
       isActive: true,
     });
     setShowForm(true);
@@ -60,36 +77,42 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
   const handleEditSeries = (seriesItem: SeriesEntity) => {
     setEditingSeries(seriesItem);
     setFormData({
-      title: seriesItem.title || '',
-      description: seriesItem.description || '',
-      artworkUrl: seriesItem.artworkUrl || '',
-      startDate: seriesItem.startDate ? new Date(seriesItem.startDate).toISOString().split('T')[0] : '',
-      endDate: seriesItem.endDate ? new Date(seriesItem.endDate).toISOString().split('T')[0] : '',
+      title: seriesItem.title || "",
+      description: seriesItem.description || "",
+      artworkUrl: seriesItem.artworkUrl || "",
+      startDate: seriesItem.startDate
+        ? new Date(seriesItem.startDate).toISOString().split("T")[0]
+        : "",
+      endDate: seriesItem.endDate
+        ? new Date(seriesItem.endDate).toISOString().split("T")[0]
+        : "",
       isActive: seriesItem.isActive ?? true,
     });
     setShowForm(true);
   };
 
   const handleDeleteSeries = async (seriesItem: SeriesEntity) => {
-    if (window.confirm(`Are you sure you want to delete "${seriesItem.title}"?`)) {
+    if (
+      window.confirm(`Are you sure you want to delete "${seriesItem.title}"?`)
+    ) {
       try {
         await deleteSeries({ variables: { id: seriesItem.id } });
         await refetchSeries();
       } catch (error) {
-        console.error('Error deleting series:', error);
-        alert('Failed to delete series. Please try again.');
+        console.error("Error deleting series:", error);
+        alert("Failed to delete series. Please try again.");
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Get branchId from user context
       const branchId = user?.userBranches?.[0]?.branch?.id;
       if (!branchId) {
-        alert('Branch ID is required but not found. Please contact support.');
+        alert("Branch ID is required but not found. Please contact support.");
         return;
       }
 
@@ -101,10 +124,14 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
               title: formData.title,
               description: formData.description || undefined,
               artworkUrl: formData.artworkUrl || undefined,
-              startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
-              endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
-            }
-          }
+              startDate: formData.startDate
+                ? new Date(formData.startDate).toISOString()
+                : undefined,
+              endDate: formData.endDate
+                ? new Date(formData.endDate).toISOString()
+                : undefined,
+            },
+          },
         });
       } else {
         await createSeries({
@@ -113,38 +140,44 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
               title: formData.title,
               description: formData.description || undefined,
               artworkUrl: formData.artworkUrl || undefined,
-              startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
-              endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
+              startDate: formData.startDate
+                ? new Date(formData.startDate).toISOString()
+                : undefined,
+              endDate: formData.endDate
+                ? new Date(formData.endDate).toISOString()
+                : undefined,
               branchId: branchId,
-            }
-          }
+            },
+          },
         });
       }
-      
+
       await refetchSeries();
       setShowForm(false);
       setEditingSeries(null);
     } catch (error) {
-      console.error('Error saving series:', error);
-      alert('Failed to save series. Please try again.');
+      console.error("Error saving series:", error);
+      alert("Failed to save series. Please try again.");
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -156,7 +189,7 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
         <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-white">Manage Series</h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-white hover:text-gray-200 rounded-full p-2 hover:bg-white/20 transition-colors"
             >
@@ -173,7 +206,7 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
                 <h3 className="text-lg font-semibold text-gray-800">
                   Series ({series.length})
                 </h3>
-                <Button 
+                <Button
                   onClick={handleAddSeries}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
@@ -190,9 +223,16 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
               ) : series.length === 0 ? (
                 <div className="text-center py-12">
                   <BookOpenIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No series found</h3>
-                  <p className="text-gray-500 mb-4">Get started by adding your first sermon series.</p>
-                  <Button onClick={handleAddSeries} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                    No series found
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Get started by adding your first sermon series.
+                  </p>
+                  <Button
+                    onClick={handleAddSeries}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add First Series
                   </Button>
@@ -200,13 +240,16 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {series.map((seriesItem) => (
-                    <Card key={seriesItem.id} className="p-6 hover:shadow-lg transition-shadow">
+                    <Card
+                      key={seriesItem.id}
+                      className="p-6 hover:shadow-lg transition-shadow"
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start gap-4 flex-1">
                           <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
                             {seriesItem.artworkUrl ? (
-                              <img 
-                                src={seriesItem.artworkUrl} 
+                              <img
+                                src={seriesItem.artworkUrl}
                                 alt={seriesItem.title}
                                 className="w-full h-full rounded-xl object-cover"
                               />
@@ -216,28 +259,38 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold text-gray-900 truncate">{seriesItem.title}</h4>
-                              <Badge 
-                                variant={seriesItem.isActive ? "default" : "secondary"}
+                              <h4 className="font-semibold text-gray-900 truncate">
+                                {seriesItem.title}
+                              </h4>
+                              <Badge
+                                variant={
+                                  seriesItem.isActive ? "default" : "secondary"
+                                }
                                 className="text-xs"
                               >
-                                {seriesItem.isActive ? 'Active' : 'Inactive'}
+                                {seriesItem.isActive ? "Active" : "Inactive"}
                               </Badge>
                             </div>
                             {seriesItem.description && (
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{seriesItem.description}</p>
+                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                {seriesItem.description}
+                              </p>
                             )}
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               {seriesItem.startDate && (
                                 <div className="flex items-center gap-1">
                                   <CalendarDaysIcon className="w-3 h-3" />
-                                  <span>Started {formatDate(seriesItem.startDate)}</span>
+                                  <span>
+                                    Started {formatDate(seriesItem.startDate)}
+                                  </span>
                                 </div>
                               )}
                               {seriesItem.endDate && (
                                 <div className="flex items-center gap-1">
                                   <CalendarDaysIcon className="w-3 h-3" />
-                                  <span>Ends {formatDate(seriesItem.endDate)}</span>
+                                  <span>
+                                    Ends {formatDate(seriesItem.endDate)}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -268,9 +321,9 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  {editingSeries ? 'Edit Series' : 'Add New Series'}
+                  {editingSeries ? "Edit Series" : "Add New Series"}
                 </h3>
-                <Button 
+                <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowForm(false)}
@@ -282,7 +335,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Title */}
                 <div className="md:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Series Title *
                   </label>
                   <input
@@ -299,7 +355,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
 
                 {/* Start Date */}
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Start Date
                   </label>
                   <input
@@ -314,7 +373,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
 
                 {/* End Date */}
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     End Date
                   </label>
                   <input
@@ -329,7 +391,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
 
                 {/* Artwork URL */}
                 <div className="md:col-span-2">
-                  <label htmlFor="artworkUrl" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="artworkUrl"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Artwork Image URL
                   </label>
                   <input
@@ -346,7 +411,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
 
               {/* Description */}
               <div>
-                <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
                   Description
                 </label>
                 <textarea
@@ -370,7 +438,10 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
                   onChange={handleChange}
                   className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
                 />
-                <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="isActive"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Active Series
                 </label>
                 <p className="text-xs text-gray-500">
@@ -392,7 +463,11 @@ export function SeriesManagerModal({ open, onClose }: SeriesManagerModalProps) {
                   disabled={mutationLoading}
                   className="px-6 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-300 font-medium transition-colors"
                 >
-                  {mutationLoading ? 'Saving...' : editingSeries ? 'Update Series' : 'Create Series'}
+                  {mutationLoading
+                    ? "Saving..."
+                    : editingSeries
+                      ? "Update Series"
+                      : "Create Series"}
                 </button>
               </div>
             </form>

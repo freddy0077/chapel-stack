@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
-import Chart from 'chart.js/auto';
-import { ChartData, ChartOptions } from 'chart.js';
+import React, { useRef, useEffect } from "react";
+import Chart from "chart.js/auto";
+import { ChartData, ChartOptions } from "chart.js";
 
 interface BarChartProps {
   data: ChartData;
@@ -15,13 +15,13 @@ const BarChart: React.FC<BarChartProps> = ({ data, options = {} }) => {
 
   useEffect(() => {
     if (!chartRef.current) return;
-    
+
     // Destroy previous chart instance if it exists
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
 
-    const ctx = chartRef.current.getContext('2d');
+    const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
     // Create new chart
@@ -34,17 +34,17 @@ const BarChart: React.FC<BarChartProps> = ({ data, options = {} }) => {
         : data.datasets,
     };
     chartInstance.current = new Chart(ctx, {
-      type: 'bar',
+      type: "bar",
       data: safeData,
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'top',
+            position: "top",
           },
           tooltip: {
-            mode: 'index',
+            mode: "index",
             intersect: false,
           },
         },
@@ -53,7 +53,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, options = {} }) => {
             beginAtZero: true,
           },
         },
-        ...options
+        ...options,
       },
     });
 

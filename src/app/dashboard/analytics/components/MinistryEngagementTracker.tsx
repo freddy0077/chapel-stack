@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   Title,
@@ -18,7 +18,7 @@ import {
   Flex,
   Subtitle,
   Legend,
-  Color
+  Color,
 } from "@tremor/react";
 
 // Mock ministry data
@@ -30,7 +30,7 @@ const ministryData = [
     westEnd: 15,
     southChapel: 12,
     participationRate: 2.1,
-    growthRate: 8.5
+    growthRate: 8.5,
   },
   {
     name: "Children's Ministry",
@@ -39,7 +39,7 @@ const ministryData = [
     westEnd: 28,
     southChapel: 24,
     participationRate: 3.7,
-    growthRate: 12.3
+    growthRate: 12.3,
   },
   {
     name: "Youth Group",
@@ -48,7 +48,7 @@ const ministryData = [
     westEnd: 25,
     southChapel: 22,
     participationRate: 3.4,
-    growthRate: 6.8
+    growthRate: 6.8,
   },
   {
     name: "Adult Bible Study",
@@ -57,7 +57,7 @@ const ministryData = [
     westEnd: 45,
     southChapel: 38,
     participationRate: 6.1,
-    growthRate: 3.2
+    growthRate: 3.2,
   },
   {
     name: "Outreach & Missions",
@@ -66,7 +66,7 @@ const ministryData = [
     westEnd: 30,
     southChapel: 25,
     participationRate: 4.2,
-    growthRate: 15.7
+    growthRate: 15.7,
   },
   {
     name: "Prayer Team",
@@ -75,7 +75,7 @@ const ministryData = [
     westEnd: 18,
     southChapel: 15,
     participationRate: 2.5,
-    growthRate: 7.2
+    growthRate: 7.2,
   },
   {
     name: "Hospitality",
@@ -84,7 +84,7 @@ const ministryData = [
     westEnd: 27,
     southChapel: 22,
     participationRate: 3.4,
-    growthRate: 9.5
+    growthRate: 9.5,
   },
   {
     name: "Seniors Group",
@@ -93,8 +93,8 @@ const ministryData = [
     westEnd: 15,
     southChapel: 10,
     participationRate: 2.0,
-    growthRate: 1.8
-  }
+    growthRate: 1.8,
+  },
 ];
 
 // Branches for selection
@@ -103,26 +103,26 @@ const branches = [
   { value: "mainCampus", name: "Main Campus" },
   { value: "eastSide", name: "East Side" },
   { value: "westEnd", name: "West End" },
-  { value: "southChapel", name: "South Chapel" }
+  { value: "southChapel", name: "South Chapel" },
 ];
 
 // Format data for cross-branch comparison
 const formatEngagementByMinistry = () => {
-  return ministryData.map(ministry => ({
+  return ministryData.map((ministry) => ({
     ministry: ministry.name,
     "Main Campus": ministry.mainCampus,
     "East Side": ministry.eastSide,
     "West End": ministry.westEnd,
-    "South Chapel": ministry.southChapel
+    "South Chapel": ministry.southChapel,
   }));
 };
 
 // Format data for ministry participation rate
 const formatParticipationRate = () => {
-  return ministryData.map(ministry => ({
+  return ministryData.map((ministry) => ({
     ministry: ministry.name,
     "Participation Rate": ministry.participationRate,
-    "Growth Rate": ministry.growthRate
+    "Growth Rate": ministry.growthRate,
   }));
 };
 
@@ -133,19 +133,19 @@ const formatEngagementByBranch = () => {
       "Main Campus": (acc["Main Campus"] || 0) + ministry.mainCampus,
       "East Side": (acc["East Side"] || 0) + ministry.eastSide,
       "West End": (acc["West End"] || 0) + ministry.westEnd,
-      "South Chapel": (acc["South Chapel"] || 0) + ministry.southChapel
+      "South Chapel": (acc["South Chapel"] || 0) + ministry.southChapel,
     };
   }, {});
 
   return Object.entries(branchTotals).map(([branch, value]) => ({
     branch,
-    value
+    value,
   }));
 };
 
 export default function MinistryEngagementTracker() {
   const [selectedBranch, setSelectedBranch] = useState("all");
-  
+
   return (
     <Card>
       <TabGroup>
@@ -162,7 +162,7 @@ export default function MinistryEngagementTracker() {
             <Tab>Performance</Tab>
           </TabList>
         </div>
-        
+
         <TabPanels>
           {/* Cross-Branch Comparison Tab */}
           <TabPanel>
@@ -175,7 +175,12 @@ export default function MinistryEngagementTracker() {
                 className="mt-4 h-96"
                 data={formatEngagementByMinistry()}
                 index="ministry"
-                categories={["Main Campus", "East Side", "West End", "South Chapel"]}
+                categories={[
+                  "Main Campus",
+                  "East Side",
+                  "West End",
+                  "South Chapel",
+                ]}
                 colors={["indigo", "emerald", "amber", "rose"]}
                 valueFormatter={(value) => `${value} volunteers`}
                 stack={true}
@@ -201,14 +206,14 @@ export default function MinistryEngagementTracker() {
               </Card>
             </div>
           </TabPanel>
-          
+
           {/* Ministry Details Tab */}
           <TabPanel>
             <Flex justifyContent="start" className="mt-4 mb-2">
               <Text>Select branch:</Text>
               <div className="max-w-xs ml-4">
-                <Select 
-                  value={selectedBranch} 
+                <Select
+                  value={selectedBranch}
                   onValueChange={setSelectedBranch}
                 >
                   {branches.map((branch) => (
@@ -229,7 +234,10 @@ export default function MinistryEngagementTracker() {
                         Ministry
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {selectedBranch === "all" ? "All Branches" : branches.find(b => b.value === selectedBranch)?.name}
+                        {selectedBranch === "all"
+                          ? "All Branches"
+                          : branches.find((b) => b.value === selectedBranch)
+                              ?.name}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Participation %
@@ -243,7 +251,11 @@ export default function MinistryEngagementTracker() {
                     {ministryData.map((ministry, index) => {
                       let total = 0;
                       if (selectedBranch === "all") {
-                        total = ministry.mainCampus + ministry.eastSide + ministry.westEnd + ministry.southChapel;
+                        total =
+                          ministry.mainCampus +
+                          ministry.eastSide +
+                          ministry.westEnd +
+                          ministry.southChapel;
                       } else if (selectedBranch === "mainCampus") {
                         total = ministry.mainCampus;
                       } else if (selectedBranch === "eastSide") {
@@ -253,7 +265,7 @@ export default function MinistryEngagementTracker() {
                       } else if (selectedBranch === "southChapel") {
                         total = ministry.southChapel;
                       }
-                      
+
                       return (
                         <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -265,8 +277,11 @@ export default function MinistryEngagementTracker() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {ministry.participationRate.toFixed(1)}%
                           </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${ministry.growthRate > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {ministry.growthRate > 0 ? '+' : ''}{ministry.growthRate.toFixed(1)}%
+                          <td
+                            className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${ministry.growthRate > 0 ? "text-green-600" : "text-red-600"}`}
+                          >
+                            {ministry.growthRate > 0 ? "+" : ""}
+                            {ministry.growthRate.toFixed(1)}%
                           </td>
                         </tr>
                       );
@@ -276,7 +291,7 @@ export default function MinistryEngagementTracker() {
               </Card>
             </Grid>
           </TabPanel>
-          
+
           {/* Performance Tab */}
           <TabPanel>
             <Card className="mt-4">
@@ -292,7 +307,8 @@ export default function MinistryEngagementTracker() {
                 showLegend={true}
               />
               <Text className="text-xs text-gray-500 mt-4">
-                Participation Rate = % of total church membership involved in the ministry
+                Participation Rate = % of total church membership involved in
+                the ministry
               </Text>
               <Text className="text-xs text-gray-500">
                 Growth Rate = Year-over-year volunteer increase

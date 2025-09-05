@@ -17,13 +17,26 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { state, user } = useAuth();
   const { isLoading, isHydrated, isAuthenticated } = state;
-  
+
   // Helper: check if user is super admin - MEMOIZED to prevent infinite loops
   const isSuperAdmin = useMemo(() => {
     return user && Array.isArray(user.roles)
       ? user.roles.some((role: unknown) => {
-          if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
-          if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
+          if (typeof role === "string")
+            return (
+              role.toLowerCase() === "super_admin" ||
+              role.toLowerCase() === "superadmin"
+            );
+          if (
+            role &&
+            typeof role === "object" &&
+            "name" in role &&
+            typeof role.name === "string"
+          )
+            return (
+              role.name.toLowerCase() === "super_admin" ||
+              role.name.toLowerCase() === "superadmin"
+            );
           return false;
         })
       : false;
@@ -31,12 +44,12 @@ export default function DashboardLayout({
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const checkAuth = () => {
       if (!isMounted) {
         return;
       }
-      
+
       // Wait for authentication context to be fully initialized
       if (isLoading || !isHydrated) {
         setIsCheckingAuth(true); // Keep checking state active
@@ -44,14 +57,18 @@ export default function DashboardLayout({
       }
 
       // Always allow access to all /dashboard/settings and subpages
-      if (pathname && (pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings/'))) {
+      if (
+        pathname &&
+        (pathname === "/dashboard/settings" ||
+          pathname.startsWith("/dashboard/settings/"))
+      ) {
         setIsOnboardingCompleted(true);
         setIsCheckingAuth(false);
         return;
       }
-      
+
       // For subscription manager and other non-super-admin pages, skip onboarding check
-      if (pathname && pathname.startsWith('/dashboard/subscription-manager')) {
+      if (pathname && pathname.startsWith("/dashboard/subscription-manager")) {
         setIsOnboardingCompleted(true);
         setIsCheckingAuth(false);
         return;
@@ -61,14 +78,22 @@ export default function DashboardLayout({
       setIsCheckingAuth(false);
     };
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       checkAuth();
     }
-    
+
     return () => {
       isMounted = false;
     };
-  }, [isLoading, isHydrated, isAuthenticated, user, pathname, router, isSuperAdmin]); // Run when auth state changes
+  }, [
+    isLoading,
+    isHydrated,
+    isAuthenticated,
+    user,
+    pathname,
+    router,
+    isSuperAdmin,
+  ]); // Run when auth state changes
 
   // If authentication or onboarding check is still in progress, show loading state
   if (isCheckingAuth) {
@@ -82,11 +107,7 @@ export default function DashboardLayout({
       </div>
     );
   }
-  
+
   // Use dynamic navigation based on selected modules
-  return (
-    <DynamicNavigation>
-      {children}
-    </DynamicNavigation>
-  );
+  return <DynamicNavigation>{children}</DynamicNavigation>;
 }

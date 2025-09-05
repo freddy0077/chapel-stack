@@ -1,7 +1,6 @@
 """
 Branch Management schema - handles multi-branch/parish functionality
 """
-
 enum BranchType {
   PARISH
   MISSION
@@ -107,13 +106,13 @@ extend type Query {
     dioceseFilter: String
     pagination: PaginationInput
   ): BranchConnection! @auth(requires: [GUEST])
-  
+
   # Get a specific branch by ID
   branch(id: ID!): Branch @auth(requires: [GUEST])
-  
+
   # Get all member branches for the current user
   myBranches: [Branch!]! @auth(requires: [MEMBER])
-  
+
   # Get all members of a branch
   branchMembers(
     branchId: ID!
@@ -122,11 +121,13 @@ extend type Query {
     status: Status
     ministryId: ID
     pagination: PaginationInput
-  ): BranchMemberConnection! @auth(requires: [STAFF]) @branchAccess(requires: [STAFF])
-  
+  ): BranchMemberConnection!
+    @auth(requires: [STAFF])
+    @branchAccess(requires: [STAFF])
+
   # Get a specific branch member
   branchMember(id: ID!): BranchMember @auth(requires: [STAFF])
-  
+
   # Get all services for a branch
   branchServices(branchId: ID!): [Service!]! @auth(requires: [GUEST])
 }
@@ -154,31 +155,38 @@ type BranchMemberEdge {
 extend type Mutation {
   # Create a new branch
   createBranch(input: CreateBranchInput!): Branch! @auth(requires: [ADMIN])
-  
+
   # Update an existing branch
-  updateBranch(id: ID!, input: UpdateBranchInput!): Branch! @auth(requires: [BRANCH_ADMIN])
-  
+  updateBranch(id: ID!, input: UpdateBranchInput!): Branch!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Change branch status
   changeBranchStatus(id: ID!, status: Status!): Branch! @auth(requires: [ADMIN])
-  
+
   # Add a member to a branch
-  addBranchMember(input: AddBranchMemberInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
-  
+  addBranchMember(input: AddBranchMemberInput!): BranchMember!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Update a branch member
-  updateBranchMember(id: ID!, input: UpdateBranchMemberInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
-  
+  updateBranchMember(id: ID!, input: UpdateBranchMemberInput!): BranchMember!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Remove a member from a branch
-  removeBranchMember(id: ID!, reason: String): Boolean! @auth(requires: [BRANCH_ADMIN])
-  
+  removeBranchMember(id: ID!, reason: String): Boolean!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Transfer a member between branches
-  transferMember(input: MemberTransferInput!): BranchMember! @auth(requires: [BRANCH_ADMIN])
-  
+  transferMember(input: MemberTransferInput!): BranchMember!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Create a new service for a branch
-  createService(input: CreateServiceInput!): Service! @auth(requires: [BRANCH_ADMIN])
-  
+  createService(input: CreateServiceInput!): Service!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Update a service
-  updateService(id: ID!, input: UpdateServiceInput!): Service! @auth(requires: [BRANCH_ADMIN])
-  
+  updateService(id: ID!, input: UpdateServiceInput!): Service!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Delete a service
   deleteService(id: ID!): Boolean! @auth(requires: [BRANCH_ADMIN])
 }
@@ -292,13 +300,13 @@ input UpdateServiceInput {
 extend type Subscription {
   # Notify when a new branch is created
   branchCreated: Branch! @auth(requires: [ADMIN])
-  
+
   # Notify when a branch is updated
   branchUpdated(id: ID!): Branch! @auth(requires: [STAFF])
-  
+
   # Notify when a member is added to a branch
   branchMemberAdded(branchId: ID!): BranchMember! @auth(requires: [STAFF])
-  
+
   # Notify when a member is removed from a branch
   branchMemberRemoved(branchId: ID!): BranchMember! @auth(requires: [STAFF])
 }

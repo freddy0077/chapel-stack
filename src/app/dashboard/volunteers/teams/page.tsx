@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { 
-  UserGroupIcon, 
-  MagnifyingGlassIcon, 
+import { useState } from "react";
+import Link from "next/link";
+import {
+  UserGroupIcon,
+  MagnifyingGlassIcon,
   BuildingOfficeIcon,
   PlusIcon,
   UsersIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 
 // Types
 interface VolunteerTeam {
@@ -30,161 +30,167 @@ interface VolunteerTeam {
 
 // Mock branches
 const BRANCHES = [
-  { id: 'all', name: 'All Branches' },
-  { id: 'b1', name: 'Main Campus' },
-  { id: 'b2', name: 'East Side' },
-  { id: 'b3', name: 'West End' },
-  { id: 'b4', name: 'South Chapel' }
+  { id: "all", name: "All Branches" },
+  { id: "b1", name: "Main Campus" },
+  { id: "b2", name: "East Side" },
+  { id: "b3", name: "West End" },
+  { id: "b4", name: "South Chapel" },
 ];
 
 // Mock teams data
 const TEAMS: VolunteerTeam[] = [
   {
-    id: 't1',
-    name: 'Worship Team',
-    description: 'Musicians, singers, and production volunteers for Sunday services',
-    branch: 'Main Campus',
-    branchId: 'b1',
+    id: "t1",
+    name: "Worship Team",
+    description:
+      "Musicians, singers, and production volunteers for Sunday services",
+    branch: "Main Campus",
+    branchId: "b1",
     membersCount: 18,
-    leader: 'Sarah Miller',
-    leaderId: 's2',
-    roles: ['Vocalist', 'Instrumentalist', 'Sound Tech', 'Visual Tech'],
-    schedule: 'Sundays, Weekly',
+    leader: "Sarah Miller",
+    leaderId: "s2",
+    roles: ["Vocalist", "Instrumentalist", "Sound Tech", "Visual Tech"],
+    schedule: "Sundays, Weekly",
     isSharedWithOtherBranches: true,
-    sharedWithBranches: ['East Side', 'West End'],
-    createdDate: '2020-01-15'
+    sharedWithBranches: ["East Side", "West End"],
+    createdDate: "2020-01-15",
   },
   {
-    id: 't2',
-    name: 'Children\'s Ministry',
-    description: 'Volunteers who serve in various children\'s programs',
-    branch: 'Main Campus',
-    branchId: 'b1',
+    id: "t2",
+    name: "Children's Ministry",
+    description: "Volunteers who serve in various children's programs",
+    branch: "Main Campus",
+    branchId: "b1",
     membersCount: 25,
-    leader: 'Rebecca Johnson',
-    leaderId: 's4',
-    roles: ['Teacher', 'Assistant', 'Check-in', 'Games Leader'],
-    schedule: 'Sundays, Rotational',
+    leader: "Rebecca Johnson",
+    leaderId: "s4",
+    roles: ["Teacher", "Assistant", "Check-in", "Games Leader"],
+    schedule: "Sundays, Rotational",
     isSharedWithOtherBranches: false,
-    createdDate: '2020-03-10'
+    createdDate: "2020-03-10",
   },
   {
-    id: 't3',
-    name: 'Welcome Team',
-    description: 'Greeters, ushers, and hospitality volunteers',
-    branch: 'East Side',
-    branchId: 'b2',
+    id: "t3",
+    name: "Welcome Team",
+    description: "Greeters, ushers, and hospitality volunteers",
+    branch: "East Side",
+    branchId: "b2",
     membersCount: 15,
-    leader: 'Michael Williams',
-    leaderId: 'v8',
-    roles: ['Greeter', 'Usher', 'Information Desk', 'Parking Lot'],
-    schedule: 'Sundays, Bi-weekly',
+    leader: "Michael Williams",
+    leaderId: "v8",
+    roles: ["Greeter", "Usher", "Information Desk", "Parking Lot"],
+    schedule: "Sundays, Bi-weekly",
     isSharedWithOtherBranches: false,
-    createdDate: '2021-02-20'
+    createdDate: "2021-02-20",
   },
   {
-    id: 't4',
-    name: 'Youth Ministry',
-    description: 'Volunteers serving middle and high school students',
-    branch: 'East Side',
-    branchId: 'b2',
+    id: "t4",
+    name: "Youth Ministry",
+    description: "Volunteers serving middle and high school students",
+    branch: "East Side",
+    branchId: "b2",
     membersCount: 12,
-    leader: 'David Thompson',
-    leaderId: 's3',
-    roles: ['Youth Leader', 'Small Group Leader', 'Activities Coordinator'],
-    schedule: 'Wednesdays and Sundays',
+    leader: "David Thompson",
+    leaderId: "s3",
+    roles: ["Youth Leader", "Small Group Leader", "Activities Coordinator"],
+    schedule: "Wednesdays and Sundays",
     isSharedWithOtherBranches: true,
-    sharedWithBranches: ['Main Campus'],
-    createdDate: '2022-08-05'
+    sharedWithBranches: ["Main Campus"],
+    createdDate: "2022-08-05",
   },
   {
-    id: 't5',
-    name: 'Prayer Team',
-    description: 'Dedicated intercessors and prayer ministers',
-    branch: 'West End',
-    branchId: 'b3',
+    id: "t5",
+    name: "Prayer Team",
+    description: "Dedicated intercessors and prayer ministers",
+    branch: "West End",
+    branchId: "b3",
     membersCount: 10,
-    leader: 'Jennifer Lee',
-    leaderId: 's6',
-    roles: ['Prayer Leader', 'Intercessor', 'Altar Ministry'],
-    schedule: 'Sundays and Prayer Meetings',
+    leader: "Jennifer Lee",
+    leaderId: "s6",
+    roles: ["Prayer Leader", "Intercessor", "Altar Ministry"],
+    schedule: "Sundays and Prayer Meetings",
     isSharedWithOtherBranches: true,
-    sharedWithBranches: ['Main Campus', 'East Side', 'South Chapel'],
-    createdDate: '2021-06-15'
+    sharedWithBranches: ["Main Campus", "East Side", "South Chapel"],
+    createdDate: "2021-06-15",
   },
   {
-    id: 't6',
-    name: 'Technical Team',
-    description: 'Audio, video, lighting, and streaming specialists',
-    branch: 'Main Campus',
-    branchId: 'b1',
+    id: "t6",
+    name: "Technical Team",
+    description: "Audio, video, lighting, and streaming specialists",
+    branch: "Main Campus",
+    branchId: "b1",
     membersCount: 8,
-    leader: 'Robert Brown',
-    leaderId: 's7',
-    roles: ['Sound Engineer', 'Camera Operator', 'Lighting Technician', 'Stream Manager'],
-    schedule: 'Sundays and Special Events',
+    leader: "Robert Brown",
+    leaderId: "s7",
+    roles: [
+      "Sound Engineer",
+      "Camera Operator",
+      "Lighting Technician",
+      "Stream Manager",
+    ],
+    schedule: "Sundays and Special Events",
     isSharedWithOtherBranches: true,
-    sharedWithBranches: ['West End'],
-    createdDate: '2020-09-01'
+    sharedWithBranches: ["West End"],
+    createdDate: "2020-09-01",
   },
   {
-    id: 't7',
-    name: 'Outreach Team',
-    description: 'Community service and local mission volunteers',
-    branch: 'South Chapel',
-    branchId: 'b4',
+    id: "t7",
+    name: "Outreach Team",
+    description: "Community service and local mission volunteers",
+    branch: "South Chapel",
+    branchId: "b4",
     membersCount: 20,
-    leader: 'Amanda Clark',
-    leaderId: 's8',
-    roles: ['Project Coordinator', 'Team Leader', 'Volunteer'],
-    schedule: 'Monthly Project Days',
+    leader: "Amanda Clark",
+    leaderId: "s8",
+    roles: ["Project Coordinator", "Team Leader", "Volunteer"],
+    schedule: "Monthly Project Days",
     isSharedWithOtherBranches: false,
-    createdDate: '2022-01-10'
+    createdDate: "2022-01-10",
   },
   {
-    id: 't8',
-    name: 'Care Team',
-    description: 'Visitation, meals, and support for those in need',
-    branch: 'West End',
-    branchId: 'b3',
+    id: "t8",
+    name: "Care Team",
+    description: "Visitation, meals, and support for those in need",
+    branch: "West End",
+    branchId: "b3",
     membersCount: 15,
-    leader: 'Thomas Wilson',
-    leaderId: 'v12',
-    roles: ['Visitor', 'Meal Coordinator', 'Support Coordinator'],
-    schedule: 'As Needed',
+    leader: "Thomas Wilson",
+    leaderId: "v12",
+    roles: ["Visitor", "Meal Coordinator", "Support Coordinator"],
+    schedule: "As Needed",
     isSharedWithOtherBranches: false,
-    createdDate: '2021-11-05'
-  }
+    createdDate: "2021-11-05",
+  },
 ];
 
 export default function VolunteerTeamsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
   const [showSharedOnly, setShowSharedOnly] = useState(false);
-  
+
   // Filter teams based on search, branch, and sharing status
-  const filteredTeams = TEAMS.filter(team => {
+  const filteredTeams = TEAMS.filter((team) => {
     // Branch filter
-    if (selectedBranch !== 'all' && team.branchId !== selectedBranch) {
+    if (selectedBranch !== "all" && team.branchId !== selectedBranch) {
       return false;
     }
-    
+
     // Shared teams filter
     if (showSharedOnly && !team.isSharedWithOtherBranches) {
       return false;
     }
-    
+
     // Search term filter
-    if (searchTerm.trim() !== '') {
+    if (searchTerm.trim() !== "") {
       const search = searchTerm.toLowerCase();
       return (
         team.name.toLowerCase().includes(search) ||
         team.description.toLowerCase().includes(search) ||
         team.leader.toLowerCase().includes(search) ||
-        team.roles.some(role => role.toLowerCase().includes(search))
+        team.roles.some((role) => role.toLowerCase().includes(search))
       );
     }
-    
+
     return true;
   });
 
@@ -192,7 +198,9 @@ export default function VolunteerTeamsPage() {
     <div className="p-6">
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Volunteer Teams</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Volunteer Teams
+          </h1>
           <p className="mt-2 text-sm text-gray-700">
             Manage volunteer teams and share resources across branches
           </p>
@@ -212,13 +220,20 @@ export default function VolunteerTeamsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <UserGroupIcon className="h-6 w-6 text-indigo-400" aria-hidden="true" />
+                <UserGroupIcon
+                  className="h-6 w-6 text-indigo-400"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Teams</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Teams
+                  </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">{TEAMS.length}</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {TEAMS.length}
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -230,11 +245,16 @@ export default function VolunteerTeamsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <UsersIcon className="h-6 w-6 text-green-400" aria-hidden="true" />
+                <UsersIcon
+                  className="h-6 w-6 text-green-400"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Team Members</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Team Members
+                  </dt>
                   <dd>
                     <div className="text-lg font-medium text-gray-900">
                       {TEAMS.reduce((sum, team) => sum + team.membersCount, 0)}
@@ -250,14 +270,22 @@ export default function VolunteerTeamsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ArrowPathIcon className="h-6 w-6 text-blue-400" aria-hidden="true" />
+                <ArrowPathIcon
+                  className="h-6 w-6 text-blue-400"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Shared Teams</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Shared Teams
+                  </dt>
                   <dd>
                     <div className="text-lg font-medium text-gray-900">
-                      {TEAMS.filter(team => team.isSharedWithOtherBranches).length}
+                      {
+                        TEAMS.filter((team) => team.isSharedWithOtherBranches)
+                          .length
+                      }
                     </div>
                   </dd>
                 </dl>
@@ -270,13 +298,20 @@ export default function VolunteerTeamsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <BuildingOfficeIcon className="h-6 w-6 text-purple-400" aria-hidden="true" />
+                <BuildingOfficeIcon
+                  className="h-6 w-6 text-purple-400"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Branches</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Branches
+                  </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">{BRANCHES.length - 1}</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {BRANCHES.length - 1}
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -289,7 +324,10 @@ export default function VolunteerTeamsPage() {
       <div className="mt-6 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -299,7 +337,7 @@ export default function VolunteerTeamsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="flex-1 md:max-w-xs">
           <select
             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -313,7 +351,7 @@ export default function VolunteerTeamsPage() {
             ))}
           </select>
         </div>
-        
+
         <div className="flex items-center">
           <input
             id="shared-only"
@@ -323,7 +361,10 @@ export default function VolunteerTeamsPage() {
             checked={showSharedOnly}
             onChange={(e) => setShowSharedOnly(e.target.checked)}
           />
-          <label htmlFor="shared-only" className="ml-2 block text-sm text-gray-900">
+          <label
+            htmlFor="shared-only"
+            className="ml-2 block text-sm text-gray-900"
+          >
             Show shared teams only
           </label>
         </div>
@@ -333,10 +374,15 @@ export default function VolunteerTeamsPage() {
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredTeams.length > 0 ? (
           filteredTeams.map((team) => (
-            <div key={team.id} className="bg-white overflow-hidden shadow rounded-lg flex flex-col">
+            <div
+              key={team.id}
+              className="bg-white overflow-hidden shadow rounded-lg flex flex-col"
+            >
               <div className="px-4 py-5 sm:p-6 flex-grow">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">{team.name}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 truncate">
+                    {team.name}
+                  </h3>
                   {team.isSharedWithOtherBranches && (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       Shared
@@ -344,16 +390,24 @@ export default function VolunteerTeamsPage() {
                   )}
                 </div>
                 <div className="mt-1 flex items-center">
-                  <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-1" aria-hidden="true" />
+                  <BuildingOfficeIcon
+                    className="h-4 w-4 text-gray-400 mr-1"
+                    aria-hidden="true"
+                  />
                   <p className="text-sm text-gray-500">{team.branch}</p>
                 </div>
-                <p className="mt-3 text-sm text-gray-500 line-clamp-2">{team.description}</p>
-                
+                <p className="mt-3 text-sm text-gray-500 line-clamp-2">
+                  {team.description}
+                </p>
+
                 <div className="mt-4">
                   <div className="text-xs text-gray-500 mb-1">Team Roles</div>
                   <div className="flex flex-wrap gap-1">
                     {team.roles.slice(0, 3).map((role, index) => (
-                      <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                      >
                         {role}
                       </span>
                     ))}
@@ -364,22 +418,30 @@ export default function VolunteerTeamsPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-xs text-gray-500">Members</div>
-                    <div className="text-sm font-medium">{team.membersCount}</div>
+                    <div className="text-sm font-medium">
+                      {team.membersCount}
+                    </div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Team Leader</div>
-                    <div className="text-sm font-medium truncate">{team.leader}</div>
+                    <div className="text-sm font-medium truncate">
+                      {team.leader}
+                    </div>
                   </div>
                 </div>
-                
+
                 {team.isSharedWithOtherBranches && team.sharedWithBranches && (
                   <div className="mt-4">
-                    <div className="text-xs text-gray-500 mb-1">Shared with</div>
-                    <div className="text-sm text-gray-700">{team.sharedWithBranches.join(', ')}</div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      Shared with
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      {team.sharedWithBranches.join(", ")}
+                    </div>
                   </div>
                 )}
               </div>
@@ -403,8 +465,13 @@ export default function VolunteerTeamsPage() {
           ))
         ) : (
           <div className="col-span-full py-12 text-center bg-white rounded-lg shadow">
-            <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No teams found</h3>
+            <UserGroupIcon
+              className="mx-auto h-12 w-12 text-gray-400"
+              aria-hidden="true"
+            />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No teams found
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
               Try adjusting your search or filter criteria.
             </p>
@@ -420,29 +487,48 @@ export default function VolunteerTeamsPage() {
           </div>
         )}
       </div>
-      
+
       {/* Cross-Branch Sharing Guide */}
       <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Cross-Branch Team Sharing</h3>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Cross-Branch Team Sharing
+          </h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>
-              Team sharing allows volunteers to serve across multiple branches while maintaining their primary branch affiliation.
-              This feature is perfect for special events, covering volunteer shortages, or building cross-branch community.
+              Team sharing allows volunteers to serve across multiple branches
+              while maintaining their primary branch affiliation. This feature
+              is perfect for special events, covering volunteer shortages, or
+              building cross-branch community.
             </p>
           </div>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="bg-white shadow rounded p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Step 1: Create a Team</h4>
-              <p className="text-xs text-gray-500">Start by creating a team in its primary branch with all required roles.</p>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Step 1: Create a Team
+              </h4>
+              <p className="text-xs text-gray-500">
+                Start by creating a team in its primary branch with all required
+                roles.
+              </p>
             </div>
             <div className="bg-white shadow rounded p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Step 2: Enable Sharing</h4>
-              <p className="text-xs text-gray-500">Edit the team settings to enable cross-branch sharing and select target branches.</p>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Step 2: Enable Sharing
+              </h4>
+              <p className="text-xs text-gray-500">
+                Edit the team settings to enable cross-branch sharing and select
+                target branches.
+              </p>
             </div>
             <div className="bg-white shadow rounded p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Step 3: Schedule Volunteers</h4>
-              <p className="text-xs text-gray-500">Volunteers from other branches can now be scheduled for this team&apos;s roles.</p>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Step 3: Schedule Volunteers
+              </h4>
+              <p className="text-xs text-gray-500">
+                Volunteers from other branches can now be scheduled for this
+                team&apos;s roles.
+              </p>
             </div>
           </div>
           <div className="mt-5">

@@ -58,58 +58,63 @@ interface EditSacramentalRecordModalProps {
 
 // Map frontend display names to backend enum values
 const SACRAMENT_TYPE_MAPPING = {
-  'BAPTISM': 'BAPTISM',
-  'COMMUNION': 'EUCHARIST_FIRST_COMMUNION',
-  'CONFIRMATION': 'CONFIRMATION',
-  'MARRIAGE': 'MATRIMONY',
-  'MATRIMONY': 'MATRIMONY',
-  'EUCHARIST_FIRST_COMMUNION': 'EUCHARIST_FIRST_COMMUNION',
-  'RECONCILIATION_FIRST': 'RECONCILIATION_FIRST',
-  'ANOINTING_OF_THE_SICK': 'ANOINTING_OF_THE_SICK',
-  'HOLY_ORDERS_DIACONATE': 'HOLY_ORDERS_DIACONATE',
-  'HOLY_ORDERS_PRIESTHOOD': 'HOLY_ORDERS_PRIESTHOOD',
-  'RCIA_INITIATION': 'RCIA_INITIATION',
+  BAPTISM: "BAPTISM",
+  COMMUNION: "EUCHARIST_FIRST_COMMUNION",
+  CONFIRMATION: "CONFIRMATION",
+  MARRIAGE: "MATRIMONY",
+  MATRIMONY: "MATRIMONY",
+  EUCHARIST_FIRST_COMMUNION: "EUCHARIST_FIRST_COMMUNION",
+  RECONCILIATION_FIRST: "RECONCILIATION_FIRST",
+  ANOINTING_OF_THE_SICK: "ANOINTING_OF_THE_SICK",
+  HOLY_ORDERS_DIACONATE: "HOLY_ORDERS_DIACONATE",
+  HOLY_ORDERS_PRIESTHOOD: "HOLY_ORDERS_PRIESTHOOD",
+  RCIA_INITIATION: "RCIA_INITIATION",
 };
 
 // Reverse mapping for display
 const DISPLAY_TYPE_MAPPING = {
-  'BAPTISM': 'Baptism',
-  'EUCHARIST_FIRST_COMMUNION': 'First Communion',
-  'CONFIRMATION': 'Confirmation',
-  'MATRIMONY': 'Marriage',
-  'RECONCILIATION_FIRST': 'First Reconciliation',
-  'ANOINTING_OF_THE_SICK': 'Anointing of the Sick',
-  'HOLY_ORDERS_DIACONATE': 'Diaconate Ordination',
-  'HOLY_ORDERS_PRIESTHOOD': 'Priesthood Ordination',
-  'RCIA_INITIATION': 'RCIA Initiation',
+  BAPTISM: "Baptism",
+  EUCHARIST_FIRST_COMMUNION: "First Communion",
+  CONFIRMATION: "Confirmation",
+  MATRIMONY: "Marriage",
+  RECONCILIATION_FIRST: "First Reconciliation",
+  ANOINTING_OF_THE_SICK: "Anointing of the Sick",
+  HOLY_ORDERS_DIACONATE: "Diaconate Ordination",
+  HOLY_ORDERS_PRIESTHOOD: "Priesthood Ordination",
+  RCIA_INITIATION: "RCIA Initiation",
 };
 
 const formatSacramentType = (type: string) => {
-  return DISPLAY_TYPE_MAPPING[type as keyof typeof DISPLAY_TYPE_MAPPING] || 
-         type.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  return (
+    DISPLAY_TYPE_MAPPING[type as keyof typeof DISPLAY_TYPE_MAPPING] ||
+    type
+      .replace("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+  );
 };
 
 const getSacramentColor = (type: string) => {
   switch (type) {
-    case 'BAPTISM':
-      return 'blue';
-    case 'EUCHARIST_FIRST_COMMUNION':
-      return 'amber';
-    case 'CONFIRMATION':
-      return 'purple';
-    case 'MATRIMONY':
-      return 'rose';
-    case 'RECONCILIATION_FIRST':
-      return 'green';
-    case 'ANOINTING_OF_THE_SICK':
-      return 'indigo';
-    case 'HOLY_ORDERS_DIACONATE':
-    case 'HOLY_ORDERS_PRIESTHOOD':
-      return 'violet';
-    case 'RCIA_INITIATION':
-      return 'teal';
+    case "BAPTISM":
+      return "blue";
+    case "EUCHARIST_FIRST_COMMUNION":
+      return "amber";
+    case "CONFIRMATION":
+      return "purple";
+    case "MATRIMONY":
+      return "rose";
+    case "RECONCILIATION_FIRST":
+      return "green";
+    case "ANOINTING_OF_THE_SICK":
+      return "indigo";
+    case "HOLY_ORDERS_DIACONATE":
+    case "HOLY_ORDERS_PRIESTHOOD":
+      return "violet";
+    case "RCIA_INITIATION":
+      return "teal";
     default:
-      return 'blue';
+      return "blue";
   }
 };
 
@@ -120,53 +125,59 @@ export default function EditSacramentalRecordModal({
   onSuccess,
 }: EditSacramentalRecordModalProps) {
   const [formData, setFormData] = useState({
-    dateOfSacrament: '',
-    locationOfSacrament: '',
-    officiantName: '',
-    officiantId: '',
-    godparent1Name: '',
-    godparent2Name: '',
-    sponsorName: '',
-    witness1Name: '',
-    witness2Name: '',
-    groomName: '',
-    brideName: '',
-    certificateNumber: '',
-    certificateUrl: '',
-    notes: '',
+    dateOfSacrament: "",
+    locationOfSacrament: "",
+    officiantName: "",
+    officiantId: "",
+    godparent1Name: "",
+    godparent2Name: "",
+    sponsorName: "",
+    witness1Name: "",
+    witness2Name: "",
+    groomName: "",
+    brideName: "",
+    certificateNumber: "",
+    certificateUrl: "",
+    notes: "",
   });
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [selectedGroomMember, setSelectedGroomMember] = useState<Member | null>(null);
-  const [selectedBrideMember, setSelectedBrideMember] = useState<Member | null>(null);
+  const [selectedGroomMember, setSelectedGroomMember] = useState<Member | null>(
+    null,
+  );
+  const [selectedBrideMember, setSelectedBrideMember] = useState<Member | null>(
+    null,
+  );
   const [updateRecord, { loading }] = useUpdateSacramentalRecord();
   const orgBranchFilter = useOrganizationBranchFilter();
 
   useEffect(() => {
     if (record) {
       setFormData({
-        dateOfSacrament: record.dateOfSacrament ? new Date(record.dateOfSacrament).toISOString().split('T')[0] : '',
-        locationOfSacrament: record.locationOfSacrament || '',
-        officiantName: record.officiantName || '',
-        officiantId: record.officiantId || '',
-        godparent1Name: record.godparent1Name || '',
-        godparent2Name: record.godparent2Name || '',
-        sponsorName: record.sponsorName || '',
-        witness1Name: record.witness1Name || '',
-        witness2Name: record.witness2Name || '',
-        groomName: record.groomName || '',
-        brideName: record.brideName || '',
-        certificateNumber: record.certificateNumber || '',
-        certificateUrl: record.certificateUrl || '',
-        notes: record.notes || '',
+        dateOfSacrament: record.dateOfSacrament
+          ? new Date(record.dateOfSacrament).toISOString().split("T")[0]
+          : "",
+        locationOfSacrament: record.locationOfSacrament || "",
+        officiantName: record.officiantName || "",
+        officiantId: record.officiantId || "",
+        godparent1Name: record.godparent1Name || "",
+        godparent2Name: record.godparent2Name || "",
+        sponsorName: record.sponsorName || "",
+        witness1Name: record.witness1Name || "",
+        witness2Name: record.witness2Name || "",
+        groomName: record.groomName || "",
+        brideName: record.brideName || "",
+        certificateNumber: record.certificateNumber || "",
+        certificateUrl: record.certificateUrl || "",
+        notes: record.notes || "",
       });
 
       if (record.memberId && record.memberName) {
-        const [firstName, ...lastNameParts] = record.memberName.split(' ');
+        const [firstName, ...lastNameParts] = record.memberName.split(" ");
         setSelectedMember({
           id: record.memberId,
-          firstName: firstName || '',
-          lastName: lastNameParts.join(' ') || '',
+          firstName: firstName || "",
+          lastName: lastNameParts.join(" ") || "",
           memberId: record.memberId,
         });
       }
@@ -175,11 +186,11 @@ export default function EditSacramentalRecordModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!record) return;
 
     if (!selectedMember) {
-      toast.error('Please select a member for this sacrament record');
+      toast.error("Please select a member for this sacrament record");
       return;
     }
 
@@ -202,28 +213,32 @@ export default function EditSacramentalRecordModal({
             sponsorName: formData.sponsorName || null,
             witness1Name: formData.witness1Name || null,
             witness2Name: formData.witness2Name || null,
-            groomName: selectedGroomMember ? `${selectedGroomMember.firstName} ${selectedGroomMember.lastName}` : formData.groomName || null,
-            brideName: selectedBrideMember ? `${selectedBrideMember.firstName} ${selectedBrideMember.lastName}` : formData.brideName || null,
+            groomName: selectedGroomMember
+              ? `${selectedGroomMember.firstName} ${selectedGroomMember.lastName}`
+              : formData.groomName || null,
+            brideName: selectedBrideMember
+              ? `${selectedBrideMember.firstName} ${selectedBrideMember.lastName}`
+              : formData.brideName || null,
             certificateNumber: formData.certificateNumber || null,
             certificateUrl: formData.certificateUrl || null,
             notes: formData.notes || null,
-            branchId: orgBranchFilter.branchId || '',
+            branchId: orgBranchFilter.branchId || "",
             organisationId: orgBranchFilter.organisationId || null,
           },
         },
       });
 
-      toast.success('Sacrament record updated successfully');
+      toast.success("Sacrament record updated successfully");
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('Error updating record:', error);
-      toast.error(error.message || 'Failed to update sacrament record');
+      console.error("Error updating record:", error);
+      toast.error(error.message || "Failed to update sacrament record");
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleMemberChange = (memberId: string, member?: Member) => {
@@ -233,15 +248,15 @@ export default function EditSacramentalRecordModal({
   const handleGroomMemberChange = (value: string, member?: Member) => {
     if (member) {
       setSelectedGroomMember(member);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        groomName: `${member.firstName} ${member.lastName}`
+        groomName: `${member.firstName} ${member.lastName}`,
       }));
     } else {
       setSelectedGroomMember(null);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        groomName: value
+        groomName: value,
       }));
     }
   };
@@ -249,15 +264,15 @@ export default function EditSacramentalRecordModal({
   const handleBrideMemberChange = (value: string, member?: Member) => {
     if (member) {
       setSelectedBrideMember(member);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        brideName: `${member.firstName} ${member.lastName}`
+        brideName: `${member.firstName} ${member.lastName}`,
       }));
     } else {
       setSelectedBrideMember(null);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        brideName: value
+        brideName: value,
       }));
     }
   };
@@ -267,10 +282,13 @@ export default function EditSacramentalRecordModal({
   const color = getSacramentColor(record.sacramentType);
   const sacramentType = record.sacramentType;
 
-  const showGodparents = sacramentType === 'BAPTISM';
-  const showSponsor = sacramentType === 'EUCHARIST_FIRST_COMMUNION' || sacramentType === 'CONFIRMATION';
-  const showMarriageFields = sacramentType === 'MATRIMONY';
-  const showWitnesses = sacramentType === 'MATRIMONY' || sacramentType === 'CONFIRMATION';
+  const showGodparents = sacramentType === "BAPTISM";
+  const showSponsor =
+    sacramentType === "EUCHARIST_FIRST_COMMUNION" ||
+    sacramentType === "CONFIRMATION";
+  const showMarriageFields = sacramentType === "MATRIMONY";
+  const showWitnesses =
+    sacramentType === "MATRIMONY" || sacramentType === "CONFIRMATION";
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -329,7 +347,9 @@ export default function EditSacramentalRecordModal({
                       <input
                         type="date"
                         value={formData.dateOfSacrament}
-                        onChange={(e) => handleInputChange('dateOfSacrament', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("dateOfSacrament", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
@@ -342,7 +362,12 @@ export default function EditSacramentalRecordModal({
                       <input
                         type="text"
                         value={formData.locationOfSacrament}
-                        onChange={(e) => handleInputChange('locationOfSacrament', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "locationOfSacrament",
+                            e.target.value,
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Church or location name"
                         required
@@ -371,7 +396,9 @@ export default function EditSacramentalRecordModal({
                       <input
                         type="text"
                         value={formData.officiantName}
-                        onChange={(e) => handleInputChange('officiantName', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("officiantName", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Name of officiating minister"
                         required
@@ -385,7 +412,9 @@ export default function EditSacramentalRecordModal({
                       <input
                         type="text"
                         value={formData.officiantId}
-                        onChange={(e) => handleInputChange('officiantId', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("officiantId", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Internal officiant ID"
                       />
@@ -395,7 +424,9 @@ export default function EditSacramentalRecordModal({
                   {/* Sacrament-specific fields */}
                   {showGodparents && (
                     <div className="space-y-4">
-                      <h4 className="text-md font-medium text-gray-900">Godparents</h4>
+                      <h4 className="text-md font-medium text-gray-900">
+                        Godparents
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -404,7 +435,12 @@ export default function EditSacramentalRecordModal({
                           <input
                             type="text"
                             value={formData.godparent1Name}
-                            onChange={(e) => handleInputChange('godparent1Name', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "godparent1Name",
+                                e.target.value,
+                              )
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="First godparent name"
                           />
@@ -416,7 +452,12 @@ export default function EditSacramentalRecordModal({
                           <input
                             type="text"
                             value={formData.godparent2Name}
-                            onChange={(e) => handleInputChange('godparent2Name', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "godparent2Name",
+                                e.target.value,
+                              )
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Second godparent name"
                           />
@@ -433,7 +474,9 @@ export default function EditSacramentalRecordModal({
                       <input
                         type="text"
                         value={formData.sponsorName}
-                        onChange={(e) => handleInputChange('sponsorName', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("sponsorName", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Sponsor name"
                       />
@@ -442,7 +485,9 @@ export default function EditSacramentalRecordModal({
 
                   {showMarriageFields && (
                     <div className="space-y-4">
-                      <h4 className="text-md font-medium text-gray-900">Marriage Details</h4>
+                      <h4 className="text-md font-medium text-gray-900">
+                        Marriage Details
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -470,7 +515,9 @@ export default function EditSacramentalRecordModal({
 
                   {showWitnesses && (
                     <div className="space-y-4">
-                      <h4 className="text-md font-medium text-gray-900">Witnesses</h4>
+                      <h4 className="text-md font-medium text-gray-900">
+                        Witnesses
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -479,7 +526,9 @@ export default function EditSacramentalRecordModal({
                           <input
                             type="text"
                             value={formData.witness1Name}
-                            onChange={(e) => handleInputChange('witness1Name', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("witness1Name", e.target.value)
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="First witness name"
                           />
@@ -491,7 +540,9 @@ export default function EditSacramentalRecordModal({
                           <input
                             type="text"
                             value={formData.witness2Name}
-                            onChange={(e) => handleInputChange('witness2Name', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("witness2Name", e.target.value)
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Second witness name"
                           />
@@ -502,7 +553,9 @@ export default function EditSacramentalRecordModal({
 
                   {/* Certificate Information */}
                   <div className="space-y-4">
-                    <h4 className="text-md font-medium text-gray-900">Certificate Information</h4>
+                    <h4 className="text-md font-medium text-gray-900">
+                      Certificate Information
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -511,7 +564,12 @@ export default function EditSacramentalRecordModal({
                         <input
                           type="text"
                           value={formData.certificateNumber}
-                          onChange={(e) => handleInputChange('certificateNumber', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "certificateNumber",
+                              e.target.value,
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Certificate tracking number"
                         />
@@ -523,7 +581,9 @@ export default function EditSacramentalRecordModal({
                         <input
                           type="url"
                           value={formData.certificateUrl}
-                          onChange={(e) => handleInputChange('certificateUrl', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("certificateUrl", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Digital certificate URL"
                         />
@@ -538,7 +598,9 @@ export default function EditSacramentalRecordModal({
                     </label>
                     <textarea
                       value={formData.notes}
-                      onChange={(e) => handleInputChange('notes', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("notes", e.target.value)
+                      }
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Additional notes or comments"
@@ -559,7 +621,7 @@ export default function EditSacramentalRecordModal({
                       disabled={loading}
                       className={`px-4 py-2 text-sm font-medium text-white bg-${color}-600 border border-transparent rounded-md hover:bg-${color}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${color}-500 disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      {loading ? 'Updating...' : 'Update Record'}
+                      {loading ? "Updating..." : "Update Record"}
                     </button>
                   </div>
                 </form>

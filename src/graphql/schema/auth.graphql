@@ -1,7 +1,6 @@
 """
 Authentication and User Management schema
 """
-
 enum AuthProvider {
   EMAIL
   GOOGLE
@@ -113,16 +112,16 @@ type MFASetupResponse {
 extend type Query {
   # Get current authenticated user
   me: User! @auth(requires: [GUEST])
-  
+
   # Get all active sessions for current user
   mySessions: [Session!]! @auth(requires: [MEMBER])
-  
+
   # Get all permissions in the system (for admins)
   permissions: [Permission!]! @auth(requires: [ADMIN])
-  
+
   # Get user by ID (for admins)
   user(id: ID!): User @auth(requires: [STAFF])
-  
+
   # List users with filtering and pagination (for admins)
   users(
     search: String
@@ -131,10 +130,10 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): UserConnection! @auth(requires: [STAFF])
-  
+
   # Validate password reset token
   validateResetToken(token: String!): Boolean!
-  
+
   # Get MFA status
   mfaStatus: MFAStatusResponse! @auth(requires: [MEMBER])
 }
@@ -158,67 +157,72 @@ type UserEdge {
 extend type Mutation {
   # Register a new user
   register(input: RegisterInput!): AuthResponse!
-  
+
   # Login with email and password
   login(input: LoginInput!): AuthResponse!
-  
+
   # Login with a social provider
   socialLogin(provider: AuthProvider!, token: String!): AuthResponse!
-  
+
   # Logout current session
   logout: Boolean!
-  
+
   # Logout all sessions for the current user
   logoutAll: Boolean! @auth(requires: [MEMBER])
-  
+
   # Logout a specific session
   logoutSession(sessionId: ID!): Boolean! @auth(requires: [MEMBER])
-  
+
   # Refresh access token
   refreshToken(refreshToken: String!): AuthResponse!
-  
+
   # Send password reset email
   requestPasswordReset(email: String!): VerificationResponse!
-  
+
   # Reset password with token
   resetPassword(token: String!, newPassword: String!): AuthResponse!
-  
+
   # Change password (when authenticated)
-  changePassword(currentPassword: String!, newPassword: String!): Boolean! @auth(requires: [MEMBER])
-  
+  changePassword(currentPassword: String!, newPassword: String!): Boolean!
+    @auth(requires: [MEMBER])
+
   # Send email verification
   requestEmailVerification: VerificationResponse! @auth(requires: [GUEST])
-  
+
   # Verify email with token
   verifyEmail(token: String!): AuthResponse!
-  
+
   # Setup MFA
   setupMFA(type: MFAType!): MFASetupResponse! @auth(requires: [MEMBER])
-  
+
   # Verify MFA setup
-  verifyMFASetup(type: MFAType!, code: String!): Boolean! @auth(requires: [MEMBER])
-  
+  verifyMFASetup(type: MFAType!, code: String!): Boolean!
+    @auth(requires: [MEMBER])
+
   # Disable MFA
-  disableMFA(type: MFAType!, password: String!): Boolean! @auth(requires: [MEMBER])
-  
+  disableMFA(type: MFAType!, password: String!): Boolean!
+    @auth(requires: [MEMBER])
+
   # Verify MFA during login
   verifyMFA(sessionId: ID!, code: String!, type: MFAType!): AuthResponse!
-  
+
   # Update user profile
   updateProfile(input: UpdateProfileInput!): User! @auth(requires: [MEMBER])
-  
+
   # Update user (admin function)
-  updateUser(id: ID!, input: UpdateUserInput!): User! @auth(requires: [BRANCH_ADMIN])
-  
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Create new user (admin function)
   createUser(input: CreateUserInput!): User! @auth(requires: [BRANCH_ADMIN])
-  
+
   # Delete user (admin function)
   deleteUser(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Request phone verification
-  requestPhoneVerification(phone: String!): VerificationResponse! @auth(requires: [MEMBER])
-  
+  requestPhoneVerification(phone: String!): VerificationResponse!
+    @auth(requires: [MEMBER])
+
   # Verify phone with code
   verifyPhone(code: String!): Boolean! @auth(requires: [MEMBER])
 }
@@ -296,7 +300,7 @@ input CreateUserInput {
 extend type Subscription {
   # Get notified when a new login happens
   userLoggedIn: User! @auth(requires: [MEMBER])
-  
+
   # Get notified when a session expires
   sessionExpired: Session! @auth(requires: [MEMBER])
 }

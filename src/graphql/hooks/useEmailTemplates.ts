@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_EMAIL_TEMPLATES } from '../queries/messageQueries';
+import { useQuery } from "@apollo/client";
+import { GET_EMAIL_TEMPLATES } from "../queries/messageQueries";
 
 export interface EmailTemplate {
   id: string;
@@ -15,13 +15,13 @@ export interface EmailTemplate {
 
 export function useEmailTemplates(organisationId: string, branchId?: string) {
   const { data, loading, error, refetch } = useQuery(GET_EMAIL_TEMPLATES, {
-    variables: { 
-      organisationId, 
-      branchId 
+    variables: {
+      organisationId,
+      branchId,
     },
     skip: !organisationId,
   });
-  
+
   return {
     templates: data?.emailTemplates || [],
     loading,

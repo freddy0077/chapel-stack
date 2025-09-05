@@ -1,5 +1,5 @@
-import { gql, useQuery, useMutation } from '@apollo/client';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { gql, useQuery, useMutation } from "@apollo/client";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 // GraphQL Fragments
 const CONTRIBUTION_FIELDS = gql`
@@ -48,7 +48,9 @@ const GET_FINANCIAL_DATA = gql`
 
 // GraphQL Mutations
 const CREATE_CONTRIBUTION = gql`
-  mutation CreateContribution($createContributionInput: CreateContributionInput!) {
+  mutation CreateContribution(
+    $createContributionInput: CreateContributionInput!
+  ) {
     createContribution(createContributionInput: $createContributionInput) {
       ...ContributionFields
     }
@@ -65,7 +67,10 @@ export const useBranchFinances = () => {
     skip: !organisationId,
   });
 
-  const [createContribution, { loading: creationLoading, error: creationError }] = useMutation(CREATE_CONTRIBUTION, {
+  const [
+    createContribution,
+    { loading: creationLoading, error: creationError },
+  ] = useMutation(CREATE_CONTRIBUTION, {
     update(cache, { data: { createContribution } }) {
       const existingData = cache.readQuery({
         query: GET_FINANCIAL_DATA,
@@ -90,15 +95,15 @@ export const useBranchFinances = () => {
     (acc, contribution) => {
       acc.totalTransactions += 1;
       acc.totalAmount += contribution.amount;
-      const typeName = contribution.contributionType?.name || 'Other';
+      const typeName = contribution.contributionType?.name || "Other";
       switch (typeName) {
-        case 'Collection':
+        case "Collection":
           acc.collections += contribution.amount;
           break;
-        case 'Tithe':
+        case "Tithe":
           acc.tithes += contribution.amount;
           break;
-        case 'Pledge':
+        case "Pledge":
           acc.pledges += contribution.amount;
           break;
         default:
@@ -107,7 +112,14 @@ export const useBranchFinances = () => {
       }
       return acc;
     },
-    { collections: 0, tithes: 0, pledges: 0, other: 0, totalTransactions: 0, totalAmount: 0 }
+    {
+      collections: 0,
+      tithes: 0,
+      pledges: 0,
+      other: 0,
+      totalTransactions: 0,
+      totalAmount: 0,
+    },
   );
 
   return {

@@ -1,7 +1,6 @@
 """
 Prayer Request schema - handles prayer needs, intercessory teams, and prayer tracking
 """
-
 enum PrayerRequestType {
   PERSONAL
   FAMILY
@@ -248,56 +247,56 @@ extend type Query {
     assignedToMe: Boolean
     pagination: PaginationInput
   ): PrayerRequestConnection! @auth(requires: [MEMBER])
-  
+
   # Get a specific prayer request
   prayerRequest(id: ID!): PrayerRequest @auth(requires: [MEMBER])
-  
+
   # Get my prayer requests (for authenticated members)
   myPrayerRequests(
     status: PrayerRequestStatus
     pagination: PaginationInput
   ): PrayerRequestConnection! @auth(requires: [MEMBER])
-  
+
   # Get prayer requests assigned to me
   myPrayerAssignments(
     status: String
     pagination: PaginationInput
   ): PrayerAssignmentConnection! @auth(requires: [MEMBER])
-  
+
   # Get prayer teams
   prayerTeams(
     search: String
     branchId: ID
     pagination: PaginationInput
   ): PrayerTeamConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific prayer team
   prayerTeam(id: ID!): PrayerTeam @auth(requires: [STAFF])
-  
+
   # Get prayer team members
   prayerTeamMembers(
     teamId: ID!
     isActive: Boolean
     pagination: PaginationInput
   ): PrayerTeamMemberConnection! @auth(requires: [STAFF])
-  
+
   # Get prayer chains
   prayerChains(
     isActive: Boolean
     branchId: ID
     pagination: PaginationInput
   ): PrayerChainConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific prayer chain
   prayerChain(id: ID!): PrayerChain @auth(requires: [STAFF])
-  
+
   # Get prayer chain participants
   prayerChainParticipants(
     chainId: ID!
     isActive: Boolean
     pagination: PaginationInput
   ): PrayerChainParticipantConnection! @auth(requires: [STAFF])
-  
+
   # Get prayer events
   prayerEvents(
     search: String
@@ -305,33 +304,29 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): PrayerEventConnection! @auth(requires: [MEMBER])
-  
+
   # Get a specific prayer event
   prayerEvent(id: ID!): PrayerEvent @auth(requires: [MEMBER])
-  
+
   # Get prayer statistics
-  prayerStatistics(
-    dateRange: DateRangeInput
-    branchId: ID
-  ): PrayerStatistics! @auth(requires: [STAFF])
-  
+  prayerStatistics(dateRange: DateRangeInput, branchId: ID): PrayerStatistics!
+    @auth(requires: [STAFF])
+
   # Get prayer request updates
   prayerRequestUpdates(
     requestId: ID!
     pagination: PaginationInput
   ): PrayerUpdateConnection! @auth(requires: [MEMBER])
-  
+
   # Get prayer request comments
   prayerRequestComments(
     requestId: ID!
     pagination: PaginationInput
   ): PrayerCommentConnection! @auth(requires: [MEMBER])
-  
+
   # Get prayer request activity feed (combined updates and comments)
-  prayerRequestActivity(
-    requestId: ID!
-    pagination: PaginationInput
-  ): JSON! @auth(requires: [MEMBER])
+  prayerRequestActivity(requestId: ID!, pagination: PaginationInput): JSON!
+    @auth(requires: [MEMBER])
 }
 
 type PrayerRequestConnection {
@@ -426,100 +421,138 @@ type PrayerCommentEdge {
 
 extend type Mutation {
   # Create a prayer request
-  createPrayerRequest(input: CreatePrayerRequestInput!): PrayerRequest! @auth(requires: [MEMBER])
-  
+  createPrayerRequest(input: CreatePrayerRequestInput!): PrayerRequest!
+    @auth(requires: [MEMBER])
+
   # Update a prayer request
-  updatePrayerRequest(id: ID!, input: UpdatePrayerRequestInput!): PrayerRequest! @auth(requires: [MEMBER])
-  
+  updatePrayerRequest(
+    id: ID!
+    input: UpdatePrayerRequestInput!
+  ): PrayerRequest! @auth(requires: [MEMBER])
+
   # Delete a prayer request
   deletePrayerRequest(id: ID!): Boolean! @auth(requires: [MEMBER])
-  
+
   # Update prayer request status
-  updatePrayerRequestStatus(id: ID!, status: PrayerRequestStatus!): PrayerRequest! @auth(requires: [MEMBER])
-  
+  updatePrayerRequestStatus(
+    id: ID!
+    status: PrayerRequestStatus!
+  ): PrayerRequest! @auth(requires: [MEMBER])
+
   # Add an update to a prayer request
-  addPrayerRequestUpdate(input: AddPrayerUpdateInput!): PrayerUpdate! @auth(requires: [MEMBER])
-  
+  addPrayerRequestUpdate(input: AddPrayerUpdateInput!): PrayerUpdate!
+    @auth(requires: [MEMBER])
+
   # Add a comment to a prayer request
-  addPrayerRequestComment(input: AddPrayerCommentInput!): PrayerComment! @auth(requires: [MEMBER])
-  
+  addPrayerRequestComment(input: AddPrayerCommentInput!): PrayerComment!
+    @auth(requires: [MEMBER])
+
   # Record prayer for a request
-  recordPrayer(requestId: ID!, notes: String): PrayerRequest! @auth(requires: [MEMBER])
-  
+  recordPrayer(requestId: ID!, notes: String): PrayerRequest!
+    @auth(requires: [MEMBER])
+
   # Add testimony to a prayer request
-  addTestimony(id: ID!, testimony: String!): PrayerRequest! @auth(requires: [MEMBER])
-  
+  addTestimony(id: ID!, testimony: String!): PrayerRequest!
+    @auth(requires: [MEMBER])
+
   # Assign prayer request
-  assignPrayerRequest(input: AssignPrayerRequestInput!): PrayerAssignment! @auth(requires: [STAFF])
-  
+  assignPrayerRequest(input: AssignPrayerRequestInput!): PrayerAssignment!
+    @auth(requires: [STAFF])
+
   # Update prayer assignment status
-  updatePrayerAssignmentStatus(id: ID!, status: String!): PrayerAssignment! @auth(requires: [MEMBER])
-  
+  updatePrayerAssignmentStatus(id: ID!, status: String!): PrayerAssignment!
+    @auth(requires: [MEMBER])
+
   # Create a prayer team
-  createPrayerTeam(input: CreatePrayerTeamInput!): PrayerTeam! @auth(requires: [STAFF])
-  
+  createPrayerTeam(input: CreatePrayerTeamInput!): PrayerTeam!
+    @auth(requires: [STAFF])
+
   # Update a prayer team
-  updatePrayerTeam(id: ID!, input: UpdatePrayerTeamInput!): PrayerTeam! @auth(requires: [STAFF])
-  
+  updatePrayerTeam(id: ID!, input: UpdatePrayerTeamInput!): PrayerTeam!
+    @auth(requires: [STAFF])
+
   # Delete a prayer team
   deletePrayerTeam(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add member to prayer team
-  addPrayerTeamMember(input: AddPrayerTeamMemberInput!): PrayerTeamMember! @auth(requires: [STAFF])
-  
+  addPrayerTeamMember(input: AddPrayerTeamMemberInput!): PrayerTeamMember!
+    @auth(requires: [STAFF])
+
   # Update prayer team member
-  updatePrayerTeamMember(id: ID!, input: UpdatePrayerTeamMemberInput!): PrayerTeamMember! @auth(requires: [STAFF])
-  
+  updatePrayerTeamMember(
+    id: ID!
+    input: UpdatePrayerTeamMemberInput!
+  ): PrayerTeamMember! @auth(requires: [STAFF])
+
   # Remove member from prayer team
   removePrayerTeamMember(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add prayer team schedule
-  addPrayerTeamSchedule(input: AddPrayerTeamScheduleInput!): PrayerTeamSchedule! @auth(requires: [STAFF])
-  
+  addPrayerTeamSchedule(
+    input: AddPrayerTeamScheduleInput!
+  ): PrayerTeamSchedule! @auth(requires: [STAFF])
+
   # Update prayer team schedule
-  updatePrayerTeamSchedule(id: ID!, input: UpdatePrayerTeamScheduleInput!): PrayerTeamSchedule! @auth(requires: [STAFF])
-  
+  updatePrayerTeamSchedule(
+    id: ID!
+    input: UpdatePrayerTeamScheduleInput!
+  ): PrayerTeamSchedule! @auth(requires: [STAFF])
+
   # Remove prayer team schedule
   removePrayerTeamSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a prayer chain
-  createPrayerChain(input: CreatePrayerChainInput!): PrayerChain! @auth(requires: [STAFF])
-  
+  createPrayerChain(input: CreatePrayerChainInput!): PrayerChain!
+    @auth(requires: [STAFF])
+
   # Update a prayer chain
-  updatePrayerChain(id: ID!, input: UpdatePrayerChainInput!): PrayerChain! @auth(requires: [STAFF])
-  
+  updatePrayerChain(id: ID!, input: UpdatePrayerChainInput!): PrayerChain!
+    @auth(requires: [STAFF])
+
   # Delete a prayer chain
   deletePrayerChain(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add participant to prayer chain
-  addPrayerChainParticipant(input: AddPrayerChainParticipantInput!): PrayerChainParticipant! @auth(requires: [STAFF])
-  
+  addPrayerChainParticipant(
+    input: AddPrayerChainParticipantInput!
+  ): PrayerChainParticipant! @auth(requires: [STAFF])
+
   # Update prayer chain participant
-  updatePrayerChainParticipant(id: ID!, input: UpdatePrayerChainParticipantInput!): PrayerChainParticipant! @auth(requires: [STAFF])
-  
+  updatePrayerChainParticipant(
+    id: ID!
+    input: UpdatePrayerChainParticipantInput!
+  ): PrayerChainParticipant! @auth(requires: [STAFF])
+
   # Remove participant from prayer chain
   removePrayerChainParticipant(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Activate urgent prayer chain
-  activateUrgentPrayerChain(requestId: ID!, chainId: ID!): Boolean! @auth(requires: [STAFF])
-  
+  activateUrgentPrayerChain(requestId: ID!, chainId: ID!): Boolean!
+    @auth(requires: [STAFF])
+
   # Create a prayer event
-  createPrayerEvent(input: CreatePrayerEventInput!): PrayerEvent! @auth(requires: [STAFF])
-  
+  createPrayerEvent(input: CreatePrayerEventInput!): PrayerEvent!
+    @auth(requires: [STAFF])
+
   # Update a prayer event
-  updatePrayerEvent(id: ID!, input: UpdatePrayerEventInput!): PrayerEvent! @auth(requires: [STAFF])
-  
+  updatePrayerEvent(id: ID!, input: UpdatePrayerEventInput!): PrayerEvent!
+    @auth(requires: [STAFF])
+
   # Delete a prayer event
   deletePrayerEvent(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add participant to prayer event
-  addPrayerEventParticipant(eventId: ID!, memberId: ID!): PrayerEvent! @auth(requires: [STAFF])
-  
+  addPrayerEventParticipant(eventId: ID!, memberId: ID!): PrayerEvent!
+    @auth(requires: [STAFF])
+
   # Remove participant from prayer event
-  removePrayerEventParticipant(eventId: ID!, memberId: ID!): PrayerEvent! @auth(requires: [STAFF])
-  
+  removePrayerEventParticipant(eventId: ID!, memberId: ID!): PrayerEvent!
+    @auth(requires: [STAFF])
+
   # Update notification preferences
-  updatePrayerNotificationPreferences(input: UpdatePrayerNotificationPreferencesInput!): [PrayerNotificationPreference!]! @auth(requires: [MEMBER])
+  updatePrayerNotificationPreferences(
+    input: UpdatePrayerNotificationPreferencesInput!
+  ): [PrayerNotificationPreference!]! @auth(requires: [MEMBER])
 }
 
 input CreatePrayerRequestInput {
@@ -704,16 +737,17 @@ input UpdatePrayerNotificationPreferencesInput {
 extend type Subscription {
   # Get notified when a new prayer request is submitted
   prayerRequestSubmitted(branchId: ID): PrayerRequest! @auth(requires: [STAFF])
-  
+
   # Get notified when a prayer request is updated
   prayerRequestUpdated(requestId: ID!): PrayerUpdate! @auth(requires: [MEMBER])
-  
+
   # Get notified when a prayer request is assigned to you
-  prayerRequestAssigned(assigneeId: ID!): PrayerAssignment! @auth(requires: [MEMBER])
-  
+  prayerRequestAssigned(assigneeId: ID!): PrayerAssignment!
+    @auth(requires: [MEMBER])
+
   # Get notified of prayer chain activations
   prayerChainActivated(chainId: ID!): PrayerChain! @auth(requires: [MEMBER])
-  
+
   # Get notified of urgent prayer requests
   urgentPrayerRequestSubmitted: PrayerRequest! @auth(requires: [STAFF])
 }

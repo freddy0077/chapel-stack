@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_USERS_WITH_ROLE = gql`
   mutation CreateUsersWithRole($input: CreateUsersWithRoleInput!) {
@@ -14,7 +14,11 @@ export const CREATE_USERS_WITH_ROLE = gql`
 `;
 
 export const ASSIGN_USER_ROLE = gql`
-  mutation AssignUserRole($userId: String!, $branchId: String!, $role: String!) {
+  mutation AssignUserRole(
+    $userId: String!
+    $branchId: String!
+    $role: String!
+  ) {
     assignUserRole(userId: $userId, branchId: $branchId, role: $role) {
       id
       firstName
@@ -27,7 +31,11 @@ export const ASSIGN_USER_ROLE = gql`
 `;
 
 export const REMOVE_USER_ROLE = gql`
-  mutation RemoveUserRole($userId: String!, $branchId: String!, $role: String!) {
+  mutation RemoveUserRole(
+    $userId: String!
+    $branchId: String!
+    $role: String!
+  ) {
     removeUserRole(userId: $userId, branchId: $branchId, role: $role) {
       id
       firstName
@@ -43,7 +51,11 @@ export const REMOVE_USER_ROLE = gql`
  * Mutation to add a user to a branch with a role
  */
 export const ADD_USER_TO_BRANCH = gql`
-  mutation AddUserToBranch($userId: String!, $branchId: String!, $role: String!) {
+  mutation AddUserToBranch(
+    $userId: String!
+    $branchId: String!
+    $role: String!
+  ) {
     addUserToBranch(userId: $userId, branchId: $branchId, role: $role) {
       id
       email

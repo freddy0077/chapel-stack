@@ -1,7 +1,6 @@
 """
 Visitor Management schema - handles visitor tracking, follow-up, and conversion processes
 """
-
 enum VisitorSource {
   WEBSITE
   SOCIAL_MEDIA
@@ -274,15 +273,15 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): VisitorConnection! @auth(requires: [STAFF])
-  
+
   visitor(id: ID!): Visitor @auth(requires: [STAFF])
-  
+
   # Visitor events
   visitorEvents(
     visitorId: ID!
     pagination: PaginationInput
   ): VisitorEventConnection! @auth(requires: [STAFF])
-  
+
   # Visitor follow-ups
   visitorFollowUps(
     visitorId: ID
@@ -293,31 +292,32 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): VisitorFollowUpConnection! @auth(requires: [STAFF])
-  
+
   visitorFollowUp(id: ID!): VisitorFollowUp @auth(requires: [STAFF])
-  
+
   # My assigned follow-ups
   myAssignedFollowUps(
     status: FollowUpStatus
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): VisitorFollowUpConnection! @auth(requires: [STAFF])
-  
+
   # Follow-up interactions
   followUpInteractions(
     followUpId: ID!
     pagination: PaginationInput
   ): FollowUpInteractionConnection! @auth(requires: [STAFF])
-  
+
   # Visitor interactions
   visitorInteractions(
     visitorId: ID!
     pagination: PaginationInput
   ): VisitorInteractionConnection! @auth(requires: [STAFF])
-  
+
   # Visitor preferences
-  visitorPreferences(visitorId: ID!): VisitorPreferences @auth(requires: [STAFF])
-  
+  visitorPreferences(visitorId: ID!): VisitorPreferences
+    @auth(requires: [STAFF])
+
   # Visitor campaigns
   visitorCampaigns(
     status: Status
@@ -325,33 +325,32 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): VisitorCampaignConnection! @auth(requires: [STAFF])
-  
+
   visitorCampaign(id: ID!): VisitorCampaign @auth(requires: [STAFF])
-  
+
   # Visitor journey
   visitorJourney(visitorId: ID!): VisitorJourney @auth(requires: [STAFF])
-  
+
   visitorJourneys(
     currentStage: String
     guideId: ID
     pagination: PaginationInput
   ): VisitorJourneyConnection! @auth(requires: [STAFF])
-  
+
   # Visitor conversion funnels
   visitorConversionFunnels(
     branchId: ID
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): VisitorConversionFunnelConnection! @auth(requires: [STAFF])
-  
-  visitorConversionFunnel(id: ID!): VisitorConversionFunnel @auth(requires: [STAFF])
-  
+
+  visitorConversionFunnel(id: ID!): VisitorConversionFunnel
+    @auth(requires: [STAFF])
+
   # Visitor metrics
-  visitorMetrics(
-    branchId: ID
-    dateRange: DateRangeInput
-  ): VisitorMetrics! @auth(requires: [STAFF])
-  
+  visitorMetrics(branchId: ID, dateRange: DateRangeInput): VisitorMetrics!
+    @auth(requires: [STAFF])
+
   # Upcoming follow-ups
   upcomingFollowUps(
     days: Int
@@ -359,7 +358,7 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): VisitorFollowUpConnection! @auth(requires: [STAFF])
-  
+
   # Overdue follow-ups
   overdueFollowUps(
     assignedToId: ID
@@ -451,52 +450,97 @@ type VisitorConversionFunnelEdge {
 extend type Mutation {
   # Visitors
   createVisitor(input: CreateVisitorInput!): Visitor! @auth(requires: [STAFF])
-  updateVisitor(id: ID!, input: UpdateVisitorInput!): Visitor! @auth(requires: [STAFF])
+  updateVisitor(id: ID!, input: UpdateVisitorInput!): Visitor!
+    @auth(requires: [STAFF])
   deleteVisitor(id: ID!): Boolean! @auth(requires: [STAFF])
-  convertVisitorToMember(visitorId: ID!, memberId: ID): Member! @auth(requires: [STAFF])
-  
+  convertVisitorToMember(visitorId: ID!, memberId: ID): Member!
+    @auth(requires: [STAFF])
+
   # Visitor check-in
-  checkInVisitor(input: CheckInVisitorInput!): VisitorEvent! @auth(requires: [STAFF])
-  
+  checkInVisitor(input: CheckInVisitorInput!): VisitorEvent!
+    @auth(requires: [STAFF])
+
   # Visitor follow-ups
-  createVisitorFollowUp(input: CreateFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
-  updateVisitorFollowUp(id: ID!, input: UpdateFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
+  createVisitorFollowUp(input: CreateFollowUpInput!): VisitorFollowUp!
+    @auth(requires: [STAFF])
+  updateVisitorFollowUp(id: ID!, input: UpdateFollowUpInput!): VisitorFollowUp!
+    @auth(requires: [STAFF])
   deleteVisitorFollowUp(id: ID!): Boolean! @auth(requires: [STAFF])
-  reassignFollowUp(id: ID!, newAssigneeId: ID!): VisitorFollowUp! @auth(requires: [STAFF])
-  completeFollowUp(id: ID!, input: CompleteFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
-  scheduleNextFollowUp(followUpId: ID!, input: ScheduleNextFollowUpInput!): VisitorFollowUp! @auth(requires: [STAFF])
-  
+  reassignFollowUp(id: ID!, newAssigneeId: ID!): VisitorFollowUp!
+    @auth(requires: [STAFF])
+  completeFollowUp(id: ID!, input: CompleteFollowUpInput!): VisitorFollowUp!
+    @auth(requires: [STAFF])
+  scheduleNextFollowUp(
+    followUpId: ID!
+    input: ScheduleNextFollowUpInput!
+  ): VisitorFollowUp! @auth(requires: [STAFF])
+
   # Follow-up interactions
-  recordFollowUpInteraction(input: RecordInteractionInput!): FollowUpInteraction! @auth(requires: [STAFF])
-  
+  recordFollowUpInteraction(
+    input: RecordInteractionInput!
+  ): FollowUpInteraction! @auth(requires: [STAFF])
+
   # Visitor interactions
-  recordVisitorInteraction(input: RecordVisitorInteractionInput!): VisitorInteraction! @auth(requires: [STAFF])
-  updateVisitorInteraction(id: ID!, input: UpdateVisitorInteractionInput!): VisitorInteraction! @auth(requires: [STAFF])
+  recordVisitorInteraction(
+    input: RecordVisitorInteractionInput!
+  ): VisitorInteraction! @auth(requires: [STAFF])
+  updateVisitorInteraction(
+    id: ID!
+    input: UpdateVisitorInteractionInput!
+  ): VisitorInteraction! @auth(requires: [STAFF])
   deleteVisitorInteraction(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Visitor preferences
-  updateVisitorPreferences(visitorId: ID!, input: UpdateVisitorPreferencesInput!): VisitorPreferences! @auth(requires: [STAFF])
-  
+  updateVisitorPreferences(
+    visitorId: ID!
+    input: UpdateVisitorPreferencesInput!
+  ): VisitorPreferences! @auth(requires: [STAFF])
+
   # Visitor campaigns
-  createVisitorCampaign(input: CreateVisitorCampaignInput!): VisitorCampaign! @auth(requires: [STAFF])
-  updateVisitorCampaign(id: ID!, input: UpdateVisitorCampaignInput!): VisitorCampaign! @auth(requires: [STAFF])
+  createVisitorCampaign(input: CreateVisitorCampaignInput!): VisitorCampaign!
+    @auth(requires: [STAFF])
+  updateVisitorCampaign(
+    id: ID!
+    input: UpdateVisitorCampaignInput!
+  ): VisitorCampaign! @auth(requires: [STAFF])
   deleteVisitorCampaign(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Visitor journey
-  createVisitorJourney(input: CreateVisitorJourneyInput!): VisitorJourney! @auth(requires: [STAFF])
-  updateVisitorJourney(id: ID!, input: UpdateVisitorJourneyInput!): VisitorJourney! @auth(requires: [STAFF])
-  addJourneyStage(journeyId: ID!, input: AddJourneyStageInput!): VisitorJourneyStage! @auth(requires: [STAFF])
-  completeJourneyStage(stageId: ID!, completionDate: Date!, notes: String): VisitorJourneyStage! @auth(requires: [STAFF])
-  
+  createVisitorJourney(input: CreateVisitorJourneyInput!): VisitorJourney!
+    @auth(requires: [STAFF])
+  updateVisitorJourney(
+    id: ID!
+    input: UpdateVisitorJourneyInput!
+  ): VisitorJourney! @auth(requires: [STAFF])
+  addJourneyStage(
+    journeyId: ID!
+    input: AddJourneyStageInput!
+  ): VisitorJourneyStage! @auth(requires: [STAFF])
+  completeJourneyStage(
+    stageId: ID!
+    completionDate: Date!
+    notes: String
+  ): VisitorJourneyStage! @auth(requires: [STAFF])
+
   # Visitor conversion funnels
-  createConversionFunnel(input: CreateConversionFunnelInput!): VisitorConversionFunnel! @auth(requires: [STAFF])
-  updateConversionFunnel(id: ID!, input: UpdateConversionFunnelInput!): VisitorConversionFunnel! @auth(requires: [STAFF])
+  createConversionFunnel(
+    input: CreateConversionFunnelInput!
+  ): VisitorConversionFunnel! @auth(requires: [STAFF])
+  updateConversionFunnel(
+    id: ID!
+    input: UpdateConversionFunnelInput!
+  ): VisitorConversionFunnel! @auth(requires: [STAFF])
   deleteConversionFunnel(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Bulk operations
-  bulkAssignFollowUps(followUpIds: [ID!]!, assigneeId: ID!): Int! @auth(requires: [STAFF])
-  bulkUpdateVisitorStatus(visitorIds: [ID!]!, status: VisitorStatus!): Int! @auth(requires: [STAFF])
-  generateFollowUpsForVisitors(visitorIds: [ID!]!, template: CreateFollowUpInput!): Int! @auth(requires: [STAFF])
+  bulkAssignFollowUps(followUpIds: [ID!]!, assigneeId: ID!): Int!
+    @auth(requires: [STAFF])
+  bulkUpdateVisitorStatus(visitorIds: [ID!]!, status: VisitorStatus!): Int!
+    @auth(requires: [STAFF])
+  generateFollowUpsForVisitors(
+    visitorIds: [ID!]!
+    template: CreateFollowUpInput!
+  ): Int! @auth(requires: [STAFF])
 }
 
 input CreateVisitorInput {
@@ -713,13 +757,14 @@ input ConversionFunnelStageInput {
 extend type Subscription {
   # Get notified when a new visitor is created
   visitorCreated(branchId: ID): Visitor! @auth(requires: [STAFF])
-  
+
   # Get notified when a visitor is converted to a member
   visitorConverted(branchId: ID): Member! @auth(requires: [STAFF])
-  
+
   # Get notified of new assigned follow-ups
   followUpAssigned(userId: ID!): VisitorFollowUp! @auth(requires: [STAFF])
-  
+
   # Get notified when a follow-up is due soon
-  followUpDueSoon(userId: ID!, hoursBefore: Int!): VisitorFollowUp! @auth(requires: [STAFF])
+  followUpDueSoon(userId: ID!, hoursBefore: Int!): VisitorFollowUp!
+    @auth(requires: [STAFF])
 }

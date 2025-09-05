@@ -1,6 +1,6 @@
 "use client";
 
-import { 
+import {
   ArrowTrendingDownIcon,
   CurrencyDollarIcon,
   BanknotesIcon,
@@ -10,13 +10,13 @@ import {
   ArrowDownTrayIcon,
   FunnelIcon,
   CalendarDaysIcon,
-  PlusIcon
+  PlusIcon,
 } from "@heroicons/react/24/outline";
-import { 
+import {
   SparkLineChart,
   BarChart,
   AreaChart,
-  DonutChart // Check if DonutChart is available in @tremor/react
+  DonutChart, // Check if DonutChart is available in @tremor/react
 } from "@tremor/react";
 
 interface FinancialOverviewProps {
@@ -33,7 +33,9 @@ interface FinancialOverviewProps {
   branches: { id: string; name: string }[];
 }
 
-const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOverviewProps) => {
+const FinancialOverview: React.FC<FinancialOverviewProps> = (
+  props: FinancialOverviewProps,
+) => {
   const {
     totalDonations,
     totalExpenses,
@@ -45,7 +47,7 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
     balanceTrends = [],
     selectedBranch,
     onBranchChange,
-    branches
+    branches,
   } = props;
 
   // Placeholder/mock data for new sections
@@ -79,11 +81,46 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
     { name: "Anonymous", amount: "GHS 1,200", last: "2025-06-13" },
   ];
   const latestTransactions = [
-    { date: "2025-06-20", type: "Income", category: "Tithes", amount: "+GHS 500", reference: "TRX123", notes: "Sunday Service" },
-    { date: "2025-06-19", type: "Expense", category: "Utilities", amount: "-GHS 200", reference: "TRX124", notes: "Electricity" },
-    { date: "2025-06-18", type: "Income", category: "Offerings", amount: "+GHS 300", reference: "TRX125", notes: "Midweek" },
-    { date: "2025-06-17", type: "Expense", category: "Events", amount: "-GHS 150", reference: "TRX126", notes: "Youth Event" },
-    { date: "2025-06-16", type: "Income", category: "Special Donations", amount: "+GHS 400", reference: "TRX127", notes: "Anniversary" },
+    {
+      date: "2025-06-20",
+      type: "Income",
+      category: "Tithes",
+      amount: "+GHS 500",
+      reference: "TRX123",
+      notes: "Sunday Service",
+    },
+    {
+      date: "2025-06-19",
+      type: "Expense",
+      category: "Utilities",
+      amount: "-GHS 200",
+      reference: "TRX124",
+      notes: "Electricity",
+    },
+    {
+      date: "2025-06-18",
+      type: "Income",
+      category: "Offerings",
+      amount: "+GHS 300",
+      reference: "TRX125",
+      notes: "Midweek",
+    },
+    {
+      date: "2025-06-17",
+      type: "Expense",
+      category: "Events",
+      amount: "-GHS 150",
+      reference: "TRX126",
+      notes: "Youth Event",
+    },
+    {
+      date: "2025-06-16",
+      type: "Income",
+      category: "Special Donations",
+      amount: "+GHS 400",
+      reference: "TRX127",
+      notes: "Anniversary",
+    },
   ];
   const alerts = [
     { type: "pledge", message: "3 pledges pending fulfillment" },
@@ -98,7 +135,10 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       <div className="flex flex-wrap gap-3 items-center justify-between mb-2">
         <div className="flex gap-2 items-center">
           <FunnelIcon className="h-5 w-5 text-indigo-400" />
-          <select className="rounded-lg border px-2 py-1 text-sm" defaultValue="this_month">
+          <select
+            className="rounded-lg border px-2 py-1 text-sm"
+            defaultValue="this_month"
+          >
             <option value="this_month">This Month</option>
             <option value="last_month">Last Month</option>
             <option value="custom">Custom Range</option>
@@ -107,42 +147,74 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
         </div>
         <div className="flex gap-2 items-center">
           <span className="font-medium text-sm text-gray-500">Branch:</span>
-          <select className="rounded-lg border px-2 py-1 text-sm" value={selectedBranch} onChange={e => onBranchChange(e.target.value)}>
+          <select
+            className="rounded-lg border px-2 py-1 text-sm"
+            value={selectedBranch}
+            onChange={(e) => onBranchChange(e.target.value)}
+          >
             <option value="all">All Branches</option>
-            {branches.map(branch => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
       {/* 1. Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div className="rounded-xl bg-gradient-to-br from-emerald-100 to-green-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-emerald-700 mb-1">Total Income</span>
-          <span className="text-2xl font-bold text-emerald-900">{totalDonations}</span>
+          <span className="text-xs font-semibold text-emerald-700 mb-1">
+            Total Income
+          </span>
+          <span className="text-2xl font-bold text-emerald-900">
+            {totalDonations}
+          </span>
         </div>
         <div className="rounded-xl bg-gradient-to-br from-rose-100 to-red-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-rose-700 mb-1">Total Expenses</span>
-          <span className="text-2xl font-bold text-rose-900">{totalExpenses}</span>
+          <span className="text-xs font-semibold text-rose-700 mb-1">
+            Total Expenses
+          </span>
+          <span className="text-2xl font-bold text-rose-900">
+            {totalExpenses}
+          </span>
         </div>
         <div className="rounded-xl bg-gradient-to-br from-orange-100 to-yellow-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-orange-700 mb-1">Net Balance</span>
-          <span className="text-2xl font-bold text-orange-900">{currentBalance}</span>
+          <span className="text-xs font-semibold text-orange-700 mb-1">
+            Net Balance
+          </span>
+          <span className="text-2xl font-bold text-orange-900">
+            {currentBalance}
+          </span>
         </div>
         <div className="rounded-xl bg-gradient-to-br from-indigo-100 to-purple-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-indigo-700 mb-1">Outstanding Pledges</span>
-          <span className="text-2xl font-bold text-indigo-900">{pledgesOutstanding}</span>
+          <span className="text-xs font-semibold text-indigo-700 mb-1">
+            Outstanding Pledges
+          </span>
+          <span className="text-2xl font-bold text-indigo-900">
+            {pledgesOutstanding}
+          </span>
         </div>
         <div className="rounded-xl bg-gradient-to-br from-blue-100 to-sky-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-blue-700 mb-1">Accounts Balance</span>
+          <span className="text-xs font-semibold text-blue-700 mb-1">
+            Accounts Balance
+          </span>
           <span className="text-2xl font-bold text-blue-900">GHS 19,300</span>
         </div>
         <div className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-50 p-4 flex flex-col items-start shadow">
-          <span className="text-xs font-semibold text-purple-700 mb-1">Transactions (This Week)</span>
-          <span className="text-2xl font-bold text-purple-900">{numTransactionsThisWeek}</span>
+          <span className="text-xs font-semibold text-purple-700 mb-1">
+            Transactions (This Week)
+          </span>
+          <span className="text-2xl font-bold text-purple-900">
+            {numTransactionsThisWeek}
+          </span>
         </div>
       </div>
       {/* 2. Income vs Expense Chart */}
       <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-2">Income vs Expense</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-2">
+          Income vs Expense
+        </h3>
         <BarChart
           data={[
             { name: "Week 1", Income: 1200, Expense: 800 },
@@ -159,7 +231,9 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       {/* 3. Income Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="text-base font-semibold text-gray-800 mb-2">Income Breakdown</h3>
+          <h3 className="text-base font-semibold text-gray-800 mb-2">
+            Income Breakdown
+          </h3>
           <DonutChart
             data={incomeBreakdown}
             category="value"
@@ -170,7 +244,9 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
         </div>
         {/* 4. Expense Breakdown */}
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="text-base font-semibold text-gray-800 mb-2">Expense Breakdown</h3>
+          <h3 className="text-base font-semibold text-gray-800 mb-2">
+            Expense Breakdown
+          </h3>
           <DonutChart
             data={expenseBreakdown}
             category="value"
@@ -182,19 +258,30 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       </div>
       {/* 5. Account Balances Overview */}
       <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-4">Account Balances</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-4">
+          Account Balances
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {accountBalances.map(acc => (
-            <div key={acc.name} className="rounded-lg border p-4 flex flex-col gap-2 bg-gradient-to-br from-blue-50 to-sky-50">
+          {accountBalances.map((acc) => (
+            <div
+              key={acc.name}
+              className="rounded-lg border p-4 flex flex-col gap-2 bg-gradient-to-br from-blue-50 to-sky-50"
+            >
               <div className="flex items-center gap-2">
                 <BanknotesIcon className="h-6 w-6 text-blue-400" />
                 <span className="font-semibold text-blue-900">{acc.name}</span>
               </div>
-              <span className="text-xl font-bold text-blue-800">{acc.balance}</span>
+              <span className="text-xl font-bold text-blue-800">
+                {acc.balance}
+              </span>
               <span className="text-xs text-gray-500">Last: {acc.last}</span>
               <div className="flex gap-2 mt-2">
-                <button className="rounded bg-indigo-100 text-indigo-700 px-3 py-1 text-xs font-semibold hover:bg-indigo-200">View Details</button>
-                <button className="rounded bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-semibold hover:bg-emerald-200">Transfer Funds</button>
+                <button className="rounded bg-indigo-100 text-indigo-700 px-3 py-1 text-xs font-semibold hover:bg-indigo-200">
+                  View Details
+                </button>
+                <button className="rounded bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-semibold hover:bg-emerald-200">
+                  Transfer Funds
+                </button>
               </div>
             </div>
           ))}
@@ -202,7 +289,9 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       </div>
       {/* 6. Giving Trends */}
       <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-2">Giving Trends (Monthly)</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-2">
+          Giving Trends (Monthly)
+        </h3>
         <AreaChart
           data={[
             { month: "Jan", Tithe: 1200, Offering: 900 },
@@ -220,22 +309,39 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       </div>
       {/* 7. Top Donors — Modern Card List */}
       <div className="bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-4">Top Donors</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-4">
+          Top Donors
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {topDonors.map(donor => (
-            <div key={donor.name} className="flex items-center gap-4 bg-white/80 rounded-2xl shadow hover:shadow-xl p-4 transition group">
+          {topDonors.map((donor) => (
+            <div
+              key={donor.name}
+              className="flex items-center gap-4 bg-white/80 rounded-2xl shadow hover:shadow-xl p-4 transition group"
+            >
               <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                {donor.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                {donor.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-indigo-900 group-hover:text-purple-700 transition">{donor.name}</span>
-                  {donor.name === 'Anonymous' && <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-xs text-gray-600">Anonymous</span>}
+                  <span className="font-semibold text-indigo-900 group-hover:text-purple-700 transition">
+                    {donor.name}
+                  </span>
+                  {donor.name === "Anonymous" && (
+                    <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-xs text-gray-600">
+                      Anonymous
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-gray-500">Last: {donor.last}</div>
               </div>
               <div className="flex flex-col items-end">
-                <span className="font-bold text-emerald-700 text-lg">{donor.amount}</span>
+                <span className="font-bold text-emerald-700 text-lg">
+                  {donor.amount}
+                </span>
                 <span className="text-xs text-indigo-400">YTD</span>
               </div>
             </div>
@@ -244,17 +350,38 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       </div>
       {/* 8. Latest Transactions Table — Modern Carded Rows */}
       <div className="bg-gradient-to-br from-white/80 to-indigo-50/60 rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-4">Latest Transactions</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-4">
+          Latest Transactions
+        </h3>
         <div className="flex flex-col gap-3">
-          {latestTransactions.map(txn => (
-            <div key={txn.reference} className="flex flex-col md:flex-row md:items-center gap-2 bg-white/90 rounded-xl shadow hover:shadow-lg p-4 transition border-l-4 border-emerald-300 md:gap-6">
+          {latestTransactions.map((txn) => (
+            <div
+              key={txn.reference}
+              className="flex flex-col md:flex-row md:items-center gap-2 bg-white/90 rounded-xl shadow hover:shadow-lg p-4 transition border-l-4 border-emerald-300 md:gap-6"
+            >
               <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                <span className="text-xs font-semibold text-gray-500 w-20">{txn.date}</span>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${txn.type === 'Income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{txn.type}</span>
-                <span className="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs font-medium">{txn.category}</span>
-                <span className={`font-bold text-lg ${txn.amount.startsWith('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{txn.amount}</span>
-                <span className="text-xs text-gray-400 w-24">{txn.reference}</span>
-                <span className="text-xs text-gray-500 flex-1">{txn.notes}</span>
+                <span className="text-xs font-semibold text-gray-500 w-20">
+                  {txn.date}
+                </span>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${txn.type === "Income" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+                >
+                  {txn.type}
+                </span>
+                <span className="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs font-medium">
+                  {txn.category}
+                </span>
+                <span
+                  className={`font-bold text-lg ${txn.amount.startsWith("-") ? "text-rose-600" : "text-emerald-600"}`}
+                >
+                  {txn.amount}
+                </span>
+                <span className="text-xs text-gray-400 w-24">
+                  {txn.reference}
+                </span>
+                <span className="text-xs text-gray-500 flex-1">
+                  {txn.notes}
+                </span>
               </div>
             </div>
           ))}
@@ -262,10 +389,15 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = (props: FinancialOve
       </div>
       {/* 9. Pending Actions / Alerts — Modern Alert List */}
       <div className="bg-gradient-to-br from-orange-50/80 to-yellow-50/80 rounded-xl shadow p-6">
-        <h3 className="text-base font-semibold text-gray-800 mb-4">Pending Actions & Alerts</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-4">
+          Pending Actions & Alerts
+        </h3>
         <div className="flex flex-col gap-3">
           {alerts.map((alert, i) => (
-            <div key={i} className="flex items-center gap-3 bg-white/90 rounded-xl shadow p-3 border-l-4 border-orange-300">
+            <div
+              key={i}
+              className="flex items-center gap-3 bg-white/90 rounded-xl shadow p-3 border-l-4 border-orange-300"
+            >
               <ExclamationTriangleIcon className="h-5 w-5 text-orange-400" />
               <span className="font-medium text-gray-700">{alert.message}</span>
             </div>

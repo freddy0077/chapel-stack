@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_FAMILY = gql`
   mutation CreateFamily($createFamilyInput: CreateFamilyInput!) {
@@ -11,7 +11,11 @@ export const CREATE_FAMILY = gql`
       postalCode
       country
       phoneNumber
-      members { id firstName lastName }
+      members {
+        id
+        firstName
+        lastName
+      }
       createdAt
       updatedAt
     }

@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { useSettings, useUpdateSetting, useCreateBranchSetting } from '@/graphql/hooks/useSettings';
+import { useState, useEffect } from "react";
+import { PhotoIcon, CheckIcon } from "@heroicons/react/24/outline";
+import {
+  useSettings,
+  useUpdateSetting,
+  useCreateBranchSetting,
+} from "@/graphql/hooks/useSettings";
 
 export default function ProfileSettings() {
   // Use global settings for profile fields (for demonstration)
@@ -11,37 +15,39 @@ export default function ProfileSettings() {
   const [createSetting] = useCreateBranchSetting();
 
   const [profile, setProfile] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    position: '',
-    bio: '',
-    photoUrl: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    position: "",
+    bio: "",
+    photoUrl: "",
   });
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Load settings from API (keys: firstName, lastName, email, phone, position, bio, photoUrl)
   useEffect(() => {
     if (data?.settings) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
         ...Object.fromEntries(
           data.settings
-            .filter(s => Object.keys(prev).includes(s.key))
-            .map(s => [s.key, s.value])
+            .filter((s) => Object.keys(prev).includes(s.key))
+            .map((s) => [s.key, s.value]),
         ),
       }));
     }
   }, [data]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setProfile((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -57,7 +63,7 @@ export default function ProfileSettings() {
           return updateSetting({
             variables: {
               id: settingsMap[key],
-              input: { key, value }
+              input: { key, value },
             },
           });
         } else {
@@ -82,7 +88,9 @@ export default function ProfileSettings() {
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Profile Settings</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          Profile Settings
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           Update your personal information and preferences
         </p>
@@ -91,10 +99,10 @@ export default function ProfileSettings() {
       <div className="flex items-center space-x-6">
         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-full bg-gray-100">
           {profile.photoUrl ? (
-            <img 
-              src={profile.photoUrl} 
-              alt="Profile" 
-              className="h-full w-full object-cover" 
+            <img
+              src={profile.photoUrl}
+              alt="Profile"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -120,7 +128,10 @@ export default function ProfileSettings() {
 
       <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
         <div className="sm:col-span-3">
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="firstName"
+            className="block text-sm font-medium text-gray-700"
+          >
             First name
           </label>
           <input
@@ -134,7 +145,10 @@ export default function ProfileSettings() {
         </div>
 
         <div className="sm:col-span-3">
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="lastName"
+            className="block text-sm font-medium text-gray-700"
+          >
             Last name
           </label>
           <input
@@ -148,7 +162,10 @@ export default function ProfileSettings() {
         </div>
 
         <div className="sm:col-span-3">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
             Email
           </label>
           <input
@@ -162,7 +179,10 @@ export default function ProfileSettings() {
         </div>
 
         <div className="sm:col-span-3">
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-700"
+          >
             Phone
           </label>
           <input
@@ -176,7 +196,10 @@ export default function ProfileSettings() {
         </div>
 
         <div className="sm:col-span-3">
-          <label htmlFor="position" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="position"
+            className="block text-sm font-medium text-gray-700"
+          >
             Position
           </label>
           <input
@@ -190,7 +213,10 @@ export default function ProfileSettings() {
         </div>
 
         <div className="sm:col-span-6">
-          <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="bio"
+            className="block text-sm font-medium text-gray-700"
+          >
             Bio
           </label>
           <textarea
@@ -220,7 +246,7 @@ export default function ProfileSettings() {
           disabled={isSaving}
           className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 shadow-lg hover:from-indigo-700 hover:to-purple-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all duration-200 border-2 border-white/80 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSaving ? 'Saving...' : 'Save Profile'}
+          {isSaving ? "Saving..." : "Save Profile"}
         </button>
       </div>
     </div>

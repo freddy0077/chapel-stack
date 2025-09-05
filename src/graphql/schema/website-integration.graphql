@@ -1,7 +1,6 @@
 """
 Website Integration schema - handles connection between CMS and public website
 """
-
 enum ApiEndpointMethod {
   GET
   POST
@@ -309,74 +308,74 @@ type WebhookDelivery {
 
 extend type Query {
   # Get website integration settings for a branch
-  websiteIntegration(branchId: ID!): WebsiteIntegration! @auth(requires: [STAFF])
-  
+  websiteIntegration(branchId: ID!): WebsiteIntegration!
+    @auth(requires: [STAFF])
+
   # Get API settings
   apiSettings(branchId: ID!): ApiSettings! @auth(requires: [STAFF])
-  
+
   # Get API keys
   apiKeys(
     branchId: ID!
     status: ApiKeyStatus
     pagination: PaginationInput
   ): ApiKeyConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific API key
   apiKey(id: ID!): ApiKey @auth(requires: [STAFF])
-  
+
   # Get API key usage statistics
-  apiKeyUsage(
-    keyId: ID!
-    dateRange: DateRangeInput
-  ): ApiKeyUsage! @auth(requires: [STAFF])
-  
+  apiKeyUsage(keyId: ID!, dateRange: DateRangeInput): ApiKeyUsage!
+    @auth(requires: [STAFF])
+
   # Get API endpoints
   apiEndpoints(
     branchId: ID!
     enabled: Boolean
     pagination: PaginationInput
   ): ApiEndpointConnection! @auth(requires: [STAFF])
-  
+
   # Get events integration settings
   eventsIntegration(branchId: ID!): EventsIntegration! @auth(requires: [STAFF])
-  
+
   # Get event categories
   eventCategories(
     branchId: ID!
     displayed: Boolean
     pagination: PaginationInput
   ): EventCategoryConnection! @auth(requires: [STAFF])
-  
+
   # Get sermon integration settings
   sermonIntegration(branchId: ID!): SermonIntegration! @auth(requires: [STAFF])
-  
+
   # Get sermon categories
   sermonCategories(
     branchId: ID!
     displayed: Boolean
     pagination: PaginationInput
   ): SermonCategoryConnection! @auth(requires: [STAFF])
-  
+
   # Get member portal integration settings
-  memberPortalIntegration(branchId: ID!): MemberPortalIntegration! @auth(requires: [STAFF])
-  
+  memberPortalIntegration(branchId: ID!): MemberPortalIntegration!
+    @auth(requires: [STAFF])
+
   # Get member features
   memberFeatures(
     branchId: ID!
     enabled: Boolean
     pagination: PaginationInput
   ): MemberFeatureConnection! @auth(requires: [STAFF])
-  
+
   # Get media integration settings
   mediaIntegration(branchId: ID!): MediaIntegration! @auth(requires: [STAFF])
-  
+
   # Get media categories
   mediaCategories(
     branchId: ID!
     shared: Boolean
     pagination: PaginationInput
   ): MediaCategoryConnection! @auth(requires: [STAFF])
-  
+
   # Get website integration activity log
   websiteIntegrationActivity(
     branchId: ID!
@@ -384,10 +383,11 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): WebsiteIntegrationActivityConnection! @auth(requires: [STAFF])
-  
+
   # Get website integration statistics
-  websiteIntegrationStats(branchId: ID!): WebsiteIntegrationStats! @auth(requires: [STAFF])
-  
+  websiteIntegrationStats(branchId: ID!): WebsiteIntegrationStats!
+    @auth(requires: [STAFF])
+
   # Get webhook delivery logs
   webhookDeliveries(
     branchId: ID!
@@ -396,10 +396,10 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): WebhookDeliveryConnection! @auth(requires: [STAFF])
-  
+
   # Test webhook delivery
   testWebhook(branchId: ID!): WebhookDelivery! @auth(requires: [STAFF])
-  
+
   # Validate API key (public endpoint)
   validateApiKey(key: String!): Boolean!
 }
@@ -486,76 +486,118 @@ type WebhookDeliveryEdge {
 
 extend type Mutation {
   # Update general website integration settings
-  updateWebsiteIntegration(branchId: ID!, input: UpdateWebsiteIntegrationInput!): WebsiteIntegration! @auth(requires: [STAFF])
-  
+  updateWebsiteIntegration(
+    branchId: ID!
+    input: UpdateWebsiteIntegrationInput!
+  ): WebsiteIntegration! @auth(requires: [STAFF])
+
   # Create API key
   createApiKey(input: CreateApiKeyInput!): ApiKey! @auth(requires: [STAFF])
-  
+
   # Regenerate API key
   regenerateApiKey(id: ID!): ApiKey! @auth(requires: [STAFF])
-  
+
   # Revoke API key
   revokeApiKey(id: ID!, reason: String): Boolean! @auth(requires: [STAFF])
-  
+
   # Update API settings
-  updateApiSettings(branchId: ID!, input: UpdateApiSettingsInput!): ApiSettings! @auth(requires: [STAFF])
-  
+  updateApiSettings(
+    branchId: ID!
+    input: UpdateApiSettingsInput!
+  ): ApiSettings! @auth(requires: [STAFF])
+
   # Update API endpoint settings
-  updateApiEndpoint(id: ID!, input: UpdateApiEndpointInput!): ApiEndpoint! @auth(requires: [STAFF])
-  
+  updateApiEndpoint(id: ID!, input: UpdateApiEndpointInput!): ApiEndpoint!
+    @auth(requires: [STAFF])
+
   # Update events integration settings
-  updateEventsIntegration(branchId: ID!, input: UpdateEventsIntegrationInput!): EventsIntegration! @auth(requires: [STAFF])
-  
+  updateEventsIntegration(
+    branchId: ID!
+    input: UpdateEventsIntegrationInput!
+  ): EventsIntegration! @auth(requires: [STAFF])
+
   # Create event category
-  createEventCategory(input: CreateEventCategoryInput!): EventCategory! @auth(requires: [STAFF])
-  
+  createEventCategory(input: CreateEventCategoryInput!): EventCategory!
+    @auth(requires: [STAFF])
+
   # Update event category
-  updateEventCategory(id: ID!, input: UpdateEventCategoryInput!): EventCategory! @auth(requires: [STAFF])
-  
+  updateEventCategory(
+    id: ID!
+    input: UpdateEventCategoryInput!
+  ): EventCategory! @auth(requires: [STAFF])
+
   # Delete event category
   deleteEventCategory(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update sermon integration settings
-  updateSermonIntegration(branchId: ID!, input: UpdateSermonIntegrationInput!): SermonIntegration! @auth(requires: [STAFF])
-  
+  updateSermonIntegration(
+    branchId: ID!
+    input: UpdateSermonIntegrationInput!
+  ): SermonIntegration! @auth(requires: [STAFF])
+
   # Create sermon category
-  createSermonCategory(input: CreateSermonCategoryInput!): SermonCategory! @auth(requires: [STAFF])
-  
+  createSermonCategory(input: CreateSermonCategoryInput!): SermonCategory!
+    @auth(requires: [STAFF])
+
   # Update sermon category
-  updateSermonCategory(id: ID!, input: UpdateSermonCategoryInput!): SermonCategory! @auth(requires: [STAFF])
-  
+  updateSermonCategory(
+    id: ID!
+    input: UpdateSermonCategoryInput!
+  ): SermonCategory! @auth(requires: [STAFF])
+
   # Delete sermon category
   deleteSermonCategory(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update member portal integration settings
-  updateMemberPortalIntegration(branchId: ID!, input: UpdateMemberPortalIntegrationInput!): MemberPortalIntegration! @auth(requires: [STAFF])
-  
+  updateMemberPortalIntegration(
+    branchId: ID!
+    input: UpdateMemberPortalIntegrationInput!
+  ): MemberPortalIntegration! @auth(requires: [STAFF])
+
   # Update member feature
-  updateMemberFeature(id: ID!, input: UpdateMemberFeatureInput!): MemberFeature! @auth(requires: [STAFF])
-  
+  updateMemberFeature(
+    id: ID!
+    input: UpdateMemberFeatureInput!
+  ): MemberFeature! @auth(requires: [STAFF])
+
   # Update media integration settings
-  updateMediaIntegration(branchId: ID!, input: UpdateMediaIntegrationInput!): MediaIntegration! @auth(requires: [STAFF])
-  
+  updateMediaIntegration(
+    branchId: ID!
+    input: UpdateMediaIntegrationInput!
+  ): MediaIntegration! @auth(requires: [STAFF])
+
   # Create media category
-  createMediaCategory(input: CreateMediaCategoryInput!): MediaCategory! @auth(requires: [STAFF])
-  
+  createMediaCategory(input: CreateMediaCategoryInput!): MediaCategory!
+    @auth(requires: [STAFF])
+
   # Update media category
-  updateMediaCategory(id: ID!, input: UpdateMediaCategoryInput!): MediaCategory! @auth(requires: [STAFF])
-  
+  updateMediaCategory(
+    id: ID!
+    input: UpdateMediaCategoryInput!
+  ): MediaCategory! @auth(requires: [STAFF])
+
   # Delete media category
   deleteMediaCategory(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update upload widget settings
-  updateUploadWidget(branchId: ID!, input: UpdateUploadWidgetInput!): UploadWidget! @auth(requires: [STAFF])
-  
+  updateUploadWidget(
+    branchId: ID!
+    input: UpdateUploadWidgetInput!
+  ): UploadWidget! @auth(requires: [STAFF])
+
   # Manually trigger webhook
-  triggerWebhook(branchId: ID!, event: String!, payload: JSON!): WebhookDelivery! @auth(requires: [STAFF])
-  
+  triggerWebhook(
+    branchId: ID!
+    event: String!
+    payload: JSON!
+  ): WebhookDelivery! @auth(requires: [STAFF])
+
   # Retry failed webhook delivery
   retryWebhookDelivery(id: ID!): WebhookDelivery! @auth(requires: [STAFF])
-  
+
   # Purge webhook delivery logs
-  purgeWebhookLogs(branchId: ID!, olderThan: DateTime!): Boolean! @auth(requires: [ADMIN])
+  purgeWebhookLogs(branchId: ID!, olderThan: DateTime!): Boolean!
+    @auth(requires: [ADMIN])
 }
 
 input UpdateWebsiteIntegrationInput {
@@ -699,16 +741,19 @@ input UpdateUploadWidgetInput {
 extend type Subscription {
   # Get notified of new API key creation
   apiKeyCreated(branchId: ID!): ApiKey! @auth(requires: [STAFF])
-  
+
   # Get notified of API key revocation
   apiKeyRevoked(branchId: ID!): ApiKey! @auth(requires: [STAFF])
-  
+
   # Get notified of high API usage
-  apiUsageThresholdExceeded(branchId: ID!): ApiKeyUsage! @auth(requires: [STAFF])
-  
+  apiUsageThresholdExceeded(branchId: ID!): ApiKeyUsage!
+    @auth(requires: [STAFF])
+
   # Get notified of failed webhook deliveries
-  webhookDeliveryFailed(branchId: ID!): WebhookDelivery! @auth(requires: [STAFF])
-  
+  webhookDeliveryFailed(branchId: ID!): WebhookDelivery!
+    @auth(requires: [STAFF])
+
   # Get notified of external content requests
-  externalContentRequested(branchId: ID!): WebsiteIntegrationActivity! @auth(requires: [STAFF])
+  externalContentRequested(branchId: ID!): WebsiteIntegrationActivity!
+    @auth(requires: [STAFF])
 }

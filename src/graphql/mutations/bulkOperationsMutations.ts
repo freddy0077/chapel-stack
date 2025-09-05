@@ -1,7 +1,9 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const BULK_UPDATE_MEMBER_STATUS = gql`
-  mutation BulkUpdateMemberStatus($bulkStatusUpdateInput: BulkStatusUpdateInput!) {
+  mutation BulkUpdateMemberStatus(
+    $bulkStatusUpdateInput: BulkStatusUpdateInput!
+  ) {
     bulkUpdateMemberStatus(bulkStatusUpdateInput: $bulkStatusUpdateInput) {
       successCount
       failureCount
@@ -17,8 +19,12 @@ export const BULK_UPDATE_MEMBER_STATUS = gql`
 `;
 
 export const BULK_ASSIGN_GROUP_TO_MEMBERS = gql`
-  mutation BulkAssignGroupToMembers($bulkGroupAssignmentInput: BulkGroupAssignmentInput!) {
-    bulkAssignGroupToMembers(bulkGroupAssignmentInput: $bulkGroupAssignmentInput) {
+  mutation BulkAssignGroupToMembers(
+    $bulkGroupAssignmentInput: BulkGroupAssignmentInput!
+  ) {
+    bulkAssignGroupToMembers(
+      bulkGroupAssignmentInput: $bulkGroupAssignmentInput
+    ) {
       successCount
       failureCount
       successfulMemberIds
@@ -33,7 +39,9 @@ export const BULK_ASSIGN_GROUP_TO_MEMBERS = gql`
 `;
 
 export const BULK_TRANSFER_MEMBERS = gql`
-  mutation BulkTransferMembers($bulkBranchTransferInput: BulkBranchTransferInput!) {
+  mutation BulkTransferMembers(
+    $bulkBranchTransferInput: BulkBranchTransferInput!
+  ) {
     bulkTransferMembers(bulkBranchTransferInput: $bulkBranchTransferInput) {
       successCount
       failureCount
@@ -91,22 +99,22 @@ export interface BulkExportResult {
 
 export interface BulkStatusUpdateInput {
   memberIds: string[];
-  operation: 'UPDATE_STATUS';
-  status: 'ACTIVE' | 'INACTIVE' | 'VISITOR' | 'MEMBER';
+  operation: "UPDATE_STATUS";
+  status: "ACTIVE" | "INACTIVE" | "VISITOR" | "MEMBER";
   reason?: string;
 }
 
 export interface BulkGroupAssignmentInput {
   memberIds: string[];
-  operation: 'ASSIGN_GROUP';
+  operation: "ASSIGN_GROUP";
   groupId: string;
-  groupType: 'ministry' | 'smallGroup';
+  groupType: "ministry" | "smallGroup";
   reason?: string;
 }
 
 export interface BulkBranchTransferInput {
   memberIds: string[];
-  operation: 'TRANSFER_BRANCH';
+  operation: "TRANSFER_BRANCH";
   fromBranchId: string;
   toBranchId: string;
   reason?: string;
@@ -135,7 +143,7 @@ export interface MemberFiltersInput {
 export interface BulkExportInput {
   memberIds?: string[];
   filters?: MemberFiltersInput;
-  format?: 'CSV' | 'EXCEL' | 'PDF';
+  format?: "CSV" | "EXCEL" | "PDF";
   fields?: string[];
   includeHeaders?: boolean;
   includeImages?: boolean;

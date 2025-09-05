@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const ADD_MEMBER_TO_MINISTRY = gql`
   mutation AddMemberToMinistry(

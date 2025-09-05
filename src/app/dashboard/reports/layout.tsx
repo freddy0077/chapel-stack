@@ -1,13 +1,9 @@
-import React from 'react';
+import React from "react";
 
 export default function ReportsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      {children}
-    </div>
-  );
+  return <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">{children}</div>;
 }

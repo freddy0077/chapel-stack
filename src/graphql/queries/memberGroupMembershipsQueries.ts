@@ -1,8 +1,11 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get a member's group memberships (ministries and small groups)
 export const GET_MEMBER_GROUP_MEMBERSHIPS = gql`
-  query GetMemberGroupMemberships($ministryFilters: MinistryFilterInput, $smallGroupFilters: SmallGroupFilterInput) {
+  query GetMemberGroupMemberships(
+    $ministryFilters: MinistryFilterInput
+    $smallGroupFilters: SmallGroupFilterInput
+  ) {
     # Get member's ministry memberships
     ministries(filters: $ministryFilters) {
       id
@@ -20,7 +23,7 @@ export const GET_MEMBER_GROUP_MEMBERSHIPS = gql`
         updatedAt
       }
     }
-    
+
     # Get member's small group memberships
     smallGroups(filters: $smallGroupFilters) {
       id
@@ -47,7 +50,12 @@ export const GET_MEMBER_GROUP_MEMBERSHIPS = gql`
 
 // Query to get all sacramental records for filtering (using existing working queries)
 export const GET_ALL_SACRAMENTAL_RECORDS = gql`
-  query GetAllSacramentalRecords($baptismFilter: SacramentalRecordFilterInput, $confirmationFilter: SacramentalRecordFilterInput, $communionFilter: SacramentalRecordFilterInput, $marriageFilter: SacramentalRecordFilterInput) {
+  query GetAllSacramentalRecords(
+    $baptismFilter: SacramentalRecordFilterInput
+    $confirmationFilter: SacramentalRecordFilterInput
+    $communionFilter: SacramentalRecordFilterInput
+    $marriageFilter: SacramentalRecordFilterInput
+  ) {
     # Get baptism records
     baptismRecords: sacramentalRecords(filter: $baptismFilter) {
       id
@@ -64,7 +72,7 @@ export const GET_ALL_SACRAMENTAL_RECORDS = gql`
       createdAt
       updatedAt
     }
-    
+
     # Get confirmation records
     confirmationRecords: sacramentalRecords(filter: $confirmationFilter) {
       id
@@ -80,7 +88,7 @@ export const GET_ALL_SACRAMENTAL_RECORDS = gql`
       createdAt
       updatedAt
     }
-    
+
     # Get communion records
     communionRecords: sacramentalRecords(filter: $communionFilter) {
       id
@@ -95,7 +103,7 @@ export const GET_ALL_SACRAMENTAL_RECORDS = gql`
       createdAt
       updatedAt
     }
-    
+
     # Get marriage records
     marriageRecords: sacramentalRecords(filter: $marriageFilter) {
       id

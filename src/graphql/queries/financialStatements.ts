@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const FINANCIAL_STATEMENTS_QUERY = gql`
   query FinancialStatements($input: FinancialStatementsInput!) {
@@ -10,7 +10,7 @@ export const FINANCIAL_STATEMENTS_QUERY = gql`
       periodEnd
       generatedAt
       notes
-      
+
       incomeStatement {
         branchId
         organisationId
@@ -55,7 +55,7 @@ export const FINANCIAL_STATEMENTS_QUERY = gql`
           }
         }
       }
-      
+
       balanceSheet {
         branchId
         organisationId
@@ -112,7 +112,7 @@ export const FINANCIAL_STATEMENTS_QUERY = gql`
           }
         }
       }
-      
+
       cashFlowStatement {
         branchId
         organisationId
@@ -149,7 +149,7 @@ export const FINANCIAL_STATEMENTS_QUERY = gql`
           variancePercent
         }
       }
-      
+
       statementOfNetAssets {
         branchId
         organisationId
@@ -258,7 +258,11 @@ export interface StatementOfNetAssets {
 export interface FinancialStatements {
   branchId: string;
   organisationId: string;
-  statementType: 'INCOME_STATEMENT' | 'BALANCE_SHEET' | 'CASH_FLOW_STATEMENT' | 'STATEMENT_OF_NET_ASSETS';
+  statementType:
+    | "INCOME_STATEMENT"
+    | "BALANCE_SHEET"
+    | "CASH_FLOW_STATEMENT"
+    | "STATEMENT_OF_NET_ASSETS";
   periodStart: string;
   periodEnd: string;
   generatedAt: string;
@@ -276,7 +280,11 @@ export interface FinancialStatementsInput {
     startDate: Date;
     endDate: Date;
   };
-  statementType: 'INCOME_STATEMENT' | 'BALANCE_SHEET' | 'CASH_FLOW_STATEMENT' | 'STATEMENT_OF_NET_ASSETS';
+  statementType:
+    | "INCOME_STATEMENT"
+    | "BALANCE_SHEET"
+    | "CASH_FLOW_STATEMENT"
+    | "STATEMENT_OF_NET_ASSETS";
   fundId?: string;
   includeComparative?: boolean;
 }

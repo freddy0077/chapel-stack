@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
+import React from "react";
+import { motion } from "framer-motion";
+import {
   Squares2X2Icon,
   ListBulletIcon,
   TableCellsIcon,
-  ViewColumnsIcon
-} from '@heroicons/react/24/outline';
-import { ViewMode } from '../types/member.types';
+  ViewColumnsIcon,
+} from "@heroicons/react/24/outline";
+import { ViewMode } from "../types/member.types";
 
 interface ViewModeToggleProps {
   currentMode: ViewMode;
@@ -18,50 +18,52 @@ interface ViewModeToggleProps {
 
 const viewModes = [
   {
-    mode: 'card' as ViewMode,
+    mode: "card" as ViewMode,
     icon: Squares2X2Icon,
-    label: 'Card View',
-    description: 'Visual cards with member photos'
+    label: "Card View",
+    description: "Visual cards with member photos",
   },
   {
-    mode: 'list' as ViewMode,
+    mode: "list" as ViewMode,
     icon: ListBulletIcon,
-    label: 'List View',
-    description: 'Compact list format'
+    label: "List View",
+    description: "Compact list format",
   },
   {
-    mode: 'table' as ViewMode,
+    mode: "table" as ViewMode,
     icon: TableCellsIcon,
-    label: 'Table View',
-    description: 'Detailed table with sorting'
+    label: "Table View",
+    description: "Detailed table with sorting",
   },
   {
-    mode: 'grid' as ViewMode,
+    mode: "grid" as ViewMode,
     icon: ViewColumnsIcon,
-    label: 'Grid View',
-    description: 'Dense grid layout'
-  }
+    label: "Grid View",
+    description: "Dense grid layout",
+  },
 ];
 
 const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
   currentMode,
   onModeChange,
-  className = ""
+  className = "",
 }) => {
   return (
-    <div className={`flex items-center bg-white rounded-xl shadow-lg p-1 ${className}`}>
+    <div
+      className={`flex items-center bg-white rounded-xl shadow-lg p-1 ${className}`}
+    >
       {viewModes.map((viewMode) => {
         const Icon = viewMode.icon;
         const isActive = currentMode === viewMode.mode;
-        
+
         return (
           <motion.button
             key={viewMode.mode}
             onClick={() => onModeChange(viewMode.mode)}
             className={`relative p-2 rounded-lg transition-all duration-200 ${
               isActive
-                ? 'text-blue-600'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? "text-blue-600"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -76,7 +78,7 @@ const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             )}
-            
+
             {/* Icon */}
             <Icon className="w-5 h-5 relative z-10" />
           </motion.button>

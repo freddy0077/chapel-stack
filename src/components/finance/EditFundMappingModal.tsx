@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import {
   FundInfo,
   ContributionTypeFundMapping,
   UpdateContributionTypeFundMappingInput,
-} from '@/graphql/hooks/useFundMapping';
+} from "@/graphql/hooks/useFundMapping";
 
 interface EditFundMappingModalProps {
   isOpen: boolean;
@@ -40,10 +40,10 @@ export function EditFundMappingModal({
   availableFunds,
   loading,
 }: EditFundMappingModalProps) {
-  const [fundId, setFundId] = useState('');
+  const [fundId, setFundId] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  const activeFunds = availableFunds.filter(f => f.isActive);
+  const activeFunds = availableFunds.filter((f) => f.isActive);
 
   // Reset form when mapping changes
   useEffect(() => {
@@ -51,7 +51,7 @@ export function EditFundMappingModal({
       setFundId(mapping.fundId);
       setIsActive(mapping.isActive);
     } else {
-      setFundId('');
+      setFundId("");
       setIsActive(true);
     }
   }, [mapping]);
@@ -60,12 +60,12 @@ export function EditFundMappingModal({
     e.preventDefault();
 
     if (!mapping) {
-      toast.error('No mapping selected');
+      toast.error("No mapping selected");
       return;
     }
 
     if (!fundId) {
-      toast.error('Please select a fund');
+      toast.error("Please select a fund");
       return;
     }
 
@@ -76,15 +76,15 @@ export function EditFundMappingModal({
         isActive,
       });
 
-      toast.success('Fund mapping updated successfully');
+      toast.success("Fund mapping updated successfully");
     } catch (error) {
-      toast.error('Failed to update fund mapping');
-      console.error('Update fund mapping error:', error);
+      toast.error("Failed to update fund mapping");
+      console.error("Update fund mapping error:", error);
     }
   };
 
   const handleClose = () => {
-    setFundId('');
+    setFundId("");
     setIsActive(true);
     onClose();
   };
@@ -107,7 +107,7 @@ export function EditFundMappingModal({
               <Label>Contribution Type</Label>
               <div className="p-3 bg-muted rounded-md">
                 <div className="font-medium">
-                  {mapping.contributionType?.name || 'Unknown'}
+                  {mapping.contributionType?.name || "Unknown"}
                 </div>
                 {mapping.contributionType?.description && (
                   <div className="text-sm text-muted-foreground">
@@ -116,7 +116,8 @@ export function EditFundMappingModal({
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Contribution type cannot be changed. Delete and create a new mapping if needed.
+                Contribution type cannot be changed. Delete and create a new
+                mapping if needed.
               </p>
             </div>
 
@@ -159,7 +160,8 @@ export function EditFundMappingModal({
               <div className="space-y-0.5">
                 <Label htmlFor="isActive">Active Status</Label>
                 <div className="text-sm text-muted-foreground">
-                  Inactive mappings will not be used for automatic fund allocation
+                  Inactive mappings will not be used for automatic fund
+                  allocation
                 </div>
               </div>
               <Switch
@@ -180,11 +182,8 @@ export function EditFundMappingModal({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || !fundId}
-            >
-              {loading ? 'Updating...' : 'Update Mapping'}
+            <Button type="submit" disabled={loading || !fundId}>
+              {loading ? "Updating..." : "Update Mapping"}
             </Button>
           </DialogFooter>
         </form>

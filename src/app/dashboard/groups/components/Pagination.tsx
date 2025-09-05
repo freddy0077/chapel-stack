@@ -8,14 +8,14 @@ interface PaginationProps {
   itemsPerPage: number;
   onPageChange: (page: number) => void;
   hasNextPage?: boolean;
-};
+}
 
-export default function Pagination({ 
-  currentPage, 
-  totalItems, 
-  itemsPerPage, 
+export default function Pagination({
+  currentPage,
+  totalItems,
+  itemsPerPage,
   onPageChange,
-  hasNextPage
+  hasNextPage,
 }: PaginationProps) {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -42,13 +42,16 @@ export default function Pagination({
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">{startItem}</span> to{' '}
-            <span className="font-medium">{endItem}</span> of{' '}
+            Showing <span className="font-medium">{startItem}</span> to{" "}
+            <span className="font-medium">{endItem}</span> of{" "}
             <span className="font-medium">{totalItems}</span> results
           </p>
         </div>
         <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
@@ -57,7 +60,7 @@ export default function Pagination({
               <span className="sr-only">Previous</span>
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </button>
-            
+
             {/* Generate page numbers - simplified version */}
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               // For simplicity, show first 5 pages
@@ -77,7 +80,7 @@ export default function Pagination({
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={!hasNextPage && currentPage === totalPages}

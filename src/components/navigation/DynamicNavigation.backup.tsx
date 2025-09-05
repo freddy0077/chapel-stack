@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
-import { usePermissions } from '@/hooks/usePermissions';
-import { useModulePreferences } from '@/hooks/useModulePreferences';
+import { usePermissions } from "@/hooks/usePermissions";
+import { useModulePreferences } from "@/hooks/useModulePreferences";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
@@ -27,46 +27,46 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 
-import { isModuleEnabled } from '../onboarding/ModulePreferences';
+import { isModuleEnabled } from "../onboarding/ModulePreferences";
 
 // The full navigation structure with module dependencies
 const fullNavigation = [
   {
     category: "Main",
     items: [
-      { 
-        name: "Dashboard", 
-        href: "/dashboard", 
-        icon: HomeIcon, 
+      {
+        name: "Dashboard",
+        href: "/dashboard",
+        icon: HomeIcon,
         badge: null,
-        moduleId: "dashboard" // Always visible (required module)
+        moduleId: "dashboard", // Always visible (required module)
       },
-    ]
+    ],
   },
   {
     category: "Community",
     items: [
-      { 
-        name: "Members", 
-        href: "/dashboard/members", 
-        icon: UsersIcon, 
+      {
+        name: "Members",
+        href: "/dashboard/members",
+        icon: UsersIcon,
         badge: null,
-        moduleId: "members" 
+        moduleId: "members",
       },
-      { 
-        name: "Groups", 
-        href: "/dashboard/groups", 
-        icon: UserGroupIcon, 
+      {
+        name: "Groups",
+        href: "/dashboard/groups",
+        icon: UserGroupIcon,
         badge: null,
-        moduleId: "groups" 
+        moduleId: "groups",
       },
       // HIDE Children menu item
-      // { 
-      //   name: "Children", 
-      //   href: "/dashboard/children", 
-      //   icon: UserCircleIcon, 
+      // {
+      //   name: "Children",
+      //   href: "/dashboard/children",
+      //   icon: UserCircleIcon,
       //   badge: null,
-      //   moduleId: "members" 
+      //   moduleId: "members"
       // },
       // {
       //   name: "Prayer Requests",
@@ -80,40 +80,40 @@ const fullNavigation = [
         href: "/dashboard/communication",
         icon: ChatBubbleLeftRightIcon,
         badge: null,
-        moduleId: "communication"
+        moduleId: "communication",
       },
       {
         name: "Pastoral Care",
         href: "/dashboard/pastoral-care",
         icon: HeartIcon,
         badge: null,
-        moduleId: "pastoral-care"
+        moduleId: "pastoral-care",
       },
-    ]
+    ],
   },
   {
     category: "Activities",
     items: [
-      { 
-        name: "Calendar", 
-        href: "/dashboard/calendar", 
-        icon: CalendarIcon, 
+      {
+        name: "Calendar",
+        href: "/dashboard/calendar",
+        icon: CalendarIcon,
         // badge: { count: 3, color: "bg-blue-500" },
-        moduleId: "events" 
+        moduleId: "events",
       },
-      { 
-        name: "Attendance", 
-        href: "/dashboard/attendance", 
-        icon: ChartBarIcon, 
+      {
+        name: "Attendance",
+        href: "/dashboard/attendance",
+        icon: ChartBarIcon,
         badge: null,
-        moduleId: "attendance" 
+        moduleId: "attendance",
       },
-      // { 
-      //   name: "Check-in", 
-      //   href: "/dashboard/attendance/check-in", 
-      //   icon: UserCircleIcon, 
+      // {
+      //   name: "Check-in",
+      //   href: "/dashboard/attendance/check-in",
+      //   icon: UserCircleIcon,
       //   badge: { count: 12, color: "bg-green-500" },
-      //   moduleId: "attendance" 
+      //   moduleId: "attendance"
       // },
       // {
       //   name: "Sacraments",
@@ -122,125 +122,125 @@ const fullNavigation = [
       //   // badge: { count: 3, color: "bg-purple-500" },
       //   moduleId: "members"
       // },
-      { 
-        name: "Ministries", 
-        href: "/dashboard/ministries", 
-        icon: UserGroupIcon, 
+      {
+        name: "Ministries",
+        href: "/dashboard/ministries",
+        icon: UserGroupIcon,
         badge: null,
-        moduleId: "groups" 
+        moduleId: "groups",
       },
-      // { 
-      //   name: "Worship", 
-      //   href: "/dashboard/worship", 
-      //   icon: MusicalNoteIcon, 
+      // {
+      //   name: "Worship",
+      //   href: "/dashboard/worship",
+      //   icon: MusicalNoteIcon,
       //   badge: null,
-      //   moduleId: "sermons" 
+      //   moduleId: "sermons"
       // },
       {
         name: "Sermons",
         href: "/dashboard/sermons",
         icon: DocumentTextIcon,
         badge: null,
-        moduleId: "sermons"
+        moduleId: "sermons",
       },
-    ]
+    ],
   },
   {
     category: "Operations",
     items: [
-      { 
-        name: "Branches", 
-        href: "/dashboard/branches", 
-        icon: HomeIcon, 
+      {
+        name: "Branches",
+        href: "/dashboard/branches",
+        icon: HomeIcon,
         badge: null,
-        moduleId: "multi-branch" 
+        moduleId: "multi-branch",
       },
-      { 
-        name: "Finances", 
-        href: "/dashboard/finances", 
-        icon: CurrencyDollarIcon, 
+      {
+        name: "Finances",
+        href: "/dashboard/finances",
+        icon: CurrencyDollarIcon,
         badge: null,
-        moduleId: "finances" 
+        moduleId: "finances",
       },
       {
         name: "Branch Finances",
         href: "/dashboard/branch-finances",
         icon: CurrencyDollarIcon,
         badge: null,
-        moduleId: "branch-finances"
+        moduleId: "branch-finances",
       },
-      { 
-        name: "Communication", 
-        href: "/dashboard/communication", 
-        icon: ChatBubbleLeftRightIcon, 
+      {
+        name: "Communication",
+        href: "/dashboard/communication",
+        icon: ChatBubbleLeftRightIcon,
         badge: null,
-        moduleId: "communication" 
+        moduleId: "communication",
       },
-      { 
-        name: "Reports", 
-        href: "/dashboard/reports", 
-        icon: ChartBarIcon, 
+      {
+        name: "Reports",
+        href: "/dashboard/reports",
+        icon: ChartBarIcon,
         badge: null,
-        moduleId: "dashboard" // Basic reporting is included in core dashboard
+        moduleId: "dashboard", // Basic reporting is included in core dashboard
       },
-      { 
-        name: "Workflows", 
-        href: "/dashboard/workflows", 
-        icon: BoltIcon, 
+      {
+        name: "Workflows",
+        href: "/dashboard/workflows",
+        icon: BoltIcon,
         badge: null,
-        moduleId: "workflows" 
+        moduleId: "workflows",
       },
-    ]
+    ],
   },
   {
     category: "Volunteers",
     items: [
-      // { 
-      //   name: "Volunteer Dashboard", 
-      //   href: "/dashboard/volunteers", 
-      //   icon: UsersIcon, 
+      // {
+      //   name: "Volunteer Dashboard",
+      //   href: "/dashboard/volunteers",
+      //   icon: UsersIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Scheduling", 
-      //   href: "/dashboard/volunteers/scheduling", 
-      //   icon: CalendarIcon, 
+      // {
+      //   name: "Scheduling",
+      //   href: "/dashboard/volunteers/scheduling",
+      //   icon: CalendarIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Background Checks", 
-      //   href: "/dashboard/volunteers/background-checks", 
-      //   icon: ShieldCheckIcon, 
+      // {
+      //   name: "Background Checks",
+      //   href: "/dashboard/volunteers/background-checks",
+      //   icon: ShieldCheckIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Teams", 
-      //   href: "/dashboard/volunteers/teams", 
-      //   icon: UserGroupIcon, 
+      // {
+      //   name: "Teams",
+      //   href: "/dashboard/volunteers/teams",
+      //   icon: UserGroupIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Recognition", 
-      //   href: "/dashboard/volunteers/recognition", 
-      //   icon: BellIcon, 
+      // {
+      //   name: "Recognition",
+      //   href: "/dashboard/volunteers/recognition",
+      //   icon: BellIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-    ]
+    ],
   },
   {
     category: "System",
     items: [
-      { 
-        name: "Admin", 
-        href: "/dashboard/admin", 
-        icon: Cog6ToothIcon, 
+      {
+        name: "Admin",
+        href: "/dashboard/admin",
+        icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard" 
+        moduleId: "dashboard",
       },
       // {
       //   name: "Security",
@@ -249,12 +249,12 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "security"
       // },
-      { 
-        name: "Settings", 
-        href: "/dashboard/settings", 
-        icon: Cog6ToothIcon, 
+      {
+        name: "Settings",
+        href: "/dashboard/settings",
+        icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard" 
+        moduleId: "dashboard",
       },
       // {
       //   name: "Website",
@@ -263,14 +263,18 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "website"
       // },
-    ]
+    ],
   },
 ];
 
 // Remove Member Activity menu item from navigation due to dynamic segment
 // (No static menu item for /dashboard/members/[id]/activity)
 
-export default function DynamicNavigation({ children }: { children: React.ReactNode }) {
+export default function DynamicNavigation({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Get user data from authentication context
   const { user, logout } = useAuth();
   const { canCustomizeModules } = usePermissions();
@@ -281,56 +285,66 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
+    const userRole = user?.primaryRole?.toUpperCase() || "MEMBER";
 
     // --- Refactored navigation filtering for clarity ---
     const getMemberNavigation = () =>
       fullNavigation
-        .filter(section => ["Main", "Community", "Activities"].includes(section.category))
-        .map(section => {
+        .filter((section) =>
+          ["Main", "Community", "Activities"].includes(section.category),
+        )
+        .map((section) => {
           // For member, make dashboard link point to /dashboard/member
-          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "member") {
+          if (
+            section.category === "Main" &&
+            user?.primaryRole?.toLowerCase() === "member"
+          ) {
             return {
               ...section,
-              items: section.items.map(item =>
+              items: section.items.map((item) =>
                 item.name === "Dashboard"
                   ? { ...item, href: "/dashboard/member" }
-                  : item
-              )
+                  : item,
+              ),
             };
           }
           // For branch_admin, make dashboard link point to /dashboard/branch
-          if (section.category === "Main" && user?.primaryRole?.toLowerCase() === "branch_admin") {
+          if (
+            section.category === "Main" &&
+            user?.primaryRole?.toLowerCase() === "branch_admin"
+          ) {
             return {
               ...section,
-              items: section.items.map(item =>
+              items: section.items.map((item) =>
                 item.name === "Dashboard"
                   ? { ...item, href: "/dashboard/branch" }
-                  : item
-              )
+                  : item,
+              ),
             };
           }
           return section;
         })
-        .map(section => ({
+        .map((section) => ({
           ...section,
-          items: section.items.filter(item =>
-            ["Dashboard", "Prayer Requests", "Calendar", "Sermons"].includes(item.name)
-          )
+          items: section.items.filter((item) =>
+            ["Dashboard", "Prayer Requests", "Calendar", "Sermons"].includes(
+              item.name,
+            ),
+          ),
         }))
-        .filter(section => section.items.length > 0);
+        .filter((section) => section.items.length > 0);
 
     const getBranchAdminNavigation = () =>
       fullNavigation
-        .map(section => {
+        .map((section) => {
           if (section.category === "Main") {
             // Remove Branch Admin Dashboard link and make Dashboard point to /dashboard/branch
             let items = section.items
-              .filter(i => i.name !== "Branch Admin Dashboard")
-              .map(item =>
+              .filter((i) => i.name !== "Branch Admin Dashboard")
+              .map((item) =>
                 item.name === "Dashboard"
                   ? { ...item, href: "/dashboard/branch" }
-                  : item
+                  : item,
               );
             return { ...section, items };
           }
@@ -340,97 +354,112 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
           if (section.category === "Operations") {
             return {
               ...section,
-              items: section.items.filter(item => item.name === "Branch Finances")
+              items: section.items.filter(
+                (item) => item.name === "Branch Finances",
+              ),
             };
           }
           if (section.category === "System") {
             return {
               ...section,
-              items: section.items.filter(item =>
-                !["Admin", "Security"].includes(item.name)
-              )
+              items: section.items.filter(
+                (item) => !["Admin", "Security"].includes(item.name),
+              ),
             };
           }
           // Hide Volunteers and any unhandled categories
           return { ...section, items: [] };
         })
-        .filter(section => section.items.length > 0);
+        .filter((section) => section.items.length > 0);
 
-    if (userRole === 'MEMBER') {
+    if (userRole === "MEMBER") {
       setFilteredNavigation(getMemberNavigation());
       return;
     }
-    if (userRole === 'BRANCH_ADMIN') {
+    if (userRole === "BRANCH_ADMIN") {
       setFilteredNavigation(getBranchAdminNavigation());
       return;
     }
 
-    const isSuperAdmin = userRole === 'SUPER_ADMIN';
+    const isSuperAdmin = userRole === "SUPER_ADMIN";
 
     // 1. Filter navigation based on roles and enabled modules
-    const newFilteredNavigation = fullNavigation.map(category => ({
-      ...category,
-      items: category.items.filter(item => {
-        if (category.category === "Operations" && ["Branch Finances", "Reports"].includes(item.name)) {
-          // Only show Branch Finances to branch_admin, hide for super_admin (super_admin should only see "Finances")
-          if (item.name === "Branch Finances") {
-            return user?.primaryRole?.toLowerCase() === "branch_admin";
+    const newFilteredNavigation = fullNavigation
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) => {
+          if (
+            category.category === "Operations" &&
+            ["Branch Finances", "Reports"].includes(item.name)
+          ) {
+            // Only show Branch Finances to branch_admin, hide for super_admin (super_admin should only see "Finances")
+            if (item.name === "Branch Finances") {
+              return user?.primaryRole?.toLowerCase() === "branch_admin";
+            }
+            return false; // Hide Reports for all
           }
-          return false; // Hide Reports for all
-        }
-        if (category.category === "System" && item.name === "Admin") {
-          // Hide Admin menu item for all users
-          return false;
-        }
-        if (item.name === "Mobile App") {
-          // Hide Mobile App menu item for all users
-          return false;
-        }
-        // Hide Prayer Requests for super_admin in navigation
-        if (isSuperAdmin && item.name === "Prayer Requests") {
-          return false;
-        }
-        // Hide Communication for super_admin in navigation
-        if (isSuperAdmin && item.name === "Communication") {
-          return false;
-        }
-        // Super Admins see everything, always (except hidden above).
-        if (isSuperAdmin) {
-          return true;
-        }
-
-        // For other users, perform role-based checks for any protected routes
-        if (item.href.startsWith('/dashboard/admin')) {
-          // Only branch_admin should be checked here, as super_admin is already handled
-          if (userRole !== 'BRANCH_ADMIN') {
+          if (category.category === "System" && item.name === "Admin") {
+            // Hide Admin menu item for all users
             return false;
           }
-        }
+          if (item.name === "Mobile App") {
+            // Hide Mobile App menu item for all users
+            return false;
+          }
+          // Hide Prayer Requests for super_admin in navigation
+          if (isSuperAdmin && item.name === "Prayer Requests") {
+            return false;
+          }
+          // Hide Communication for super_admin in navigation
+          if (isSuperAdmin && item.name === "Communication") {
+            return false;
+          }
+          // Super Admins see everything, always (except hidden above).
+          if (isSuperAdmin) {
+            return true;
+          }
 
-        // Next, check if the item should be visible based on module selection.
-        // An item is visible if its module is enabled OR if it's a core dashboard item.
-        const moduleEnabled = isModuleEnabled(item.moduleId);
-        const isCoreItem = item.moduleId === 'dashboard';
+          // For other users, perform role-based checks for any protected routes
+          if (item.href.startsWith("/dashboard/admin")) {
+            // Only branch_admin should be checked here, as super_admin is already handled
+            if (userRole !== "BRANCH_ADMIN") {
+              return false;
+            }
+          }
 
-        return moduleEnabled || isCoreItem;
-      })
-    })).filter(category => category.items.length > 0);
+          // Next, check if the item should be visible based on module selection.
+          // An item is visible if its module is enabled OR if it's a core dashboard item.
+          const moduleEnabled = isModuleEnabled(item.moduleId);
+          const isCoreItem = item.moduleId === "dashboard";
+
+          return moduleEnabled || isCoreItem;
+        }),
+      }))
+      .filter((category) => category.items.length > 0);
 
     setFilteredNavigation(newFilteredNavigation);
 
     // 2. Perform redirect if user is on a page they don't have access to
     const isCurrentPathAllowed = newFilteredNavigation
-      .flatMap(category => category.items)
-      .some(item => pathname === item.href || pathname.startsWith(`${item.href}/`));
+      .flatMap((category) => category.items)
+      .some(
+        (item) =>
+          pathname === item.href || pathname.startsWith(`${item.href}/`),
+      );
 
-    if (!isCurrentPathAllowed && pathname !== '/dashboard') {
+    if (!isCurrentPathAllowed && pathname !== "/dashboard") {
       const isPotentiallyProtected = fullNavigation
-        .flatMap(c => c.items)
-        .some(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
+        .flatMap((c) => c.items)
+        .some(
+          (item) =>
+            pathname.startsWith(item.href) && item.href !== "/dashboard",
+        );
 
       if (isPotentiallyProtected) {
-        console.warn(`[DynamicNavigation] User with role '${userRole}' not allowed to access '${pathname}'. Redirecting to /dashboard.`);
-        router.push('/dashboard');
+        console.warn(
+          `[DynamicNavigation] User with role '${userRole}' not allowed to access '${pathname}'. Redirecting to /dashboard.`,
+        );
+        router.push("/dashboard");
       }
     }
   }, [user, pathname, router]);
@@ -438,53 +467,57 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      if (!target.closest('.profile-dropdown-btn')) {
+      if (!target.closest(".profile-dropdown-btn")) {
         setProfileDropdownOpen(false);
       }
     }
     if (profileDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileDropdownOpen]);
 
   // Helper functions to get user information
   const getUserInitials = () => {
-    if (!user?.name) return 'U';
-    
-    const nameParts = user.name.split(' ');
+    if (!user?.name) return "U";
+
+    const nameParts = user.name.split(" ");
     if (nameParts.length >= 2) {
       return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
     }
-    return nameParts[0][0] || 'U';
+    return nameParts[0][0] || "U";
   };
-  
+
   const getUserDisplayName = () => {
-    return user?.name || 'User';
+    return user?.name || "User";
   };
-  
+
   const getUserEmail = () => {
-    return user?.email || '';
+    return user?.email || "";
   };
-  
+
   const getUserRole = () => {
-    const role = user?.primaryRole || 'member';
+    const role = user?.primaryRole || "member";
     // Convert snake_case to Title Case, e.g. 'super_admin' → 'Super Admin'
     return role
-      .replace(/_/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .replace(/_/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
-  
+
   return (
     <div>
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
+        <Dialog
+          as="div"
+          className="relative z-50 lg:hidden"
+          onClose={setSidebarOpen}
+        >
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -524,7 +557,10 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                       onClick={() => setSidebarOpen(false)}
                     >
                       <span className="sr-only">Close sidebar</span>
-                      <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                      <XMarkIcon
+                        className="h-6 w-6 text-white"
+                        aria-hidden="true"
+                      />
                     </button>
                   </div>
                 </Transition.Child>
@@ -532,25 +568,34 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   <div className="flex h-16 items-center px-6 border-b border-indigo-700/50">
                     <div className="flex items-center">
                       <div className="h-8 w-8 rounded-lg bg-white/10 mr-3 flex items-center justify-center">
-                        <HomeIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                        <HomeIcon
+                          className="h-5 w-5 text-white"
+                          aria-hidden="true"
+                        />
                       </div>
                       <div className="text-white text-xl font-bold">
                         Church Manager
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Mobile user profile */}
                   <div className="flex items-center gap-2 py-4 px-6 border-b border-indigo-700/30">
                     <div className="relative h-9 w-9 rounded-full overflow-hidden bg-indigo-600 flex-shrink-0 ring-2 ring-white/20">
-                      <div className="absolute inset-0 flex items-center justify-center text-indigo-200 font-bold text-sm">AU</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-indigo-200 font-bold text-sm">
+                        AU
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">Admin User</p>
-                      <p className="text-xs text-indigo-200 truncate">admin@churchchurch.org</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        Admin User
+                      </p>
+                      <p className="text-xs text-indigo-200 truncate">
+                        admin@churchchurch.org
+                      </p>
                     </div>
                   </div>
-                  
+
                   <nav className="flex-1 px-3 py-3">
                     <div className="space-y-1">
                       {filteredNavigation.map((section) => (
@@ -560,7 +605,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                               {section.category}
                             </h3>
                           </div>
-                          
+
                           <ul className="space-y-1">
                             {section.items.map((item) => (
                               <li key={item.name}>
@@ -568,9 +613,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                                   href={item.href}
                                   className={`
                                     group flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium
-                                    ${pathname === item.href 
-                                      ? 'bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm' 
-                                      : 'text-indigo-100 hover:text-white hover:bg-indigo-700/40'}
+                                    ${
+                                      pathname === item.href
+                                        ? "bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm"
+                                        : "text-indigo-100 hover:text-white hover:bg-indigo-700/40"
+                                    }
                                   `}
                                 >
                                   <span className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-indigo-800/40 group-hover:bg-indigo-800/60">
@@ -581,7 +628,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                                   </span>
                                   <span className="flex-1">{item.name}</span>
                                   {item.badge && (
-                                    <span className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${item.badge.color} text-white`}>
+                                    <span
+                                      className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${item.badge.color} text-white`}
+                                    >
                                       {item.badge.count}
                                     </span>
                                   )}
@@ -619,12 +668,10 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               <div className="h-8 w-8 rounded-lg bg-white/10 mr-3 flex items-center justify-center">
                 <HomeIcon className="h-5 w-5 text-white" aria-hidden="true" />
               </div>
-              <div className="text-white text-xl font-bold">
-                Church Manager
-              </div>
+              <div className="text-white text-xl font-bold">Church Manager</div>
             </div>
           </div>
-          
+
           {/* User profile */}
           <div className="flex items-center gap-2 px-6 border-b border-indigo-700/30 pb-4">
             <div className="relative h-10 w-10 rounded-full overflow-hidden bg-indigo-600 flex-shrink-0 ring-2 ring-white/20">
@@ -633,8 +680,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{getUserDisplayName()}</p>
-              <p className="text-xs text-indigo-200 truncate">{getUserEmail()}</p>
+              <p className="text-sm font-medium text-white truncate">
+                {getUserDisplayName()}
+              </p>
+              <p className="text-xs text-indigo-200 truncate">
+                {getUserEmail()}
+              </p>
               <div className="mt-1">
                 <span className="text-[10px] font-medium bg-indigo-500 text-white px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
                   {getUserRole()}
@@ -642,7 +693,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               </div>
             </div>
           </div>
-          
+
           <nav className="flex flex-1 flex-col px-6">
             <ul className="flex flex-1 flex-col gap-y-7">
               {filteredNavigation.map((section) => (
@@ -657,9 +708,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           href={item.href}
                           className={`
                             group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-medium
-                            ${pathname === item.href 
-                              ? 'bg-indigo-700 text-white' 
-                              : 'text-indigo-200 hover:text-white hover:bg-indigo-700/40'}
+                            ${
+                              pathname === item.href
+                                ? "bg-indigo-700 text-white"
+                                : "text-indigo-200 hover:text-white hover:bg-indigo-700/40"
+                            }
                           `}
                         >
                           <item.icon
@@ -668,7 +721,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           />
                           {item.name}
                           {item.badge && (
-                            <span className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color} text-white leading-none`}>
+                            <span
+                              className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color} text-white leading-none`}
+                            >
                               {item.badge.count}
                             </span>
                           )}
@@ -690,7 +745,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               {/*  </li>*/}
               {/*)}*/}
             </ul>
-            
+
             <div className="mt-auto pb-3 text-xs text-indigo-200 text-center">
               {/*<p>*/}
               {/*  <Link href="/dashboard/settings/modules" className="hover:text-white underline">*/}
@@ -734,8 +789,18 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   <span className="hidden md:block text-base font-medium text-white pr-2">
                     {getUserDisplayName()}
                   </span>
-                  <svg className="h-4 w-4 text-white ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="h-4 w-4 text-white ml-1"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {profileDropdownOpen && (
@@ -746,8 +811,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           {getUserInitials()}
                         </span>
                         <div>
-                          <div className="font-semibold text-gray-900">{getUserDisplayName()}</div>
-                          <div className="text-xs text-gray-500">{getUserEmail()}</div>
+                          <div className="font-semibold text-gray-900">
+                            {getUserDisplayName()}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {getUserEmail()}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -770,12 +839,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           setProfileDropdownOpen(false);
                           try {
                             await logout();
-                            if (typeof window !== 'undefined') {
-                              window.location.href = '/auth/login';
+                            if (typeof window !== "undefined") {
+                              window.location.href = "/auth/login";
                             }
                           } catch {
-                            if (typeof window !== 'undefined') {
-                              window.location.href = '/auth/login';
+                            if (typeof window !== "undefined") {
+                              window.location.href = "/auth/login";
                             }
                           }
                         }}
@@ -791,9 +860,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
           </div>
         </div>
 
-        <main className="pb-10">
-          {children}
-        </main>
+        <main className="pb-10">{children}</main>
       </div>
     </div>
   );

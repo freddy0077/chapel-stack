@@ -1,18 +1,26 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Badge, TabGroup, TabList, Tab, TabPanels, TabPanel } from '@tremor/react';
-import { 
-  DocumentTextIcon, 
-  CalendarDaysIcon, 
-  ChartBarIcon 
-} from '@heroicons/react/24/outline';
-import { DeathRegister } from '../../types/deathRegister';
-import { DeathRegisterSearchFilters } from './DeathRegisterSearchFilters';
-import { RecentDeathsSection } from './RecentDeathsSection';
-import { MemorialCalendarSection } from './MemorialCalendarSection';
-import { AnalyticsSection } from './AnalyticsSection';
-import { DeathRegisterManagement } from './DeathRegisterManagement';
+import React from "react";
+import {
+  Card,
+  Badge,
+  TabGroup,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+} from "@tremor/react";
+import {
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
+import { DeathRegister } from "../../types/deathRegister";
+import { DeathRegisterSearchFilters } from "./DeathRegisterSearchFilters";
+import { RecentDeathsSection } from "./RecentDeathsSection";
+import { MemorialCalendarSection } from "./MemorialCalendarSection";
+import { AnalyticsSection } from "./AnalyticsSection";
+import { DeathRegisterManagement } from "./DeathRegisterManagement";
 
 interface DeathRegisterTabsProps {
   selectedTab: number;

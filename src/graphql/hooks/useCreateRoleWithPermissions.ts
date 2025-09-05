@@ -1,5 +1,5 @@
-import { useMutation } from '@apollo/client';
-import { CREATE_ROLE_WITH_PERMISSIONS } from '../mutations/roleMutations';
+import { useMutation } from "@apollo/client";
+import { CREATE_ROLE_WITH_PERMISSIONS } from "../mutations/roleMutations";
 
 export interface CreateRoleWithPermissionsInput {
   name: string;
@@ -8,9 +8,8 @@ export interface CreateRoleWithPermissionsInput {
 }
 
 export function useCreateRoleWithPermissions() {
-  const [createRoleWithPermissions, { data, loading, error, reset }] = useMutation(
-    CREATE_ROLE_WITH_PERMISSIONS
-  );
+  const [createRoleWithPermissions, { data, loading, error, reset }] =
+    useMutation(CREATE_ROLE_WITH_PERMISSIONS);
 
   return {
     createRoleWithPermissions,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 
 export interface PaginationOptions {
   initialPage?: number;
@@ -26,7 +26,7 @@ export interface PaginationResult<T> {
 
 export function usePagination<T>(
   data: T[],
-  options: PaginationOptions
+  options: PaginationOptions,
 ): PaginationResult<T> {
   const {
     initialPage = 1,

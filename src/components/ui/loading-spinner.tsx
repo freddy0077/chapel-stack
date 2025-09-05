@@ -1,25 +1,25 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 interface LoadingSpinnerProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
-export function LoadingSpinner({ className, size = 'md' }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  className,
+  size = "md",
+}: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
   };
 
   return (
-    <div className={cn('flex items-center justify-center', className)}>
+    <div className={cn("flex items-center justify-center", className)}>
       <svg
-        className={cn(
-          'animate-spin text-indigo-600',
-          sizeClasses[size]
-        )}
+        className={cn("animate-spin text-indigo-600", sizeClasses[size])}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
-import SharedModal from './SharedModal';
-import { ModalFormData } from '@/types/finance';
-import { useFinanceReferenceData } from '@/graphql/hooks/useFinanceReferenceData';
-import { formatDate } from '@/utils/financeHelpers';
+import React from "react";
+import SharedModal from "./SharedModal";
+import { ModalFormData } from "@/types/finance";
+import { useFinanceReferenceData } from "@/graphql/hooks/useFinanceReferenceData";
+import { formatDate } from "@/utils/financeHelpers";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ interface TransactionModalProps {
   selectedMemberId: string | null;
   setSelectedMemberId: (id: string | null) => void;
   submitAttempted: boolean;
-  formMessage: { type: 'success' | 'error' | null; text: string };
+  formMessage: { type: "success" | "error" | null; text: string };
   organisationId: string;
   branchId: string;
 }
@@ -41,7 +41,7 @@ export default function TransactionModal({
   submitAttempted,
   formMessage,
   organisationId,
-  branchId
+  branchId,
 }: TransactionModalProps) {
   const { contributionTypes, paymentMethods } = useFinanceReferenceData();
 
@@ -53,31 +53,33 @@ export default function TransactionModal({
   const handleInputChange = (field: keyof ModalFormData, value: any) => {
     setModalForm({
       ...modalForm,
-      [field]: value
+      [field]: value,
     });
   };
 
   const handleMemberSelect = (member: any) => {
     setSelectedMemberId(member.id);
-    handleInputChange('memberId', member.id);
+    handleInputChange("memberId", member.id);
     setMemberSearch(`${member.firstName} ${member.lastName}`);
   };
 
   return (
-    <SharedModal 
-      open={isOpen} 
-      title="New Transaction" 
-      onClose={onClose} 
+    <SharedModal
+      open={isOpen}
+      title="New Transaction"
+      onClose={onClose}
       maxWidth="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Form Message */}
         {formMessage.type && (
-          <div className={`p-4 rounded-lg ${
-            formMessage.type === 'success' 
-              ? 'bg-green-50 text-green-800 border border-green-200' 
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}>
+          <div
+            className={`p-4 rounded-lg ${
+              formMessage.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
             {formMessage.text}
           </div>
         )}
@@ -89,7 +91,7 @@ export default function TransactionModal({
           </label>
           <select
             value={modalForm.type}
-            onChange={(e) => handleInputChange('type', e.target.value)}
+            onChange={(e) => handleInputChange("type", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             required
           >
@@ -110,7 +112,7 @@ export default function TransactionModal({
             type="number"
             step="0.01"
             value={modalForm.amount}
-            onChange={(e) => handleInputChange('amount', e.target.value)}
+            onChange={(e) => handleInputChange("amount", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             placeholder="0.00"
             required
@@ -125,7 +127,7 @@ export default function TransactionModal({
           <input
             type="date"
             value={modalForm.date}
-            onChange={(e) => handleInputChange('date', e.target.value)}
+            onChange={(e) => handleInputChange("date", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             required
           />
@@ -138,7 +140,7 @@ export default function TransactionModal({
           </label>
           <textarea
             value={modalForm.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={(e) => handleInputChange("description", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             rows={3}
             placeholder="Enter transaction description"
@@ -153,7 +155,7 @@ export default function TransactionModal({
           </label>
           <select
             value={modalForm.fundId}
-            onChange={(e) => handleInputChange('fundId', e.target.value)}
+            onChange={(e) => handleInputChange("fundId", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             required
           >
@@ -167,7 +169,7 @@ export default function TransactionModal({
         </div>
 
         {/* Member Selection (for contributions) */}
-        {modalForm.type === 'CONTRIBUTION' && (
+        {modalForm.type === "CONTRIBUTION" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Member (Optional)
@@ -189,8 +191,12 @@ export default function TransactionModal({
                       onClick={() => handleMemberSelect(member)}
                       className="w-full text-left px-3 py-2 hover:bg-indigo-50 border-b border-gray-100 last:border-b-0"
                     >
-                      <div className="font-medium">{member.firstName} {member.lastName}</div>
-                      <div className="text-sm text-gray-500">{member.email}</div>
+                      <div className="font-medium">
+                        {member.firstName} {member.lastName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {member.email}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -206,7 +212,7 @@ export default function TransactionModal({
           </label>
           <select
             value={modalForm.eventId}
-            onChange={(e) => handleInputChange('eventId', e.target.value)}
+            onChange={(e) => handleInputChange("eventId", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           >
             <option value="">Select Event</option>
@@ -219,14 +225,16 @@ export default function TransactionModal({
         </div>
 
         {/* Contribution Type (for contributions) */}
-        {modalForm.type === 'CONTRIBUTION' && (
+        {modalForm.type === "CONTRIBUTION" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Contribution Type (Optional)
             </label>
             <select
               value={modalForm.contributionTypeId}
-              onChange={(e) => handleInputChange('contributionTypeId', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("contributionTypeId", e.target.value)
+              }
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">Select Contribution Type</option>
@@ -240,14 +248,16 @@ export default function TransactionModal({
         )}
 
         {/* Payment Method (for contributions) */}
-        {modalForm.type === 'CONTRIBUTION' && (
+        {modalForm.type === "CONTRIBUTION" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Payment Method (Optional)
             </label>
             <select
               value={modalForm.paymentMethodId}
-              onChange={(e) => handleInputChange('paymentMethodId', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("paymentMethodId", e.target.value)
+              }
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">Select Payment Method</option>
@@ -268,7 +278,7 @@ export default function TransactionModal({
           <input
             type="text"
             value={modalForm.reference}
-            onChange={(e) => handleInputChange('reference', e.target.value)}
+            onChange={(e) => handleInputChange("reference", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             placeholder="Transaction reference"
           />

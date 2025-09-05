@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   XMarkIcon,
   ArrowDownTrayIcon,
@@ -10,7 +10,7 @@ import {
   UsersIcon,
   ArrowTrendingUpIcon,
   ClockIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 import {
   useGenerateAttendanceReport,
   AttendanceReportType,
@@ -18,29 +18,35 @@ import {
   AttendanceReportGroupBy,
   AttendanceReportInput,
   getDefaultReportConfig,
-} from '../../graphql/hooks/useAttendanceReports';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { toast } from 'react-hot-toast';
+} from "../../graphql/hooks/useAttendanceReports";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { toast } from "react-hot-toast";
 
 interface AttendanceReportDownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+const AttendanceReportDownloadModal: React.FC<
+  AttendanceReportDownloadModalProps
+> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const { generateReport, loading, error } = useGenerateAttendanceReport();
 
-  const [selectedReportType, setSelectedReportType] = useState<AttendanceReportType>(AttendanceReportType.SUMMARY);
+  const [selectedReportType, setSelectedReportType] =
+    useState<AttendanceReportType>(AttendanceReportType.SUMMARY);
   const [dateRange, setDateRange] = useState({
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
-    endDate: new Date().toISOString().split('T')[0], // today
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0], // 30 days ago
+    endDate: new Date().toISOString().split("T")[0], // today
   });
-  const [format, setFormat] = useState<AttendanceReportFormat>(AttendanceReportFormat.PDF);
-  const [groupBy, setGroupBy] = useState<AttendanceReportGroupBy>(AttendanceReportGroupBy.WEEK);
+  const [format, setFormat] = useState<AttendanceReportFormat>(
+    AttendanceReportFormat.PDF,
+  );
+  const [groupBy, setGroupBy] = useState<AttendanceReportGroupBy>(
+    AttendanceReportGroupBy.WEEK,
+  );
   const [includeOptions, setIncludeOptions] = useState({
     includeVisitors: true,
     includeStatistics: true,
@@ -53,53 +59,68 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
   const reportTypes = [
     {
       type: AttendanceReportType.SUMMARY,
-      name: 'Summary Report',
-      description: 'Quick overview with key metrics',
+      name: "Summary Report",
+      description: "Quick overview with key metrics",
       icon: ChartBarIcon,
-      color: 'bg-blue-500',
+      color: "bg-blue-500",
       recommended: true,
     },
     {
       type: AttendanceReportType.DETAILED,
-      name: 'Detailed Report',
-      description: 'Comprehensive analysis with all data',
+      name: "Detailed Report",
+      description: "Comprehensive analysis with all data",
       icon: DocumentTextIcon,
-      color: 'bg-green-500',
+      color: "bg-green-500",
       recommended: false,
     },
     {
       type: AttendanceReportType.TRENDS,
-      name: 'Trends Report',
-      description: 'Attendance patterns over time',
+      name: "Trends Report",
+      description: "Attendance patterns over time",
       icon: ArrowTrendingUpIcon,
-      color: 'bg-purple-500',
+      color: "bg-purple-500",
       recommended: false,
     },
     {
       type: AttendanceReportType.MEMBER_ANALYSIS,
-      name: 'Member Analysis',
-      description: 'Individual member attendance patterns',
+      name: "Member Analysis",
+      description: "Individual member attendance patterns",
       icon: UsersIcon,
-      color: 'bg-indigo-500',
+      color: "bg-indigo-500",
       recommended: false,
     },
   ];
 
   const formatOptions = [
-    { value: AttendanceReportFormat.PDF, label: 'PDF Document', icon: DocumentTextIcon, recommended: true },
-    { value: AttendanceReportFormat.EXCEL, label: 'Excel Spreadsheet', icon: DocumentTextIcon, recommended: false },
-    { value: AttendanceReportFormat.CSV, label: 'CSV File', icon: DocumentTextIcon, recommended: false },
+    {
+      value: AttendanceReportFormat.PDF,
+      label: "PDF Document",
+      icon: DocumentTextIcon,
+      recommended: true,
+    },
+    {
+      value: AttendanceReportFormat.EXCEL,
+      label: "Excel Spreadsheet",
+      icon: DocumentTextIcon,
+      recommended: false,
+    },
+    {
+      value: AttendanceReportFormat.CSV,
+      label: "CSV File",
+      icon: DocumentTextIcon,
+      recommended: false,
+    },
   ];
 
   const handleDownloadReport = async () => {
     if (!branchId || !organisationId) {
-      toast.error('Branch or organization information is missing');
+      toast.error("Branch or organization information is missing");
       return;
     }
 
     try {
       const defaultConfig = getDefaultReportConfig(selectedReportType);
-      
+
       const reportInput: AttendanceReportInput = {
         reportType: selectedReportType,
         startDate: dateRange.startDate,
@@ -112,31 +133,29 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
         ...defaultConfig,
       };
 
+      const report = await generateReport(reportInput, user?.email || "user");
 
-      const report = await generateReport(reportInput, user?.email || 'user');
-      
-      
       if (report) {
         // Handle download based on the backend response
         if (report.downloadUrl) {
           // Backend provided a download URL - use it directly
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.href = report.downloadUrl;
-          
+
           // Map format to correct file extension
           const getFileExtension = (format: AttendanceReportFormat): string => {
             switch (format) {
               case AttendanceReportFormat.PDF:
-                return 'pdf';
+                return "pdf";
               case AttendanceReportFormat.CSV:
-                return 'csv';
+                return "csv";
               case AttendanceReportFormat.EXCEL:
-                return 'xlsx';
+                return "xlsx";
               default:
-                return 'json';
+                return "json";
             }
           };
-          
+
           link.download = `attendance-report-${report.id}.${getFileExtension(format)}`;
           document.body.appendChild(link);
           link.click();
@@ -144,28 +163,34 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
         } else {
           // Fallback for JSON format - create downloadable file
           const dataStr = JSON.stringify(report, null, 2);
-          const blob = new Blob([dataStr], { type: 'application/json' });
+          const blob = new Blob([dataStr], { type: "application/json" });
           const url = URL.createObjectURL(blob);
-          
-          const linkElement = document.createElement('a');
-          linkElement.setAttribute('href', url);
-          linkElement.setAttribute('download', `attendance-report-${report.id}.json`);
+
+          const linkElement = document.createElement("a");
+          linkElement.setAttribute("href", url);
+          linkElement.setAttribute(
+            "download",
+            `attendance-report-${report.id}.json`,
+          );
           linkElement.click();
-          
+
           URL.revokeObjectURL(url);
         }
 
-        toast.success('Report downloaded successfully!');
+        toast.success("Report downloaded successfully!");
         onClose();
       }
     } catch (error) {
-      console.error('Error downloading report:', error);
-      toast.error('Failed to download report');
+      console.error("Error downloading report:", error);
+      toast.error("Failed to download report");
     }
   };
 
-  const updateIncludeOption = (key: keyof typeof includeOptions, value: boolean) => {
-    setIncludeOptions(prev => ({ ...prev, [key]: value }));
+  const updateIncludeOption = (
+    key: keyof typeof includeOptions,
+    value: boolean,
+  ) => {
+    setIncludeOptions((prev) => ({ ...prev, [key]: value }));
   };
 
   if (!isOpen) return null;
@@ -180,8 +205,12 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
               <ArrowDownTrayIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Download Attendance Report</h3>
-              <p className="text-sm text-gray-600">Generate and download attendance analytics</p>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Download Attendance Report
+              </h3>
+              <p className="text-sm text-gray-600">
+                Generate and download attendance analytics
+              </p>
             </div>
           </div>
           <button
@@ -208,8 +237,8 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
                     onClick={() => setSelectedReportType(reportType.type)}
                     className={`relative p-4 rounded-lg border-2 transition-all text-left ${
                       selectedReportType === reportType.type
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -218,14 +247,18 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className="text-sm font-medium text-gray-900">{reportType.name}</h4>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {reportType.name}
+                          </h4>
                           {reportType.recommended && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                               Recommended
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{reportType.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {reportType.description}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -236,14 +269,21 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Date Range
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">From</label>
                 <input
                   type="date"
                   value={dateRange.startDate}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -252,7 +292,12 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
                 <input
                   type="date"
                   value={dateRange.endDate}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -261,7 +306,9 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
 
           {/* Format Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Download Format</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Download Format
+            </label>
             <div className="space-y-2">
               {formatOptions.map((formatOption) => {
                 const Icon = formatOption.icon;
@@ -272,12 +319,16 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
                       name="format"
                       value={formatOption.value}
                       checked={format === formatOption.value}
-                      onChange={(e) => setFormat(e.target.value as AttendanceReportFormat)}
+                      onChange={(e) =>
+                        setFormat(e.target.value as AttendanceReportFormat)
+                      }
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="ml-3 flex items-center space-x-2">
                       <Icon className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-700">{formatOption.label}</span>
+                      <span className="text-sm text-gray-700">
+                        {formatOption.label}
+                      </span>
                       {formatOption.recommended && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                           Recommended
@@ -292,18 +343,27 @@ const AttendanceReportDownloadModal: React.FC<AttendanceReportDownloadModalProps
 
           {/* Quick Options */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Include</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Include
+            </label>
             <div className="space-y-2">
               {Object.entries(includeOptions).map(([key, value]) => (
                 <label key={key} className="flex items-center">
                   <input
                     type="checkbox"
                     checked={value}
-                    onChange={(e) => updateIncludeOption(key as keyof typeof includeOptions, e.target.checked)}
+                    onChange={(e) =>
+                      updateIncludeOption(
+                        key as keyof typeof includeOptions,
+                        e.target.checked,
+                      )
+                    }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <span className="ml-2 text-sm text-gray-700">
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                    {key
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (str) => str.toUpperCase())}
                   </span>
                 </label>
               ))}

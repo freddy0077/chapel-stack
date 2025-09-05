@@ -1,12 +1,12 @@
 "use client";
 
-import { 
+import {
   UserIcon,
   IdentificationIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  XCircleIcon
-} from '@heroicons/react/24/outline';
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 // Mock data for children
 export const mockChildren = [
@@ -22,7 +22,7 @@ export const mockChildren = [
     classroom: "Elementary A",
     checkedIn: true,
     allergies: ["Peanuts", "Dairy"],
-    notes: "Shy at first but warms up quickly."
+    notes: "Shy at first but warms up quickly.",
   },
   {
     id: "CH002",
@@ -36,7 +36,7 @@ export const mockChildren = [
     classroom: "Preschool B",
     checkedIn: true,
     allergies: [],
-    notes: ""
+    notes: "",
   },
   {
     id: "CH003",
@@ -50,7 +50,7 @@ export const mockChildren = [
     classroom: "Toddlers A",
     checkedIn: false,
     allergies: ["Gluten"],
-    notes: "Needs her comfort blanket."
+    notes: "Needs her comfort blanket.",
   },
   {
     id: "CH004",
@@ -64,7 +64,7 @@ export const mockChildren = [
     classroom: "Nursery",
     checkedIn: true,
     allergies: [],
-    notes: "Formula stored in diaper bag."
+    notes: "Formula stored in diaper bag.",
   },
   {
     id: "CH005",
@@ -78,7 +78,7 @@ export const mockChildren = [
     classroom: "Elementary B",
     checkedIn: false,
     allergies: ["Bee stings"],
-    notes: "Has EpiPen in case of emergency."
+    notes: "Has EpiPen in case of emergency.",
   },
   {
     id: "CH006",
@@ -92,7 +92,7 @@ export const mockChildren = [
     classroom: "Preschool A",
     checkedIn: true,
     allergies: [],
-    notes: ""
+    notes: "",
   },
   {
     id: "CH007",
@@ -106,7 +106,7 @@ export const mockChildren = [
     classroom: "Toddlers B",
     checkedIn: false,
     allergies: ["Strawberries"],
-    notes: "Prefers to be called 'Ava-bear'."
+    notes: "Prefers to be called 'Ava-bear'.",
   },
   {
     id: "CH008",
@@ -120,8 +120,8 @@ export const mockChildren = [
     classroom: "Elementary A",
     checkedIn: true,
     allergies: [],
-    notes: "Has asthma, inhaler in backpack."
-  }
+    notes: "Has asthma, inhaler in backpack.",
+  },
 ];
 
 export interface Child {
@@ -144,7 +144,10 @@ interface ChildrenListProps {
   onSelectChild: (child: Child) => void;
 }
 
-export default function ChildrenList({ children, onSelectChild }: ChildrenListProps) {
+export default function ChildrenList({
+  children,
+  onSelectChild,
+}: ChildrenListProps) {
   return (
     <div className="mt-8 flow-root">
       <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -153,19 +156,34 @@ export default function ChildrenList({ children, onSelectChild }: ChildrenListPr
             <table className="min-w-full divide-y divide-gray-300">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                  >
                     Child
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
                     Age Group
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
                     Classroom
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
                     Parent
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
                     Status
                   </th>
                   <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -179,12 +197,20 @@ export default function ChildrenList({ children, onSelectChild }: ChildrenListPr
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <UserIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                          <UserIcon
+                            className="h-6 w-6 text-indigo-600"
+                            aria-hidden="true"
+                          />
                         </div>
                         <div className="ml-4">
-                          <div className="font-medium text-gray-900">{child.firstName} {child.lastName}</div>
+                          <div className="font-medium text-gray-900">
+                            {child.firstName} {child.lastName}
+                          </div>
                           <div className="text-gray-500 flex items-center">
-                            <IdentificationIcon className="mr-1 h-4 w-4 text-gray-400" aria-hidden="true" />
+                            <IdentificationIcon
+                              className="mr-1 h-4 w-4 text-gray-400"
+                              aria-hidden="true"
+                            />
                             {child.id}
                           </div>
                         </div>
@@ -192,30 +218,43 @@ export default function ChildrenList({ children, onSelectChild }: ChildrenListPr
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       {child.ageGroup}
-                      <div className="text-xs text-gray-400">{child.age} years old</div>
+                      <div className="text-xs text-gray-400">
+                        {child.age} years old
+                      </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       {child.classroom}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <div className="text-gray-900">{child.parentName}</div>
-                      <div className="text-gray-500 text-xs">{child.parentPhone}</div>
+                      <div className="text-gray-500 text-xs">
+                        {child.parentPhone}
+                      </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       {child.checkedIn ? (
                         <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                          <CheckCircleIcon className="mr-1 h-4 w-4 text-green-500" aria-hidden="true" />
+                          <CheckCircleIcon
+                            className="mr-1 h-4 w-4 text-green-500"
+                            aria-hidden="true"
+                          />
                           Checked In
                         </span>
                       ) : (
                         <span className="inline-flex rounded-full bg-gray-100 px-2 text-xs font-semibold leading-5 text-gray-800">
-                          <XCircleIcon className="mr-1 h-4 w-4 text-gray-500" aria-hidden="true" />
+                          <XCircleIcon
+                            className="mr-1 h-4 w-4 text-gray-500"
+                            aria-hidden="true"
+                          />
                           Not Checked In
                         </span>
                       )}
                       {child.allergies.length > 0 && (
                         <div className="mt-1 flex items-center text-xs text-red-600">
-                          <ExclamationTriangleIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <ExclamationTriangleIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Allergies
                         </div>
                       )}
@@ -226,7 +265,10 @@ export default function ChildrenList({ children, onSelectChild }: ChildrenListPr
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() => onSelectChild(child)}
                       >
-                        View<span className="sr-only">, {child.firstName} {child.lastName}</span>
+                        View
+                        <span className="sr-only">
+                          , {child.firstName} {child.lastName}
+                        </span>
                       </button>
                     </td>
                   </tr>

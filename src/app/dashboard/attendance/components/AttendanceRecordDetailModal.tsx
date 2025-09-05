@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React from "react";
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
   XMarkIcon,
   CalendarIcon,
@@ -14,9 +14,9 @@ import {
   EnvelopeIcon,
   PencilIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
-import { AttendanceRecord } from '@/graphql/hooks/useAttendance';
+} from "@heroicons/react/24/outline";
+import { format } from "date-fns";
+import { AttendanceRecord } from "@/graphql/hooks/useAttendance";
 
 interface AttendanceRecordDetailModalProps {
   isOpen: boolean;
@@ -26,20 +26,16 @@ interface AttendanceRecordDetailModalProps {
   onDelete?: (record: AttendanceRecord) => void;
 }
 
-const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = ({
-  isOpen,
-  onClose,
-  record,
-  onEdit,
-  onDelete,
-}) => {
+const AttendanceRecordDetailModal: React.FC<
+  AttendanceRecordDetailModalProps
+> = ({ isOpen, onClose, record, onEdit, onDelete }) => {
   if (!record) return null;
 
   const formatDateTime = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'EEEE, MMMM dd, yyyy \'at\' h:mm a');
+      return format(new Date(dateString), "EEEE, MMMM dd, yyyy 'at' h:mm a");
     } catch {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
 
@@ -47,7 +43,7 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
     if (record.member) {
       return `${record.member.firstName} ${record.member.lastName}`;
     }
-    return record.visitorName || 'Unknown';
+    return record.visitorName || "Unknown";
   };
 
   const getEventOrSessionName = () => {
@@ -57,17 +53,17 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
     if (record.event) {
       return record.event.title;
     }
-    return 'Unknown';
+    return "Unknown";
   };
 
   const getEventOrSessionType = () => {
     if (record.session) {
-      return 'Session';
+      return "Session";
     }
     if (record.event) {
-      return 'Event';
+      return "Event";
     }
-    return 'Unknown';
+    return "Unknown";
   };
 
   return (
@@ -130,20 +126,32 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <p className="mt-1 text-sm text-gray-900">{getAttendeeDisplayName()}</p>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Name
+                        </label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {getAttendeeDisplayName()}
+                        </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Type</label>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          record.member ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {record.member ? 'Member' : 'Visitor'}
+                        <label className="block text-sm font-medium text-gray-700">
+                          Type
+                        </label>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            record.member
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {record.member ? "Member" : "Visitor"}
                         </span>
                       </div>
                       {record.visitorEmail && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Email</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Email
+                          </label>
                           <p className="mt-1 text-sm text-gray-900 flex items-center">
                             <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-1" />
                             {record.visitorEmail}
@@ -152,7 +160,9 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                       )}
                       {record.visitorPhone && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Phone</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Phone
+                          </label>
                           <p className="mt-1 text-sm text-gray-900 flex items-center">
                             <PhoneIcon className="h-4 w-4 text-gray-400 mr-1" />
                             {record.visitorPhone}
@@ -170,20 +180,32 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <p className="mt-1 text-sm text-gray-900">{getEventOrSessionName()}</p>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Name
+                        </label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {getEventOrSessionName()}
+                        </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Type</label>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          record.session ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                        }`}>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Type
+                        </label>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            record.session
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
                           {getEventOrSessionType()}
                         </span>
                       </div>
                       {(record.session?.date || record.event?.startDate) && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Date</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Date
+                          </label>
                           <p className="mt-1 text-sm text-gray-900">
                             {record.session?.date || record.event?.startDate}
                           </p>
@@ -192,7 +214,7 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                       {(record.event?.location || record.session?.type) && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            {record.event ? 'Location' : 'Type'}
+                            {record.event ? "Location" : "Type"}
                           </label>
                           <p className="mt-1 text-sm text-gray-900 flex items-center">
                             <MapPinIcon className="h-4 w-4 text-gray-400 mr-1" />
@@ -211,36 +233,52 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Check-in Time</label>
-                        <p className="mt-1 text-sm text-gray-900">{formatDateTime(record.checkInTime)}</p>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Check-in Time
+                        </label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {formatDateTime(record.checkInTime)}
+                        </p>
                       </div>
                       {record.checkOutTime && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Check-out Time</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatDateTime(record.checkOutTime)}</p>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Check-out Time
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {formatDateTime(record.checkOutTime)}
+                          </p>
                         </div>
                       )}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Check-in Method</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Check-in Method
+                        </label>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           <TagIcon className="h-3 w-3 mr-1" />
-                          {record.checkInMethod || 'Manual'}
+                          {record.checkInMethod || "Manual"}
                         </span>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Status</label>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          record.checkOutTime 
-                            ? 'bg-gray-100 text-gray-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {record.checkOutTime ? 'Checked Out' : 'Present'}
+                        <label className="block text-sm font-medium text-gray-700">
+                          Status
+                        </label>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            record.checkOutTime
+                              ? "bg-gray-100 text-gray-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {record.checkOutTime ? "Checked Out" : "Present"}
                         </span>
                       </div>
                     </div>
                     {record.notes && (
                       <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">Notes</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Notes
+                        </label>
                         <p className="mt-1 text-sm text-gray-900 bg-white p-3 rounded border">
                           {record.notes}
                         </p>
@@ -250,7 +288,9 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
 
                   {/* System Information */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-lg font-medium text-gray-900 mb-3">System Information</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">
+                      System Information
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                       <div>
                         <label className="block font-medium">Record ID</label>
@@ -262,7 +302,9 @@ const AttendanceRecordDetailModal: React.FC<AttendanceRecordDetailModalProps> = 
                       </div>
                       {record.updatedAt !== record.createdAt && (
                         <div>
-                          <label className="block font-medium">Last Updated</label>
+                          <label className="block font-medium">
+                            Last Updated
+                          </label>
                           <p>{formatDateTime(record.updatedAt)}</p>
                         </div>
                       )}

@@ -22,8 +22,9 @@ export class LazyAuthInit {
   private static async performInitialization(): Promise<void> {
     try {
       // Only perform critical checks
-      const hasToken = typeof window !== 'undefined' && 
-        localStorage.getItem('chapel_access_token');
+      const hasToken =
+        typeof window !== "undefined" &&
+        localStorage.getItem("chapel_access_token");
 
       if (!hasToken) {
         this.initialized = true;
@@ -37,7 +38,7 @@ export class LazyAuthInit {
 
       this.initialized = true;
     } catch (error) {
-      console.warn('Auth lazy init failed:', error);
+      console.warn("Auth lazy init failed:", error);
       this.initialized = true;
     }
   }

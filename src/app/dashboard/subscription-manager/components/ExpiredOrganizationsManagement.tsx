@@ -1,23 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { 
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import {
   ExclamationTriangleIcon,
   CreditCardIcon,
   ClockIcon,
   BuildingOfficeIcon,
   EyeIcon,
   LinkIcon,
-  CheckCircleIcon
-} from '@heroicons/react/24/outline';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { formatDate } from '../utils/formatters';
-import { GET_SUBSCRIPTION_ORGANIZATIONS, CREATE_ORGANIZATION_SUBSCRIPTION, GET_SUBSCRIPTION_PLANS } from '@/graphql/subscription-management';
-import { useCreateOrganizationSubscription } from '@/hooks/subscription/useOrganizationSubscription';
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { formatDate } from "../utils/formatters";
+import {
+  GET_SUBSCRIPTION_ORGANIZATIONS,
+  CREATE_ORGANIZATION_SUBSCRIPTION,
+  GET_SUBSCRIPTION_PLANS,
+} from "@/graphql/subscription-management";
+import { useCreateOrganizationSubscription } from "@/hooks/subscription/useOrganizationSubscription";
 
 interface ExpiredOrganization {
   id: string;
@@ -37,33 +41,40 @@ interface ExpiredOrganization {
 }
 
 export default function ExpiredOrganizationsManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [renewalPlanId, setRenewalPlanId] = useState('');
+  const [renewalPlanId, setRenewalPlanId] = useState("");
   const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [showRenewalLinkModal, setShowRenewalLinkModal] = useState(false);
-  const [renewalLink, setRenewalLink] = useState('');
+  const [renewalLink, setRenewalLink] = useState("");
 
   // Fetch organizations with expired subscriptions
-  const { data: organizationsData, loading, error, refetch } = useQuery(GET_SUBSCRIPTION_ORGANIZATIONS, {
+  const {
+    data: organizationsData,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_SUBSCRIPTION_ORGANIZATIONS, {
     variables: {
       filter: {
-        subscriptionStatus: 'PAST_DUE'
-      }
+        subscriptionStatus: "PAST_DUE",
+      },
     },
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   // Fetch subscription plans for renewal
   const { data: plansData } = useQuery(GET_SUBSCRIPTION_PLANS, {
-    variables: { filter: { isActive: true } }
+    variables: { filter: { isActive: true } },
   });
 
   // Hook for creating subscriptions
-  const { createOrganizationSubscription, loading: renewalLoading } = useCreateOrganizationSubscription();
+  const { createOrganizationSubscription, loading: renewalLoading } =
+    useCreateOrganizationSubscription();
 
-  const organizations: ExpiredOrganization[] = organizationsData?.subscriptionOrganizations || [];
+  const organizations: ExpiredOrganization[] =
+    organizationsData?.subscriptionOrganizations || [];
   const plans = plansData?.subscriptionPlans || [];
 
   // Debug logging to check organization data
@@ -73,13 +84,15 @@ export default function ExpiredOrganizationsManagement() {
   // Filter expired organizations
   const expiredOrganizations = useMemo(() => {
     return organizations.filter((org) => {
-      const matchesSearch = org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           org.email?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const hasExpiredSubscription = org.subscription?.status === 'EXPIRED' || 
-                                   org.subscription?.status === 'PAST_DUE' ||
-                                   org.subscription?.status === 'CANCELLED';
-      
+      const matchesSearch =
+        org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        org.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const hasExpiredSubscription =
+        org.subscription?.status === "EXPIRED" ||
+        org.subscription?.status === "PAST_DUE" ||
+        org.subscription?.status === "CANCELLED";
+
       return matchesSearch && hasExpiredSubscription;
     });
   }, [organizations, searchTerm]);
@@ -93,17 +106,17 @@ export default function ExpiredOrganizationsManagement() {
           input: {
             organizationId: selectedOrgId,
             planId: renewalPlanId,
-            startDate: new Date().toISOString()
-          }
-        }
+            startDate: new Date().toISOString(),
+          },
+        },
       });
-      
+
       setShowRenewalModal(false);
       setSelectedOrgId(null);
-      setRenewalPlanId('');
+      setRenewalPlanId("");
       refetch();
     } catch (error) {
-      console.error('Manual renewal error:', error);
+      console.error("Manual renewal error:", error);
     }
   };
 
@@ -121,21 +134,21 @@ export default function ExpiredOrganizationsManagement() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'EXPIRED':
-        return 'bg-red-100 text-red-800';
-      case 'PAST_DUE':
-        return 'bg-orange-100 text-orange-800';
-      case 'CANCELLED':
-        return 'bg-gray-100 text-gray-800';
+      case "EXPIRED":
+        return "bg-red-100 text-red-800";
+      case "PAST_DUE":
+        return "bg-orange-100 text-orange-800";
+      case "CANCELLED":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase()
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
     }).format(amount);
   };
 
@@ -143,7 +156,9 @@ export default function ExpiredOrganizationsManagement() {
     return (
       <div className="flex items-center justify-center py-12">
         <ClockIcon className="h-8 w-8 text-gray-400 animate-spin" />
-        <span className="ml-2 text-gray-500">Loading expired organizations...</span>
+        <span className="ml-2 text-gray-500">
+          Loading expired organizations...
+        </span>
       </div>
     );
   }
@@ -152,7 +167,9 @@ export default function ExpiredOrganizationsManagement() {
     return (
       <div className="text-center py-12">
         <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading organizations</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          Error loading organizations
+        </h3>
         <p className="mt-1 text-sm text-gray-500">{error.message}</p>
         <Button className="mt-4" onClick={() => refetch()}>
           Try Again
@@ -166,7 +183,9 @@ export default function ExpiredOrganizationsManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-medium text-gray-900">Expired Organizations</h2>
+          <h2 className="text-lg font-medium text-gray-900">
+            Expired Organizations
+          </h2>
           <p className="text-sm text-gray-500">
             Organizations with expired subscriptions that need renewal
           </p>
@@ -196,7 +215,9 @@ export default function ExpiredOrganizationsManagement() {
       {expiredOrganizations.length === 0 ? (
         <Card className="p-12 text-center">
           <CheckCircleIcon className="mx-auto h-12 w-12 text-green-500" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No Expired Organizations</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            No Expired Organizations
+          </h3>
           <p className="mt-1 text-sm text-gray-500">
             All organizations have active subscriptions.
           </p>
@@ -209,15 +230,22 @@ export default function ExpiredOrganizationsManagement() {
                 <div className="flex items-center space-x-4">
                   <BuildingOfficeIcon className="h-10 w-10 text-gray-400" />
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">{org.name}</h3>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {org.name}
+                    </h3>
                     <p className="text-sm text-gray-500">{org.email}</p>
                     <div className="flex items-center space-x-4 mt-2">
-                      <Badge className={getStatusBadgeColor(org.subscription?.status || 'UNKNOWN')}>
-                        {org.subscription?.status || 'NO_SUBSCRIPTION'}
+                      <Badge
+                        className={getStatusBadgeColor(
+                          org.subscription?.status || "UNKNOWN",
+                        )}
+                      >
+                        {org.subscription?.status || "NO_SUBSCRIPTION"}
                       </Badge>
                       {org.subscription?.currentPeriodEnd && (
                         <span className="text-xs text-gray-500">
-                          Expired: {formatDate(org.subscription.currentPeriodEnd)}
+                          Expired:{" "}
+                          {formatDate(org.subscription.currentPeriodEnd)}
                         </span>
                       )}
                       <span className="text-xs text-gray-500">
@@ -260,7 +288,9 @@ export default function ExpiredOrganizationsManagement() {
           <Card className="max-w-md w-full mx-4 p-6">
             <div className="text-center mb-6">
               <CreditCardIcon className="mx-auto h-12 w-12 text-indigo-600" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">Manual Renewal</h3>
+              <h3 className="mt-2 text-lg font-medium text-gray-900">
+                Manual Renewal
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Select a subscription plan to renew this organization
               </p>
@@ -279,7 +309,8 @@ export default function ExpiredOrganizationsManagement() {
                   <option value="">Choose a plan...</option>
                   {plans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
-                      {plan.name} - {formatCurrency(plan.amount, plan.currency)}/{plan.interval}
+                      {plan.name} - {formatCurrency(plan.amount, plan.currency)}
+                      /{plan.interval}
                     </option>
                   ))}
                 </select>
@@ -291,7 +322,7 @@ export default function ExpiredOrganizationsManagement() {
                   onClick={() => {
                     setShowRenewalModal(false);
                     setSelectedOrgId(null);
-                    setRenewalPlanId('');
+                    setRenewalPlanId("");
                   }}
                   className="flex-1"
                 >
@@ -302,7 +333,7 @@ export default function ExpiredOrganizationsManagement() {
                   disabled={!renewalPlanId || renewalLoading}
                   className="flex-1"
                 >
-                  {renewalLoading ? 'Processing...' : 'Renew'}
+                  {renewalLoading ? "Processing..." : "Renew"}
                 </Button>
               </div>
             </div>
@@ -316,9 +347,12 @@ export default function ExpiredOrganizationsManagement() {
           <Card className="max-w-md w-full mx-4 p-6">
             <div className="text-center mb-6">
               <LinkIcon className="mx-auto h-12 w-12 text-indigo-600" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">Renewal Link</h3>
+              <h3 className="mt-2 text-lg font-medium text-gray-900">
+                Renewal Link
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Share this link with the organization to allow self-service renewal
+                Share this link with the organization to allow self-service
+                renewal
               </p>
             </div>
 
@@ -344,7 +378,9 @@ export default function ExpiredOrganizationsManagement() {
               </div>
 
               <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
-                <p><strong>Instructions:</strong></p>
+                <p>
+                  <strong>Instructions:</strong>
+                </p>
                 <ul className="mt-1 space-y-1">
                   <li>• Send this link to the organization's admin</li>
                   <li>• They can renew without logging in</li>

@@ -24,21 +24,38 @@ export default function AccountsPage() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gradient-to-r from-blue-50 to-white">
-              <th className="px-4 py-3 text-left font-bold text-blue-700">Type</th>
-              <th className="px-4 py-3 text-left font-bold text-blue-700">Name</th>
-              <th className="px-4 py-3 text-left font-bold text-blue-700">Balance</th>
-              <th className="px-4 py-3 text-center font-bold text-blue-700">Actions</th>
+              <th className="px-4 py-3 text-left font-bold text-blue-700">
+                Type
+              </th>
+              <th className="px-4 py-3 text-left font-bold text-blue-700">
+                Name
+              </th>
+              <th className="px-4 py-3 text-left font-bold text-blue-700">
+                Balance
+              </th>
+              <th className="px-4 py-3 text-center font-bold text-blue-700">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {mockAccounts.map((a) => (
-              <tr key={a.id} className="border-b border-blue-50 hover:bg-blue-50/40">
+              <tr
+                key={a.id}
+                className="border-b border-blue-50 hover:bg-blue-50/40"
+              >
                 <td className="px-4 py-2">{a.type}</td>
                 <td className="px-4 py-2">{a.name}</td>
-                <td className="px-4 py-2 font-bold text-blue-600">{a.balance}</td>
+                <td className="px-4 py-2 font-bold text-blue-600">
+                  {a.balance}
+                </td>
                 <td className="px-4 py-2 text-center">
-                  <button className="inline-flex items-center text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-                  <button className="inline-flex items-center text-rose-500 hover:text-rose-700">Delete</button>
+                  <button className="inline-flex items-center text-indigo-600 hover:text-indigo-900 mr-2">
+                    Edit
+                  </button>
+                  <button className="inline-flex items-center text-rose-500 hover:text-rose-700">
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

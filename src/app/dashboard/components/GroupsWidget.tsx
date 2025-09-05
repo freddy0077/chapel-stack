@@ -32,7 +32,9 @@ export default function GroupsWidget({ widget }: GroupsWidgetProps) {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-800">{widget.title || "Groups"}</h3>
+        <h3 className="text-lg font-medium text-gray-800">
+          {widget.title || "Groups"}
+        </h3>
       </div>
       <div className="p-4">
         <ul className="divide-y divide-gray-200">
@@ -65,32 +67,40 @@ export default function GroupsWidget({ widget }: GroupsWidgetProps) {
                   </Link>
                   <div className="flex items-center mt-1">
                     <div className="flex -space-x-1 overflow-hidden">
-                      {group.members && group.members.slice(0, 3).map((member: GroupMember, i: number) => (
-                        <div
-                          key={i}
-                          className="h-5 w-5 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs overflow-hidden"
-                        >
-                          {member.avatar ? (
-                            <Image
-                              src={member.avatar || ''}
-                              alt={member.name}
-                              className="h-full w-full object-cover"
-                              width={20}
-                              height={20}
-                            />
-                          ) : (
-                            <span>{member.name.substring(0, 1).toUpperCase()}</span>
-                          )}
-                        </div>
-                      ))}
+                      {group.members &&
+                        group.members
+                          .slice(0, 3)
+                          .map((member: GroupMember, i: number) => (
+                            <div
+                              key={i}
+                              className="h-5 w-5 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs overflow-hidden"
+                            >
+                              {member.avatar ? (
+                                <Image
+                                  src={member.avatar || ""}
+                                  alt={member.name}
+                                  className="h-full w-full object-cover"
+                                  width={20}
+                                  height={20}
+                                />
+                              ) : (
+                                <span>
+                                  {member.name.substring(0, 1).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                          ))}
                       {group.memberCount && group.memberCount > 3 && (
                         <div className="h-5 w-5 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center">
-                          <span className="text-xs text-gray-600">+{group.memberCount - 3}</span>
+                          <span className="text-xs text-gray-600">
+                            +{group.memberCount - 3}
+                          </span>
                         </div>
                       )}
                     </div>
                     <span className="ml-1.5 text-xs text-gray-500">
-                      {group.memberCount || 0} member{(group.memberCount || 0) !== 1 ? 's' : ''}
+                      {group.memberCount || 0} member
+                      {(group.memberCount || 0) !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
@@ -104,7 +114,8 @@ export default function GroupsWidget({ widget }: GroupsWidgetProps) {
               </div>
               {group.nextMeeting && (
                 <div className="mt-2 ml-13 text-xs text-gray-500">
-                  Next meeting: {new Date(group.nextMeeting).toLocaleDateString()} at{" "}
+                  Next meeting:{" "}
+                  {new Date(group.nextMeeting).toLocaleDateString()} at{" "}
                   {new Date(group.nextMeeting).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -114,7 +125,7 @@ export default function GroupsWidget({ widget }: GroupsWidgetProps) {
             </li>
           ))}
         </ul>
-        
+
         <div className="mt-4 text-center">
           <Link
             href="/groups"

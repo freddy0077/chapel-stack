@@ -14,7 +14,7 @@ export interface Branch {
   establishedDate: string;
   logo?: string;
   coverImage?: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   parentBranchId?: string; // For hierarchical structure
   regionId?: string; // For regional grouping
   settings: BranchSettings;
@@ -25,10 +25,10 @@ export interface Branch {
 export interface BranchSettings {
   allowMemberTransfers: boolean;
   allowResourceSharing: boolean;
-  visibilityToOtherBranches: 'full' | 'limited' | 'none';
-  financialReportingLevel: 'detailed' | 'summary' | 'none';
-  attendanceReportingLevel: 'detailed' | 'summary' | 'none';
-  memberDataVisibility: 'full' | 'limited' | 'none';
+  visibilityToOtherBranches: "full" | "limited" | "none";
+  financialReportingLevel: "detailed" | "summary" | "none";
+  attendanceReportingLevel: "detailed" | "summary" | "none";
+  memberDataVisibility: "full" | "limited" | "none";
   timezone: string;
   currency: string;
   language: string;
@@ -71,7 +71,7 @@ export interface Region {
   name: string;
   director: string;
   branchIds: string[];
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface Diocese {
@@ -80,7 +80,7 @@ export interface Diocese {
   bishop: string;
   regionIds: string[];
   branchIds: string[];
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface BranchTransferRequest {
@@ -90,7 +90,7 @@ export interface BranchTransferRequest {
   sourceBranchId: string;
   destinationBranchId: string;
   requestDate: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  status: "pending" | "approved" | "rejected" | "completed";
   approverIds: string[];
   completedDate?: string;
   reason: string;
@@ -98,23 +98,23 @@ export interface BranchTransferRequest {
   transferredData: string[]; // Types of data transferred (e.g., 'personal', 'sacraments', 'ministries')
 }
 
-export type BranchRole = 
-  | 'system_admin' 
-  | 'diocese_admin' 
-  | 'region_admin' 
-  | 'branch_admin'
-  | 'branch_pastor'
-  | 'branch_staff'
-  | 'ministry_leader'
-  | 'volunteer'
-  | 'member'
-  | 'guest';
+export type BranchRole =
+  | "system_admin"
+  | "diocese_admin"
+  | "region_admin"
+  | "branch_admin"
+  | "branch_pastor"
+  | "branch_staff"
+  | "ministry_leader"
+  | "volunteer"
+  | "member"
+  | "guest";
 
 export interface BranchPermission {
   id: string;
   roleId: BranchRole;
   resource: string; // e.g., 'members', 'finances', 'reports', etc.
-  action: 'create' | 'read' | 'update' | 'delete' | 'approve' | 'export';
+  action: "create" | "read" | "update" | "delete" | "approve" | "export";
   constraints?: {
     branchId?: string;
     regionId?: string;
@@ -127,7 +127,7 @@ export interface BranchPermission {
 export interface SharedResource {
   id: string;
   name: string;
-  type: 'document' | 'template' | 'media' | 'equipment' | 'other';
+  type: "document" | "template" | "media" | "equipment" | "other";
   description?: string;
   url?: string;
   fileId?: string;
@@ -135,7 +135,7 @@ export interface SharedResource {
   sharedWithBranchIds: string[];
   sharedWithRegionIds: string[];
   sharedWithDioceseIds: string[];
-  visibility: 'public' | 'shared' | 'private';
+  visibility: "public" | "shared" | "private";
   createdAt: string;
   updatedAt: string;
   expiresAt?: string;

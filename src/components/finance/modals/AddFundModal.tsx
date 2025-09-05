@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useMutation, gql } from '@apollo/client';
-import SharedModal from './SharedModal';
+import React, { useState } from "react";
+import { useMutation, gql } from "@apollo/client";
+import SharedModal from "./SharedModal";
 
 const CREATE_FUND = gql`
   mutation CreateFund($createFundInput: CreateFundInput!) {
@@ -35,32 +35,32 @@ interface AddFundModalProps {
   onFundCreated: () => void;
 }
 
-export default function AddFundModal({ 
-  open, 
-  onClose, 
-  organisationId, 
-  branchId, 
-  onFundCreated 
+export default function AddFundModal({
+  open,
+  onClose,
+  organisationId,
+  branchId,
+  onFundCreated,
 }: AddFundModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-  
+
   const [createFund, { loading, error }] = useMutation(CREATE_FUND);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await createFund({
-        variables: { 
-          createFundInput: { 
-            name, 
-            description, 
-            isActive, 
-            organisationId, 
-            branchId 
-          } 
+        variables: {
+          createFundInput: {
+            name,
+            description,
+            isActive,
+            organisationId,
+            branchId,
+          },
         },
         refetchQueries: [
           {
@@ -75,12 +75,12 @@ export default function AddFundModal({
       setName("");
       setDescription("");
       setIsActive(true);
-      
+
       // Notify parent and close modal
       onFundCreated();
       onClose();
     } catch (err) {
-      console.error('Error creating fund:', err);
+      console.error("Error creating fund:", err);
     }
   };
 
@@ -93,17 +93,22 @@ export default function AddFundModal({
   };
 
   return (
-    <SharedModal open={open} title="Add Fund" onClose={handleClose} maxWidth="md">
+    <SharedModal
+      open={open}
+      title="Add Fund"
+      onClose={handleClose}
+      maxWidth="md"
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Fund Name *
           </label>
-          <input 
+          <input
             type="text"
-            value={name} 
-            onChange={e => setName(e.target.value)} 
-            required 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="Enter fund name"
           />
@@ -113,9 +118,9 @@ export default function AddFundModal({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Description
           </label>
-          <textarea 
-            value={description} 
-            onChange={e => setDescription(e.target.value)} 
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="Enter fund description (optional)"
             rows={3}
@@ -123,11 +128,11 @@ export default function AddFundModal({
         </div>
 
         <div className="flex items-center">
-          <input 
-            type="checkbox" 
-            checked={isActive} 
-            onChange={e => setIsActive(e.target.checked)} 
-            id="fund-active" 
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+            id="fund-active"
             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
           />
           <label htmlFor="fund-active" className="ml-2 text-sm text-gray-700">
@@ -144,16 +149,16 @@ export default function AddFundModal({
         )}
 
         <div className="flex justify-end space-x-3 pt-4">
-          <button 
+          <button
             type="button"
             onClick={handleClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             Cancel
           </button>
-          <button 
-            type="submit" 
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed" 
+          <button
+            type="submit"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Adding..." : "Add Fund"}

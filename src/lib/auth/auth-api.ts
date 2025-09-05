@@ -3,19 +3,19 @@
  * Handles all GraphQL operations, token refresh, and API communication
  */
 
-import { ApolloClient, gql, NormalizedCacheObject } from '@apollo/client';
-import { 
-  AuthUser, 
-  AuthTokens, 
-  LoginCredentials, 
-  LoginResult, 
-  RefreshResult, 
+import { ApolloClient, gql, NormalizedCacheObject } from "@apollo/client";
+import {
+  AuthUser,
+  AuthTokens,
+  LoginCredentials,
+  LoginResult,
+  RefreshResult,
   AuthError,
   AuthConfig,
-  DEFAULT_AUTH_CONFIG 
-} from '@/types/auth-enhanced.types';
-import { AuthUtils } from './auth-reducer';
-import { authStorage } from './auth-storage';
+  DEFAULT_AUTH_CONFIG,
+} from "@/types/auth-enhanced.types";
+import { AuthUtils } from "./auth-reducer";
+import { authStorage } from "./auth-storage";
 
 // GraphQL Mutations and Queries
 const LOGIN_MUTATION = gql`
@@ -141,7 +141,10 @@ const RESET_PASSWORD_MUTATION = gql`
 
 const CHANGE_PASSWORD_MUTATION = gql`
   mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
-    changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
+    changePassword(
+      currentPassword: $currentPassword
+      newPassword: $newPassword
+    ) {
       success
       message
     }
@@ -229,8 +232,8 @@ export class AuthApiService {
   private refreshAttempts: number = 0;
 
   constructor(
-    apolloClient: ApolloClient<NormalizedCacheObject>, 
-    config: Partial<AuthConfig> = {}
+    apolloClient: ApolloClient<NormalizedCacheObject>,
+    config: Partial<AuthConfig> = {},
   ) {
     this.apolloClient = apolloClient;
     this.config = { ...DEFAULT_AUTH_CONFIG, ...config };
@@ -241,22 +244,23 @@ export class AuthApiService {
    */
   private processUserData(userData: any): AuthUser {
     if (!userData) {
-      throw new Error('User data is required');
+      throw new Error("User data is required");
     }
 
     const primaryRole = this.getPrimaryRole(userData);
-    
+
     // Extract the primary branch from userBranches with proper null safety
-    const primaryBranch = userData.userBranches && 
-                         userData.userBranches.length > 0 && 
-                         userData.userBranches[0].branch
-      ? {
-          id: userData.userBranches[0].branch.id,
-          name: userData.userBranches[0].branch.name,
-          organisationId: userData.organisationId
-        }
-      : null;
-    
+    const primaryBranch =
+      userData.userBranches &&
+      userData.userBranches.length > 0 &&
+      userData.userBranches[0].branch
+        ? {
+            id: userData.userBranches[0].branch.id,
+            name: userData.userBranches[0].branch.name,
+            organisationId: userData.organisationId,
+          }
+        : null;
+
     const processedUser = {
       id: userData.id,
       email: userData.email,
@@ -277,7 +281,7 @@ export class AuthApiService {
       branch: primaryBranch,
       permissions: [], // TODO: Add permissions from backend
     };
-    
+
     return processedUser;
   }
 
@@ -286,26 +290,26 @@ export class AuthApiService {
    */
   private getPrimaryRole(userData: any): string {
     if (!userData.roles || userData.roles.length === 0) {
-      return 'MEMBER';
+      return "MEMBER";
     }
-    
+
     // Priority order for roles
     const rolePriority = [
-      'SUPER_ADMIN',
-      'BRANCH_ADMIN', 
-      'SUBSCRIPTION_MANAGER',
-      'FINANCE_MANAGER',
-      'PASTORAL_STAFF',
-      'MINISTRY_LEADER',
-      'MEMBER'
+      "SUPER_ADMIN",
+      "BRANCH_ADMIN",
+      "SUBSCRIPTION_MANAGER",
+      "FINANCE_MANAGER",
+      "PASTORAL_STAFF",
+      "MINISTRY_LEADER",
+      "MEMBER",
     ];
-    
+
     for (const role of rolePriority) {
       if (userData.roles.some((r: any) => r.name === role)) {
         return role;
       }
     }
-    
+
     return userData.roles[0].name;
   }
 
@@ -325,15 +329,15 @@ export class AuthApiService {
    * Handle GraphQL errors and convert to AuthError
    */
   private handleError(error: any): AuthError {
-    console.error('Auth API Error:', error);
+    console.error("Auth API Error:", error);
 
     // Handle network errors
     if (error.networkError) {
       return AuthUtils.createAuthError(
-        'NETWORK_ERROR',
-        'Unable to connect to the server. Please check your internet connection.',
+        "NETWORK_ERROR",
+        "Unable to connect to the server. Please check your internet connection.",
         error.networkError,
-        true
+        true,
       );
     }
 
@@ -341,21 +345,21 @@ export class AuthApiService {
     if (error.graphQLErrors && error.graphQLErrors.length > 0) {
       const graphQLError = error.graphQLErrors[0];
       const extensions = graphQLError.extensions || {};
-      
+
       return AuthUtils.createAuthError(
-        extensions.code || 'GRAPHQL_ERROR',
-        graphQLError.message || 'An error occurred during authentication.',
+        extensions.code || "GRAPHQL_ERROR",
+        graphQLError.message || "An error occurred during authentication.",
         extensions,
-        extensions.recoverable !== false
+        extensions.recoverable !== false,
       );
     }
 
     // Handle generic errors
     return AuthUtils.createAuthError(
-      'UNKNOWN_ERROR',
-      error.message || 'An unexpected error occurred.',
+      "UNKNOWN_ERROR",
+      error.message || "An unexpected error occurred.",
       error,
-      true
+      true,
     );
   }
 
@@ -364,46 +368,49 @@ export class AuthApiService {
    */
   async login(credentials: LoginCredentials): Promise<LoginResult> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: LOGIN_MUTATION,
         variables: {
           input: {
             email: credentials.email,
             password: credentials.password,
-          }
+          },
         },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
         throw response.errors[0];
       }
 
-      const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, user: userData } = response.data.login;
+      const {
+        accessToken,
+        refreshToken,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+        user: userData,
+      } = response.data.login;
 
       // Debug: Log the raw response data
       if (userData?.userBranches && userData.userBranches.length > 0) {
       }
       const user = this.processUserData(userData);
-      
-      const tokens = this.createTokens({ 
-        accessToken, 
-        refreshToken, 
-        accessTokenExpiresAt, 
-        refreshTokenExpiresAt 
-      });
 
+      const tokens = this.createTokens({
+        accessToken,
+        refreshToken,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+      });
 
       return {
         success: true,
         user,
         tokens,
       };
-
     } catch (error) {
-      console.error('❌ Login failed:', error);
-      
+      console.error("❌ Login failed:", error);
+
       return {
         success: false,
         error: this.handleError(error),
@@ -425,10 +432,10 @@ export class AuthApiService {
       return {
         success: false,
         error: AuthUtils.createAuthError(
-          'MAX_REFRESH_ATTEMPTS',
-          'Maximum token refresh attempts exceeded. Please log in again.',
+          "MAX_REFRESH_ATTEMPTS",
+          "Maximum token refresh attempts exceeded. Please log in again.",
           null,
-          false
+          false,
         ),
       };
     }
@@ -449,12 +456,12 @@ export class AuthApiService {
 
       const currentTokens = authStorage.getTokens();
       if (!currentTokens?.refreshToken) {
-        throw new Error('No refresh token available');
+        throw new Error("No refresh token available");
       }
 
       // Check if refresh token is expired
       if (AuthUtils.isRefreshTokenExpired(currentTokens.refreshExpiresAt)) {
-        throw new Error('Refresh token expired');
+        throw new Error("Refresh token expired");
       }
 
       const response = await this.apolloClient.mutate({
@@ -462,7 +469,7 @@ export class AuthApiService {
         variables: {
           refreshToken: currentTokens.refreshToken,
         },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -475,14 +482,12 @@ export class AuthApiService {
       // Reset refresh attempts on success
       this.refreshAttempts = 0;
 
-
       return {
         success: true,
         tokens,
       };
-
     } catch (error) {
-      console.error('❌ Token refresh failed:', error);
+      console.error("❌ Token refresh failed:", error);
 
       return {
         success: false,
@@ -494,13 +499,15 @@ export class AuthApiService {
   /**
    * Get current user data
    */
-  async getCurrentUser(): Promise<{ user: AuthUser | null; error: AuthError | null }> {
+  async getCurrentUser(): Promise<{
+    user: AuthUser | null;
+    error: AuthError | null;
+  }> {
     try {
-
       const response = await this.apolloClient.query({
         query: GET_CURRENT_USER_QUERY,
-        fetchPolicy: 'network-only', // Always fetch fresh data
-        errorPolicy: 'all',
+        fetchPolicy: "network-only", // Always fetch fresh data
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -514,9 +521,8 @@ export class AuthApiService {
       const user = this.processUserData(response.data.me);
 
       return { user, error: null };
-
     } catch (error) {
-      console.error('❌ Failed to get current user:', error);
+      console.error("❌ Failed to get current user:", error);
 
       return {
         user: null,
@@ -528,23 +534,22 @@ export class AuthApiService {
   /**
    * Logout user
    */
-  async logout(everywhere: boolean = false): Promise<{ success: boolean; error?: AuthError }> {
+  async logout(
+    everywhere: boolean = false,
+  ): Promise<{ success: boolean; error?: AuthError }> {
     try {
-
       await this.apolloClient.mutate({
         mutation: LOGOUT_MUTATION,
         variables: { everywhere },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       // Clear Apollo cache
       await this.apolloClient.clearStore();
 
-
       return { success: true };
-
     } catch (error) {
-      console.error('❌ Logout failed:', error);
+      console.error("❌ Logout failed:", error);
 
       // Even if logout fails on server, we should clear local data
       await this.apolloClient.clearStore();
@@ -561,11 +566,10 @@ export class AuthApiService {
    */
   async requestPasswordReset(email: string): Promise<boolean> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: REQUEST_PASSWORD_RESET_MUTATION,
         variables: { email },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -573,9 +577,8 @@ export class AuthApiService {
       }
 
       return response.data.requestPasswordReset.success;
-
     } catch (error) {
-      console.error('❌ Password reset request failed:', error);
+      console.error("❌ Password reset request failed:", error);
       throw this.handleError(error);
     }
   }
@@ -585,11 +588,10 @@ export class AuthApiService {
    */
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: RESET_PASSWORD_MUTATION,
         variables: { token, newPassword },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -597,9 +599,8 @@ export class AuthApiService {
       }
 
       return response.data.resetPassword.success;
-
     } catch (error) {
-      console.error('❌ Password reset failed:', error);
+      console.error("❌ Password reset failed:", error);
       throw this.handleError(error);
     }
   }
@@ -607,13 +608,15 @@ export class AuthApiService {
   /**
    * Change password
    */
-  async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<boolean> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: CHANGE_PASSWORD_MUTATION,
         variables: { currentPassword, newPassword },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -621,9 +624,8 @@ export class AuthApiService {
       }
 
       return response.data.changePassword.success;
-
     } catch (error) {
-      console.error('❌ Password change failed:', error);
+      console.error("❌ Password change failed:", error);
       throw this.handleError(error);
     }
   }
@@ -633,11 +635,10 @@ export class AuthApiService {
    */
   async verifyEmail(token: string): Promise<boolean> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: VERIFY_EMAIL_MUTATION,
         variables: { token },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -645,9 +646,8 @@ export class AuthApiService {
       }
 
       return response.data.verifyEmail.success;
-
     } catch (error) {
-      console.error('❌ Email verification failed:', error);
+      console.error("❌ Email verification failed:", error);
       throw this.handleError(error);
     }
   }
@@ -657,10 +657,9 @@ export class AuthApiService {
    */
   async enableMFA(): Promise<{ qrCode: string; backupCodes: string[] }> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: ENABLE_MFA_MUTATION,
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -668,9 +667,8 @@ export class AuthApiService {
       }
 
       return response.data.enableMFA;
-
     } catch (error) {
-      console.error('❌ MFA enable failed:', error);
+      console.error("❌ MFA enable failed:", error);
       throw this.handleError(error);
     }
   }
@@ -680,11 +678,10 @@ export class AuthApiService {
    */
   async disableMFA(password: string): Promise<boolean> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: DISABLE_MFA_MUTATION,
         variables: { password },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
@@ -692,9 +689,8 @@ export class AuthApiService {
       }
 
       return response.data.disableMFA.success;
-
     } catch (error) {
-      console.error('❌ MFA disable failed:', error);
+      console.error("❌ MFA disable failed:", error);
       throw this.handleError(error);
     }
   }
@@ -704,30 +700,38 @@ export class AuthApiService {
    */
   async verifyMFA(token: string, code: string): Promise<LoginResult> {
     try {
-
       const response = await this.apolloClient.mutate({
         mutation: VERIFY_MFA_MUTATION,
         variables: { token, code },
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
 
       if (response.errors && response.errors.length > 0) {
         throw response.errors[0];
       }
 
-      const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, user: userData } = response.data.verifyMFA;
+      const {
+        accessToken,
+        refreshToken,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+        user: userData,
+      } = response.data.verifyMFA;
       const user = this.processUserData(userData);
-      const tokens = this.createTokens({ accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt });
-
+      const tokens = this.createTokens({
+        accessToken,
+        refreshToken,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+      });
 
       return {
         success: true,
         user,
         tokens,
       };
-
     } catch (error) {
-      console.error('❌ MFA verification failed:', error);
+      console.error("❌ MFA verification failed:", error);
 
       return {
         success: false,

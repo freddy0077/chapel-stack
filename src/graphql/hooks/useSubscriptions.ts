@@ -1,7 +1,7 @@
-import { useSubscription } from '@apollo/client';
-import { gql } from '@apollo/client';
-import { useCallback, useEffect } from 'react';
-import { Member } from '@/types/auth.types';
+import { useSubscription } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useCallback, useEffect } from "react";
+import { Member } from "@/types/auth.types";
 
 // GraphQL Subscription Definitions
 const MEMBER_UPDATED_SUBSCRIPTION = gql`
@@ -88,7 +88,7 @@ export interface BulkOperationProgress {
   processedItems: number;
   successCount: number;
   failureCount: number;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  status: "IN_PROGRESS" | "COMPLETED" | "FAILED";
   message: string;
   timestamp: Date;
 }
@@ -125,12 +125,15 @@ export interface MemberStatsChanged {
 // Custom Hooks
 export const useMemberUpdatedSubscription = (
   memberId: string,
-  onMemberUpdated?: (member: Member | null) => void
+  onMemberUpdated?: (member: Member | null) => void,
 ) => {
-  const { data, loading, error } = useSubscription(MEMBER_UPDATED_SUBSCRIPTION, {
-    variables: { memberId },
-    skip: !memberId,
-  });
+  const { data, loading, error } = useSubscription(
+    MEMBER_UPDATED_SUBSCRIPTION,
+    {
+      variables: { memberId },
+      skip: !memberId,
+    },
+  );
 
   const handleMemberUpdate = useCallback(
     (member: Member | null) => {
@@ -138,7 +141,7 @@ export const useMemberUpdatedSubscription = (
         onMemberUpdated(member);
       }
     },
-    [onMemberUpdated]
+    [onMemberUpdated],
   );
 
   useEffect(() => {
@@ -156,12 +159,15 @@ export const useMemberUpdatedSubscription = (
 
 export const useMemberStatsChangedSubscription = (
   organisationId: string,
-  onStatsChanged?: (stats: MemberStatsChanged) => void
+  onStatsChanged?: (stats: MemberStatsChanged) => void,
 ) => {
-  const { data, loading, error } = useSubscription(MEMBER_STATS_CHANGED_SUBSCRIPTION, {
-    variables: { organisationId },
-    skip: !organisationId,
-  });
+  const { data, loading, error } = useSubscription(
+    MEMBER_STATS_CHANGED_SUBSCRIPTION,
+    {
+      variables: { organisationId },
+      skip: !organisationId,
+    },
+  );
 
   const handleStatsChange = useCallback(
     (stats: MemberStatsChanged) => {
@@ -169,7 +175,7 @@ export const useMemberStatsChangedSubscription = (
         onStatsChanged(stats);
       }
     },
-    [onStatsChanged]
+    [onStatsChanged],
   );
 
   useEffect(() => {
@@ -187,12 +193,15 @@ export const useMemberStatsChangedSubscription = (
 
 export const useBulkOperationProgressSubscription = (
   operationId: string,
-  onProgressUpdate?: (progress: BulkOperationProgress) => void
+  onProgressUpdate?: (progress: BulkOperationProgress) => void,
 ) => {
-  const { data, loading, error } = useSubscription(BULK_OPERATION_PROGRESS_SUBSCRIPTION, {
-    variables: { operationId },
-    skip: !operationId,
-  });
+  const { data, loading, error } = useSubscription(
+    BULK_OPERATION_PROGRESS_SUBSCRIPTION,
+    {
+      variables: { operationId },
+      skip: !operationId,
+    },
+  );
 
   const handleProgressUpdate = useCallback(
     (progress: BulkOperationProgress) => {
@@ -200,7 +209,7 @@ export const useBulkOperationProgressSubscription = (
         onProgressUpdate(progress);
       }
     },
-    [onProgressUpdate]
+    [onProgressUpdate],
   );
 
   useEffect(() => {
@@ -219,19 +228,19 @@ export const useBulkOperationProgressSubscription = (
 // Utility hook for multiple member subscriptions
 export const useMultipleMemberSubscriptions = (
   memberIds: string[],
-  onMemberUpdated?: (memberId: string, member: Member | null) => void
+  onMemberUpdated?: (memberId: string, member: Member | null) => void,
 ) => {
-  const subscriptions = memberIds.map(memberId => 
+  const subscriptions = memberIds.map((memberId) =>
     useMemberUpdatedSubscription(memberId, (member) => {
       if (onMemberUpdated) {
         onMemberUpdated(memberId, member);
       }
-    })
+    }),
   );
 
   return {
     subscriptions,
-    loading: subscriptions.some(sub => sub.loading),
-    error: subscriptions.find(sub => sub.error)?.error,
+    loading: subscriptions.some((sub) => sub.loading),
+    error: subscriptions.find((sub) => sub.error)?.error,
   };
 };

@@ -1,8 +1,16 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_PRAYER_REQUESTS = gql`
-  query PrayerRequests($organisationId: String!, $branchId: String, $status: PrayerRequestStatusEnum) {
-    prayerRequests(organisationId: $organisationId, branchId: $branchId, status: $status) {
+  query PrayerRequests(
+    $organisationId: String!
+    $branchId: String
+    $status: PrayerRequestStatusEnum
+  ) {
+    prayerRequests(
+      organisationId: $organisationId
+      branchId: $branchId
+      status: $status
+    ) {
       id
       requestText
       status

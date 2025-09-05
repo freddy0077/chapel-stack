@@ -42,6 +42,7 @@ getUserDetails(id: ID!): User! @auth(requires: [STAFF])
 ```
 
 The `@auth` directive supports the following roles:
+
 - `SUPER_ADMIN` - Diocesan/organizational level admins
 - `ADMIN` - System administrators
 - `BRANCH_ADMIN` - Branch/parish administrators
@@ -181,13 +182,14 @@ mutation SendGroupMessage($input: SendMessageInput!) {
 Leadership management features are provided through the ministry schema:
 
 ```graphql
-mutation AssignTeamLeader($memberId: ID!, $ministryId: ID!, $role: MinistryMemberRole!) {
+mutation AssignTeamLeader(
+  $memberId: ID!
+  $ministryId: ID!
+  $role: MinistryMemberRole!
+) {
   updateMinistryMember(
-    id: $memberId,
-    input: {
-      ministryId: $ministryId,
-      role: $role
-    }
+    id: $memberId
+    input: { ministryId: $ministryId, role: $role }
   ) {
     id
     role
@@ -198,11 +200,13 @@ mutation AssignTeamLeader($memberId: ID!, $ministryId: ID!, $role: MinistryMembe
 ## Development Setup
 
 1. Install dependencies:
+
    ```
    npm install @graphql-tools/load-files @graphql-tools/merge graphql
    ```
 
 2. Generate the complete schema:
+
    ```
    npm run generate-schema
    ```

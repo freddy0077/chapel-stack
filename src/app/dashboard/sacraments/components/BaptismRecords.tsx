@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  MagnifyingGlassIcon, 
-  PencilIcon, 
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
   DocumentArrowDownIcon,
-  DocumentIcon
+  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ const mockBaptismRecords: BaptismRecord[] = [
     officiant: "Pastor John Smith",
     sponsors: ["Mary Williams", "James Davis"],
     certificateUrl: "/certificates/baptism-001.pdf",
-    notes: "Child baptism"
+    notes: "Child baptism",
   },
   {
     id: "bap-002",
@@ -43,7 +43,7 @@ const mockBaptismRecords: BaptismRecord[] = [
     officiant: "Reverend David Wilson",
     sponsors: ["Susan Miller", "Robert Jones"],
     certificateUrl: "/certificates/baptism-002.pdf",
-    notes: "Adult baptism"
+    notes: "Adult baptism",
   },
   {
     id: "bap-003",
@@ -54,7 +54,7 @@ const mockBaptismRecords: BaptismRecord[] = [
     officiant: "Pastor Thomas Lee",
     sponsors: ["Jennifer White", "Daniel Harris"],
     certificateUrl: null,
-    notes: "Certificate pending"
+    notes: "Certificate pending",
   },
   {
     id: "bap-004",
@@ -65,7 +65,7 @@ const mockBaptismRecords: BaptismRecord[] = [
     officiant: "Pastor Elizabeth Johnson",
     sponsors: ["Christopher Moore", "Sarah Taylor"],
     certificateUrl: "/certificates/baptism-004.pdf",
-    notes: ""
+    notes: "",
   },
   {
     id: "bap-005",
@@ -76,8 +76,8 @@ const mockBaptismRecords: BaptismRecord[] = [
     officiant: "Reverend Michael Anderson",
     sponsors: ["Patricia Clark", "Joseph Martin"],
     certificateUrl: "/certificates/baptism-005.pdf",
-    notes: "Special ceremony"
-  }
+    notes: "Special ceremony",
+  },
 ];
 
 export function BaptismRecords() {
@@ -85,22 +85,24 @@ export function BaptismRecords() {
   const [records] = useState(mockBaptismRecords);
 
   // Filter records based on search query
-  const filteredRecords = records.filter(record => {
+  const filteredRecords = records.filter((record) => {
     const searchTerms = searchQuery.toLowerCase();
     return (
       record.memberName.toLowerCase().includes(searchTerms) ||
       record.officiant.toLowerCase().includes(searchTerms) ||
       record.location.toLowerCase().includes(searchTerms) ||
-      record.sponsors.some(sponsor => sponsor.toLowerCase().includes(searchTerms))
+      record.sponsors.some((sponsor) =>
+        sponsor.toLowerCase().includes(searchTerms),
+      )
     );
   });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -110,7 +112,10 @@ export function BaptismRecords() {
         <h2 className="text-lg font-medium text-gray-900">Baptism Records</h2>
         <div className="relative max-w-md w-full">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -128,25 +133,46 @@ export function BaptismRecords() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Member
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Date
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Location
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Officiant
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Sponsors
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Certificate
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -154,15 +180,22 @@ export function BaptismRecords() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No baptism records found. Try a different search term or add a new record.
+                <td
+                  colSpan={7}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  No baptism records found. Try a different search term or add a
+                  new record.
                 </td>
               </tr>
             ) : (
               filteredRecords.map((record) => (
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Link href={`/dashboard/members/${record.memberId}`} className="hover:text-indigo-600">
+                    <Link
+                      href={`/dashboard/members/${record.memberId}`}
+                      className="hover:text-indigo-600"
+                    >
                       {record.memberName}
                     </Link>
                   </td>
@@ -202,7 +235,9 @@ export function BaptismRecords() {
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       <PencilIcon className="h-5 w-5" aria-hidden="true" />
-                      <span className="sr-only">Edit {record.memberName}&apos;s baptism record</span>
+                      <span className="sr-only">
+                        Edit {record.memberName}&apos;s baptism record
+                      </span>
                     </Link>
                   </td>
                 </tr>

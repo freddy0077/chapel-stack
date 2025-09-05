@@ -28,7 +28,7 @@ export interface DateRange {
 }
 
 export interface FormMessage {
-  type: 'success' | 'error' | null;
+  type: "success" | "error" | null;
   text: string;
 }
 
@@ -51,7 +51,7 @@ export interface Fund {
 
 export interface Transaction {
   id: string;
-  type: 'CONTRIBUTION' | 'EXPENSE' | 'TRANSFER' | 'FUND_ALLOCATION';
+  type: "CONTRIBUTION" | "EXPENSE" | "TRANSFER" | "FUND_ALLOCATION";
   amount: number;
   date: string;
   description?: string;
@@ -122,9 +122,14 @@ export interface PaymentMethod {
 export interface BranchFinancesState {
   // View state
   activeTab: string;
-  mainView: 'transactions' | 'analytics';
-  analyticsTab: 'cash-flow' | 'comparative' | 'statements' | 'budget' | 'donors';
-  
+  mainView: "transactions" | "analytics";
+  analyticsTab:
+    | "cash-flow"
+    | "comparative"
+    | "statements"
+    | "budget"
+    | "donors";
+
   // Modal state
   showTransactionModal: boolean;
   openModal: string | null;
@@ -134,25 +139,25 @@ export interface BranchFinancesState {
   editingTransaction: Transaction | null;
   showMemberGivingHistory: boolean;
   addFundOpen: boolean;
-  
+
   // Form state
   modalForm: ModalFormData;
   memberSearch: string;
   selectedMemberId: string | null;
   submitAttempted: boolean;
   formMessage: FormMessage;
-  
+
   // Filter state
   dateRange: DateRange;
   selectedEvent: string | null;
   selectedFund: string | null;
   searchQuery: string;
   currentPage: number;
-  
+
   // Export state
   isExportMenuOpen: boolean;
   exportLoading: boolean;
-  
+
   // Fund state
   fundsRefreshKey: number;
 }

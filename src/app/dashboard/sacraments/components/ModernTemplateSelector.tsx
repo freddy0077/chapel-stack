@@ -1,16 +1,28 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Search, 
-  Filter, 
-  Eye, 
-  Download, 
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  Search,
+  Filter,
+  Eye,
+  Download,
   Star,
   Church,
   Award,
@@ -27,8 +39,8 @@ import {
   Shield,
   Plus,
   ChevronDown,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 interface ModernTemplateSelectorProps {
   onTemplateSelect?: (templateId: string) => void;
@@ -57,8 +69,10 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
   sacramentTypes,
   loading,
 }) => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [favoriteTemplates, setFavoriteTemplates] = useState<Set<string>>(
+    new Set(),
+  );
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter templates based on search and filters
@@ -67,21 +81,30 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
 
     // Apply search filter
     if (searchTerm && searchTerm.length >= 2) {
-      filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.denomination.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (template) =>
+          template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          template.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          template.denomination
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       );
     }
 
     // Apply denomination filter
-    if (selectedDenomination && selectedDenomination !== 'ALL') {
-      filtered = filtered.filter(template => template.denomination === selectedDenomination);
+    if (selectedDenomination && selectedDenomination !== "ALL") {
+      filtered = filtered.filter(
+        (template) => template.denomination === selectedDenomination,
+      );
     }
 
     // Apply sacrament type filter
-    if (selectedSacramentType && selectedSacramentType !== 'ALL') {
-      filtered = filtered.filter(template => template.sacramentType === selectedSacramentType);
+    if (selectedSacramentType && selectedSacramentType !== "ALL") {
+      filtered = filtered.filter(
+        (template) => template.sacramentType === selectedSacramentType,
+      );
     }
 
     // Sort by default templates first, then by name
@@ -95,50 +118,50 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
   // Helper functions for display names
   const getDenominationDisplayName = (denomination: string) => {
     const displayNames: Record<string, string> = {
-      'CATHOLIC': 'Catholic',
-      'BAPTIST': 'Baptist',
-      'LUTHERAN': 'Lutheran',
-      'METHODIST': 'Methodist',
-      'PRESBYTERIAN': 'Presbyterian',
-      'ANGLICAN': 'Anglican/Episcopal',
-      'PENTECOSTAL': 'Pentecostal',
-      'ORTHODOX': 'Orthodox',
-      'REFORMED': 'Reformed',
-      'EVANGELICAL': 'Evangelical',
-      'CONGREGATIONAL': 'Congregational',
-      'ADVENTIST': 'Adventist',
-      'QUAKER': 'Quaker',
-      'UNITARIAN': 'Unitarian',
-      'EPISCOPAL': 'Episcopal',
-      'MORAVIAN': 'Moravian',
-      'MENNONITE': 'Mennonite',
-      'BRETHREN': 'Brethren'
+      CATHOLIC: "Catholic",
+      BAPTIST: "Baptist",
+      LUTHERAN: "Lutheran",
+      METHODIST: "Methodist",
+      PRESBYTERIAN: "Presbyterian",
+      ANGLICAN: "Anglican/Episcopal",
+      PENTECOSTAL: "Pentecostal",
+      ORTHODOX: "Orthodox",
+      REFORMED: "Reformed",
+      EVANGELICAL: "Evangelical",
+      CONGREGATIONAL: "Congregational",
+      ADVENTIST: "Adventist",
+      QUAKER: "Quaker",
+      UNITARIAN: "Unitarian",
+      EPISCOPAL: "Episcopal",
+      MORAVIAN: "Moravian",
+      MENNONITE: "Mennonite",
+      BRETHREN: "Brethren",
     };
     return displayNames[denomination] || denomination;
   };
 
   const getSacramentTypeDisplayName = (type: string) => {
     const displayNames: Record<string, string> = {
-      'BAPTISM': 'Baptism',
-      'CONFIRMATION': 'Confirmation',
-      'EUCHARIST_FIRST_COMMUNION': 'First Communion',
-      'MATRIMONY': 'Marriage',
-      'HOLY_ORDERS': 'Holy Orders',
-      'ANOINTING_OF_THE_SICK': 'Anointing of the Sick',
-      'RECONCILIATION': 'Reconciliation',
-      'IMMERSION_BAPTISM': 'Immersion Baptism',
-      'INFANT_BAPTISM': 'Infant Baptism',
-      'ADULT_BAPTISM': 'Adult Baptism',
-      'BELIEVER_BAPTISM': 'Believer Baptism',
-      'DEDICATION': 'Child Dedication',
-      'MEMBERSHIP': 'Church Membership'
+      BAPTISM: "Baptism",
+      CONFIRMATION: "Confirmation",
+      EUCHARIST_FIRST_COMMUNION: "First Communion",
+      MATRIMONY: "Marriage",
+      HOLY_ORDERS: "Holy Orders",
+      ANOINTING_OF_THE_SICK: "Anointing of the Sick",
+      RECONCILIATION: "Reconciliation",
+      IMMERSION_BAPTISM: "Immersion Baptism",
+      INFANT_BAPTISM: "Infant Baptism",
+      ADULT_BAPTISM: "Adult Baptism",
+      BELIEVER_BAPTISM: "Believer Baptism",
+      DEDICATION: "Child Dedication",
+      MEMBERSHIP: "Church Membership",
     };
     return displayNames[type] || type;
   };
 
   // Helper function to toggle favorites
   const toggleFavorite = (templateId: string) => {
-    setFavoriteTemplates(prev => {
+    setFavoriteTemplates((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(templateId)) {
         newFavorites.delete(templateId);
@@ -152,30 +175,30 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
   // Get denomination icon and color
   const getDenominationIcon = (denomination: string) => {
     const icons: Record<string, React.ReactNode> = {
-      'CATHOLIC': <Church className="h-4 w-4" />,
-      'BAPTIST': <Zap className="h-4 w-4" />,
-      'LUTHERAN': <Shield className="h-4 w-4" />,
-      'ORTHODOX': <Crown className="h-4 w-4" />,
-      'ANGLICAN': <Award className="h-4 w-4" />,
-      'METHODIST': <Heart className="h-4 w-4" />,
-      'PRESBYTERIAN': <Star className="h-4 w-4" />,
-      'PENTECOSTAL': <Sparkles className="h-4 w-4" />,
+      CATHOLIC: <Church className="h-4 w-4" />,
+      BAPTIST: <Zap className="h-4 w-4" />,
+      LUTHERAN: <Shield className="h-4 w-4" />,
+      ORTHODOX: <Crown className="h-4 w-4" />,
+      ANGLICAN: <Award className="h-4 w-4" />,
+      METHODIST: <Heart className="h-4 w-4" />,
+      PRESBYTERIAN: <Star className="h-4 w-4" />,
+      PENTECOSTAL: <Sparkles className="h-4 w-4" />,
     };
     return icons[denomination] || <Church className="h-4 w-4" />;
   };
 
   const getDenominationColor = (denomination: string) => {
     const colors: Record<string, string> = {
-      'CATHOLIC': 'from-red-500 to-red-600',
-      'BAPTIST': 'from-blue-500 to-blue-600',
-      'LUTHERAN': 'from-purple-500 to-purple-600',
-      'ORTHODOX': 'from-amber-500 to-amber-600',
-      'ANGLICAN': 'from-green-500 to-green-600',
-      'METHODIST': 'from-pink-500 to-pink-600',
-      'PRESBYTERIAN': 'from-indigo-500 to-indigo-600',
-      'PENTECOSTAL': 'from-orange-500 to-orange-600',
+      CATHOLIC: "from-red-500 to-red-600",
+      BAPTIST: "from-blue-500 to-blue-600",
+      LUTHERAN: "from-purple-500 to-purple-600",
+      ORTHODOX: "from-amber-500 to-amber-600",
+      ANGLICAN: "from-green-500 to-green-600",
+      METHODIST: "from-pink-500 to-pink-600",
+      PRESBYTERIAN: "from-indigo-500 to-indigo-600",
+      PENTECOSTAL: "from-orange-500 to-orange-600",
     };
-    return colors[denomination] || 'from-gray-500 to-gray-600';
+    return colors[denomination] || "from-gray-500 to-gray-600";
   };
 
   // Loading skeleton component
@@ -202,10 +225,14 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
     <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-white dark:bg-gray-900 relative">
       {/* Template Preview */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
-        <div className={`absolute inset-0 bg-gradient-to-br ${getDenominationColor(template.denomination)} opacity-10`}></div>
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${getDenominationColor(template.denomination)} opacity-10`}
+        ></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className={`p-4 bg-gradient-to-br ${getDenominationColor(template.denomination)} rounded-full mb-3 shadow-lg`}>
+            <div
+              className={`p-4 bg-gradient-to-br ${getDenominationColor(template.denomination)} rounded-full mb-3 shadow-lg`}
+            >
               {getDenominationIcon(template.denomination)}
               <div className="text-white">
                 {getDenominationIcon(template.denomination)}
@@ -216,15 +243,19 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
             </div>
           </div>
         </div>
-        
+
         {/* Overlay Actions */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
-          <Button size="sm" variant="secondary" className="bg-white/90 hover:bg-white text-gray-900">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="bg-white/90 hover:bg-white text-gray-900"
+          >
             <Eye className="h-4 w-4 mr-1" />
             Preview
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-primary hover:bg-primary/90"
             onClick={() => onTemplateSelect?.(template.id)}
           >
@@ -240,8 +271,8 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
           className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-red-500 transition-colors"
           onClick={() => toggleFavorite(template.id)}
         >
-          <Heart 
-            className={`h-4 w-4 ${favoriteTemplates.has(template.id) ? 'fill-red-500 text-red-500' : ''}`} 
+          <Heart
+            className={`h-4 w-4 ${favoriteTemplates.has(template.id) ? "fill-red-500 text-red-500" : ""}`}
           />
         </Button>
 
@@ -287,8 +318,8 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
             <Download className="h-3 w-3" />
             <span>Professional Quality</span>
           </div>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300"
             onClick={() => onTemplateSelect?.(template.id)}
           >
@@ -310,32 +341,36 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
               <Award className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Certificate Templates</h2>
-              <p className="text-gray-600 dark:text-gray-400">Choose from our professional template library</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Certificate Templates
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Choose from our professional template library
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex items-center bg-white dark:bg-gray-900 rounded-lg border shadow-sm">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
               className="rounded-r-none"
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
               className="rounded-l-none"
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -344,7 +379,9 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
           >
             <Filter className="h-4 w-4 mr-2" />
             Filters
-            <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`h-4 w-4 ml-2 transition-transform ${showFilters ? "rotate-180" : ""}`}
+            />
           </Button>
         </div>
       </div>
@@ -366,7 +403,7 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
                 variant="ghost"
                 size="sm"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 h-auto"
-                onClick={() => onSearchChange('')}
+                onClick={() => onSearchChange("")}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -379,8 +416,13 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
               <Separator />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Denomination</label>
-                  <Select value={selectedDenomination} onValueChange={onDenominationChange}>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Denomination
+                  </label>
+                  <Select
+                    value={selectedDenomination}
+                    onValueChange={onDenominationChange}
+                  >
                     <SelectTrigger className="bg-white dark:bg-gray-800 border-0 shadow-md">
                       <SelectValue placeholder="All Denominations" />
                     </SelectTrigger>
@@ -390,17 +432,24 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
                         <SelectItem key={denomination} value={denomination}>
                           <div className="flex items-center space-x-2">
                             {getDenominationIcon(denomination)}
-                            <span>{getDenominationDisplayName(denomination)}</span>
+                            <span>
+                              {getDenominationDisplayName(denomination)}
+                            </span>
                           </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sacrament Type</label>
-                  <Select value={selectedSacramentType} onValueChange={onSacramentTypeChange}>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Sacrament Type
+                  </label>
+                  <Select
+                    value={selectedSacramentType}
+                    onValueChange={onSacramentTypeChange}
+                  >
                     <SelectTrigger className="bg-white dark:bg-gray-800 border-0 shadow-md">
                       <SelectValue placeholder="All Sacraments" />
                     </SelectTrigger>
@@ -424,16 +473,20 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {loading ? 'Loading...' : `${filteredTemplates.length} template${filteredTemplates.length !== 1 ? 's' : ''} found`}
+            {loading
+              ? "Loading..."
+              : `${filteredTemplates.length} template${filteredTemplates.length !== 1 ? "s" : ""} found`}
           </p>
-          {(selectedDenomination !== 'ALL' || selectedSacramentType !== 'ALL' || searchTerm) && (
+          {(selectedDenomination !== "ALL" ||
+            selectedSacramentType !== "ALL" ||
+            searchTerm) && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
-                onDenominationChange('ALL');
-                onSacramentTypeChange('ALL');
-                onSearchChange('');
+                onDenominationChange("ALL");
+                onSacramentTypeChange("ALL");
+                onSearchChange("");
               }}
               className="text-primary hover:text-primary/80"
             >
@@ -446,7 +499,9 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
 
       {/* Templates Grid */}
       {loading ? (
-        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
+        >
           {Array.from({ length: 6 }).map((_, index) => (
             <TemplateCardSkeleton key={index} />
           ))}
@@ -457,16 +512,19 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
             <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
               <AlertCircle className="h-8 w-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No templates found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No templates found
+            </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              We couldn't find any templates matching your criteria. Try adjusting your search or filters.
+              We couldn't find any templates matching your criteria. Try
+              adjusting your search or filters.
             </p>
             <Button
               variant="outline"
               onClick={() => {
-                onDenominationChange('ALL');
-                onSacramentTypeChange('ALL');
-                onSearchChange('');
+                onDenominationChange("ALL");
+                onSacramentTypeChange("ALL");
+                onSearchChange("");
               }}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -475,7 +533,9 @@ const ModernTemplateSelector: React.FC<ModernTemplateSelectorProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-2'}`}>
+        <div
+          className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-2"}`}
+        >
           {filteredTemplates.map((template) => (
             <TemplateCard key={template.id} template={template} />
           ))}

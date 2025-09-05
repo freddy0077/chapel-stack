@@ -1,8 +1,11 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export default function AttachmentUploader({ attachments, setAttachments }: any) {
+export default function AttachmentUploader({
+  attachments,
+  setAttachments,
+}: any) {
   // Placeholder: Would handle file upload logic
   return (
     <Card className="mb-4">
@@ -12,7 +15,9 @@ export default function AttachmentUploader({ attachments, setAttachments }: any)
           Add File
         </Button>
       </div>
-      <div className="text-xs text-gray-500">Images, PDFs, audio clips (UI only)</div>
+      <div className="text-xs text-gray-500">
+        Images, PDFs, audio clips (UI only)
+      </div>
       {/* List of mock attachments */}
       <ul className="mt-2 space-y-1">
         {(attachments || []).map((file: any, idx: number) => (

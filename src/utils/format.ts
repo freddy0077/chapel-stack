@@ -11,11 +11,11 @@
  */
 export const formatCurrency = (
   amount: number,
-  currency: string = 'USD',
-  locale: string = 'en-US'
+  currency: string = "USD",
+  locale: string = "en-US",
 ): string => {
   return new Intl.NumberFormat(locale, {
-    style: 'currency',
+    style: "currency",
     currency: currency.toUpperCase(),
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -31,13 +31,13 @@ export const formatCurrency = (
 export const formatDate = (
   date: string | Date,
   options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  },
 ): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-US', options);
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return dateObj.toLocaleDateString("en-US", options);
 };
 
 /**
@@ -47,25 +47,31 @@ export const formatDate = (
  */
 export const formatRelativeTime = (date: string | Date): string => {
   const now = new Date();
-  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  const targetDate = typeof date === "string" ? new Date(date) : date;
   const diffInMs = now.getTime() - targetDate.getTime();
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  
-  if (Math.abs(diffInHours) < 1) return 'Just now';
+
+  if (Math.abs(diffInHours) < 1) return "Just now";
   if (Math.abs(diffInHours) < 24) {
-    return diffInHours > 0 ? `${diffInHours}h ago` : `in ${Math.abs(diffInHours)}h`;
+    return diffInHours > 0
+      ? `${diffInHours}h ago`
+      : `in ${Math.abs(diffInHours)}h`;
   }
-  
+
   const diffInDays = Math.floor(diffInHours / 24);
   if (Math.abs(diffInDays) < 7) {
-    return diffInDays > 0 ? `${diffInDays}d ago` : `in ${Math.abs(diffInDays)}d`;
+    return diffInDays > 0
+      ? `${diffInDays}d ago`
+      : `in ${Math.abs(diffInDays)}d`;
   }
-  
+
   const diffInWeeks = Math.floor(diffInDays / 7);
   if (Math.abs(diffInWeeks) < 4) {
-    return diffInWeeks > 0 ? `${diffInWeeks}w ago` : `in ${Math.abs(diffInWeeks)}w`;
+    return diffInWeeks > 0
+      ? `${diffInWeeks}w ago`
+      : `in ${Math.abs(diffInWeeks)}w`;
   }
-  
+
   return formatDate(targetDate);
 };
 
@@ -76,17 +82,17 @@ export const formatRelativeTime = (date: string | Date): string => {
  */
 export const formatSubscriptionInterval = (interval: string): string => {
   switch (interval?.toUpperCase()) {
-    case 'MONTHLY':
-      return 'month';
-    case 'YEARLY':
-    case 'ANNUAL':
-      return 'year';
-    case 'WEEKLY':
-      return 'week';
-    case 'DAILY':
-      return 'day';
+    case "MONTHLY":
+      return "month";
+    case "YEARLY":
+    case "ANNUAL":
+      return "year";
+    case "WEEKLY":
+      return "week";
+    case "DAILY":
+      return "day";
     default:
-      return interval?.toLowerCase() || 'period';
+      return interval?.toLowerCase() || "period";
   }
 };
 
@@ -97,22 +103,25 @@ export const formatSubscriptionInterval = (interval: string): string => {
  */
 export const formatSubscriptionStatus = (status: string): string => {
   switch (status?.toUpperCase()) {
-    case 'ACTIVE':
-      return 'Active';
-    case 'TRIALING':
-      return 'Trial';
-    case 'PAST_DUE':
-      return 'Past Due';
-    case 'CANCELLED':
-      return 'Cancelled';
-    case 'INCOMPLETE':
-      return 'Incomplete';
-    case 'INCOMPLETE_EXPIRED':
-      return 'Expired';
-    case 'UNPAID':
-      return 'Unpaid';
+    case "ACTIVE":
+      return "Active";
+    case "TRIALING":
+      return "Trial";
+    case "PAST_DUE":
+      return "Past Due";
+    case "CANCELLED":
+      return "Cancelled";
+    case "INCOMPLETE":
+      return "Incomplete";
+    case "INCOMPLETE_EXPIRED":
+      return "Expired";
+    case "UNPAID":
+      return "Unpaid";
     default:
-      return status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Unknown';
+      return (
+        status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() ||
+        "Unknown"
+      );
   }
 };
 
@@ -123,16 +132,19 @@ export const formatSubscriptionStatus = (status: string): string => {
  */
 export const formatOrganizationStatus = (status: string): string => {
   switch (status?.toUpperCase()) {
-    case 'ACTIVE':
-      return 'Active';
-    case 'SUSPENDED':
-      return 'Suspended';
-    case 'CANCELLED':
-      return 'Cancelled';
-    case 'PENDING':
-      return 'Pending';
+    case "ACTIVE":
+      return "Active";
+    case "SUSPENDED":
+      return "Suspended";
+    case "CANCELLED":
+      return "Cancelled";
+    case "PENDING":
+      return "Pending";
     default:
-      return status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Unknown';
+      return (
+        status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() ||
+        "Unknown"
+      );
   }
 };
 
@@ -142,13 +154,13 @@ export const formatOrganizationStatus = (status: string): string => {
  * @returns Formatted size string
  */
 export const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 /**
@@ -157,18 +169,18 @@ export const formatFileSize = (bytes: number): string => {
  * @returns Formatted phone number
  */
 export const formatPhoneNumber = (phone: string): string => {
-  if (!phone) return '';
-  
+  if (!phone) return "";
+
   // Remove all non-digit characters
-  const cleaned = phone.replace(/\D/g, '');
-  
+  const cleaned = phone.replace(/\D/g, "");
+
   // Format based on length
   if (cleaned.length === 10) {
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+  } else if (cleaned.length === 11 && cleaned.startsWith("1")) {
     return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
   }
-  
+
   return phone; // Return original if can't format
 };
 
@@ -180,7 +192,7 @@ export const formatPhoneNumber = (phone: string): string => {
  */
 export const truncateText = (text: string, maxLength: number): string => {
   if (!text || text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
+  return text.slice(0, maxLength - 3) + "...";
 };
 
 /**
@@ -189,6 +201,9 @@ export const truncateText = (text: string, maxLength: number): string => {
  * @param decimals - Number of decimal places
  * @returns Formatted percentage string
  */
-export const formatPercentage = (value: number, decimals: number = 1): string => {
+export const formatPercentage = (
+  value: number,
+  decimals: number = 1,
+): string => {
   return `${(value * 100).toFixed(decimals)}%`;
 };

@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_BRANCH_STATISTICS } from '../graphql/branchStatistics';
+import { useQuery } from "@apollo/client";
+import { GET_BRANCH_STATISTICS } from "../graphql/branchStatistics";
 
 export interface BranchStatistics {
   totalMembers: number;
@@ -30,18 +30,17 @@ export interface UseBranchStatisticsResult {
   branchName: string | undefined;
 }
 
-export function useBranchStatistics({ branchId }: UseBranchStatisticsProps): UseBranchStatisticsResult {
-  const {
-    data,
-    loading,
-    error,
-    refetch
-  } = useQuery<{ branch: { id: string; name: string; statistics: BranchStatistics } }>(GET_BRANCH_STATISTICS, {
+export function useBranchStatistics({
+  branchId,
+}: UseBranchStatisticsProps): UseBranchStatisticsResult {
+  const { data, loading, error, refetch } = useQuery<{
+    branch: { id: string; name: string; statistics: BranchStatistics };
+  }>(GET_BRANCH_STATISTICS, {
     variables: {
-      branchId
+      branchId,
     },
-    fetchPolicy: 'cache-and-network',
-    skip: !branchId
+    fetchPolicy: "cache-and-network",
+    skip: !branchId,
   });
 
   return {
@@ -49,6 +48,6 @@ export function useBranchStatistics({ branchId }: UseBranchStatisticsProps): Use
     branchName: data?.branch?.name,
     loading,
     error,
-    refetch
+    refetch,
   };
 }

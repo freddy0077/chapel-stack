@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_SACRAMENT_STATS = gql`
   query GetSacramentStats($period: String, $branchId: ID) {

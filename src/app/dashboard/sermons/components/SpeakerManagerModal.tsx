@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState } from 'react';
-import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useGetSpeakers, useCreateSpeaker, useUpdateSpeaker, useDeleteSpeaker, SpeakerEntity } from '@/graphql/hooks/useSermon';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import React, { useState } from "react";
+import {
+  XMarkIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  useGetSpeakers,
+  useCreateSpeaker,
+  useUpdateSpeaker,
+  useDeleteSpeaker,
+  SpeakerEntity,
+} from "@/graphql/hooks/useSermon";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface SpeakerManagerModalProps {
   open: boolean;
@@ -23,22 +35,31 @@ interface SpeakerFormData {
   imageUrl: string;
 }
 
-export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps) => {
+export const SpeakerManagerModal = ({
+  open,
+  onClose,
+}: SpeakerManagerModalProps) => {
   const [showForm, setShowForm] = useState(false);
-  const [editingSpeaker, setEditingSpeaker] = useState<SpeakerEntity | null>(null);
+  const [editingSpeaker, setEditingSpeaker] = useState<SpeakerEntity | null>(
+    null,
+  );
   const [formData, setFormData] = useState<SpeakerFormData>({
-    name: '',
-    title: '',
-    bio: '',
-    email: '',
-    phone: '',
-    website: '',
-    imageUrl: ''
+    name: "",
+    title: "",
+    bio: "",
+    email: "",
+    phone: "",
+    website: "",
+    imageUrl: "",
   });
 
   const { state } = useAuth();
   const user = state.user;
-  const { data: speakersData, loading: speakersLoading, refetch: refetchSpeakers } = useGetSpeakers();
+  const {
+    data: speakersData,
+    loading: speakersLoading,
+    refetch: refetchSpeakers,
+  } = useGetSpeakers();
   const [createSpeaker, { loading: createLoading }] = useCreateSpeaker();
   const [updateSpeaker, { loading: updateLoading }] = useUpdateSpeaker();
   const [deleteSpeaker, { loading: deleteLoading }] = useDeleteSpeaker();
@@ -49,13 +70,13 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
   const handleAddSpeaker = () => {
     setEditingSpeaker(null);
     setFormData({
-      name: '',
-      title: '',
-      bio: '',
-      email: '',
-      phone: '',
-      website: '',
-      imageUrl: ''
+      name: "",
+      title: "",
+      bio: "",
+      email: "",
+      phone: "",
+      website: "",
+      imageUrl: "",
     });
     setShowForm(true);
   };
@@ -63,13 +84,13 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
   const handleEditSpeaker = (speaker: SpeakerEntity) => {
     setEditingSpeaker(speaker);
     setFormData({
-      name: speaker.name || '',
-      title: speaker.title || '',
-      bio: speaker.bio || '',
-      email: speaker.email || '',
-      phone: speaker.phone || '',
-      website: speaker.website || '',
-      imageUrl: speaker.imageUrl || ''
+      name: speaker.name || "",
+      title: speaker.title || "",
+      bio: speaker.bio || "",
+      email: speaker.email || "",
+      phone: speaker.phone || "",
+      website: speaker.website || "",
+      imageUrl: speaker.imageUrl || "",
     });
     setShowForm(true);
   };
@@ -80,20 +101,20 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
         await deleteSpeaker({ variables: { id: speaker.id } });
         await refetchSpeakers();
       } catch (error) {
-        console.error('Error deleting speaker:', error);
-        alert('Failed to delete speaker. Please try again.');
+        console.error("Error deleting speaker:", error);
+        alert("Failed to delete speaker. Please try again.");
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Get branchId from user context
       const branchId = user?.userBranches?.[0]?.branch?.id;
       if (!branchId) {
-        alert('Branch ID is required but not found. Please contact support.');
+        alert("Branch ID is required but not found. Please contact support.");
         return;
       }
 
@@ -106,8 +127,8 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
               bio: formData.bio || undefined,
               imageUrl: formData.imageUrl || undefined,
               memberId: formData.memberId || undefined,
-            }
-          }
+            },
+          },
         });
       } else {
         await createSpeaker({
@@ -118,23 +139,25 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
               imageUrl: formData.imageUrl || undefined,
               memberId: formData.memberId || undefined,
               branchId: branchId,
-            }
-          }
+            },
+          },
         });
       }
-      
+
       await refetchSpeakers();
       setShowForm(false);
       setEditingSpeaker(null);
     } catch (error) {
-      console.error('Error saving speaker:', error);
-      alert('Failed to save speaker. Please try again.');
+      console.error("Error saving speaker:", error);
+      alert("Failed to save speaker. Please try again.");
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   if (!open) return null;
@@ -145,7 +168,7 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
         <div className="sticky top-0 bg-gradient-to-r from-green-600 to-blue-600 p-6 rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-white">Manage Speakers</h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-white hover:text-gray-200 rounded-full p-2 hover:bg-white/20 transition-colors"
             >
@@ -162,7 +185,7 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
                 <h3 className="text-lg font-semibold text-gray-800">
                   Speakers ({speakers.length})
                 </h3>
-                <Button 
+                <Button
                   onClick={handleAddSpeaker}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
@@ -179,9 +202,16 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
               ) : speakers.length === 0 ? (
                 <div className="text-center py-12">
                   <UserIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No speakers found</h3>
-                  <p className="text-gray-500 mb-4">Get started by adding your first speaker.</p>
-                  <Button onClick={handleAddSpeaker} className="bg-green-600 hover:bg-green-700 text-white">
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                    No speakers found
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Get started by adding your first speaker.
+                  </p>
+                  <Button
+                    onClick={handleAddSpeaker}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add First Speaker
                   </Button>
@@ -189,13 +219,16 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {speakers.map((speaker) => (
-                    <Card key={speaker.id} className="p-4 hover:shadow-lg transition-shadow">
+                    <Card
+                      key={speaker.id}
+                      className="p-4 hover:shadow-lg transition-shadow"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
                             {speaker.imageUrl ? (
-                              <img 
-                                src={speaker.imageUrl} 
+                              <img
+                                src={speaker.imageUrl}
                                 alt={speaker.name}
                                 className="w-full h-full rounded-full object-cover"
                               />
@@ -204,9 +237,13 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
                             )}
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">{speaker.name}</h4>
+                            <h4 className="font-semibold text-gray-900">
+                              {speaker.name}
+                            </h4>
                             {speaker.title && (
-                              <p className="text-sm text-gray-600">{speaker.title}</p>
+                              <p className="text-sm text-gray-600">
+                                {speaker.title}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -225,20 +262,28 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
                           </button>
                         </div>
                       </div>
-                      
+
                       {speaker.bio && (
-                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">{speaker.bio}</p>
+                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                          {speaker.bio}
+                        </p>
                       )}
-                      
+
                       <div className="flex flex-wrap gap-1">
                         {speaker.email && (
-                          <Badge variant="outline" className="text-xs">Email</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Email
+                          </Badge>
                         )}
                         {speaker.phone && (
-                          <Badge variant="outline" className="text-xs">Phone</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Phone
+                          </Badge>
                         )}
                         {speaker.website && (
-                          <Badge variant="outline" className="text-xs">Website</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Website
+                          </Badge>
                         )}
                       </div>
                     </Card>
@@ -251,9 +296,9 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  {editingSpeaker ? 'Edit Speaker' : 'Add New Speaker'}
+                  {editingSpeaker ? "Edit Speaker" : "Add New Speaker"}
                 </h3>
-                <Button 
+                <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowForm(false)}
@@ -265,7 +310,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Full Name *
                   </label>
                   <input
@@ -282,7 +330,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
                 {/* Title */}
                 <div>
-                  <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Title/Position
                   </label>
                   <input
@@ -298,7 +349,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Email Address
                   </label>
                   <input
@@ -314,7 +368,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
                 {/* Phone */}
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Phone Number
                   </label>
                   <input
@@ -330,7 +387,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
                 {/* Website */}
                 <div>
-                  <label htmlFor="website" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="website"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Website
                   </label>
                   <input
@@ -346,7 +406,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
                 {/* Image URL */}
                 <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label
+                    htmlFor="imageUrl"
+                    className="block text-sm font-semibold text-gray-700 mb-2"
+                  >
                     Profile Image URL
                   </label>
                   <input
@@ -363,7 +426,10 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
 
               {/* Bio */}
               <div>
-                <label htmlFor="bio" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label
+                  htmlFor="bio"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
                   Biography
                 </label>
                 <textarea
@@ -391,7 +457,11 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
                   disabled={mutationLoading}
                   className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300 font-medium transition-colors"
                 >
-                  {mutationLoading ? 'Saving...' : editingSpeaker ? 'Update Speaker' : 'Create Speaker'}
+                  {mutationLoading
+                    ? "Saving..."
+                    : editingSpeaker
+                      ? "Update Speaker"
+                      : "Create Speaker"}
                 </button>
               </div>
             </form>
@@ -400,4 +470,4 @@ export const SpeakerManagerModal = ({ open, onClose }: SpeakerManagerModalProps)
       </div>
     </div>
   );
-}
+};

@@ -1,85 +1,43 @@
-import React, { useState } from 'react';
-import { UsersIcon, HeartIcon, UserGroupIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { Member } from '../../types/member.types';
-import { useLazyQuery } from '@apollo/client';
-import { SEARCH_MEMBERS_ENHANCED } from '../../../../../graphql/queries/memberQueries';
-import { useOrganisationBranch } from '../../../../../hooks/useOrganisationBranch';
-import { useMemberRelationships } from '../../hooks/useMemberOperations';
+import React from "react";
+import {
+  UsersIcon,
+  HeartIcon,
+  UserGroupIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { Member } from "../../types/member.types";
+import { 
+  useFamilyRelationships,
+  getRelationshipDisplayName,
+  getRelationshipColor,
+} from "../../../../../graphql/hooks/useFamilyRelationships";
 
 interface FamilyRelationshipsSectionProps {
   member: Member;
-  relationships?: FamilyRelationship[];
 }
 
-interface FamilyRelationship {
-  id: string;
-  relatedMemberId: string;
-  relationshipType: string;
-  relatedMember: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phoneNumber?: string;
-    profileImageUrl?: string;
-  };
-  isEmergencyContact: boolean;
-  createdAt: string;
-}
-
-const FamilyRelationshipsSection: React.FC<FamilyRelationshipsSectionProps> = ({ member, relationships }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Optionally, if relationships are a prop or come from a hook, set them here.
-  const [localRelationships, setLocalRelationships] = useState<FamilyRelationship[]>(relationships || []);
+const FamilyRelationshipsSection: React.FC<FamilyRelationshipsSectionProps> = ({
+  member,
+}) => {
+  const { relationships, loading, error } = useFamilyRelationships(member.id);
 
   const getRelationshipIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'spouse':
+    switch (type.toUpperCase()) {
+      case "SPOUSE":
         return <HeartIcon className="h-4 w-4 text-pink-500" />;
-      case 'parent':
-      case 'father':
-      case 'mother':
+      case "PARENT":
         return <UsersIcon className="h-4 w-4 text-blue-500" />;
-      case 'child':
-      case 'son':
-      case 'daughter':
+      case "CHILD":
         return <UserGroupIcon className="h-4 w-4 text-green-500" />;
-      case 'sibling':
-      case 'brother':
-      case 'sister':
+      case "SIBLING":
         return <UsersIcon className="h-4 w-4 text-purple-500" />;
+      case "GRANDPARENT":
+        return <UsersIcon className="h-4 w-4 text-indigo-500" />;
+      case "GRANDCHILD":
+        return <UserGroupIcon className="h-4 w-4 text-yellow-500" />;
       default:
         return <UsersIcon className="h-4 w-4 text-gray-500" />;
     }
-  };
-
-  const getRelationshipColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'spouse':
-        return 'bg-pink-50 text-pink-700 border-pink-200';
-      case 'parent':
-      case 'father':
-      case 'mother':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'child':
-      case 'son':
-      case 'daughter':
-        return 'bg-green-50 text-green-700 border-green-200';
-      case 'sibling':
-      case 'brother':
-      case 'sister':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
-
-  const formatRelationshipType = (type: string) => {
-    return type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
   };
 
   return (
@@ -88,101 +46,102 @@ const FamilyRelationshipsSection: React.FC<FamilyRelationshipsSectionProps> = ({
         <div className="p-2 bg-indigo-100 rounded-lg">
           <UserGroupIcon className="h-5 w-5 text-indigo-600" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">Family Relationships</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Family Relationships
+        </h3>
       </div>
 
       {loading ? (
         <div className="text-center py-8">
           <UserGroupIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Loading family relationships...</p>
+          <p className="text-gray-500 text-sm">
+            Loading family relationships...
+          </p>
         </div>
-      ) : (
-        localRelationships.length > 0 ? (
-          <div className="space-y-4">
-            {localRelationships.map((relationship) => (
-              <div
-                key={relationship.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Profile Image */}
-                  <div className="relative">
-                    {relationship.relatedMember.profileImageUrl ? (
-                      <img
-                        src={relationship.relatedMember.profileImageUrl}
-                        alt={`${relationship.relatedMember.firstName} ${relationship.relatedMember.lastName}`}
-                        className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
-                      />
-                    ) : (
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                        {relationship.relatedMember.firstName.charAt(0)}
-                        {relationship.relatedMember.lastName.charAt(0)}
-                      </div>
-                    )}
-                    {relationship.isEmergencyContact && (
-                      <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">!</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Member Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-gray-900">
-                        {relationship.relatedMember.firstName} {relationship.relatedMember.lastName}
-                      </h4>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getRelationshipColor(relationship.relationshipType)}`}>
-                        {getRelationshipIcon(relationship.relationshipType)}
-                        {formatRelationshipType(relationship.relationshipType)}
-                      </span>
+      ) : error ? (
+        <div className="text-center py-8">
+          <UserGroupIcon className="h-12 w-12 text-red-300 mx-auto mb-3" />
+          <p className="text-red-600 text-sm">
+            Error loading family relationships
+          </p>
+        </div>
+      ) : relationships.length > 0 ? (
+        <div className="space-y-4">
+          {relationships.map((relationship) => (
+            <div
+              key={relationship.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                {/* Profile Image */}
+                <div className="relative">
+                  {relationship.relatedMember.profileImageUrl ? (
+                    <img
+                      src={relationship.relatedMember.profileImageUrl}
+                      alt={`${relationship.relatedMember.firstName} ${relationship.relatedMember.lastName}`}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                      {relationship.relatedMember.firstName.charAt(0)}
+                      {relationship.relatedMember.lastName.charAt(0)}
                     </div>
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      {relationship.relatedMember.email && (
-                        <a
-                          href={`mailto:${relationship.relatedMember.email}`}
-                          className="hover:text-blue-600 transition-colors"
-                        >
-                          {relationship.relatedMember.email}
-                        </a>
-                      )}
-                      {relationship.relatedMember.phoneNumber && (
-                        <a
-                          href={`tel:${relationship.relatedMember.phoneNumber}`}
-                          className="hover:text-blue-600 transition-colors"
-                        >
-                          {relationship.relatedMember.phoneNumber}
-                        </a>
-                      )}
-                    </div>
-                    
-                    {relationship.isEmergencyContact && (
-                      <div className="mt-1">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                          Emergency Contact
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
 
-                {/* Relationship Date */}
-                <div className="text-xs text-gray-500">
-                  Added {new Date(relationship.createdAt).toLocaleDateString()}
+                {/* Member Info */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-gray-900">
+                      {relationship.relatedMember.firstName}{" "}
+                      {relationship.relatedMember.lastName}
+                    </h4>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getRelationshipColor(relationship.relationshipType)}`}
+                    >
+                      {getRelationshipIcon(relationship.relationshipType)}
+                      {getRelationshipDisplayName(relationship.relationshipType)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    {relationship.relatedMember.email && (
+                      <a
+                        href={`mailto:${relationship.relatedMember.email}`}
+                        className="hover:text-blue-600 transition-colors"
+                      >
+                        {relationship.relatedMember.email}
+                      </a>
+                    )}
+                    {relationship.relatedMember.phoneNumber && (
+                      <a
+                        href={`tel:${relationship.relatedMember.phoneNumber}`}
+                        className="hover:text-blue-600 transition-colors"
+                      >
+                        {relationship.relatedMember.phoneNumber}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <UserGroupIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">No family relationships recorded</p>
-            <p className="text-gray-400 text-xs mt-1">
-              Family connections will appear here when added
-            </p>
-          </div>
-        )
+
+              {/* Relationship Date */}
+              <div className="text-xs text-gray-500">
+                Added {new Date(relationship.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <UserGroupIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">
+            No family relationships recorded
+          </p>
+          <p className="text-gray-400 text-xs mt-1">
+            Family connections will appear here when added
+          </p>
+        </div>
       )}
 
       {/* Family Summary */}

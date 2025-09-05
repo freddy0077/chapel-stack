@@ -2,10 +2,15 @@ import { useQuery } from "@apollo/client";
 import { gql } from "@apollo/client";
 
 const GET_MEMBER_TRANSACTIONS = gql`
-  query GetMemberTransactions($organisationId: String!, $userId: String!, $skip: Int, $take: Int) {
+  query GetMemberTransactions(
+    $organisationId: String!
+    $userId: String!
+    $skip: Int
+    $take: Int
+  ) {
     transactions(
-      organisationId: $organisationId,
-      userId: $userId,
+      organisationId: $organisationId
+      userId: $userId
       paginationInput: { skip: $skip, take: $take }
     ) {
       items {
@@ -32,7 +37,12 @@ const GET_MEMBER_TRANSACTIONS = gql`
   }
 `;
 
-export function useMemberTransactions({ organisationId, userId, skip = 0, take = 20 }) {
+export function useMemberTransactions({
+  organisationId,
+  userId,
+  skip = 0,
+  take = 20,
+}) {
   const { data, loading, error, refetch } = useQuery(GET_MEMBER_TRANSACTIONS, {
     variables: { organisationId, userId, skip, take },
     skip: !organisationId || !userId,

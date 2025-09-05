@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Sermon Mutations
 export const CREATE_SERMON = gql`
@@ -204,7 +204,11 @@ export const DELETE_SERIES = gql`
 
 // Media Upload Mutation
 export const UPLOAD_SERMON_MEDIA = gql`
-  mutation UploadSermonMedia($file: Upload!, $sermonId: ID!, $mediaType: String!) {
+  mutation UploadSermonMedia(
+    $file: Upload!
+    $sermonId: ID!
+    $mediaType: String!
+  ) {
     uploadSermonMedia(file: $file, sermonId: $sermonId, mediaType: $mediaType) {
       id
       url

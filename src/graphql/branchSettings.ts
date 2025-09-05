@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragment for branch settings fields
 export const BRANCH_SETTINGS_FRAGMENT = gql`
@@ -45,7 +45,10 @@ export const GET_BRANCH_SETTINGS = gql`
 
 // Mutation to update branch settings
 export const UPDATE_BRANCH_SETTINGS = gql`
-  mutation UpdateBranchSettings($branchId: String!, $input: UpdateBranchSettingsInput!) {
+  mutation UpdateBranchSettings(
+    $branchId: String!
+    $input: UpdateBranchSettingsInput!
+  ) {
     updateBranchSettings(branchId: $branchId, input: $input) {
       id
       createdAt

@@ -3,12 +3,12 @@
  * Comprehensive error handling with user-friendly recovery options
  */
 
-'use client';
+"use client";
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AuthError } from '@/types/auth-enhanced.types';
-import { AuthUtils } from '@/lib/auth/auth-reducer';
-import { authStorage } from '@/lib/auth/auth-storage';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { AuthError } from "@/types/auth-enhanced.types";
+import { AuthUtils } from "@/lib/auth/auth-reducer";
+import { authStorage } from "@/lib/auth/auth-storage";
 
 interface Props {
   children: ReactNode;
@@ -41,10 +41,11 @@ export class AuthErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: Error): State {
     // Convert generic error to AuthError
     const authError = AuthUtils.createAuthError(
-      'COMPONENT_ERROR',
-      error.message || 'An unexpected error occurred in the authentication system',
+      "COMPONENT_ERROR",
+      error.message ||
+        "An unexpected error occurred in the authentication system",
       error,
-      true
+      true,
     );
 
     return {
@@ -55,15 +56,17 @@ export class AuthErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const authError = this.state.error || AuthUtils.createAuthError(
-      'COMPONENT_ERROR',
-      error.message,
-      { error, errorInfo },
-      true
-    );
+    const authError =
+      this.state.error ||
+      AuthUtils.createAuthError(
+        "COMPONENT_ERROR",
+        error.message,
+        { error, errorInfo },
+        true,
+      );
 
     // Log error for debugging
-    console.error('🚨 Authentication Error Boundary caught error:', {
+    console.error("🚨 Authentication Error Boundary caught error:", {
       error: authError,
       errorInfo,
       errorId: this.state.errorId,
@@ -86,11 +89,11 @@ export class AuthErrorBoundary extends Component<Props, State> {
     try {
       // Here you would integrate with your error monitoring service
       // e.g., Sentry, LogRocket, Bugsnag, etc.
-      
-      if (typeof window !== 'undefined' && (window as any).Sentry) {
+
+      if (typeof window !== "undefined" && (window as any).Sentry) {
         (window as any).Sentry.captureException(error, {
           tags: {
-            component: 'AuthErrorBoundary',
+            component: "AuthErrorBoundary",
             errorCode: error.code,
             recoverable: error.recoverable,
           },
@@ -104,16 +107,16 @@ export class AuthErrorBoundary extends Component<Props, State> {
       }
 
       // Also log to console in development
-      if (process.env.NODE_ENV === 'development') {
-        console.group('🚨 Authentication Error Report');
-        console.error('Error:', error);
-        console.error('Error Info:', errorInfo);
-        console.error('Error ID:', this.state.errorId);
-        console.error('Retry Count:', this.retryCount);
+      if (process.env.NODE_ENV === "development") {
+        console.group("🚨 Authentication Error Report");
+        console.error("Error:", error);
+        console.error("Error Info:", errorInfo);
+        console.error("Error ID:", this.state.errorId);
+        console.error("Retry Count:", this.retryCount);
         console.groupEnd();
       }
     } catch (reportingError) {
-      console.error('Failed to report error:', reportingError);
+      console.error("Failed to report error:", reportingError);
     }
   }
 
@@ -151,9 +154,9 @@ export class AuthErrorBoundary extends Component<Props, State> {
    */
   private handleClearAuth = () => {
     authStorage.clear();
-    
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login';
+
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/login";
     }
   };
 
@@ -205,7 +208,11 @@ function AuthErrorFallback({
   onClearAuth,
 }: AuthErrorFallbackProps) {
   const canRetry = retryCount < maxRetries && error.recoverable;
-  const isAuthError = ['TOKEN_EXPIRED', 'INVALID_CREDENTIALS', 'UNAUTHENTICATED'].includes(error.code);
+  const isAuthError = [
+    "TOKEN_EXPIRED",
+    "INVALID_CREDENTIALS",
+    "UNAUTHENTICATED",
+  ].includes(error.code);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -231,7 +238,7 @@ function AuthErrorFallback({
 
           {/* Error Title */}
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {isAuthError ? 'Authentication Error' : 'Something went wrong'}
+            {isAuthError ? "Authentication Error" : "Something went wrong"}
           </h2>
 
           {/* Error Message */}
@@ -240,17 +247,29 @@ function AuthErrorFallback({
           </p>
 
           {/* Error Details (Development Only) */}
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <details className="mt-4 text-left">
               <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
                 Technical Details
               </summary>
               <div className="mt-2 p-3 bg-gray-100 rounded-md text-xs text-gray-700 font-mono">
-                <p><strong>Error Code:</strong> {error.code}</p>
-                <p><strong>Error ID:</strong> {errorId}</p>
-                <p><strong>Timestamp:</strong> {new Date(error.timestamp).toLocaleString()}</p>
-                <p><strong>Recoverable:</strong> {error.recoverable ? 'Yes' : 'No'}</p>
-                <p><strong>Retry Count:</strong> {retryCount}/{maxRetries}</p>
+                <p>
+                  <strong>Error Code:</strong> {error.code}
+                </p>
+                <p>
+                  <strong>Error ID:</strong> {errorId}
+                </p>
+                <p>
+                  <strong>Timestamp:</strong>{" "}
+                  {new Date(error.timestamp).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Recoverable:</strong>{" "}
+                  {error.recoverable ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Retry Count:</strong> {retryCount}/{maxRetries}
+                </p>
                 {error.details && (
                   <div className="mt-2">
                     <strong>Details:</strong>
@@ -336,7 +355,7 @@ function AuthErrorFallback({
           {/* Contact Support */}
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              If this problem persists, please{' '}
+              If this problem persists, please{" "}
               <a
                 href="/support"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
@@ -345,7 +364,8 @@ function AuthErrorFallback({
               </a>
               {errorId && (
                 <>
-                  {' '}with error ID: <code className="font-mono">{errorId}</code>
+                  {" "}
+                  with error ID: <code className="font-mono">{errorId}</code>
                 </>
               )}
             </p>
@@ -361,37 +381,37 @@ function AuthErrorFallback({
  */
 export function useAuthErrorHandler() {
   const handleError = React.useCallback((error: AuthError) => {
-    console.error('🚨 Authentication error handled:', error);
+    console.error("🚨 Authentication error handled:", error);
 
     // Format error message for user display
     const userMessage = AuthUtils.formatErrorMessage(error);
 
     // Show toast notification if available
-    if (typeof window !== 'undefined' && (window as any).toast) {
+    if (typeof window !== "undefined" && (window as any).toast) {
       (window as any).toast.error(userMessage);
     }
 
     // Handle specific error types
     switch (error.code) {
-      case 'TOKEN_EXPIRED':
-      case 'UNAUTHENTICATED':
+      case "TOKEN_EXPIRED":
+      case "UNAUTHENTICATED":
         // Clear auth data and redirect to login
         authStorage.clear();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
+        if (typeof window !== "undefined") {
+          window.location.href = "/auth/login";
         }
         break;
 
-      case 'NETWORK_ERROR':
+      case "NETWORK_ERROR":
         // Show network error message
         break;
 
-      case 'RATE_LIMITED':
+      case "RATE_LIMITED":
         // Show rate limit message
         break;
 
       default:
-        // Generic error handling
+      // Generic error handling
     }
 
     return userMessage;
@@ -405,7 +425,7 @@ export function useAuthErrorHandler() {
  */
 export function withAuthErrorBoundary<T extends object>(
   Component: React.ComponentType<T>,
-  fallback?: (error: AuthError, retry: () => void) => ReactNode
+  fallback?: (error: AuthError, retry: () => void) => ReactNode,
 ) {
   return function WrappedComponent(props: T) {
     return (

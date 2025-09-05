@@ -1,8 +1,11 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_FUND_MAPPING_CONFIGURATION = gql`
   query GetFundMappingConfiguration($branchId: ID!, $organisationId: ID!) {
-    fundMappingConfiguration(branchId: $branchId, organisationId: $organisationId) {
+    fundMappingConfiguration(
+      branchId: $branchId
+      organisationId: $organisationId
+    ) {
       branchId
       organisationId
       lastUpdated
@@ -43,7 +46,9 @@ export const GET_FUND_MAPPING_CONFIGURATION = gql`
 `;
 
 export const GET_CONTRIBUTION_TYPE_FUND_MAPPINGS = gql`
-  query GetContributionTypeFundMappings($filter: ContributionTypeFundMappingFilterInput!) {
+  query GetContributionTypeFundMappings(
+    $filter: ContributionTypeFundMappingFilterInput!
+  ) {
     contributionTypeFundMappings(filter: $filter) {
       total
       mappings {
@@ -75,7 +80,9 @@ export const GET_CONTRIBUTION_TYPE_FUND_MAPPINGS = gql`
 `;
 
 export const CREATE_CONTRIBUTION_TYPE_FUND_MAPPING = gql`
-  mutation CreateContributionTypeFundMapping($input: CreateContributionTypeFundMappingInput!) {
+  mutation CreateContributionTypeFundMapping(
+    $input: CreateContributionTypeFundMappingInput!
+  ) {
     createContributionTypeFundMapping(input: $input) {
       id
       contributionTypeId
@@ -99,7 +106,9 @@ export const CREATE_CONTRIBUTION_TYPE_FUND_MAPPING = gql`
 `;
 
 export const UPDATE_CONTRIBUTION_TYPE_FUND_MAPPING = gql`
-  mutation UpdateContributionTypeFundMapping($input: UpdateContributionTypeFundMappingInput!) {
+  mutation UpdateContributionTypeFundMapping(
+    $input: UpdateContributionTypeFundMappingInput!
+  ) {
     updateContributionTypeFundMapping(input: $input) {
       id
       contributionTypeId
@@ -130,7 +139,10 @@ export const DELETE_CONTRIBUTION_TYPE_FUND_MAPPING = gql`
 
 export const CREATE_DEFAULT_FUND_MAPPINGS = gql`
   mutation CreateDefaultFundMappings($branchId: ID!, $organisationId: ID!) {
-    createDefaultFundMappings(branchId: $branchId, organisationId: $organisationId) {
+    createDefaultFundMappings(
+      branchId: $branchId
+      organisationId: $organisationId
+    ) {
       id
       contributionTypeId
       fundId
@@ -150,7 +162,11 @@ export const CREATE_DEFAULT_FUND_MAPPINGS = gql`
 `;
 
 export const GET_FUND_FOR_CONTRIBUTION_TYPE = gql`
-  query GetFundForContributionType($contributionTypeId: ID!, $branchId: ID!, $organisationId: ID!) {
+  query GetFundForContributionType(
+    $contributionTypeId: ID!
+    $branchId: ID!
+    $organisationId: ID!
+  ) {
     getFundForContributionType(
       contributionTypeId: $contributionTypeId
       branchId: $branchId
@@ -160,7 +176,11 @@ export const GET_FUND_FOR_CONTRIBUTION_TYPE = gql`
 `;
 
 export const GET_FUND_FOR_CONTRIBUTION_TYPE_NAME = gql`
-  query GetFundForContributionTypeName($contributionTypeName: String!, $branchId: ID!, $organisationId: ID!) {
+  query GetFundForContributionTypeName(
+    $contributionTypeName: String!
+    $branchId: ID!
+    $organisationId: ID!
+  ) {
     getFundForContributionTypeName(
       contributionTypeName: $contributionTypeName
       branchId: $branchId

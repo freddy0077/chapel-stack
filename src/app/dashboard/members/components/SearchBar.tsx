@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MagnifyingGlassIcon, 
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MagnifyingGlassIcon,
   XMarkIcon,
   ClockIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
+  UserIcon,
+} from "@heroicons/react/24/outline";
 
 interface SearchBarProps {
   value: string;
@@ -26,7 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   loading = false,
   recentSearches = [],
   onRecentSearchSelect,
-  className = ""
+  className = "",
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -36,14 +36,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
         setIsFocused(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +61,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleClear = () => {
-    onChange('');
+    onChange("");
     inputRef.current?.focus();
   };
 
@@ -70,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       setShowSuggestions(false);
       setIsFocused(false);
       inputRef.current?.blur();
@@ -81,27 +84,31 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div ref={containerRef} className={`relative ${className}`}>
       <motion.div
         className={`relative bg-white rounded-2xl shadow-lg transition-all duration-300 ${
-          isFocused 
-            ? 'ring-2 ring-blue-500 shadow-xl' 
-            : 'hover:shadow-xl'
+          isFocused ? "ring-2 ring-blue-500 shadow-xl" : "hover:shadow-xl"
         }`}
         layout
       >
         {/* Search Icon */}
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <motion.div
-            animate={{ 
+            animate={{
               scale: loading ? [1, 1.2, 1] : 1,
-              rotate: loading ? 360 : 0
+              rotate: loading ? 360 : 0,
             }}
-            transition={{ 
+            transition={{
               scale: { repeat: loading ? Infinity : 0, duration: 1 },
-              rotate: { repeat: loading ? Infinity : 0, duration: 2, ease: "linear" }
+              rotate: {
+                repeat: loading ? Infinity : 0,
+                duration: 2,
+                ease: "linear",
+              },
             }}
           >
-            <MagnifyingGlassIcon className={`h-5 w-5 ${
-              isFocused ? 'text-blue-500' : 'text-gray-400'
-            } transition-colors duration-200`} />
+            <MagnifyingGlassIcon
+              className={`h-5 w-5 ${
+                isFocused ? "text-blue-500" : "text-gray-400"
+              } transition-colors duration-200`}
+            />
           </motion.div>
         </div>
 
@@ -153,9 +160,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <div className="p-4">
               <div className="flex items-center space-x-2 mb-3">
                 <ClockIcon className="h-4 w-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-600">Recent Searches</span>
+                <span className="text-sm font-medium text-gray-600">
+                  Recent Searches
+                </span>
               </div>
-              
+
               <div className="space-y-1">
                 {recentSearches.slice(0, 5).map((search, index) => (
                   <motion.button

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Authentication mutations
 export const LOGIN_MUTATION = gql`
@@ -167,7 +167,10 @@ export const RESET_PASSWORD_MUTATION = gql`
 
 export const CHANGE_PASSWORD_MUTATION = gql`
   mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
-    changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
+    changePassword(
+      currentPassword: $currentPassword
+      newPassword: $newPassword
+    ) {
       success
       message
     }

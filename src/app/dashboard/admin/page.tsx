@@ -1,25 +1,29 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useProtectedRoute } from '@/hooks/useProtectedRoute';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UsersIcon, ShieldCheckIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  UsersIcon,
+  ShieldCheckIcon,
+  Cog6ToothIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  
+
   // Protect this route - requires ADMIN role
-  useProtectedRoute({ requiredRole: 'SUPER_ADMIN' });
-  
+  useProtectedRoute({ requiredRole: "SUPER_ADMIN" });
+
   // Set loading to false after initial render
   useEffect(() => {
     // Short timeout to ensure the route protection has a chance to redirect if needed
     const timer = setTimeout(() => setLoading(false), 100);
     return () => clearTimeout(timer);
   }, []);
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -30,14 +34,14 @@ export default function AdminDashboard() {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-500">Manage your church organization</p>
       </header>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -48,15 +52,15 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p>Manage user accounts and permissions</p>
-            <button 
-              onClick={() => router.push('/dashboard/admin/users')} 
+            <button
+              onClick={() => router.push("/dashboard/admin/users")}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
             >
               Manage Users
             </button>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -66,15 +70,15 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p>Configure role-based permissions</p>
-            <button 
-              onClick={() => router.push('/dashboard/admin/roles')} 
+            <button
+              onClick={() => router.push("/dashboard/admin/roles")}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
             >
               Manage Roles
             </button>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -84,8 +88,8 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p>Configure system settings</p>
-            <button 
-              onClick={() => router.push('/dashboard/admin/settings')} 
+            <button
+              onClick={() => router.push("/dashboard/admin/settings")}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
             >
               System Settings

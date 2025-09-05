@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
+import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ChartBarIcon,
   BuildingOfficeIcon,
   ArrowDownTrayIcon,
   FunnelIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { ProgressBar, AreaChart, BarChart, DonutChart } from "@tremor/react";
 
@@ -40,29 +40,54 @@ interface FinancialSummary {
 
 // Mock Data
 const mockBranches: Branch[] = [
-  { id: "all", name: "All Branches", location: "Organization-wide", region: "All" },
-  { id: "b1", name: "Main Campus", location: "123 Main St, Cityville", region: "North" },
-  { id: "b2", name: "East Side", location: "456 East Blvd, Cityville", region: "East" },
-  { id: "b3", name: "West End", location: "789 West Ave, Cityville", region: "West" },
-  { id: "b4", name: "South Chapel", location: "321 South Rd, Cityville", region: "South" }
+  {
+    id: "all",
+    name: "All Branches",
+    location: "Organization-wide",
+    region: "All",
+  },
+  {
+    id: "b1",
+    name: "Main Campus",
+    location: "123 Main St, Cityville",
+    region: "North",
+  },
+  {
+    id: "b2",
+    name: "East Side",
+    location: "456 East Blvd, Cityville",
+    region: "East",
+  },
+  {
+    id: "b3",
+    name: "West End",
+    location: "789 West Ave, Cityville",
+    region: "West",
+  },
+  {
+    id: "b4",
+    name: "South Chapel",
+    location: "321 South Rd, Cityville",
+    region: "South",
+  },
 ];
 
 const mockFinancialData: FinancialSummary = {
-  totalDonations: 875250.00,
-  totalExpenses: 723480.00,
-  currentBalance: 151770.00,
+  totalDonations: 875250.0,
+  totalExpenses: 723480.0,
+  currentBalance: 151770.0,
   budgetProgress: 68,
   donationsByBranch: [
-    { branch: "Main Campus", value: 398450.00 },
-    { branch: "East Side", value: 178520.00 },
-    { branch: "West End", value: 156780.00 },
-    { branch: "South Chapel", value: 141500.00 }
+    { branch: "Main Campus", value: 398450.0 },
+    { branch: "East Side", value: 178520.0 },
+    { branch: "West End", value: 156780.0 },
+    { branch: "South Chapel", value: 141500.0 },
   ],
   expensesByBranch: [
-    { branch: "Main Campus", value: 342300.00 },
-    { branch: "East Side", value: 152630.00 },
-    { branch: "West End", value: 136450.00 },
-    { branch: "South Chapel", value: 92100.00 }
+    { branch: "Main Campus", value: 342300.0 },
+    { branch: "East Side", value: 152630.0 },
+    { branch: "West End", value: 136450.0 },
+    { branch: "South Chapel", value: 92100.0 },
   ],
   monthlyTrends: [
     { month: "Jan", donations: 65420, expenses: 58350, balance: 7070 },
@@ -76,22 +101,22 @@ const mockFinancialData: FinancialSummary = {
     { month: "Sep", donations: 83750, expenses: 72140, balance: 11610 },
     { month: "Oct", donations: 79120, expenses: 65840, balance: 13280 },
     { month: "Nov", donations: 67590, expenses: 52780, balance: 14810 },
-    { month: "Dec", donations: 67650, expenses: 46690, balance: 20960 }
+    { month: "Dec", donations: 67650, expenses: 46690, balance: 20960 },
   ],
   expensesByCategory: [
     { category: "Facilities", value: 234560 },
     { category: "Personnel", value: 286750 },
     { category: "Missions", value: 98670 },
     { category: "Programs", value: 65470 },
-    { category: "Administration", value: 38030 }
+    { category: "Administration", value: 38030 },
   ],
   donationsByFund: [
     { fund: "General Fund", value: 586920 },
     { fund: "Building Fund", value: 143860 },
     { fund: "Missions Fund", value: 87650 },
     { fund: "Youth Fund", value: 34580 },
-    { fund: "Benevolence", value: 22240 }
-  ]
+    { fund: "Benevolence", value: 22240 },
+  ],
 };
 
 // Date range options
@@ -102,7 +127,7 @@ const dateRangeOptions = [
   { id: "q3", name: "Q3 (Jul-Sep)" },
   { id: "q4", name: "Q4 (Oct-Dec)" },
   { id: "last-12", name: "Last 12 Months" },
-  { id: "custom", name: "Custom Range" }
+  { id: "custom", name: "Custom Range" },
 ];
 
 export default function ConsolidatedDashboard() {
@@ -110,10 +135,10 @@ export default function ConsolidatedDashboard() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -122,7 +147,9 @@ export default function ConsolidatedDashboard() {
       {/* Header */}
       <div className="sm:flex sm:items-center mb-6">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Consolidated Financial Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Consolidated Financial Dashboard
+          </h1>
           <p className="mt-2 text-sm text-gray-700">
             Organization-wide financial overview across all branches.
           </p>
@@ -146,7 +173,10 @@ export default function ConsolidatedDashboard() {
             type="button"
             className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
           >
-            <ArrowDownTrayIcon className="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+            <ArrowDownTrayIcon
+              className="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
             Export
           </button>
         </div>
@@ -158,13 +188,20 @@ export default function ConsolidatedDashboard() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+                <ArrowTrendingUpIcon
+                  className="h-6 w-6 text-green-600"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500">Total Donations</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Total Donations
+                  </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">{formatCurrency(mockFinancialData.totalDonations)}</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {formatCurrency(mockFinancialData.totalDonations)}
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -172,7 +209,10 @@ export default function ConsolidatedDashboard() {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <div className="text-sm">
-              <Link href="/dashboard/finances/reports?type=donation" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link
+                href="/dashboard/finances/reports?type=donation"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
                 View donation reports
               </Link>
             </div>
@@ -183,13 +223,20 @@ export default function ConsolidatedDashboard() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ArrowTrendingDownIcon className="h-6 w-6 text-rose-600" aria-hidden="true" />
+                <ArrowTrendingDownIcon
+                  className="h-6 w-6 text-rose-600"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500">Total Expenses</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Total Expenses
+                  </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">{formatCurrency(mockFinancialData.totalExpenses)}</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {formatCurrency(mockFinancialData.totalExpenses)}
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -197,7 +244,10 @@ export default function ConsolidatedDashboard() {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <div className="text-sm">
-              <Link href="/dashboard/finances/reports?type=expense" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link
+                href="/dashboard/finances/reports?type=expense"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
                 View expense reports
               </Link>
             </div>
@@ -208,13 +258,20 @@ export default function ConsolidatedDashboard() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChartBarIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                <ChartBarIcon
+                  className="h-6 w-6 text-indigo-600"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500">Current Balance</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Current Balance
+                  </dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">{formatCurrency(mockFinancialData.currentBalance)}</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {formatCurrency(mockFinancialData.currentBalance)}
+                    </div>
                   </dd>
                 </dl>
               </div>
@@ -222,7 +279,10 @@ export default function ConsolidatedDashboard() {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <div className="text-sm">
-              <Link href="/dashboard/finances/reports?type=consolidated" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link
+                href="/dashboard/finances/reports?type=consolidated"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
                 View consolidated reports
               </Link>
             </div>
@@ -234,20 +294,34 @@ export default function ConsolidatedDashboard() {
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="px-5 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Annual Budget Progress</h3>
-            <Link href="/dashboard/finances/budgets" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Annual Budget Progress
+            </h3>
+            <Link
+              href="/dashboard/finances/budgets"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            >
               View Budget Details
             </Link>
           </div>
         </div>
         <div className="p-5">
           <div className="flex justify-between items-center mb-2">
-            <div className="text-sm text-gray-500">Budget Completion: {mockFinancialData.budgetProgress}%</div>
+            <div className="text-sm text-gray-500">
+              Budget Completion: {mockFinancialData.budgetProgress}%
+            </div>
             <div className="text-sm font-medium text-gray-900">
-              Spent: {formatCurrency(mockFinancialData.totalExpenses)} of {formatCurrency(mockFinancialData.totalExpenses / (mockFinancialData.budgetProgress / 100))}
+              Spent: {formatCurrency(mockFinancialData.totalExpenses)} of{" "}
+              {formatCurrency(
+                mockFinancialData.totalExpenses /
+                  (mockFinancialData.budgetProgress / 100),
+              )}
             </div>
           </div>
-          <ProgressBar percentageValue={mockFinancialData.budgetProgress} color="indigo" />
+          <ProgressBar
+            percentageValue={mockFinancialData.budgetProgress}
+            color="indigo"
+          />
         </div>
       </div>
 
@@ -256,7 +330,9 @@ export default function ConsolidatedDashboard() {
         {/* Monthly Trends */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-5 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Monthly Financial Trends</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Monthly Financial Trends
+            </h3>
           </div>
           <div className="p-5">
             <AreaChart
@@ -274,7 +350,9 @@ export default function ConsolidatedDashboard() {
         {/* Branch Comparison */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-5 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Branch Comparison</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Branch Comparison
+            </h3>
           </div>
           <div className="p-5">
             <BarChart
@@ -282,7 +360,7 @@ export default function ConsolidatedDashboard() {
               data={mockFinancialData.donationsByBranch.map((item, index) => ({
                 branch: item.branch,
                 donations: item.value,
-                expenses: mockFinancialData.expensesByBranch[index].value
+                expenses: mockFinancialData.expensesByBranch[index].value,
               }))}
               index="branch"
               categories={["donations", "expenses"]}
@@ -299,7 +377,9 @@ export default function ConsolidatedDashboard() {
         {/* Expenses by Category */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-5 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Expenses by Category</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Expenses by Category
+            </h3>
           </div>
           <div className="p-5">
             <div className="h-72">
@@ -318,7 +398,9 @@ export default function ConsolidatedDashboard() {
         {/* Donations by Fund */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-5 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Donations by Fund</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Donations by Fund
+            </h3>
           </div>
           <div className="p-5">
             <div className="h-72">

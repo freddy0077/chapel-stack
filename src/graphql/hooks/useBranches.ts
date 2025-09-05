@@ -57,7 +57,7 @@ interface UseBranchesResult {
 
 export const useBranches = (
   filter?: BranchFilterInput,
-  pagination?: PaginationInput
+  pagination?: PaginationInput,
 ): UseBranchesResult => {
   const { data, loading, error, refetch, fetchMore } = useQuery(GET_BRANCHES, {
     variables: {

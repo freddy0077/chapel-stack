@@ -12,7 +12,7 @@ import {
   Bar,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from "recharts";
 
 interface MemberMonthlyTrend {
@@ -55,11 +55,28 @@ interface BranchAnalyticsTrendsProps {
   sacramentTrends: SacramentMonthlyTrend[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+];
 
 const monthNames = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export function BranchAnalyticsTrends({
@@ -70,13 +87,13 @@ export function BranchAnalyticsTrends({
   sacramentTrends,
 }: BranchAnalyticsTrendsProps) {
   // Format data for charts
-  const formattedMemberTrends = memberTrends.map(trend => ({
+  const formattedMemberTrends = memberTrends.map((trend) => ({
     ...trend,
     monthName: monthNames[trend.month - 1],
     label: `${monthNames[trend.month - 1]} ${trend.year}`,
   }));
 
-  const formattedFinanceTrends = financeTrends.map(trend => ({
+  const formattedFinanceTrends = financeTrends.map((trend) => ({
     ...trend,
     monthName: monthNames[trend.month - 1],
     label: `${monthNames[trend.month - 1]} ${trend.year}`,
@@ -85,13 +102,13 @@ export function BranchAnalyticsTrends({
     netIncomeK: Math.round(trend.netIncome / 1000),
   }));
 
-  const formattedAttendanceTrends = attendanceTrends.map(trend => ({
+  const formattedAttendanceTrends = attendanceTrends.map((trend) => ({
     ...trend,
     monthName: monthNames[trend.month - 1],
     label: `${monthNames[trend.month - 1]} ${trend.year}`,
   }));
 
-  const formattedSacramentTrends = sacramentTrends.map(trend => ({
+  const formattedSacramentTrends = sacramentTrends.map((trend) => ({
     ...trend,
     monthName: monthNames[trend.month - 1],
   }));
@@ -107,36 +124,32 @@ export function BranchAnalyticsTrends({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={formattedMemberTrends}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="monthName" 
-                stroke="#666"
-                fontSize={12}
-              />
+              <XAxis dataKey="monthName" stroke="#666" fontSize={12} />
               <YAxis stroke="#666" fontSize={12} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  backgroundColor: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="totalMembers" 
-                stroke="#3B82F6" 
+              <Line
+                type="monotone"
+                dataKey="totalMembers"
+                stroke="#3B82F6"
                 strokeWidth={3}
                 name="Total Members"
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="newMembers" 
-                stroke="#10B981" 
+              <Line
+                type="monotone"
+                dataKey="newMembers"
+                stroke="#10B981"
                 strokeWidth={2}
                 name="New Members"
-                dot={{ fill: '#10B981', strokeWidth: 2, r: 3 }}
+                dot={{ fill: "#10B981", strokeWidth: 2, r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -152,37 +165,33 @@ export function BranchAnalyticsTrends({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={formattedFinanceTrends}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="monthName" 
-                stroke="#666"
-                fontSize={12}
-              />
+              <XAxis dataKey="monthName" stroke="#666" fontSize={12} />
               <YAxis stroke="#666" fontSize={12} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  backgroundColor: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 }}
                 formatter={(value, name) => [`${value}k`, name]}
               />
               <Legend />
-              <Bar 
-                dataKey="contributionsK" 
-                fill="#10B981" 
+              <Bar
+                dataKey="contributionsK"
+                fill="#10B981"
                 name="Contributions"
                 radius={[2, 2, 0, 0]}
               />
-              <Bar 
-                dataKey="expensesK" 
-                fill="#EF4444" 
+              <Bar
+                dataKey="expensesK"
+                fill="#EF4444"
                 name="Expenses"
                 radius={[2, 2, 0, 0]}
               />
-              <Bar 
-                dataKey="netIncomeK" 
-                fill="#3B82F6" 
+              <Bar
+                dataKey="netIncomeK"
+                fill="#3B82F6"
                 name="Net Income"
                 radius={[2, 2, 0, 0]}
               />
@@ -200,36 +209,32 @@ export function BranchAnalyticsTrends({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={formattedAttendanceTrends}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="monthName" 
-                stroke="#666"
-                fontSize={12}
-              />
+              <XAxis dataKey="monthName" stroke="#666" fontSize={12} />
               <YAxis stroke="#666" fontSize={12} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  backgroundColor: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="totalAttendance" 
-                stroke="#8B5CF6" 
+              <Line
+                type="monotone"
+                dataKey="totalAttendance"
+                stroke="#8B5CF6"
                 strokeWidth={3}
                 name="Total Attendance"
-                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                dot={{ fill: "#8B5CF6", strokeWidth: 2, r: 4 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="uniqueAttendees" 
-                stroke="#F59E0B" 
+              <Line
+                type="monotone"
+                dataKey="uniqueAttendees"
+                stroke="#F59E0B"
                 strokeWidth={2}
                 name="Unique Attendees"
-                dot={{ fill: '#F59E0B', strokeWidth: 2, r: 3 }}
+                dot={{ fill: "#F59E0B", strokeWidth: 2, r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -251,7 +256,7 @@ export function BranchAnalyticsTrends({
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ type, count, percent }) => 
+                  label={({ type, count, percent }) =>
                     `${type}: ${count} (${(percent * 100).toFixed(0)}%)`
                   }
                   outerRadius={80}
@@ -259,7 +264,10 @@ export function BranchAnalyticsTrends({
                   dataKey="count"
                 >
                   {sacramentBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -277,23 +285,19 @@ export function BranchAnalyticsTrends({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={formattedSacramentTrends}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="monthName" 
-                  stroke="#666"
-                  fontSize={12}
-                />
+                <XAxis dataKey="monthName" stroke="#666" fontSize={12} />
                 <YAxis stroke="#666" fontSize={12} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  fill="#EC4899" 
+                <Bar
+                  dataKey="count"
+                  fill="#EC4899"
                   name="Sacraments"
                   radius={[4, 4, 0, 0]}
                 />

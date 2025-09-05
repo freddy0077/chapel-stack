@@ -1,8 +1,12 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Pastoral Visit Queries and Mutations
 export const GET_PASTORAL_VISITS = gql`
-  query GetPastoralVisits($filter: PastoralVisitFilterInput!, $skip: Int, $take: Int) {
+  query GetPastoralVisits(
+    $filter: PastoralVisitFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     pastoralVisits(filter: $filter, skip: $skip, take: $take) {
       id
       memberId
@@ -105,7 +109,11 @@ export const DELETE_PASTORAL_VISIT = gql`
 
 // Counseling Session Queries and Mutations
 export const GET_COUNSELING_SESSIONS = gql`
-  query GetCounselingSessions($filter: CounselingSessionFilterInput!, $skip: Int, $take: Int) {
+  query GetCounselingSessions(
+    $filter: CounselingSessionFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     counselingSessions(filter: $filter, skip: $skip, take: $take) {
       id
       memberId
@@ -212,7 +220,11 @@ export const DELETE_COUNSELING_SESSION = gql`
 
 // Care Request Queries and Mutations
 export const GET_CARE_REQUESTS = gql`
-  query GetCareRequests($filter: CareRequestFilterInput!, $skip: Int, $take: Int) {
+  query GetCareRequests(
+    $filter: CareRequestFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     careRequests(filter: $filter, skip: $skip, take: $take) {
       id
       memberId
@@ -371,7 +383,11 @@ export const DELETE_CARE_REQUEST = gql`
 
 // Follow-up Reminder Queries and Mutations
 export const GET_FOLLOW_UP_REMINDERS = gql`
-  query GetFollowUpReminders($filter: FollowUpReminderFilterInput!, $skip: Int, $take: Int) {
+  query GetFollowUpReminders(
+    $filter: FollowUpReminderFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     followUpReminders(filter: $filter, skip: $skip, take: $take) {
       id
       memberId

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  MagnifyingGlassIcon, 
-  PencilIcon, 
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
   DocumentArrowDownIcon,
-  DocumentIcon
+  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
     sponsor: "Sarah Johnson",
     confirmationName: "Catherine",
     certificateUrl: "/certificates/confirmation-001.pdf",
-    notes: "Part of diocesan confirmation"
+    notes: "Part of diocesan confirmation",
   },
   {
     id: "conf-002",
@@ -46,7 +46,7 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
     sponsor: "Michael Brown",
     confirmationName: "Francis",
     certificateUrl: "/certificates/confirmation-002.pdf",
-    notes: "Part of diocesan confirmation"
+    notes: "Part of diocesan confirmation",
   },
   {
     id: "conf-003",
@@ -58,7 +58,7 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
     sponsor: "Jennifer Davis",
     confirmationName: "Elizabeth",
     certificateUrl: "/certificates/confirmation-003.pdf",
-    notes: "Private ceremony"
+    notes: "Private ceremony",
   },
   {
     id: "conf-004",
@@ -70,7 +70,7 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
     sponsor: "James Wilson",
     confirmationName: "Michael",
     certificateUrl: null,
-    notes: "Certificate pending"
+    notes: "Certificate pending",
   },
   {
     id: "conf-005",
@@ -82,8 +82,8 @@ const mockConfirmationRecords: ConfirmationRecord[] = [
     sponsor: "Mary Taylor",
     confirmationName: "Teresa",
     certificateUrl: "/certificates/confirmation-005.pdf",
-    notes: "Special needs accommodations provided"
-  }
+    notes: "Special needs accommodations provided",
+  },
 ];
 
 export function ConfirmationRecords() {
@@ -91,7 +91,7 @@ export function ConfirmationRecords() {
   const records = mockConfirmationRecords;
 
   // Filter records based on search query
-  const filteredRecords = records.filter(record => {
+  const filteredRecords = records.filter((record) => {
     const searchTerms = searchQuery.toLowerCase();
     return (
       record.memberName.toLowerCase().includes(searchTerms) ||
@@ -104,20 +104,25 @@ export function ConfirmationRecords() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-lg font-medium text-gray-900">Confirmation Records</h2>
+        <h2 className="text-lg font-medium text-gray-900">
+          Confirmation Records
+        </h2>
         <div className="relative max-w-md w-full">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -135,28 +140,52 @@ export function ConfirmationRecords() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Member
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Date
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Location
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Officiant
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Sponsor
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Confirmation Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Certificate
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -164,15 +193,22 @@ export function ConfirmationRecords() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No confirmation records found. Try a different search term or add a new record.
+                <td
+                  colSpan={8}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  No confirmation records found. Try a different search term or
+                  add a new record.
                 </td>
               </tr>
             ) : (
               filteredRecords.map((record) => (
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Link href={`/dashboard/members/${record.memberId}`} className="hover:text-indigo-600">
+                    <Link
+                      href={`/dashboard/members/${record.memberId}`}
+                      className="hover:text-indigo-600"
+                    >
                       {record.memberName}
                     </Link>
                   </td>
@@ -215,7 +251,9 @@ export function ConfirmationRecords() {
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       <PencilIcon className="h-5 w-5" aria-hidden="true" />
-                      <span className="sr-only">Edit {record.memberName}&apos;s confirmation record</span>
+                      <span className="sr-only">
+                        Edit {record.memberName}&apos;s confirmation record
+                      </span>
                     </Link>
                   </td>
                 </tr>

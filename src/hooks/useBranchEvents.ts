@@ -1,4 +1,4 @@
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql } from "@apollo/client";
 
 const GET_BRANCH_EVENTS = gql`
   query GetBranchEvents($branchId: String!, $organisationId: String) {
@@ -15,24 +15,24 @@ const GET_BRANCH_EVENTS = gql`
 export function useBranchEvents(branchId?: string, organisationId?: string) {
   // Add validation to ensure we have at least one parameter
   const hasValidParams = branchId || organisationId;
-  
+
   // Debug parameters
-  
+
   const { data, loading, error, refetch } = useQuery(GET_BRANCH_EVENTS, {
     variables: {
-      branchId: branchId || '', // Ensure we always send a string
+      branchId: branchId || "", // Ensure we always send a string
       organisationId: organisationId || undefined,
     },
     skip: !hasValidParams,
-    fetchPolicy: 'network-only', // Force network fetch to ensure fresh data
+    fetchPolicy: "network-only", // Force network fetch to ensure fresh data
   });
-  
+
   // Removed console.log for performance
 
   return {
     events: data?.events || [],
     loading,
     error,
-    refetch
+    refetch,
   };
 }

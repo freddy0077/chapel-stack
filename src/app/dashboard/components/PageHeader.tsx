@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 
 interface PageHeaderProps {
   title: string;
@@ -9,7 +9,12 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export default function PageHeader({ title, description, icon, actions }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  description,
+  icon,
+  actions,
+}: PageHeaderProps) {
   return (
     <div className="bg-white shadow">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
@@ -27,11 +32,7 @@ export default function PageHeader({ title, description, icon, actions }: PageHe
               )}
             </div>
           </div>
-          {actions && (
-            <div className="flex-shrink-0 flex ml-4">
-              {actions}
-            </div>
-          )}
+          {actions && <div className="flex-shrink-0 flex ml-4">{actions}</div>}
         </div>
       </div>
     </div>

@@ -3,18 +3,23 @@
  * Handles automatic token refresh with Apollo Client integration
  */
 
-import { ApolloClient, NormalizedCacheObject, from, ApolloLink } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-import { onError } from '@apollo/client/link/error';
-import { 
-  AuthTokens, 
-  RefreshResult, 
+import {
+  ApolloClient,
+  NormalizedCacheObject,
+  from,
+  ApolloLink,
+} from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
+import {
+  AuthTokens,
+  RefreshResult,
   AuthError,
-  STORAGE_KEYS 
-} from '@/types/auth-enhanced.types';
-import { AuthUtils } from './auth-reducer';
-import { authStorage } from './auth-storage';
-import { AuthApiService } from './auth-api';
+  STORAGE_KEYS,
+} from "@/types/auth-enhanced.types";
+import { AuthUtils } from "./auth-reducer";
+import { authStorage } from "./auth-storage";
+import { AuthApiService } from "./auth-api";
 
 /**
  * Token Refresh Manager
@@ -45,7 +50,10 @@ export class TokenRefreshManager {
   /**
    * Check if token needs refresh
    */
-  needsRefresh(tokens: AuthTokens | null, thresholdMinutes: number = 5): boolean {
+  needsRefresh(
+    tokens: AuthTokens | null,
+    thresholdMinutes: number = 5,
+  ): boolean {
     if (!tokens) return false;
     return AuthUtils.isTokenExpired(tokens.expiresAt, thresholdMinutes);
   }
@@ -62,10 +70,10 @@ export class TokenRefreshManager {
     // Check refresh attempt limits
     if (this.refreshAttempts >= this.maxRefreshAttempts) {
       const error = AuthUtils.createAuthError(
-        'MAX_REFRESH_ATTEMPTS',
-        'Maximum token refresh attempts exceeded. Please log in again.',
+        "MAX_REFRESH_ATTEMPTS",
+        "Maximum token refresh attempts exceeded. Please log in again.",
         null,
-        false
+        false,
       );
       return { success: false, error };
     }
@@ -75,7 +83,7 @@ export class TokenRefreshManager {
 
     try {
       const result = await this.refreshPromise;
-      
+
       if (result.success) {
         this.refreshAttempts = 0; // Reset on success
       } else {
@@ -97,10 +105,10 @@ export class TokenRefreshManager {
       return {
         success: false,
         error: AuthUtils.createAuthError(
-          'API_NOT_INITIALIZED',
-          'Auth API service not initialized',
+          "API_NOT_INITIALIZED",
+          "Auth API service not initialized",
           null,
-          false
+          false,
         ),
       };
     }
@@ -117,14 +125,14 @@ export class TokenRefreshManager {
 
       return result;
     } catch (error) {
-      console.error('❌ Token refresh error:', error);
+      console.error("❌ Token refresh error:", error);
       return {
         success: false,
         error: AuthUtils.createAuthError(
-          'REFRESH_ERROR',
-          'Failed to refresh token',
+          "REFRESH_ERROR",
+          "Failed to refresh token",
           error,
-          true
+          true,
         ),
       };
     }
@@ -167,7 +175,7 @@ export function createAuthLink(): ApolloLink {
     const tokens = authStorage.getTokens();
     if (tokens && tokenRefreshManager.needsRefresh(tokens)) {
       const refreshResult = await tokenRefreshManager.refreshToken();
-      
+
       if (refreshResult.success && refreshResult.tokens) {
         token = refreshResult.tokens.accessToken;
       } else {
@@ -178,89 +186,92 @@ export function createAuthLink(): ApolloLink {
     return {
       headers: {
         ...headers,
-        authorization: token ? `Bearer ${token}` : '',
+        authorization: token ? `Bearer ${token}` : "",
       },
     };
   });
 
   // Error link to handle authentication errors
-  const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
-    // Handle GraphQL errors
-    if (graphQLErrors) {
-      for (const error of graphQLErrors) {
-        const { extensions } = error;
-        
-        // Handle token expiration
-        if (extensions?.code === 'UNAUTHENTICATED' || extensions?.code === 'TOKEN_EXPIRED') {
-          
-          return new Promise((resolve, reject) => {
-            tokenRefreshManager.refreshToken()
-              .then((refreshResult) => {
-                if (refreshResult.success && refreshResult.tokens) {
-                  
-                  // Update the authorization header
-                  operation.setContext({
-                    headers: {
-                      ...operation.getContext().headers,
-                      authorization: `Bearer ${refreshResult.tokens.accessToken}`,
-                    },
-                  });
-                  
-                  // Retry the request
-                  resolve(forward(operation));
-                } else {
-                  
+  const errorLink = onError(
+    ({ graphQLErrors, networkError, operation, forward }) => {
+      // Handle GraphQL errors
+      if (graphQLErrors) {
+        for (const error of graphQLErrors) {
+          const { extensions } = error;
+
+          // Handle token expiration
+          if (
+            extensions?.code === "UNAUTHENTICATED" ||
+            extensions?.code === "TOKEN_EXPIRED"
+          ) {
+            return new Promise((resolve, reject) => {
+              tokenRefreshManager
+                .refreshToken()
+                .then((refreshResult) => {
+                  if (refreshResult.success && refreshResult.tokens) {
+                    // Update the authorization header
+                    operation.setContext({
+                      headers: {
+                        ...operation.getContext().headers,
+                        authorization: `Bearer ${refreshResult.tokens.accessToken}`,
+                      },
+                    });
+
+                    // Retry the request
+                    resolve(forward(operation));
+                  } else {
+                    // Clear auth data and redirect to login
+                    authStorage.clear();
+
+                    // Redirect to login page
+                    if (typeof window !== "undefined") {
+                      window.location.href = "/auth/login";
+                    }
+
+                    reject(error);
+                  }
+                })
+                .catch((refreshError) => {
+                  console.error("❌ Token refresh error:", refreshError);
+
                   // Clear auth data and redirect to login
                   authStorage.clear();
-                  
-                  // Redirect to login page
-                  if (typeof window !== 'undefined') {
-                    window.location.href = '/auth/login';
-                  }
-                  
-                  reject(error);
-                }
-              })
-              .catch((refreshError) => {
-                console.error('❌ Token refresh error:', refreshError);
-                
-                // Clear auth data and redirect to login
-                authStorage.clear();
-                
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/auth/login';
-                }
-                
-                reject(refreshError);
-              });
-          });
-        }
-        
-        // Handle other authentication errors
-        if (extensions?.code === 'FORBIDDEN') {
-          // Handle forbidden access (maybe redirect to unauthorized page)
-        }
-      }
-    }
 
-    // Handle network errors
-    if (networkError) {
-      console.error('🌐 Network error:', networkError);
-      
-      // Handle specific network errors
-      if ('statusCode' in networkError) {
-        switch (networkError.statusCode) {
-          case 401:
-            // Similar to GraphQL error handling above
-            break;
-          case 403:
-            break;
-          case 500:
-            break;
+                  if (typeof window !== "undefined") {
+                    window.location.href = "/auth/login";
+                  }
+
+                  reject(refreshError);
+                });
+            });
+          }
+
+          // Handle other authentication errors
+          if (extensions?.code === "FORBIDDEN") {
+            // Handle forbidden access (maybe redirect to unauthorized page)
+          }
         }
       }
-    }
-  });
+
+      // Handle network errors
+      if (networkError) {
+        console.error("🌐 Network error:", networkError);
+
+        // Handle specific network errors
+        if ("statusCode" in networkError) {
+          switch (networkError.statusCode) {
+            case 401:
+              // Similar to GraphQL error handling above
+              break;
+            case 403:
+              break;
+            case 500:
+              break;
+          }
+        }
+      }
+    },
+  );
 
   return from([errorLink, authLink]);
 }
@@ -272,7 +283,7 @@ export function createTokenMiddleware(): ApolloLink {
   return new ApolloLink((operation, forward) => {
     // Get current token
     const tokens = authStorage.getTokens();
-    
+
     if (tokens?.accessToken) {
       // Add token to operation context
       operation.setContext({
@@ -289,16 +300,21 @@ export function createTokenMiddleware(): ApolloLink {
 /**
  * Setup automatic token refresh interval
  */
-export function setupTokenRefreshInterval(intervalMinutes: number = 1): () => void {
+export function setupTokenRefreshInterval(
+  intervalMinutes: number = 1,
+): () => void {
   const tokenRefreshManager = TokenRefreshManager.getInstance();
-  
-  const interval = setInterval(async () => {
-    const tokens = authStorage.getTokens();
-    
-    if (tokens && tokenRefreshManager.needsRefresh(tokens, 5)) {
-      await tokenRefreshManager.refreshToken();
-    }
-  }, intervalMinutes * 60 * 1000);
+
+  const interval = setInterval(
+    async () => {
+      const tokens = authStorage.getTokens();
+
+      if (tokens && tokenRefreshManager.needsRefresh(tokens, 5)) {
+        await tokenRefreshManager.refreshToken();
+      }
+    },
+    intervalMinutes * 60 * 1000,
+  );
 
   // Return cleanup function
   return () => {
@@ -316,7 +332,7 @@ export const TokenRefreshUtils = {
   isTokenValid(): boolean {
     const tokens = authStorage.getTokens();
     if (!tokens) return false;
-    
+
     return !AuthUtils.isTokenExpired(tokens.expiresAt, 0);
   },
 
@@ -326,10 +342,10 @@ export const TokenRefreshUtils = {
   getTokenExpiryMinutes(): number | null {
     const tokens = authStorage.getTokens();
     if (!tokens) return null;
-    
+
     const now = Date.now();
     const expiryMinutes = (tokens.expiresAt - now) / (1000 * 60);
-    
+
     return Math.max(0, Math.floor(expiryMinutes));
   },
 
@@ -339,7 +355,7 @@ export const TokenRefreshUtils = {
   isRefreshTokenValid(): boolean {
     const tokens = authStorage.getTokens();
     if (!tokens?.refreshToken || !tokens.refreshExpiresAt) return false;
-    
+
     return !AuthUtils.isRefreshTokenExpired(tokens.refreshExpiresAt);
   },
 
@@ -349,10 +365,10 @@ export const TokenRefreshUtils = {
   getRefreshTokenExpiryHours(): number | null {
     const tokens = authStorage.getTokens();
     if (!tokens?.refreshExpiresAt) return null;
-    
+
     const now = Date.now();
     const expiryHours = (tokens.refreshExpiresAt - now) / (1000 * 60 * 60);
-    
+
     return Math.max(0, Math.floor(expiryHours));
   },
 

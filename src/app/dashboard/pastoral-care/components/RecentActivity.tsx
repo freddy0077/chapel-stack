@@ -1,15 +1,15 @@
 "use client";
 
-import React from 'react';
-import { 
-  HomeIcon, 
-  ChatBubbleLeftRightIcon, 
-  ExclamationTriangleIcon, 
+import React from "react";
+import {
+  HomeIcon,
+  ChatBubbleLeftRightIcon,
+  ExclamationTriangleIcon,
   BellIcon,
   ClockIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
-import { PastoralCareActivity } from '@/graphql/hooks/usePastoralCare';
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { PastoralCareActivity } from "@/graphql/hooks/usePastoralCare";
 
 interface RecentActivityProps {
   activity?: PastoralCareActivity[];
@@ -18,17 +18,17 @@ interface RecentActivityProps {
 
 function getActivityIcon(type: string) {
   switch (type.toLowerCase()) {
-    case 'pastoral_visit':
-    case 'visit':
+    case "pastoral_visit":
+    case "visit":
       return <HomeIcon className="h-5 w-5 text-blue-600" />;
-    case 'counseling_session':
-    case 'counseling':
+    case "counseling_session":
+    case "counseling":
       return <ChatBubbleLeftRightIcon className="h-5 w-5 text-green-600" />;
-    case 'care_request':
-    case 'request':
+    case "care_request":
+    case "request":
       return <ExclamationTriangleIcon className="h-5 w-5 text-orange-600" />;
-    case 'follow_up':
-    case 'reminder':
+    case "follow_up":
+    case "reminder":
       return <BellIcon className="h-5 w-5 text-purple-600" />;
     default:
       return <ClockIcon className="h-5 w-5 text-gray-600" />;
@@ -37,37 +37,41 @@ function getActivityIcon(type: string) {
 
 function getActivityColor(type: string) {
   switch (type.toLowerCase()) {
-    case 'pastoral_visit':
-    case 'visit':
-      return 'border-blue-200 bg-blue-50';
-    case 'counseling_session':
-    case 'counseling':
-      return 'border-green-200 bg-green-50';
-    case 'care_request':
-    case 'request':
-      return 'border-orange-200 bg-orange-50';
-    case 'follow_up':
-    case 'reminder':
-      return 'border-purple-200 bg-purple-50';
+    case "pastoral_visit":
+    case "visit":
+      return "border-blue-200 bg-blue-50";
+    case "counseling_session":
+    case "counseling":
+      return "border-green-200 bg-green-50";
+    case "care_request":
+    case "request":
+      return "border-orange-200 bg-orange-50";
+    case "follow_up":
+    case "reminder":
+      return "border-purple-200 bg-purple-50";
     default:
-      return 'border-gray-200 bg-gray-50';
+      return "border-gray-200 bg-gray-50";
   }
 }
 
 function formatRelativeTime(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-  
+  const diffInHours = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+  );
+
   if (diffInHours < 1) {
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes} minutes ago`;
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60),
+    );
+    return diffInMinutes <= 1 ? "Just now" : `${diffInMinutes} minutes ago`;
   } else if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
   } else {
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
     } else {
       return date.toLocaleDateString();
     }
@@ -137,11 +141,16 @@ function ActivitySkeleton() {
   );
 }
 
-export default function RecentActivity({ activity, loading }: RecentActivityProps) {
+export default function RecentActivity({
+  activity,
+  loading,
+}: RecentActivityProps) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Recent Activity
+        </h3>
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
             <ActivitySkeleton key={i} />
@@ -154,12 +163,15 @@ export default function RecentActivity({ activity, loading }: RecentActivityProp
   if (!activity || activity.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Recent Activity
+        </h3>
         <div className="text-center py-8">
           <ClockIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">No recent pastoral care activity</p>
           <p className="text-sm text-gray-400 mt-1">
-            Activity will appear here as visits, sessions, and care requests are created
+            Activity will appear here as visits, sessions, and care requests are
+            created
           </p>
         </div>
       </div>
@@ -170,17 +182,15 @@ export default function RecentActivity({ activity, loading }: RecentActivityProp
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-        <span className="text-sm text-gray-500">
-          Last 7 days
-        </span>
+        <span className="text-sm text-gray-500">Last 7 days</span>
       </div>
-      
+
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {activity.map((item) => (
           <ActivityItem key={item.id} activity={item} />
         ))}
       </div>
-      
+
       {activity.length >= 10 && (
         <div className="mt-4 text-center">
           <button className="text-sm text-indigo-600 hover:text-indigo-500 font-medium">

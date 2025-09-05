@@ -1,17 +1,17 @@
-import { useQuery, useMutation } from '@apollo/client';
-import { 
-  GET_DASHBOARD_DATA, 
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_DASHBOARD_DATA,
   GET_USER_DASHBOARD_PREFERENCE,
-  SAVE_USER_DASHBOARD_PREFERENCE
-} from '@/graphql/queries/dashboardQueries';
+  SAVE_USER_DASHBOARD_PREFERENCE,
+} from "@/graphql/queries/dashboardQueries";
 
 // Define dashboard types enum to match backend
 export enum DashboardType {
-  ADMIN = 'ADMIN',
-  FINANCE = 'FINANCE',
-  MEMBER = 'MEMBER',
-  MINISTRY = 'MINISTRY',
-  PASTORAL = 'PASTORAL'
+  ADMIN = "ADMIN",
+  FINANCE = "FINANCE",
+  MEMBER = "MEMBER",
+  MINISTRY = "MINISTRY",
+  PASTORAL = "PASTORAL",
 }
 
 // Define type for KPI Card
@@ -23,7 +23,7 @@ export interface KpiCard {
   // Optional fields that might be used in the frontend but aren't in the backend schema
   id?: string;
   change?: number;
-  changeType?: 'increase' | 'decrease' | 'neutral';
+  changeType?: "increase" | "decrease" | "neutral";
   description?: string;
   color?: string;
   trend?: Array<number>;
@@ -74,7 +74,7 @@ export interface TaskItem {
   assignedTo?: string;
   category?: string;
   completed?: boolean; // Used in frontend UI
-  assignee?: string;  // Alternative name for assignedTo
+  assignee?: string; // Alternative name for assignedTo
 }
 
 export interface EventItem {
@@ -176,13 +176,19 @@ export interface UserDashboardPreference {
 }
 
 // Dashboard data hook
-export const useDashboardData = (branchId: string, dashboardType: DashboardType, skip?: boolean) => {
-  const { loading, error, data, refetch } = useQuery<{ dashboardData: DashboardData }>(GET_DASHBOARD_DATA, {
-    variables: { 
-      branchId, 
-      dashboardType 
+export const useDashboardData = (
+  branchId: string,
+  dashboardType: DashboardType,
+  skip?: boolean,
+) => {
+  const { loading, error, data, refetch } = useQuery<{
+    dashboardData: DashboardData;
+  }>(GET_DASHBOARD_DATA, {
+    variables: {
+      branchId,
+      dashboardType,
     },
-    fetchPolicy: 'network-only', // Don't cache dashboard data
+    fetchPolicy: "network-only", // Don't cache dashboard data
     notifyOnNetworkStatusChange: true,
     skip,
   });
@@ -196,22 +202,29 @@ export const useDashboardData = (branchId: string, dashboardType: DashboardType,
 };
 
 // User dashboard preference hook
-export const useUserDashboardPreference = (branchId: string, dashboardType: DashboardType) => {
-  const { loading, error, data, refetch } = useQuery(GET_USER_DASHBOARD_PREFERENCE, {
-    variables: { 
-      branchId, 
-      dashboardType 
+export const useUserDashboardPreference = (
+  branchId: string,
+  dashboardType: DashboardType,
+) => {
+  const { loading, error, data, refetch } = useQuery(
+    GET_USER_DASHBOARD_PREFERENCE,
+    {
+      variables: {
+        branchId,
+        dashboardType,
+      },
+      fetchPolicy: "cache-and-network", // We can cache preferences but still check network
     },
-    fetchPolicy: 'cache-and-network', // We can cache preferences but still check network
-  });
-
-  // Save dashboard preference mutation
-  const [savePreference, { loading: saveLoading, error: saveError }] = useMutation(
-    SAVE_USER_DASHBOARD_PREFERENCE
   );
 
+  // Save dashboard preference mutation
+  const [savePreference, { loading: saveLoading, error: saveError }] =
+    useMutation(SAVE_USER_DASHBOARD_PREFERENCE);
+
   // Function to update user preference
-  const updateDashboardPreference = async (layoutConfig: Record<string, unknown>) => {
+  const updateDashboardPreference = async (
+    layoutConfig: Record<string, unknown>,
+  ) => {
     try {
       const response = await savePreference({
         variables: {
@@ -222,7 +235,7 @@ export const useUserDashboardPreference = (branchId: string, dashboardType: Dash
       });
       return response.data?.saveUserDashboardPreference;
     } catch (err) {
-      console.error('Error saving dashboard preference:', err);
+      console.error("Error saving dashboard preference:", err);
       throw err;
     }
   };
@@ -230,7 +243,9 @@ export const useUserDashboardPreference = (branchId: string, dashboardType: Dash
   return {
     loading,
     error,
-    preference: data?.userDashboardPreference as UserDashboardPreference | undefined,
+    preference: data?.userDashboardPreference as
+      | UserDashboardPreference
+      | undefined,
     updateDashboardPreference,
     saveLoading,
     saveError,

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { 
-  XMarkIcon, 
+import React, { useState, useEffect } from "react";
+import {
+  XMarkIcon,
   CalendarIcon,
   MapPinIcon,
   UserGroupIcon,
@@ -16,19 +16,23 @@ import {
   EyeIcon,
   EyeSlashIcon,
   CheckCircleIcon,
-  DocumentTextIcon
-} from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useEventMutations } from '@/graphql/hooks/useEvents';
-import { EventType, EventStatus, CreateEventInput } from '@/graphql/types/event';
-import EventTypeIcon from './EventTypeIcon';
-import { format } from 'date-fns';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useEventMutations } from "@/graphql/hooks/useEvents";
+import {
+  EventType,
+  EventStatus,
+  CreateEventInput,
+} from "@/graphql/types/event";
+import EventTypeIcon from "./EventTypeIcon";
+import { format } from "date-fns";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 
 // Extended interface to include recurring fields
 interface ExtendedCreateEventInput extends CreateEventInput {
   isRecurring?: boolean;
-  recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  recurrenceType?: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
   recurrenceInterval?: number;
   recurrenceEndDate?: string;
   recurrenceDaysOfWeek?: string[];
@@ -40,75 +44,91 @@ interface CreateEventModalProps {
   onSuccess?: () => void;
 }
 
-const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSuccess }) => {
+const CreateEventModal: React.FC<CreateEventModalProps> = ({
+  open,
+  onClose,
+  onSuccess,
+}) => {
   const { state } = useAuth();
   const user = state.user;
   const { createEvent, createRecurringEvent, loading } = useEventMutations();
   const { branchId, organisationId } = useOrganisationBranch();
 
   const [formData, setFormData] = useState<ExtendedCreateEventInput>({
-    title: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    location: '',
-    category: '',
+    title: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    category: "",
     eventType: EventType.WORSHIP_SERVICE,
     status: EventStatus.DRAFT,
     capacity: undefined,
     registrationRequired: false,
-    registrationDeadline: '',
+    registrationDeadline: "",
     isPublic: true,
     requiresApproval: false,
-    eventImageUrl: '',
+    eventImageUrl: "",
     tags: [],
-    organizerName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
-    organizerEmail: user?.email || '',
-    organizerPhone: '',
+    organizerName:
+      user?.firstName && user?.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : "",
+    organizerEmail: user?.email || "",
+    organizerPhone: "",
     isFree: true,
     ticketPrice: undefined,
-    currency: 'USD',
+    currency: "USD",
     isRecurring: false,
-    recurrenceType: 'WEEKLY',
+    recurrenceType: "WEEKLY",
     recurrenceInterval: 1,
-    recurrenceEndDate: '',
+    recurrenceEndDate: "",
     recurrenceDaysOfWeek: [],
     branchId,
     organisationId,
   });
 
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   // Reset form when modal opens
   useEffect(() => {
     if (open && user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        organizerName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
-        organizerEmail: user?.email || '',
+        organizerName:
+          user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "",
+        organizerEmail: user?.email || "",
       }));
     }
   }, [open, user]);
 
   if (!open) return null;
 
-  const handleInputChange = (field: keyof ExtendedCreateEventInput, value: any) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof ExtendedCreateEventInput,
+    value: any,
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
-      handleInputChange('tags', [...(formData.tags || []), tagInput.trim()]);
-      setTagInput('');
+      handleInputChange("tags", [...(formData.tags || []), tagInput.trim()]);
+      setTagInput("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    handleInputChange('tags', formData.tags?.filter(tag => tag !== tagToRemove) || []);
+    handleInputChange(
+      "tags",
+      formData.tags?.filter((tag) => tag !== tagToRemove) || [],
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,12 +137,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
 
     // Validation
     if (!formData.title.trim()) {
-      setError('Event title is required');
+      setError("Event title is required");
       return;
     }
 
     if (!formData.startDate) {
-      setError('Start date is required');
+      setError("Start date is required");
       return;
     }
 
@@ -130,13 +150,16 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
       const deadline = new Date(formData.registrationDeadline);
       const startDate = new Date(formData.startDate);
       if (deadline >= startDate) {
-        setError('Registration deadline must be before the event start date');
+        setError("Registration deadline must be before the event start date");
         return;
       }
     }
 
-    if (!formData.isFree && (!formData.ticketPrice || formData.ticketPrice <= 0)) {
-      setError('Ticket price is required for paid events');
+    if (
+      !formData.isFree &&
+      (!formData.ticketPrice || formData.ticketPrice <= 0)
+    ) {
+      setError("Ticket price is required for paid events");
       return;
     }
 
@@ -164,40 +187,43 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
       }
       onSuccess?.();
       onClose();
-      
+
       // Reset form
       setFormData({
-        title: '',
-        description: '',
-        startDate: '',
-        endDate: '',
-        location: '',
-        category: '',
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        location: "",
+        category: "",
         eventType: EventType.WORSHIP_SERVICE,
         status: EventStatus.DRAFT,
         capacity: undefined,
         registrationRequired: false,
-        registrationDeadline: '',
+        registrationDeadline: "",
         isPublic: true,
         requiresApproval: false,
-        eventImageUrl: '',
+        eventImageUrl: "",
         tags: [],
-        organizerName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
-        organizerEmail: user?.email || '',
-        organizerPhone: '',
+        organizerName:
+          user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "",
+        organizerEmail: user?.email || "",
+        organizerPhone: "",
         isFree: true,
         ticketPrice: undefined,
-        currency: 'USD',
+        currency: "USD",
         isRecurring: false,
-        recurrenceType: 'WEEKLY',
+        recurrenceType: "WEEKLY",
         recurrenceInterval: 1,
-        recurrenceEndDate: '',
+        recurrenceEndDate: "",
         recurrenceDaysOfWeek: [],
         branchId,
         organisationId,
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to create event');
+      setError(err.message || "Failed to create event");
     }
   };
 
@@ -206,15 +232,24 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-indigo-50/30 rounded-2xl"></div>
-        
+
         <div className="relative p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <EventTypeIcon eventType={formData.eventType} size="lg" className="text-blue-600" />
+              <EventTypeIcon
+                eventType={formData.eventType}
+                size="lg"
+                className="text-blue-600"
+              />
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Create New Event</h2>
-                <p className="text-sm text-gray-600">Set up a comprehensive event with registration and RSVP capabilities</p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Create New Event
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Set up a comprehensive event with registration and RSVP
+                  capabilities
+                </p>
               </div>
             </div>
             <button
@@ -232,7 +267,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <CalendarIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Basic Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -241,7 +276,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    onChange={(e) => handleInputChange("title", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., Sunday Worship Service, Easter Celebration"
                     required
@@ -254,7 +289,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Describe what this event is about..."
@@ -267,12 +304,20 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   </label>
                   <select
                     value={formData.eventType}
-                    onChange={(e) => handleInputChange('eventType', e.target.value as EventType)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "eventType",
+                        e.target.value as EventType,
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {Object.values(EventType).map((type) => (
                       <option key={type} value={type}>
-                        {type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                        {type
+                          .replace(/_/g, " ")
+                          .toLowerCase()
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
                       </option>
                     ))}
                   </select>
@@ -284,12 +329,16 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value as EventStatus)}
+                    onChange={(e) =>
+                      handleInputChange("status", e.target.value as EventStatus)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {Object.values(EventStatus).map((status) => (
                       <option key={status} value={status}>
-                        {status.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                        {status
+                          .toLowerCase()
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
                       </option>
                     ))}
                   </select>
@@ -302,7 +351,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="text"
                     value={formData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("category", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., Worship, Fellowship, Education"
                   />
@@ -316,7 +367,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., Main Sanctuary, Fellowship Hall"
                   />
@@ -330,7 +383,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <ClockIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Date & Time
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -339,7 +392,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="datetime-local"
                     value={formData.startDate}
-                    onChange={(e) => handleInputChange('startDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("startDate", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -352,7 +407,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="datetime-local"
                     value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("endDate", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -365,17 +422,21 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <CalendarIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Recurrence
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.isRecurring}
-                      onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("isRecurring", e.target.checked)
+                      }
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium text-gray-700">Is Recurring</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Is Recurring
+                    </span>
                   </label>
                 </div>
 
@@ -387,7 +448,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       </label>
                       <select
                         value={formData.recurrenceType}
-                        onChange={(e) => handleInputChange('recurrenceType', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("recurrenceType", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="DAILY">Daily</option>
@@ -405,7 +468,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                         type="number"
                         min="1"
                         value={formData.recurrenceInterval}
-                        onChange={(e) => handleInputChange('recurrenceInterval', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "recurrenceInterval",
+                            parseInt(e.target.value),
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -417,7 +485,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       <input
                         type="date"
                         value={formData.recurrenceEndDate}
-                        onChange={(e) => handleInputChange('recurrenceEndDate', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("recurrenceEndDate", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -427,21 +497,41 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                         Recurrence Days of Week
                       </label>
                       <div className="flex flex-wrap gap-2 mb-2">
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                        {[
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday",
+                        ].map((day) => (
                           <label key={day} className="flex items-center">
                             <input
                               type="checkbox"
-                              checked={formData.recurrenceDaysOfWeek?.includes(day)}
+                              checked={formData.recurrenceDaysOfWeek?.includes(
+                                day,
+                              )}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  handleInputChange('recurrenceDaysOfWeek', [...(formData.recurrenceDaysOfWeek || []), day]);
+                                  handleInputChange("recurrenceDaysOfWeek", [
+                                    ...(formData.recurrenceDaysOfWeek || []),
+                                    day,
+                                  ]);
                                 } else {
-                                  handleInputChange('recurrenceDaysOfWeek', formData.recurrenceDaysOfWeek?.filter(d => d !== day) || []);
+                                  handleInputChange(
+                                    "recurrenceDaysOfWeek",
+                                    formData.recurrenceDaysOfWeek?.filter(
+                                      (d) => d !== day,
+                                    ) || [],
+                                  );
                                 }
                               }}
                               className="mr-2"
                             />
-                            <span className="text-sm font-medium text-gray-700">{day}</span>
+                            <span className="text-sm font-medium text-gray-700">
+                              {day}
+                            </span>
                           </label>
                         ))}
                       </div>
@@ -457,27 +547,38 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <UserGroupIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Registration Settings
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.registrationRequired}
-                      onChange={(e) => handleInputChange('registrationRequired', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "registrationRequired",
+                          e.target.checked,
+                        )
+                      }
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium text-gray-700">Require Registration</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Require Registration
+                    </span>
                   </label>
-                  
+
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.requiresApproval}
-                      onChange={(e) => handleInputChange('requiresApproval', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("requiresApproval", e.target.checked)
+                      }
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium text-gray-700">Require Approval</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Require Approval
+                    </span>
                   </label>
                 </div>
 
@@ -490,7 +591,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       <input
                         type="datetime-local"
                         value={formData.registrationDeadline}
-                        onChange={(e) => handleInputChange('registrationDeadline', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "registrationDeadline",
+                            e.target.value,
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -502,8 +608,15 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       <input
                         type="number"
                         min="1"
-                        value={formData.capacity || ''}
-                        onChange={(e) => handleInputChange('capacity', e.target.value ? parseInt(e.target.value) : undefined)}
+                        value={formData.capacity || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "capacity",
+                            e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Leave empty for unlimited"
                       />
@@ -519,7 +632,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <CurrencyDollarIcon className="h-5 w-5 mr-2 text-green-600" />
                 Pricing
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
@@ -528,23 +641,27 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       name="pricing"
                       checked={formData.isFree}
                       onChange={() => {
-                        handleInputChange('isFree', true);
-                        handleInputChange('ticketPrice', undefined);
+                        handleInputChange("isFree", true);
+                        handleInputChange("ticketPrice", undefined);
                       }}
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium text-gray-700">Free Event</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Free Event
+                    </span>
                   </label>
-                  
+
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="pricing"
                       checked={!formData.isFree}
-                      onChange={() => handleInputChange('isFree', false)}
+                      onChange={() => handleInputChange("isFree", false)}
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium text-gray-700">Paid Event</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Paid Event
+                    </span>
                   </label>
                 </div>
 
@@ -558,8 +675,15 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                         type="number"
                         min="0"
                         step="0.01"
-                        value={formData.ticketPrice || ''}
-                        onChange={(e) => handleInputChange('ticketPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        value={formData.ticketPrice || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "ticketPrice",
+                            e.target.value
+                              ? parseFloat(e.target.value)
+                              : undefined,
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required={!formData.isFree}
                       />
@@ -571,7 +695,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       </label>
                       <select
                         value={formData.currency}
-                        onChange={(e) => handleInputChange('currency', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("currency", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="USD">USD ($)</option>
@@ -591,7 +717,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <UserIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Organizer Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -600,7 +726,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="text"
                     value={formData.organizerName}
-                    onChange={(e) => handleInputChange('organizerName', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("organizerName", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -613,7 +741,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="email"
                     value={formData.organizerEmail}
-                    onChange={(e) => handleInputChange('organizerEmail', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("organizerEmail", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -626,7 +756,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="tel"
                     value={formData.organizerPhone}
-                    onChange={(e) => handleInputChange('organizerPhone', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("organizerPhone", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -639,14 +771,16 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                 <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
                 Additional Settings
               </h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.isPublic}
-                      onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("isPublic", e.target.checked)
+                      }
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700 flex items-center">
@@ -668,7 +802,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                   <input
                     type="url"
                     value={formData.eventImageUrl}
-                    onChange={(e) => handleInputChange('eventImageUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("eventImageUrl", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://example.com/event-image.jpg"
                   />
@@ -701,7 +837,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
                       type="text"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" &&
+                        (e.preventDefault(), handleAddTag())
+                      }
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Add a tag..."
                     />
@@ -740,9 +879,25 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClose, onSu
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Creating Event...
                   </>

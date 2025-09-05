@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const ALL_MESSAGES_QUERY = gql`
   query AllMessages($filter: AllMessagesFilterInput) {

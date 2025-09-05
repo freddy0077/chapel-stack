@@ -1,7 +1,6 @@
 """
 Children's Ministry schema - handles children's programs, check-in, and parent management
 """
-
 enum AgeGroup {
   INFANT
   TODDLER
@@ -243,10 +242,10 @@ extend type Query {
     classroomId: ID
     pagination: PaginationInput
   ): ChildProfileConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific child profile
   child(id: ID!): ChildProfile @auth(requires: [STAFF])
-  
+
   # Get child check-ins
   childCheckIns(
     childId: ID
@@ -255,10 +254,10 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): ChildCheckInConnection! @auth(requires: [STAFF])
-  
+
   # Get child check-in by ID
   childCheckIn(id: ID!): ChildCheckIn @auth(requires: [STAFF])
-  
+
   # Get classrooms
   classrooms(
     search: String
@@ -267,16 +266,16 @@ extend type Query {
     isActive: Boolean
     pagination: PaginationInput
   ): ClassroomConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific classroom
   classroom(id: ID!): Classroom @auth(requires: [STAFF])
-  
+
   # Get classroom leaders
   classroomLeaders(
     classroomId: ID!
     pagination: PaginationInput
   ): ClassroomLeaderConnection! @auth(requires: [STAFF])
-  
+
   # Get curricula
   curricula(
     search: String
@@ -285,26 +284,26 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): CurriculumConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific curriculum
   curriculum(id: ID!): Curriculum @auth(requires: [STAFF])
-  
+
   # Get curriculum units
   curriculumUnits(
     curriculumId: ID!
     pagination: PaginationInput
   ): CurriculumUnitConnection! @auth(requires: [STAFF])
-  
+
   # Get lessons
   lessons(
     unitId: ID
     classroomId: ID
     pagination: PaginationInput
   ): LessonConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific lesson
   lesson(id: ID!): Lesson @auth(requires: [STAFF])
-  
+
   # Get child events
   childEvents(
     search: String
@@ -313,29 +312,28 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): ChildEventConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific child event
   childEvent(id: ID!): ChildEvent @auth(requires: [STAFF])
-  
+
   # Get child event registrations
   childEventRegistrations(
     eventId: ID!
     attended: Boolean
     pagination: PaginationInput
   ): ChildEventRegistrationConnection! @auth(requires: [STAFF])
-  
+
   # Get children's ministry settings
-  childrenMinistrySettings(branchId: ID!): ChildrenMinistrySettings! @auth(requires: [STAFF])
-  
+  childrenMinistrySettings(branchId: ID!): ChildrenMinistrySettings!
+    @auth(requires: [STAFF])
+
   # Check if a child is checked in
   isChildCheckedIn(childId: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Validate security code for child pickup
-  validateSecurityCode(
-    childId: ID!
-    securityCode: String!
-  ): Boolean! @auth(requires: [STAFF])
-  
+  validateSecurityCode(childId: ID!, securityCode: String!): Boolean!
+    @auth(requires: [STAFF])
+
   # Get children's attendance report
   childrenAttendanceReport(
     dateRange: DateRangeInput!
@@ -466,104 +464,131 @@ type ChildAttendanceCount {
 
 extend type Mutation {
   # Create a child profile
-  createChildProfile(input: CreateChildProfileInput!): ChildProfile! @auth(requires: [STAFF])
-  
+  createChildProfile(input: CreateChildProfileInput!): ChildProfile!
+    @auth(requires: [STAFF])
+
   # Update a child profile
-  updateChildProfile(id: ID!, input: UpdateChildProfileInput!): ChildProfile! @auth(requires: [STAFF])
-  
+  updateChildProfile(id: ID!, input: UpdateChildProfileInput!): ChildProfile!
+    @auth(requires: [STAFF])
+
   # Delete a child profile
   deleteChildProfile(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add a guardian to a child
   addGuardian(input: AddGuardianInput!): Guardian! @auth(requires: [STAFF])
-  
+
   # Update a guardian
-  updateGuardian(id: ID!, input: UpdateGuardianInput!): Guardian! @auth(requires: [STAFF])
-  
+  updateGuardian(id: ID!, input: UpdateGuardianInput!): Guardian!
+    @auth(requires: [STAFF])
+
   # Remove a guardian
   removeGuardian(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add allergy to a child
   addAllergy(input: AddAllergyInput!): Allergy! @auth(requires: [STAFF])
-  
+
   # Update an allergy
-  updateAllergy(id: ID!, input: UpdateAllergyInput!): Allergy! @auth(requires: [STAFF])
-  
+  updateAllergy(id: ID!, input: UpdateAllergyInput!): Allergy!
+    @auth(requires: [STAFF])
+
   # Remove an allergy
   removeAllergy(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a classroom
-  createClassroom(input: CreateClassroomInput!): Classroom! @auth(requires: [STAFF])
-  
+  createClassroom(input: CreateClassroomInput!): Classroom!
+    @auth(requires: [STAFF])
+
   # Update a classroom
-  updateClassroom(id: ID!, input: UpdateClassroomInput!): Classroom! @auth(requires: [STAFF])
-  
+  updateClassroom(id: ID!, input: UpdateClassroomInput!): Classroom!
+    @auth(requires: [STAFF])
+
   # Delete a classroom
   deleteClassroom(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add a leader to a classroom
-  addClassroomLeader(input: AddClassroomLeaderInput!): ClassroomLeader! @auth(requires: [STAFF])
-  
+  addClassroomLeader(input: AddClassroomLeaderInput!): ClassroomLeader!
+    @auth(requires: [STAFF])
+
   # Update a classroom leader
-  updateClassroomLeader(id: ID!, input: UpdateClassroomLeaderInput!): ClassroomLeader! @auth(requires: [STAFF])
-  
+  updateClassroomLeader(
+    id: ID!
+    input: UpdateClassroomLeaderInput!
+  ): ClassroomLeader! @auth(requires: [STAFF])
+
   # Remove a classroom leader
   removeClassroomLeader(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Check in a child
-  checkInChild(input: CheckInChildInput!): ChildCheckIn! @auth(requires: [STAFF])
-  
+  checkInChild(input: CheckInChildInput!): ChildCheckIn!
+    @auth(requires: [STAFF])
+
   # Check out a child
-  checkOutChild(id: ID!, input: CheckOutChildInput!): ChildCheckIn! @auth(requires: [STAFF])
-  
+  checkOutChild(id: ID!, input: CheckOutChildInput!): ChildCheckIn!
+    @auth(requires: [STAFF])
+
   # Create a curriculum
-  createCurriculum(input: CreateCurriculumInput!): Curriculum! @auth(requires: [STAFF])
-  
+  createCurriculum(input: CreateCurriculumInput!): Curriculum!
+    @auth(requires: [STAFF])
+
   # Update a curriculum
-  updateCurriculum(id: ID!, input: UpdateCurriculumInput!): Curriculum! @auth(requires: [STAFF])
-  
+  updateCurriculum(id: ID!, input: UpdateCurriculumInput!): Curriculum!
+    @auth(requires: [STAFF])
+
   # Delete a curriculum
   deleteCurriculum(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a curriculum unit
-  createCurriculumUnit(input: CreateCurriculumUnitInput!): CurriculumUnit! @auth(requires: [STAFF])
-  
+  createCurriculumUnit(input: CreateCurriculumUnitInput!): CurriculumUnit!
+    @auth(requires: [STAFF])
+
   # Update a curriculum unit
-  updateCurriculumUnit(id: ID!, input: UpdateCurriculumUnitInput!): CurriculumUnit! @auth(requires: [STAFF])
-  
+  updateCurriculumUnit(
+    id: ID!
+    input: UpdateCurriculumUnitInput!
+  ): CurriculumUnit! @auth(requires: [STAFF])
+
   # Delete a curriculum unit
   deleteCurriculumUnit(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a lesson
   createLesson(input: CreateLessonInput!): Lesson! @auth(requires: [STAFF])
-  
+
   # Update a lesson
-  updateLesson(id: ID!, input: UpdateLessonInput!): Lesson! @auth(requires: [STAFF])
-  
+  updateLesson(id: ID!, input: UpdateLessonInput!): Lesson!
+    @auth(requires: [STAFF])
+
   # Delete a lesson
   deleteLesson(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a child event
-  createChildEvent(input: CreateChildEventInput!): ChildEvent! @auth(requires: [STAFF])
-  
+  createChildEvent(input: CreateChildEventInput!): ChildEvent!
+    @auth(requires: [STAFF])
+
   # Update a child event
-  updateChildEvent(id: ID!, input: UpdateChildEventInput!): ChildEvent! @auth(requires: [STAFF])
-  
+  updateChildEvent(id: ID!, input: UpdateChildEventInput!): ChildEvent!
+    @auth(requires: [STAFF])
+
   # Delete a child event
   deleteChildEvent(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Register a child for an event
-  registerChildForEvent(input: RegisterChildForEventInput!): ChildEventRegistration! @auth(requires: [STAFF])
-  
+  registerChildForEvent(
+    input: RegisterChildForEventInput!
+  ): ChildEventRegistration! @auth(requires: [STAFF])
+
   # Cancel a child's event registration
   cancelChildEventRegistration(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update children's ministry settings
-  updateChildrenMinistrySettings(branchId: ID!, input: UpdateChildrenMinistrySettingsInput!): ChildrenMinistrySettings! @auth(requires: [STAFF])
-  
+  updateChildrenMinistrySettings(
+    branchId: ID!
+    input: UpdateChildrenMinistrySettingsInput!
+  ): ChildrenMinistrySettings! @auth(requires: [STAFF])
+
   # Bulk check-in children
-  bulkCheckInChildren(input: [CheckInChildInput!]!): [ChildCheckIn!]! @auth(requires: [STAFF])
-  
+  bulkCheckInChildren(input: [CheckInChildInput!]!): [ChildCheckIn!]!
+    @auth(requires: [STAFF])
+
   # Generate security codes for all checked-in children
   regenerateSecurityCodes(classroomId: ID!): Boolean! @auth(requires: [STAFF])
 }
@@ -853,13 +878,14 @@ input UpdateChildrenMinistrySettingsInput {
 extend type Subscription {
   # Get notified when a child is checked in
   childCheckedIn(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
-  
+
   # Get notified when a child is checked out
   childCheckedOut(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
-  
+
   # Get notified of classroom capacity alerts
   classroomCapacityAlert(branchId: ID!): Classroom! @auth(requires: [STAFF])
-  
+
   # Get notified of special needs children check-ins
-  specialNeedsChildCheckIn(branchId: ID!): ChildCheckIn! @auth(requires: [STAFF])
+  specialNeedsChildCheckIn(branchId: ID!): ChildCheckIn!
+    @auth(requires: [STAFF])
 }

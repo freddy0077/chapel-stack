@@ -1,5 +1,5 @@
-import React from 'react';
-import { format } from 'date-fns';
+import React from "react";
+import { format } from "date-fns";
 import {
   ClockIcon,
   MapPinIcon,
@@ -7,7 +7,7 @@ import {
   XMarkIcon,
   CalendarIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface Event {
   id: string;
@@ -28,24 +28,32 @@ interface EventDetailsModalProps {
   onClose: () => void;
 }
 
-export default function EventDetailsModal({ event, isOpen, onClose }: EventDetailsModalProps) {
+export default function EventDetailsModal({
+  event,
+  isOpen,
+  onClose,
+}: EventDetailsModalProps) {
   if (!isOpen) return null;
 
   // Use pre-calculated attendanceCount if available, otherwise calculate from attendanceRecords
-  const attendanceCount = event.attendanceCount ?? event.attendanceRecords?.length ?? 0;
-  
+  const attendanceCount =
+    event.attendanceCount ?? event.attendanceRecords?.length ?? 0;
+
   // Helper function to safely parse and format dates
-  const formatEventDate = (dateValue: string | Date | undefined, formatStr: string) => {
+  const formatEventDate = (
+    dateValue: string | Date | undefined,
+    formatStr: string,
+  ) => {
     try {
-      if (!dateValue) return 'No date';
-      
+      if (!dateValue) return "No date";
+
       const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
       if (isNaN(date.getTime())) {
-        return 'Invalid date';
+        return "Invalid date";
       }
       return format(date, formatStr);
     } catch (error) {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
 
@@ -58,11 +66,13 @@ export default function EventDetailsModal({ event, isOpen, onClose }: EventDetai
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 w-full max-w-2xl relative overflow-hidden mx-4">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 via-blue-50/20 to-indigo-50/30"></div>
-        
+
         <div className="relative flex flex-col space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{event.title}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {event.title}
+              </h2>
               {event.category && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-2">
                   {event.category}
@@ -77,22 +87,22 @@ export default function EventDetailsModal({ event, isOpen, onClose }: EventDetai
               <XMarkIcon className="h-5 w-5 text-gray-500" />
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {/* Date and Time */}
             <div className="flex items-center text-sm text-gray-600">
               <CalendarIcon className="h-4 w-4 mr-3 text-blue-500 flex-shrink-0" />
               <div className="flex flex-col">
                 <span className="font-medium">
-                  {formatEventDate(primaryDate, 'EEEE, MMMM d, yyyy')}
+                  {formatEventDate(primaryDate, "EEEE, MMMM d, yyyy")}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {formatEventDate(primaryDate, 'h:mm a')}
-                  {endDate && ` - ${formatEventDate(endDate, 'h:mm a')}`}
+                  {formatEventDate(primaryDate, "h:mm a")}
+                  {endDate && ` - ${formatEventDate(endDate, "h:mm a")}`}
                 </span>
               </div>
             </div>
-            
+
             {/* Location */}
             {event.location && (
               <div className="flex items-center text-sm text-gray-600">
@@ -100,21 +110,24 @@ export default function EventDetailsModal({ event, isOpen, onClose }: EventDetai
                 <span className="font-medium">{event.location}</span>
               </div>
             )}
-            
+
             {/* Attendance Count */}
             <div className="flex items-center text-sm text-gray-600">
               <UserGroupIcon className="h-4 w-4 mr-3 text-indigo-500 flex-shrink-0" />
               <span className="font-medium">
-                {attendanceCount} {attendanceCount === 1 ? 'attendee' : 'attendees'}
+                {attendanceCount}{" "}
+                {attendanceCount === 1 ? "attendee" : "attendees"}
               </span>
             </div>
-            
+
             {/* Description */}
             {event.description && (
               <div className="flex items-start text-sm text-gray-600 mt-4">
                 <DocumentTextIcon className="h-4 w-4 mr-3 text-purple-500 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-medium leading-relaxed">{event.description}</p>
+                  <p className="font-medium leading-relaxed">
+                    {event.description}
+                  </p>
                 </div>
               </div>
             )}

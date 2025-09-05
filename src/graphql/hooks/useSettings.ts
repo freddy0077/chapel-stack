@@ -1,19 +1,19 @@
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from "@apollo/client";
 import {
   GET_SETTINGS,
   GET_SETTING_BY_ID,
   GET_SETTING_BY_KEY,
-} from '../queries/settingsQueries';
+} from "../queries/settingsQueries";
 import {
   CREATE_BRANCH_SETTING,
   UPDATE_SETTING,
   REMOVE_SETTING,
-} from '../mutations/settingsMutations';
+} from "../mutations/settingsMutations";
 
 export function useSettings(branchId?: string) {
   return useQuery(GET_SETTINGS, {
     variables: branchId ? { branchId } : {},
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 }
 

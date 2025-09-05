@@ -1,7 +1,6 @@
 """
 Base schema file containing shared scalar definitions and directives
 """
-
 scalar Date
 scalar DateTime
 scalar Time

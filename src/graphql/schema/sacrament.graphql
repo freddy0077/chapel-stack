@@ -1,7 +1,6 @@
 """
 Sacramental Records schema - handles baptism, confirmation, communion, marriage records
 """
-
 enum SacramentType {
   BAPTISM
   CONFIRMATION
@@ -146,22 +145,22 @@ type CertificateTemplate {
 extend type Query {
   # Get all sacraments for a member
   memberSacraments(memberId: ID!): [Sacrament!]! @auth(requires: [STAFF])
-  
+
   # Get a specific sacrament
   sacrament(id: ID!): Sacrament @auth(requires: [STAFF])
-  
+
   # Get baptism record
   baptism(sacramentId: ID!): Baptism @auth(requires: [STAFF])
-  
+
   # Get confirmation record
   confirmation(sacramentId: ID!): Confirmation @auth(requires: [STAFF])
-  
+
   # Get first communion record
   firstCommunion(sacramentId: ID!): FirstCommunion @auth(requires: [STAFF])
-  
+
   # Get marriage record
   marriage(sacramentId: ID!): Marriage @auth(requires: [STAFF])
-  
+
   # Search sacramental records
   searchSacraments(
     type: SacramentType
@@ -171,35 +170,33 @@ extend type Query {
     search: String
     pagination: PaginationInput
   ): SacramentConnection! @auth(requires: [STAFF])
-  
+
   # Get all certificate templates
   certificateTemplates(
     sacramentType: SacramentType
     branchId: ID
   ): [CertificateTemplate!]! @auth(requires: [STAFF])
-  
+
   # Get a specific certificate template
   certificateTemplate(id: ID!): CertificateTemplate @auth(requires: [STAFF])
-  
+
   # Get marriages for a date range
   marriagesByDateRange(
     branchId: ID!
     startDate: Date!
     endDate: Date!
   ): [Marriage!]! @auth(requires: [STAFF])
-  
+
   # Get baptisms for a date range
   baptismsByDateRange(
     branchId: ID!
     startDate: Date!
     endDate: Date!
   ): [Baptism!]! @auth(requires: [STAFF])
-  
+
   # Get upcoming anniversaries
-  upcomingAnniversaries(
-    branchId: ID!
-    days: Int!
-  ): [Marriage!]! @auth(requires: [STAFF])
+  upcomingAnniversaries(branchId: ID!, days: Int!): [Marriage!]!
+    @auth(requires: [STAFF])
 }
 
 type SacramentConnection {
@@ -215,45 +212,60 @@ type SacramentEdge {
 extend type Mutation {
   # Create a baptism record
   createBaptism(input: CreateBaptismInput!): Baptism! @auth(requires: [STAFF])
-  
+
   # Update a baptism record
-  updateBaptism(id: ID!, input: UpdateBaptismInput!): Baptism! @auth(requires: [STAFF])
-  
+  updateBaptism(id: ID!, input: UpdateBaptismInput!): Baptism!
+    @auth(requires: [STAFF])
+
   # Create a confirmation record
-  createConfirmation(input: CreateConfirmationInput!): Confirmation! @auth(requires: [STAFF])
-  
+  createConfirmation(input: CreateConfirmationInput!): Confirmation!
+    @auth(requires: [STAFF])
+
   # Update a confirmation record
-  updateConfirmation(id: ID!, input: UpdateConfirmationInput!): Confirmation! @auth(requires: [STAFF])
-  
+  updateConfirmation(id: ID!, input: UpdateConfirmationInput!): Confirmation!
+    @auth(requires: [STAFF])
+
   # Create a first communion record
-  createFirstCommunion(input: CreateFirstCommunionInput!): FirstCommunion! @auth(requires: [STAFF])
-  
+  createFirstCommunion(input: CreateFirstCommunionInput!): FirstCommunion!
+    @auth(requires: [STAFF])
+
   # Update a first communion record
-  updateFirstCommunion(id: ID!, input: UpdateFirstCommunionInput!): FirstCommunion! @auth(requires: [STAFF])
-  
+  updateFirstCommunion(
+    id: ID!
+    input: UpdateFirstCommunionInput!
+  ): FirstCommunion! @auth(requires: [STAFF])
+
   # Create a marriage record
-  createMarriage(input: CreateMarriageInput!): Marriage! @auth(requires: [STAFF])
-  
+  createMarriage(input: CreateMarriageInput!): Marriage!
+    @auth(requires: [STAFF])
+
   # Update a marriage record
-  updateMarriage(id: ID!, input: UpdateMarriageInput!): Marriage! @auth(requires: [STAFF])
-  
+  updateMarriage(id: ID!, input: UpdateMarriageInput!): Marriage!
+    @auth(requires: [STAFF])
+
   # Upload a sacrament certificate
-  uploadSacramentCertificate(input: UploadDocumentInput!): Document! @auth(requires: [STAFF])
-  
+  uploadSacramentCertificate(input: UploadDocumentInput!): Document!
+    @auth(requires: [STAFF])
+
   # Verify a sacrament record
   verifySacrament(id: ID!): Sacrament! @auth(requires: [STAFF])
-  
+
   # Create a certificate template
-  createCertificateTemplate(input: CreateTemplateInput!): CertificateTemplate! @auth(requires: [ADMIN])
-  
+  createCertificateTemplate(input: CreateTemplateInput!): CertificateTemplate!
+    @auth(requires: [ADMIN])
+
   # Update a certificate template
-  updateCertificateTemplate(id: ID!, input: UpdateTemplateInput!): CertificateTemplate! @auth(requires: [ADMIN])
-  
+  updateCertificateTemplate(
+    id: ID!
+    input: UpdateTemplateInput!
+  ): CertificateTemplate! @auth(requires: [ADMIN])
+
   # Delete a certificate template
   deleteCertificateTemplate(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Generate a certificate from a template
-  generateCertificate(sacramentId: ID!, templateId: ID!): String! @auth(requires: [STAFF])
+  generateCertificate(sacramentId: ID!, templateId: ID!): String!
+    @auth(requires: [STAFF])
 }
 
 input CreateBaptismInput {
@@ -266,7 +278,7 @@ input CreateBaptismInput {
   specialPermissions: String
   godparents: [GodparentInput!]
   customFields: JSON
-  
+
   birthDate: Date!
   birthPlace: String!
   fatherName: String
@@ -291,7 +303,7 @@ input UpdateBaptismInput {
   specialPermissions: String
   godparents: [GodparentInput!]
   customFields: JSON
-  
+
   birthDate: Date
   birthPlace: String
   fatherName: String
@@ -326,7 +338,7 @@ input CreateConfirmationInput {
   specialPermissions: String
   godparents: [GodparentInput!]
   customFields: JSON
-  
+
   confirmationName: String
   sponsor: GodparentInput!
   bishop: String!
@@ -348,7 +360,7 @@ input UpdateConfirmationInput {
   specialPermissions: String
   godparents: [GodparentInput!]
   customFields: JSON
-  
+
   confirmationName: String
   sponsor: GodparentInput
   bishop: String
@@ -370,7 +382,7 @@ input CreateFirstCommunionInput {
   notes: String
   specialPermissions: String
   customFields: JSON
-  
+
   preparationClass: String
   instructor: String
   baptismCertificate: Upload
@@ -388,7 +400,7 @@ input UpdateFirstCommunionInput {
   notes: String
   specialPermissions: String
   customFields: JSON
-  
+
   preparationClass: String
   instructor: String
   baptismCertificate: Upload
@@ -407,7 +419,7 @@ input CreateMarriageInput {
   notes: String
   specialPermissions: String
   customFields: JSON
-  
+
   groomId: ID!
   brideId: ID!
   groomBaptismCertificate: Upload
@@ -433,7 +445,7 @@ input UpdateMarriageInput {
   notes: String
   specialPermissions: String
   customFields: JSON
-  
+
   groomBaptismCertificate: Upload
   brideBaptismCertificate: Upload
   groomConfirmationCertificate: Upload
@@ -477,8 +489,9 @@ input UpdateTemplateInput {
 
 extend type Subscription {
   # Get notified when a new sacrament is recorded
-  sacramentRecorded(branchId: ID, type: SacramentType): Sacrament! @auth(requires: [STAFF])
-  
+  sacramentRecorded(branchId: ID, type: SacramentType): Sacrament!
+    @auth(requires: [STAFF])
+
   # Get notified when a certificate is generated
   certificateGenerated(branchId: ID): Document! @auth(requires: [STAFF])
 }

@@ -12,16 +12,16 @@ import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import BranchFinanceStats from "@/components/BranchFinanceStats";
-import { 
-  ChartBarIcon, 
-  UsersIcon, 
-  CurrencyDollarIcon, 
+import {
+  ChartBarIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
   CalendarDaysIcon,
   BellIcon,
   Cog6ToothIcon,
   ArrowTrendingUpIcon,
   EyeIcon,
-  ClockIcon
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 
 const BRANCH_DASHBOARD_QUERY = gql`
@@ -32,11 +32,14 @@ const BRANCH_DASHBOARD_QUERY = gql`
         name
         organisation
         isActive
-        admins { id name }
+        admins {
+          id
+          name
+        }
       }
-      memberStats { 
-        total 
-        newMembersThisMonth 
+      memberStats {
+        total
+        newMembersThisMonth
         growthRate
         monthlyTrends {
           month
@@ -46,12 +49,12 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       financeStats {
-        totalContributions 
+        totalContributions
         totalExpenses
-        tithes 
-        pledge 
-        offering 
-        donation 
+        tithes
+        pledge
+        offering
+        donation
         specialContribution
         growthRate
         netIncome
@@ -63,8 +66,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           netIncome
         }
       }
-      attendanceStats { 
-        totalAttendance 
+      attendanceStats {
+        totalAttendance
         uniqueAttendeesThisMonth
         averageAttendance
         growthRate
@@ -75,8 +78,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           uniqueAttendees
         }
       }
-      sacramentStats { 
-        totalSacraments 
+      sacramentStats {
+        totalSacraments
         breakdown {
           type
           count
@@ -87,8 +90,16 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       activityStats {
-        recentEvents { id title startDate }
-        upcomingEvents { id title startDate }
+        recentEvents {
+          id
+          title
+          startDate
+        }
+        upcomingEvents {
+          id
+          title
+          startDate
+        }
         recentMembers {
           id
           name
@@ -116,16 +127,35 @@ const BRANCH_DASHBOARD_QUERY = gql`
       }
       systemStatus {
         timestamp
-        database { status latency }
+        database {
+          status
+          latency
+        }
         system {
-          totalMemory freeMemory
-          memoryUsage { rss heapTotal heapUsed external }
-          cpuUsage { user system }
-          systemUptime processUptime platform nodeVersion
+          totalMemory
+          freeMemory
+          memoryUsage {
+            rss
+            heapTotal
+            heapUsed
+            external
+          }
+          cpuUsage {
+            user
+            system
+          }
+          systemUptime
+          processUptime
+          platform
+          nodeVersion
         }
       }
       branchAnnouncements {
-        announcements { id title startDate }
+        announcements {
+          id
+          title
+          startDate
+        }
       }
     }
   }
@@ -144,29 +174,46 @@ export default function BranchDashboardPage() {
   });
 
   // Fetch funds for this branch for the finance stats component
-  const { data: fundsData, loading: fundsLoading, error: fundsError } = useQuery(gql`
-    query GetFunds($organisationId: String!, $branchId: String) {
-      funds(organisationId: $organisationId, branchId: $branchId) {
-        id
-        name
-        description
-        branchId
+  const {
+    data: fundsData,
+    loading: fundsLoading,
+    error: fundsError,
+  } = useQuery(
+    gql`
+      query GetFunds($organisationId: String!, $branchId: String) {
+        funds(organisationId: $organisationId, branchId: $branchId) {
+          id
+          name
+          description
+          branchId
+        }
       }
-    }
-  `, {
-    variables: { organisationId, branchId },
-    skip: !organisationId || !branchId,
-  });
+    `,
+    {
+      variables: { organisationId, branchId },
+      skip: !organisationId || !branchId,
+    },
+  );
 
   if (loading) {
-    return <div className="p-10 text-center text-lg">Loading branch dashboard...</div>;
+    return (
+      <div className="p-10 text-center text-lg">
+        Loading branch dashboard...
+      </div>
+    );
   }
   if (error) {
-    return <div className="p-10 text-center text-red-500">Error loading branch dashboard.</div>;
+    return (
+      <div className="p-10 text-center text-red-500">
+        Error loading branch dashboard.
+      </div>
+    );
   }
   const branchDashboard = data?.branchDashboard;
   if (!branchDashboard) {
-    return <div className="p-10 text-center">No data available for this branch.</div>;
+    return (
+      <div className="p-10 text-center">No data available for this branch.</div>
+    );
   }
 
   return (
@@ -207,8 +254,12 @@ export default function BranchDashboardPage() {
           {/* Enhanced Activity Feed */}
           <BranchActivityFeed
             recentMembers={branchDashboard.activityStats.recentMembers || []}
-            recentContributions={branchDashboard.activityStats.recentContributions || []}
-            recentSacraments={branchDashboard.activityStats.recentSacraments || []}
+            recentContributions={
+              branchDashboard.activityStats.recentContributions || []
+            }
+            recentSacraments={
+              branchDashboard.activityStats.recentSacraments || []
+            }
             activitySummary={branchDashboard.activityStats.activitySummary}
           />
 
@@ -221,8 +272,12 @@ export default function BranchDashboardPage() {
           <FinancialBreakdown financeStats={branchDashboard.financeStats} />
 
           {/* Events and Admin */}
-          <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
-          <BranchAnnouncements branchAnnouncements={branchDashboard.branchAnnouncements} />
+          <UpcomingEvents
+            events={branchDashboard.activityStats.upcomingEvents}
+          />
+          <BranchAnnouncements
+            branchAnnouncements={branchDashboard.branchAnnouncements}
+          />
           <BranchAdminTools branchInfo={branchDashboard.branchInfo} />
         </main>
       </div>

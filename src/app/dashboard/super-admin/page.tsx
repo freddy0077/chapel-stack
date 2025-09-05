@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from "react";
 import { RoleRoute } from "@/components/auth/RoleRoute";
@@ -13,15 +13,15 @@ import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBran
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useQuery } from "@apollo/client";
 import { GET_SUPER_ADMIN_DASHBOARD } from "@/graphql/queries/dashboardQueries";
-import {useOrganisationBranch} from "@/hooks/useOrganisationBranch";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 
 export default function SuperAdminDashboard() {
   const { organisationId } = useOrganisationBranch();
   const { state } = useAuth();
   const user = state.user;
-  
+
   // Debug authentication state
-  
+
   const { data, loading, error } = useQuery(GET_SUPER_ADMIN_DASHBOARD, {
     variables: { organisationId },
   });
@@ -35,9 +35,12 @@ export default function SuperAdminDashboard() {
           <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-3">
             <div>
               <h1 className="text-3xl font-extrabold text-blue-900 mb-1 drop-shadow-sm">
-                Super Admin Dashboard - {dashboard?.organisationOverview.organisations?.[0]?.name}
+                Super Admin Dashboard -{" "}
+                {dashboard?.organisationOverview.organisations?.[0]?.name}
               </h1>
-              <p className="text-blue-700 text-lg">Manage all organizations and system settings</p>
+              <p className="text-blue-700 text-lg">
+                Manage all organizations and system settings
+              </p>
             </div>
           </header>
 
@@ -52,7 +55,9 @@ export default function SuperAdminDashboard() {
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-800">Error loading dashboard: {error.message}</p>
+              <p className="text-red-800">
+                Error loading dashboard: {error.message}
+              </p>
             </div>
           )}
 
@@ -67,7 +72,9 @@ export default function SuperAdminDashboard() {
 
               {/* Right column - Secondary widgets */}
               <div className="space-y-8">
-                <SuperAdminSubscriptionManagement organizationId={user?.organisationId || organisationId} />
+                <SuperAdminSubscriptionManagement
+                  organizationId={user?.organisationId || organisationId}
+                />
                 <UpcomingEvents dashboard={dashboard} />
                 <AdminTools />
               </div>

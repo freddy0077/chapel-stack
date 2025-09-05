@@ -1,6 +1,6 @@
-import { useQuery } from '@apollo/client';
-import { useEffect, useState } from 'react';
-import { gql } from '@apollo/client';
+import { useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
+import { gql } from "@apollo/client";
 
 // GraphQL query to check organization subscription status
 export const GET_ORGANIZATION_SUBSCRIPTION_STATUS = gql`
@@ -27,7 +27,7 @@ export const GET_ORGANIZATION_SUBSCRIPTION_STATUS = gql`
 export interface SubscriptionValidationResult {
   isValid: boolean;
   requiresAction: boolean;
-  status: 'ACTIVE' | 'EXPIRED' | 'TRIAL' | 'GRACE_PERIOD' | 'NONE';
+  status: "ACTIVE" | "EXPIRED" | "TRIAL" | "GRACE_PERIOD" | "NONE";
   daysUntilExpiry?: number;
   subscription?: {
     id: string;
@@ -45,33 +45,35 @@ export interface SubscriptionValidationResult {
 export const useSubscriptionValidation = (
   organizationId: string | null,
   userRole: string | null,
-  skipValidation = false
+  skipValidation = false,
 ) => {
-  const [validationResult, setValidationResult] = useState<SubscriptionValidationResult>({
-    isValid: true,
-    requiresAction: false,
-    status: 'ACTIVE',
-  });
+  const [validationResult, setValidationResult] =
+    useState<SubscriptionValidationResult>({
+      isValid: true,
+      requiresAction: false,
+      status: "ACTIVE",
+    });
 
   // Skip validation for subscription managers or if explicitly skipped
-  const shouldSkipValidation = 
-    skipValidation || 
-    !organizationId || 
-    userRole === 'SUBSCRIPTION_MANAGER';
+  const shouldSkipValidation =
+    skipValidation || !organizationId || userRole === "SUBSCRIPTION_MANAGER";
 
-  const { data, loading, error, refetch } = useQuery(GET_ORGANIZATION_SUBSCRIPTION_STATUS, {
-    variables: { organizationId },
-    skip: skipValidation || !organizationId,
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data, loading, error, refetch } = useQuery(
+    GET_ORGANIZATION_SUBSCRIPTION_STATUS,
+    {
+      variables: { organizationId },
+      skip: skipValidation || !organizationId,
+      errorPolicy: "all",
+      fetchPolicy: "cache-and-network",
+    },
+  );
 
   useEffect(() => {
     if (shouldSkipValidation) {
       setValidationResult({
         isValid: true,
         requiresAction: false,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       });
       return;
     }
@@ -82,45 +84,45 @@ export const useSubscriptionValidation = (
     }
 
     if (error) {
-      console.warn('Subscription validation error:', error);
+      console.warn("Subscription validation error:", error);
       // On error, assume subscription is invalid but don't block access
       setValidationResult({
         isValid: false,
         requiresAction: false, // Don't require action on error to prevent blocking
-        status: 'NONE',
+        status: "NONE",
       });
       return;
     }
 
     if (data?.organizationSubscriptionStatus) {
       const subscriptionStatus = data.organizationSubscriptionStatus;
-      
-      let status: SubscriptionValidationResult['status'] = 'NONE';
+
+      let status: SubscriptionValidationResult["status"] = "NONE";
       let isValid = false;
       let requiresAction = false;
 
       if (subscriptionStatus.hasActiveSubscription) {
         const subscription = subscriptionStatus.subscription;
-        
-        if (subscription?.status === 'ACTIVE') {
-          status = 'ACTIVE';
+
+        if (subscription?.status === "ACTIVE") {
+          status = "ACTIVE";
           isValid = true;
           requiresAction = false;
-        } else if (subscription?.status === 'TRIALING') {
-          status = 'TRIAL';
+        } else if (subscription?.status === "TRIALING") {
+          status = "TRIAL";
           isValid = true;
           requiresAction = (subscriptionStatus.daysUntilExpiry || 0) <= 7; // Show warning in last 7 days of trial
         } else if (subscriptionStatus.isInGracePeriod) {
-          status = 'GRACE_PERIOD';
+          status = "GRACE_PERIOD";
           isValid = true; // Still allow access during grace period
           requiresAction = true; // But require action
         } else {
-          status = 'EXPIRED';
+          status = "EXPIRED";
           isValid = false;
           requiresAction = true;
         }
       } else {
-        status = 'NONE';
+        status = "NONE";
         isValid = false;
         requiresAction = true;
       }

@@ -3,53 +3,61 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
+import {
   XMarkIcon,
   ArrowPathIcon,
   CheckIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useEventMutations, useBranches, useRooms, useVolunteerRoles } from "@/graphql/hooks/useEvents";
+import {
+  useEventMutations,
+  useBranches,
+  useRooms,
+  useVolunteerRoles,
+} from "@/graphql/hooks/useEvents";
 import { EventType, CreateEventInput } from "@/graphql/types/event";
-import { useEventTemplates, useEventTemplate } from "@/graphql/hooks/useEventTemplates";
-import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import {
+  useEventTemplates,
+  useEventTemplate,
+} from "@/graphql/hooks/useEventTemplates";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 // No date-fns imports needed for now
 
 // Types mapped from backend schema
 const eventTypes = [
   {
     id: EventType.SERVICE,
-    name: "Service"
+    name: "Service",
   },
   {
     id: EventType.MEETING,
-    name: "Meeting"
+    name: "Meeting",
   },
   {
     id: EventType.CONFERENCE,
-    name: "Conference"
+    name: "Conference",
   },
   {
     id: EventType.WORKSHOP,
-    name: "Workshop"
+    name: "Workshop",
   },
   {
     id: EventType.RETREAT,
-    name: "Retreat"
+    name: "Retreat",
   },
   {
     id: EventType.OUTREACH,
-    name: "Outreach"
+    name: "Outreach",
   },
   {
     id: EventType.SOCIAL,
-    name: "Social"
+    name: "Social",
   },
   {
     id: EventType.OTHER,
-    name: "Other"
-  }
+    name: "Other",
+  },
 ];
 
 // Extended event input interface to include additional fields
@@ -66,17 +74,29 @@ export default function CreateEvent() {
   // State for showing template loading
   const [templateApplied, setTemplateApplied] = useState(false);
   const router = useRouter();
-  
+
   const { createEvent, loading: mutationLoading } = useEventMutations();
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiSuccess, setApiSuccess] = useState(false);
-  
+
   // Fetch data from API using hooks
-  const { branches, loading: branchesLoading, error: branchesError } = useBranches();
+  const {
+    branches,
+    loading: branchesLoading,
+    error: branchesError,
+  } = useBranches();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const { rooms, loading: roomsLoading, error: roomsError } = useRooms(selectedBranchId);
-  const { volunteerRoles: fetchedVolunteerRoles, loading: rolesLoading, error: rolesError } = useVolunteerRoles();
-  
+  const {
+    rooms,
+    loading: roomsLoading,
+    error: roomsError,
+  } = useRooms(selectedBranchId);
+  const {
+    volunteerRoles: fetchedVolunteerRoles,
+    loading: rolesLoading,
+    error: rolesError,
+  } = useVolunteerRoles();
+
   // Get org/branch filter for event creation
   const orgBranchFilter = useOrganizationBranchFilter();
 
@@ -102,10 +122,10 @@ export default function CreateEvent() {
     recurringFrequency: "weekly",
     recurringInterval: 1,
     recurringDays: [0], // Sunday by default
-    resources: [""], 
-    volunteerRoles: [{ role: "", count: 1 }]
+    resources: [""],
+    volunteerRoles: [{ role: "", count: 1 }],
   });
-  
+
   // Additional form fields for date/time handling
   const [formFields, setFormFields] = useState({
     date: "",
@@ -117,15 +137,19 @@ export default function CreateEvent() {
     recurringEndDate: "", // Add missing field
     resources: [""],
     volunteerRoles: [{ role: "", count: 1 }],
-    expectedAttendees: 0
+    expectedAttendees: 0,
   });
-  
-  // Get the template ID from URL params  
+
+  // Get the template ID from URL params
   const searchParamsHook = useSearchParams();
   const templateId = searchParamsHook.get("template");
-  
+
   // Fetch all event templates for selection
-  const { templates, loading: templatesLoading, error: templatesError } = useEventTemplates();
+  const {
+    templates,
+    loading: templatesLoading,
+    error: templatesError,
+  } = useEventTemplates();
 
   // Template selection dropdown and preview UI
   // (Insert this JSX in the return statement of your component, e.g. above the form)
@@ -184,31 +208,41 @@ export default function CreateEvent() {
   // --- END TEMPLATE DROPDOWN UI ---
 
   // Use the template API hook to fetch template if ID is provided
-  const { template, loading: templateLoading, error: templateError } = useEventTemplate(templateId || undefined);
-  
+  const {
+    template,
+    loading: templateLoading,
+    error: templateError,
+  } = useEventTemplate(templateId || undefined);
+
   // Helper function to parse recurrence rule for day numbers
   const parseRecurrenceRule = (rule: string): number[] => {
     // Simple parser for RRULE format - can be extended for more complex rules
     try {
-      if (rule.includes('BYDAY=')) {
-        const daysStr = rule.split('BYDAY=')[1].split(';')[0];
+      if (rule.includes("BYDAY=")) {
+        const daysStr = rule.split("BYDAY=")[1].split(";")[0];
         const dayMap: Record<string, number> = {
-          'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6
+          SU: 0,
+          MO: 1,
+          TU: 2,
+          WE: 3,
+          TH: 4,
+          FR: 5,
+          SA: 6,
         };
-        return daysStr.split(',').map(d => dayMap[d] || 0);
+        return daysStr.split(",").map((d) => dayMap[d] || 0);
       }
       return [0]; // Default to Sunday
     } catch (err) {
-      console.error('Error parsing recurrence rule:', err);
+      console.error("Error parsing recurrence rule:", err);
       return [0];
     }
-  }
-  
+  };
+
   // Initialize with template data if a template is selected
   useEffect(() => {
     if (templateId && template) {
       setTemplateApplied(true);
-      
+
       // Set event data from API template
       setEventData((prev: ExtendedEventInput) => ({
         ...prev,
@@ -218,195 +252,252 @@ export default function CreateEvent() {
         description: template.description || "",
         isRecurring: Boolean(template.isRecurring),
         // Handle recurrence pattern properly
-        recurringFrequency: template.recurrenceType === "WEEKLY" ? "weekly" :
-                          template.recurrenceType === "MONTHLY" ? "monthly" :
-                          template.recurrenceType === "YEARLY" ? "yearly" :
-                          template.recurrenceType === "DAILY" ? "daily" : "weekly",
+        recurringFrequency:
+          template.recurrenceType === "WEEKLY"
+            ? "weekly"
+            : template.recurrenceType === "MONTHLY"
+              ? "monthly"
+              : template.recurrenceType === "YEARLY"
+                ? "yearly"
+                : template.recurrenceType === "DAILY"
+                  ? "daily"
+                  : "weekly",
         recurringInterval: 1, // Default to 1 if not specified
         // Parse recurrence rule for days if available
-        recurringDays: template.recurrenceRule ? 
-          parseRecurrenceRule(template.recurrenceRule) : [0],
-        resources: Array.isArray(template.resources) ? template.resources : [""],
-        volunteerRoles: Array.isArray(template.volunteerRoles) 
-          ? template.volunteerRoles.map((vr: { role: string; count: number }) => ({ 
-              role: vr.role, 
-              count: vr.count 
-            })) 
-          : [{ role: "", count: 1 }]
+        recurringDays: template.recurrenceRule
+          ? parseRecurrenceRule(template.recurrenceRule)
+          : [0],
+        resources: Array.isArray(template.resources)
+          ? template.resources
+          : [""],
+        volunteerRoles: Array.isArray(template.volunteerRoles)
+          ? template.volunteerRoles.map(
+              (vr: { role: string; count: number }) => ({
+                role: vr.role,
+                count: vr.count,
+              }),
+            )
+          : [{ role: "", count: 1 }],
       }));
-      
+
       // Set form fields with the same structure
       setFormFields((prev) => ({
         ...prev,
         date: "", // Clear the date field - user should select current date
         startTime: "", // User should select appropriate time
         endTime: "", // User should select appropriate time
-        recurringFrequency: template.recurrenceType === "WEEKLY" ? "weekly" :
-                          template.recurrenceType === "MONTHLY" ? "monthly" :
-                          template.recurrenceType === "YEARLY" ? "yearly" :
-                          template.recurrenceType === "DAILY" ? "daily" : "weekly",
+        recurringFrequency:
+          template.recurrenceType === "WEEKLY"
+            ? "weekly"
+            : template.recurrenceType === "MONTHLY"
+              ? "monthly"
+              : template.recurrenceType === "YEARLY"
+                ? "yearly"
+                : template.recurrenceType === "DAILY"
+                  ? "daily"
+                  : "weekly",
         recurringInterval: 1,
-        recurringDays: template.recurrenceRule ? 
-          parseRecurrenceRule(template.recurrenceRule) : [0],
-        resources: Array.isArray(template.resources) ? template.resources : [""],
-        volunteerRoles: Array.isArray(template.volunteerRoles) 
-          ? template.volunteerRoles.map((vr: { role: string; count: number }) => ({ 
-              role: vr.role, 
-              count: vr.count 
-            })) 
-          : [{ role: "", count: 1 }]
+        recurringDays: template.recurrenceRule
+          ? parseRecurrenceRule(template.recurrenceRule)
+          : [0],
+        resources: Array.isArray(template.resources)
+          ? template.resources
+          : [""],
+        volunteerRoles: Array.isArray(template.volunteerRoles)
+          ? template.volunteerRoles.map(
+              (vr: { role: string; count: number }) => ({
+                role: vr.role,
+                count: vr.count,
+              }),
+            )
+          : [{ role: "", count: 1 }],
       }));
     }
   }, [template, templateId, setEventData, setFormFields]);
-  
+
   // Initialize branch selection when branches load
   useEffect(() => {
     if (branches && branches.length > 0) {
       const firstBranchId = branches[0]?.id;
       if (firstBranchId) {
         setSelectedBranchId(firstBranchId);
-        setEventData((prev: ExtendedEventInput) => ({ ...prev, branchId: firstBranchId }));
+        setEventData((prev: ExtendedEventInput) => ({
+          ...prev,
+          branchId: firstBranchId,
+        }));
       }
     }
   }, [branches, setSelectedBranchId, setEventData]);
-  
+
   // Handle form field changes for event data
-  const handleEventDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleEventDataChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setEventData(prev => ({
+    setEventData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   // Handle form field changes for additional form fields
-  const handleFormFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleFormFieldChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   // Handle branch change to filter rooms
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const branchId = e.target.value;
-    
+
     // Update event data and selected branch ID for filtering rooms
-    setEventData(prev => ({ ...prev, branchId }));
+    setEventData((prev) => ({ ...prev, branchId }));
     setSelectedBranchId(branchId);
-    
+
     // Reset room selection if the new branch doesn't have the currently selected room
-    const branchRooms = rooms.filter((room: { branchId: string; id: string; name: string; capacity: number }) => room.branchId === branchId);
-    if (formFields.resources && formFields.resources.length > 0 && branchRooms.length > 0) {
+    const branchRooms = rooms.filter(
+      (room: {
+        branchId: string;
+        id: string;
+        name: string;
+        capacity: number;
+      }) => room.branchId === branchId,
+    );
+    if (
+      formFields.resources &&
+      formFields.resources.length > 0 &&
+      branchRooms.length > 0
+    ) {
       const currentRoomIds = formFields.resources;
-      const validRoomIds = branchRooms.map((room: { branchId: string; id: string; name: string; capacity: number }) => room.id);
-      
-      // Check if any selected rooms are not in the new branch
-      const hasInvalidRoom = currentRoomIds.some(roomId => 
-        !validRoomIds.includes(roomId)
+      const validRoomIds = branchRooms.map(
+        (room: {
+          branchId: string;
+          id: string;
+          name: string;
+          capacity: number;
+        }) => room.id,
       );
-      
+
+      // Check if any selected rooms are not in the new branch
+      const hasInvalidRoom = currentRoomIds.some(
+        (roomId) => !validRoomIds.includes(roomId),
+      );
+
       // If there are invalid rooms, reset the room selection
       if (hasInvalidRoom) {
-        setFormFields(prev => ({
+        setFormFields((prev) => ({
           ...prev,
-          resources: [""]
+          resources: [""],
         }));
       }
     }
   };
-  
+
   // Toggle recurrence
   const toggleRecurring = () => {
-    setEventData(prev => ({
+    setEventData((prev) => ({
       ...prev,
-      isRecurring: !prev.isRecurring
+      isRecurring: !prev.isRecurring,
     }));
   };
-  
+
   // Update recurrence days
   const toggleRecurringDay = (day: number) => {
     const updatedDays = [...formFields.recurringDays];
     const index = updatedDays.indexOf(day);
-    
+
     if (index > -1) {
       updatedDays.splice(index, 1);
     } else {
       updatedDays.push(day);
     }
-    
-    setFormFields(prev => ({
+
+    setFormFields((prev) => ({
       ...prev,
-      recurringDays: updatedDays
+      recurringDays: updatedDays,
     }));
   };
-  
+
   // Add/remove resource fields
   const addResource = () => {
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      resources: [...prev.resources, ""]
+      resources: [...prev.resources, ""],
     }));
   };
-  
+
   const removeResource = (index: number) => {
     const updatedResources = [...formFields.resources];
     updatedResources.splice(index, 1);
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      resources: updatedResources
+      resources: updatedResources,
     }));
   };
-  
+
   const updateResource = (index: number, value: string) => {
     const updatedResources = [...formFields.resources];
     updatedResources[index] = value;
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      resources: updatedResources
+      resources: updatedResources,
     }));
   };
-  
+
   // Add/remove volunteer role fields
   const addVolunteerRole = () => {
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      volunteerRoles: [...prev.volunteerRoles, { role: "", count: 1 }]
+      volunteerRoles: [...prev.volunteerRoles, { role: "", count: 1 }],
     }));
   };
-  
+
   const removeVolunteerRole = (index: number) => {
     const updatedRoles = [...formFields.volunteerRoles];
     updatedRoles.splice(index, 1);
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      volunteerRoles: updatedRoles
+      volunteerRoles: updatedRoles,
     }));
   };
-  
-  const updateVolunteerRole = (index: number, field: string, value: string | number) => {
+
+  const updateVolunteerRole = (
+    index: number,
+    field: string,
+    value: string | number,
+  ) => {
     const updatedRoles = [...formFields.volunteerRoles];
     updatedRoles[index] = {
       ...updatedRoles[index],
-      [field]: value
+      [field]: value,
     };
-    setFormFields(prev => ({
+    setFormFields((prev) => ({
       ...prev,
-      volunteerRoles: updatedRoles
+      volunteerRoles: updatedRoles,
     }));
   };
-  
+
   // Update branch/organisation logic for event creation
   // If SUPER_ADMIN, use organisationId, else use branchId
   const prepareEventData = (): CreateEventInput => {
-    const startDateTime = formFields.date && formFields.startTime
-      ? new Date(`${formFields.date}T${formFields.startTime}`).toISOString()
-      : new Date().toISOString();
-    const endDateTime = formFields.date && formFields.endTime
-      ? new Date(`${formFields.date}T${formFields.endTime}`).toISOString()
-      : new Date(new Date(startDateTime).getTime() + 3600000).toISOString();
-    
+    const startDateTime =
+      formFields.date && formFields.startTime
+        ? new Date(`${formFields.date}T${formFields.startTime}`).toISOString()
+        : new Date().toISOString();
+    const endDateTime =
+      formFields.date && formFields.endTime
+        ? new Date(`${formFields.date}T${formFields.endTime}`).toISOString()
+        : new Date(new Date(startDateTime).getTime() + 3600000).toISOString();
+
     const base: any = {
       title: eventData.title || "",
       description: eventData.description || "",
@@ -421,25 +512,45 @@ export default function CreateEvent() {
 
     // Only include recurring fields if the event is actually recurring
     if (eventData.isRecurring) {
-      const recurrencePattern = `${formFields.recurringFrequency}:${formFields.recurringInterval}:${formFields.recurringDays.join(',')}`;
-      
+      const recurrencePattern = `${formFields.recurringFrequency}:${formFields.recurringInterval}:${formFields.recurringDays.join(",")}`;
+
       // Map frontend recurring fields to backend format
       const recurringFields = {
         isRecurring: true,
-        recurrenceType: formFields.recurringFrequency.toUpperCase() as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
+        recurrenceType: formFields.recurringFrequency.toUpperCase() as
+          | "DAILY"
+          | "WEEKLY"
+          | "MONTHLY"
+          | "YEARLY",
         recurrenceInterval: formFields.recurringInterval,
-        recurrenceEndDate: formFields.recurringEndDate && formFields.recurringEndDate.trim() ? new Date(formFields.recurringEndDate).toISOString() : undefined,
-        recurrenceDaysOfWeek: formFields.recurringDays.map(day => {
-          const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+        recurrenceEndDate:
+          formFields.recurringEndDate && formFields.recurringEndDate.trim()
+            ? new Date(formFields.recurringEndDate).toISOString()
+            : undefined,
+        recurrenceDaysOfWeek: formFields.recurringDays.map((day) => {
+          const days = [
+            "SUNDAY",
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+          ];
           return days[day];
         }),
         recurrencePattern: recurrencePattern,
       };
-      
+
       // Only include fields that have values - improved filtering
-      Object.keys(recurringFields).forEach(key => {
+      Object.keys(recurringFields).forEach((key) => {
         const value = recurringFields[key];
-        if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          !(Array.isArray(value) && value.length === 0)
+        ) {
           base[key] = value;
         }
       });
@@ -453,33 +564,42 @@ export default function CreateEvent() {
     }
     return base;
   };
-  
+
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError(null);
-    
+
     try {
       const input = prepareEventData();
-      
+
       const result = await createEvent(input);
-      
+
       setApiSuccess(true);
       // Redirect after short delay to show success message
       setTimeout(() => {
         router.push("/dashboard/calendar");
       }, 1500);
-      
     } catch (error) {
       console.error("Error creating event:", error);
-      setApiError(error instanceof Error ? error.message : "An unknown error occurred");
+      setApiError(
+        error instanceof Error ? error.message : "An unknown error occurred",
+      );
     }
   };
-  
+
   // Filter rooms by selected branch
-  const filteredRooms = eventData.branchId && rooms
-    ? rooms.filter((room: { branchId: string, id: string, name: string, capacity: number }) => room.branchId === eventData.branchId)
-    : [];
+  const filteredRooms =
+    eventData.branchId && rooms
+      ? rooms.filter(
+          (room: {
+            branchId: string;
+            id: string;
+            name: string;
+            capacity: number;
+          }) => room.branchId === eventData.branchId,
+        )
+      : [];
 
   // Form submit button with loading state
   const submitButton = (
@@ -490,7 +610,10 @@ export default function CreateEvent() {
     >
       {mutationLoading ? (
         <>
-          <ArrowPathIcon className="-ml-1 mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+          <ArrowPathIcon
+            className="-ml-1 mr-2 h-4 w-4 animate-spin"
+            aria-hidden="true"
+          />
           Saving...
         </>
       ) : (
@@ -503,7 +626,9 @@ export default function CreateEvent() {
     <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-12">
       <div className="sm:flex sm:items-center mb-6">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Create New Event</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Create New Event
+          </h1>
           <p className="mt-2 text-sm text-gray-700">
             Fill out the form below to create a new calendar event.
           </p>
@@ -537,16 +662,21 @@ export default function CreateEvent() {
           </Link>
         </div>
       </div>
-      
+
       {/* API Message Banners */}
       {apiError && (
         <div className="rounded-md bg-red-50 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <ExclamationCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <ExclamationCircleIcon
+                className="h-5 w-5 text-red-400"
+                aria-hidden="true"
+              />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error creating event</h3>
+              <h3 className="text-sm font-medium text-red-800">
+                Error creating event
+              </h3>
               <div className="mt-2 text-sm text-red-700">
                 <p>{apiError}</p>
               </div>
@@ -554,15 +684,20 @@ export default function CreateEvent() {
           </div>
         </div>
       )}
-      
+
       {apiSuccess && (
         <div className="rounded-md bg-green-50 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <CheckIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
+              <CheckIcon
+                className="h-5 w-5 text-green-400"
+                aria-hidden="true"
+              />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">Event created successfully!</h3>
+              <h3 className="text-sm font-medium text-green-800">
+                Event created successfully!
+              </h3>
               <div className="mt-2 text-sm text-green-700">
                 <p>Redirecting to calendar page...</p>
               </div>
@@ -570,18 +705,22 @@ export default function CreateEvent() {
           </div>
         </div>
       )}
-      
+
       {/* Event Form */}
       <form onSubmit={handleSubmit} className="space-y-8">
-      
         <div className="bg-white shadow rounded-lg overflow-hidden">
           {/* Basic Information */}
           <div className="px-6 py-5 border-b border-gray-200">
-            <h2 className="text-base font-medium text-gray-900">Basic Information</h2>
+            <h2 className="text-base font-medium text-gray-900">
+              Basic Information
+            </h2>
           </div>
           <div className="px-6 py-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-4">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Title *
               </label>
               <div className="mt-1">
@@ -598,7 +737,10 @@ export default function CreateEvent() {
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="type"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Type *
               </label>
               <div className="mt-1">
@@ -618,9 +760,12 @@ export default function CreateEvent() {
                 </select>
               </div>
             </div>
-            
+
             <div className="sm:col-span-2">
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="date"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Date *
               </label>
               <div className="mt-1">
@@ -635,9 +780,12 @@ export default function CreateEvent() {
                 />
               </div>
             </div>
-            
+
             <div className="sm:col-span-2">
-              <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="startTime"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Start Time *
               </label>
               <div className="mt-1">
@@ -652,9 +800,12 @@ export default function CreateEvent() {
                 />
               </div>
             </div>
-            
+
             <div className="sm:col-span-2">
-              <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="endTime"
+                className="block text-sm font-medium text-gray-700"
+              >
                 End Time *
               </label>
               <div className="mt-1">
@@ -669,25 +820,30 @@ export default function CreateEvent() {
                 />
               </div>
             </div>
-            
+
             <div className="sm:col-span-3">
-              <label htmlFor="branchId" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="branchId"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Branch *
               </label>
               <div className="mt-1">
-                {user?.primaryRole === 'super_admin' ? (
+                {user?.primaryRole === "super_admin" ? (
                   <select
                     id="branchId"
                     name="branchId"
                     required
-                    value={eventData.branchId || ''}
+                    value={eventData.branchId || ""}
                     onChange={handleBranchChange}
                     disabled={branchesLoading}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">Select Branch</option>
                     {branchesLoading ? (
-                      <option value="" disabled>Loading branches...</option>
+                      <option value="" disabled>
+                        Loading branches...
+                      </option>
                     ) : branches && branches.length > 0 ? (
                       branches.map((branch: { id: string; name: string }) => (
                         <option key={branch.id} value={branch.id}>
@@ -695,7 +851,9 @@ export default function CreateEvent() {
                         </option>
                       ))
                     ) : (
-                      <option value="" disabled>No branches available</option>
+                      <option value="" disabled>
+                        No branches available
+                      </option>
                     )}
                   </select>
                 ) : (
@@ -703,7 +861,11 @@ export default function CreateEvent() {
                     type="text"
                     id="branchId"
                     name="branchId"
-                    value={branches.find((b: { id: string }) => b.id === eventData.branchId)?.name || ''}
+                    value={
+                      branches.find(
+                        (b: { id: string }) => b.id === eventData.branchId,
+                      )?.name || ""
+                    }
                     className="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm"
                     disabled
                   />
@@ -715,9 +877,12 @@ export default function CreateEvent() {
                 )}
               </div>
             </div>
-            
+
             <div className="sm:col-span-3">
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Location/Room *
               </label>
               <div className="mt-1">
@@ -730,17 +895,31 @@ export default function CreateEvent() {
                   disabled={roomsLoading || !eventData.branchId}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
-                  <option value="">{!eventData.branchId ? "Select a branch first" : "Select a room"}</option>
+                  <option value="">
+                    {!eventData.branchId
+                      ? "Select a branch first"
+                      : "Select a room"}
+                  </option>
                   {roomsLoading ? (
-                    <option value="" disabled>Loading rooms...</option>
+                    <option value="" disabled>
+                      Loading rooms...
+                    </option>
                   ) : filteredRooms.length > 0 ? (
-                    filteredRooms.map((room: { id: string; name: string; capacity: number }) => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} (Capacity: {room.capacity})
-                      </option>
-                    ))
+                    filteredRooms.map(
+                      (room: {
+                        id: string;
+                        name: string;
+                        capacity: number;
+                      }) => (
+                        <option key={room.id} value={room.id}>
+                          {room.name} (Capacity: {room.capacity})
+                        </option>
+                      ),
+                    )
                   ) : eventData.branchId ? (
-                    <option value="" disabled>No rooms available for this branch</option>
+                    <option value="" disabled>
+                      No rooms available for this branch
+                    </option>
                   ) : null}
                 </select>
                 {roomsError && (
@@ -750,9 +929,12 @@ export default function CreateEvent() {
                 )}
               </div>
             </div>
-            
+
             <div className="sm:col-span-6">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Description
               </label>
               <div className="mt-1">
@@ -769,9 +951,12 @@ export default function CreateEvent() {
                 Briefly describe the event, its purpose, and any special notes.
               </p>
             </div>
-            
+
             <div className="sm:col-span-2">
-              <label htmlFor="expectedAttendees" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="expectedAttendees"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Expected Attendees
               </label>
               <div className="mt-1">
@@ -787,11 +972,13 @@ export default function CreateEvent() {
               </div>
             </div>
           </div>
-          
+
           {/* Recurrence Pattern */}
           <div className="px-6 py-5 border-t border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-medium text-gray-900">Recurrence Pattern</h2>
+              <h2 className="text-base font-medium text-gray-900">
+                Recurrence Pattern
+              </h2>
               <div className="flex items-center">
                 <input
                   id="is-recurring"
@@ -801,17 +988,23 @@ export default function CreateEvent() {
                   onChange={toggleRecurring}
                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor="is-recurring" className="ml-2 text-sm text-gray-700">
+                <label
+                  htmlFor="is-recurring"
+                  className="ml-2 text-sm text-gray-700"
+                >
                   This is a recurring event
                 </label>
               </div>
             </div>
           </div>
-          
+
           {eventData.isRecurring && (
             <div className="px-6 py-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
               <div className="sm:col-span-2">
-                <label htmlFor="recurringFrequency" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="recurringFrequency"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Frequency
                 </label>
                 <div className="mt-1">
@@ -831,9 +1024,12 @@ export default function CreateEvent() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="sm:col-span-2">
-                <label htmlFor="recurringInterval" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="recurringInterval"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Repeat every
                 </label>
                 <div className="mt-1 flex items-center">
@@ -847,27 +1043,33 @@ export default function CreateEvent() {
                     className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                   <span className="ml-2 text-sm text-gray-500">
-                    {formFields.recurringFrequency === 'daily' ? 'days' :
-                     formFields.recurringFrequency === 'weekly' ? 'weeks' :
-                     formFields.recurringFrequency === 'monthly' ? 'months' : ''}
+                    {formFields.recurringFrequency === "daily"
+                      ? "days"
+                      : formFields.recurringFrequency === "weekly"
+                        ? "weeks"
+                        : formFields.recurringFrequency === "monthly"
+                          ? "months"
+                          : ""}
                   </span>
                 </div>
               </div>
-              
-              {eventData.recurringFrequency === 'weekly' && (
+
+              {eventData.recurringFrequency === "weekly" && (
                 <div className="sm:col-span-6">
                   <fieldset>
-                    <legend className="text-sm font-medium text-gray-700">Repeat on</legend>
+                    <legend className="text-sm font-medium text-gray-700">
+                      Repeat on
+                    </legend>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                      {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
                         <button
                           key={index}
                           type="button"
                           onClick={() => toggleRecurringDay(index)}
                           className={`rounded-full h-8 w-8 flex items-center justify-center text-sm font-medium ${
                             eventData.recurringDays!.includes(index)
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? "bg-indigo-600 text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
                         >
                           {day}
@@ -879,10 +1081,12 @@ export default function CreateEvent() {
               )}
             </div>
           )}
-          
+
           {/* Resources */}
           <div className="px-6 py-5 border-t border-b border-gray-200">
-            <h2 className="text-base font-medium text-gray-900">Resources Needed</h2>
+            <h2 className="text-base font-medium text-gray-900">
+              Resources Needed
+            </h2>
           </div>
           <div className="px-6 py-6 space-y-4">
             {eventData.resources!.map((resource: string, index: number) => (
@@ -911,54 +1115,77 @@ export default function CreateEvent() {
               + Add Resource
             </button>
           </div>
-          
+
           {/* Volunteer Roles */}
           <div className="px-6 py-5 border-t border-b border-gray-200">
-            <h2 className="text-base font-medium text-gray-900">Volunteer Needs</h2>
+            <h2 className="text-base font-medium text-gray-900">
+              Volunteer Needs
+            </h2>
           </div>
           <div className="px-6 py-6 space-y-4">
-            {eventData.volunteerRoles!.map((roleData: { role: string; count: number }, index: number) => (
-              <div key={index} className="flex items-center gap-2">
-                <select
-                  value={roleData.role}
-                  onChange={(e) => updateVolunteerRole(index, 'role', e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select Role</option>
-                  {rolesLoading ? (
-                    <option value="" disabled>Loading roles...</option>
-                  ) : fetchedVolunteerRoles && fetchedVolunteerRoles.length > 0 ? (
-                    fetchedVolunteerRoles.map((role: { id: string; name: string; description?: string }) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
+            {eventData.volunteerRoles!.map(
+              (roleData: { role: string; count: number }, index: number) => (
+                <div key={index} className="flex items-center gap-2">
+                  <select
+                    value={roleData.role}
+                    onChange={(e) =>
+                      updateVolunteerRole(index, "role", e.target.value)
+                    }
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select Role</option>
+                    {rolesLoading ? (
+                      <option value="" disabled>
+                        Loading roles...
                       </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>No volunteer roles available</option>
+                    ) : fetchedVolunteerRoles &&
+                      fetchedVolunteerRoles.length > 0 ? (
+                      fetchedVolunteerRoles.map(
+                        (role: {
+                          id: string;
+                          name: string;
+                          description?: string;
+                        }) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ),
+                      )
+                    ) : (
+                      <option value="" disabled>
+                        No volunteer roles available
+                      </option>
+                    )}
+                  </select>
+                  {rolesError && (
+                    <p className="text-sm text-red-600">
+                      Error loading roles. Please try again.
+                    </p>
                   )}
-                </select>
-                {rolesError && (
-                  <p className="text-sm text-red-600">
-                    Error loading roles. Please try again.
-                  </p>
-                )}
-                <input
-                  type="number"
-                  min="1"
-                  value={roleData.count}
-                  onChange={(e) => updateVolunteerRole(index, 'count', parseInt(e.target.value))}
-                  className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-                <span className="text-sm text-gray-500">needed</span>
-                <button
-                  type="button"
-                  onClick={() => removeVolunteerRole(index)}
-                  className="inline-flex items-center rounded-md bg-white px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </div>
-            ))}
+                  <input
+                    type="number"
+                    min="1"
+                    value={roleData.count}
+                    onChange={(e) =>
+                      updateVolunteerRole(
+                        index,
+                        "count",
+                        parseInt(e.target.value),
+                      )
+                    }
+                    className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                  <span className="text-sm text-gray-500">needed</span>
+                  <button
+                    type="button"
+                    onClick={() => removeVolunteerRole(index)}
+                    className="inline-flex items-center rounded-md bg-white px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ),
+            )}
             <button
               type="button"
               onClick={addVolunteerRole}
@@ -967,27 +1194,37 @@ export default function CreateEvent() {
               + Add Volunteer Role
             </button>
           </div>
-          
+
           {/* Visibility Settings */}
           <div className="px-6 py-5 border-t border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-medium text-gray-900">Visibility Settings</h2>
+              <h2 className="text-base font-medium text-gray-900">
+                Visibility Settings
+              </h2>
               <div className="flex items-center">
                 <input
                   id="is-public"
                   name="isPublic"
                   type="checkbox"
                   checked={eventData.isPublic}
-                  onChange={() => setEventData({...eventData, isPublic: !eventData.isPublic})}
+                  onChange={() =>
+                    setEventData({
+                      ...eventData,
+                      isPublic: !eventData.isPublic,
+                    })
+                  }
                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor="is-public" className="ml-2 text-sm text-gray-700">
+                <label
+                  htmlFor="is-public"
+                  className="ml-2 text-sm text-gray-700"
+                >
                   Make this event public
                 </label>
               </div>
             </div>
           </div>
-          
+
           {/* Form Buttons */}
           <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
             <Link href="/dashboard/calendar">
@@ -998,7 +1235,7 @@ export default function CreateEvent() {
                 Cancel
               </button>
             </Link>
-              {submitButton}
+            {submitButton}
           </div>
         </div>
       </form>

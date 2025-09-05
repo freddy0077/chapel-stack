@@ -1,6 +1,6 @@
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /**
  * Interface for filter objects that can use either branchId or organisationId
@@ -18,17 +18,18 @@ export interface OrganizationBranchFilter {
 export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
   const { state } = useAuth();
   const user = state.user;
-  
+
   return useMemo(() => {
     const filter: OrganizationBranchFilter = {};
-    
+
     // Get the default branchId from user's branches
-    const defaultBranchId = user?.userBranches && user.userBranches.length > 0 
-      ? user.userBranches[0]?.branch?.id
-      : undefined;
-    
+    const defaultBranchId =
+      user?.userBranches && user.userBranches.length > 0
+        ? user.userBranches[0]?.branch?.id
+        : undefined;
+
     // For SUPER_ADMIN with organisationId, filter by organisation instead of branch
-    if (user?.primaryRole === 'super_admin' && user?.organisationId) {
+    if (user?.primaryRole === "super_admin" && user?.organisationId) {
       filter.organisationId = String(user.organisationId);
     } else {
       // For all other users, filter by branchId and only include organisationId if it's valid
@@ -37,7 +38,7 @@ export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
       }
       filter.branchId = defaultBranchId;
     }
-    
+
     return filter;
   }, [user]);
 };

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Organization Management Queries
 export const GET_SUBSCRIPTION_ORGANIZATIONS = gql`

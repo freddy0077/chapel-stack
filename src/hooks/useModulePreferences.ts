@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 // Basic module preferences hook
 // This is a simplified version - can be enhanced later with actual module management
@@ -10,31 +10,31 @@ export function useModulePreferences() {
     // For now, enable all modules by default
     // In a real implementation, this would load from user preferences or organization settings
     const defaultModules = [
-      'dashboard',
-      'members',
-      'groups',
-      'events',
-      'finances',
-      'attendance',
-      'communication',
-      'pastoral_care',
-      'sacraments',
-      'sermons',
-      'reports',
-      'settings',
-      'organizations',
-      'user_management',
-      'analytics',
-      'performance',
-      'billing',
-      'subscription_plans',
-      'support',
-      'budgets',
-      'donations',
-      'profile',
-      'contributions',
-      'branches',
-      'staff'
+      "dashboard",
+      "members",
+      "groups",
+      "events",
+      "finances",
+      "attendance",
+      "communication",
+      "pastoral_care",
+      "sacraments",
+      "sermons",
+      "reports",
+      "settings",
+      "organizations",
+      "user_management",
+      "analytics",
+      "performance",
+      "billing",
+      "subscription_plans",
+      "support",
+      "budgets",
+      "donations",
+      "profile",
+      "contributions",
+      "branches",
+      "staff",
     ];
 
     setEnabledModules(defaultModules);
@@ -42,15 +42,13 @@ export function useModulePreferences() {
   }, []);
 
   const enableModule = (moduleId: string) => {
-    setEnabledModules(prev => 
-      prev.includes(moduleId) ? prev : [...prev, moduleId]
+    setEnabledModules((prev) =>
+      prev.includes(moduleId) ? prev : [...prev, moduleId],
     );
   };
 
   const disableModule = (moduleId: string) => {
-    setEnabledModules(prev => 
-      prev.filter(id => id !== moduleId)
-    );
+    setEnabledModules((prev) => prev.filter((id) => id !== moduleId));
   };
 
   const isModuleEnabled = (moduleId: string) => {
@@ -62,6 +60,6 @@ export function useModulePreferences() {
     isLoading,
     enableModule,
     disableModule,
-    isModuleEnabled
+    isModuleEnabled,
   };
 }

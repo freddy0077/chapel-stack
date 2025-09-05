@@ -1,45 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import RecipientSelector from './RecipientSelector';
-import { useSendEmail, useSendSms, useSendNotification } from '@/graphql/hooks/useSendMessage';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
-import Link from 'next/link';
-import ChannelSelector from './components/ChannelSelector';
-import MessageContent from './components/MessageContent';
-import SchedulingSection from './components/SchedulingSection';
-import CustomPlaceholders from './components/CustomPlaceholders';
-import { EmailTemplate } from './components/RichHtmlEditor';
+import React, { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import RecipientSelector from "./RecipientSelector";
+import {
+  useSendEmail,
+  useSendSms,
+  useSendNotification,
+} from "@/graphql/hooks/useSendMessage";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import Link from "next/link";
+import ChannelSelector from "./components/ChannelSelector";
+import MessageContent from "./components/MessageContent";
+import SchedulingSection from "./components/SchedulingSection";
+import CustomPlaceholders from "./components/CustomPlaceholders";
+import { EmailTemplate } from "./components/RichHtmlEditor";
 
 // SMS constants
 const SMS_CHAR_LIMIT_SINGLE = 160;
 const SMS_CHAR_LIMIT_MULTI = 153; // Characters per segment in multi-segment SMS
 const SMS_PLACEHOLDERS = [
-  { key: '{firstName}', description: 'Recipient\'s first name' },
-  { key: '{lastName}', description: 'Recipient\'s last name' },
-  { key: '{fullName}', description: 'Recipient\'s full name' },
-  { key: '{churchName}', description: 'Your church name' },
-  { key: '{date}', description: 'Current date' },
+  { key: "{firstName}", description: "Recipient's first name" },
+  { key: "{lastName}", description: "Recipient's last name" },
+  { key: "{fullName}", description: "Recipient's full name" },
+  { key: "{churchName}", description: "Your church name" },
+  { key: "{date}", description: "Current date" },
 ];
 
 // Function to calculate SMS segments
-const calculateSmsSegments = (text: string): { count: number, remaining: number, total: number } => {
+const calculateSmsSegments = (
+  text: string,
+): { count: number; remaining: number; total: number } => {
   const length = text.length;
   if (length <= SMS_CHAR_LIMIT_SINGLE) {
-    return { 
-      count: 1, 
+    return {
+      count: 1,
       remaining: SMS_CHAR_LIMIT_SINGLE - length,
-      total: length 
+      total: length,
     };
   } else {
     const segments = Math.ceil(length / SMS_CHAR_LIMIT_MULTI);
-    return { 
-      count: segments, 
-      remaining: (segments * SMS_CHAR_LIMIT_MULTI) - length,
-      total: length 
+    return {
+      count: segments,
+      remaining: segments * SMS_CHAR_LIMIT_MULTI - length,
+      total: length,
     };
   }
 };
@@ -53,60 +59,65 @@ const estimateSmsCredits = (segments: number, recipients: number): number => {
 // Utility function to strip HTML tags and convert to plain text
 const stripHtmlTags = (html: string): string => {
   // Create a temporary div element to parse HTML
-  const tempDiv = document.createElement('div');
+  const tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
-  
+
   // Get text content and clean up whitespace
-  let text = tempDiv.textContent || tempDiv.innerText || '';
-  
+  let text = tempDiv.textContent || tempDiv.innerText || "";
+
   // Replace multiple whitespaces/newlines with single spaces
-  text = text.replace(/\s+/g, ' ').trim();
-  
+  text = text.replace(/\s+/g, " ").trim();
+
   // Convert common HTML entities
-  text = text.replace(/&nbsp;/g, ' ')
-             .replace(/&amp;/g, '&')
-             .replace(/&lt;/g, '<')
-             .replace(/&gt;/g, '>')
-             .replace(/&quot;/g, '"')
-             .replace(/&#39;/g, "'");
-  
+  text = text
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
   return text;
 };
 
 // Utility function to resolve frontend placeholders
 const resolveFrontendPlaceholders = (content: string, user: any): string => {
   let resolvedContent = content;
-  
+
   // Get current date in a readable format
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
+
   // Get church name from user's organization or use default
-  const churchName = user?.organisation?.name || user?.organizationName || 'Your Church';
-  
+  const churchName =
+    user?.organisation?.name || user?.organizationName || "Your Church";
+
   // Replace frontend-handled placeholders
   resolvedContent = resolvedContent
     .replace(/{date}/g, currentDate)
     .replace(/{churchName}/g, churchName);
-  
+
   // Note: {firstName}, {lastName}, {fullName}, {email} are left for backend processing
-  
+
   return resolvedContent;
 };
 
 // Utility function to resolve custom placeholders defined by user
-const resolveCustomPlaceholders = (content: string, customPlaceholders: { key: string; value: string }[]): string => {
+const resolveCustomPlaceholders = (
+  content: string,
+  customPlaceholders: { key: string; value: string }[],
+): string => {
   let resolvedContent = content;
-  
-  customPlaceholders.forEach(placeholder => {
-    const regex = new RegExp(placeholder.key.replace(/[{}]/g, '\\$&'), 'g');
+
+  customPlaceholders.forEach((placeholder) => {
+    const regex = new RegExp(placeholder.key.replace(/[{}]/g, "\\$&"), "g");
     resolvedContent = resolvedContent.replace(regex, placeholder.value);
   });
-  
+
   return resolvedContent;
 };
 
@@ -116,30 +127,39 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
 ];
 
 const CHANNELS = [
-  { key: 'email', label: 'Email' },
-  { key: 'sms', label: 'SMS' },
-  { key: 'inapp', label: 'In-App' },
-  { key: 'push', label: 'Push' },
+  { key: "email", label: "Email" },
+  { key: "sms", label: "SMS" },
+  { key: "inapp", label: "In-App" },
+  { key: "push", label: "Push" },
 ];
 
 export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
   const { state } = useAuth();
   const user = state.user;
   const { organisationId, branchId } = useOrganisationBranch();
-  const [selectedChannels, setSelectedChannels] = useState<string[]>(['email']);
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [selectedChannels, setSelectedChannels] = useState<string[]>(["email"]);
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
-  const [success, setSuccess] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplate | null>(null);
+  const [success, setSuccess] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [recipients, setRecipients] = useState<any[]>([]);
-  const [birthdayRange, setBirthdayRange] = useState('');
+  const [birthdayRange, setBirthdayRange] = useState("");
   const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
-  const [scheduledTime, setScheduledTime] = useState('');
-  const [smsSegmentInfo, setSmsSegmentInfo] = useState({ count: 0, remaining: SMS_CHAR_LIMIT_SINGLE, total: 0 });
-  const [customPlaceholders, setCustomPlaceholders] = useState<{ key: string; value: string }[]>([]);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(
+    undefined,
+  );
+  const [scheduledTime, setScheduledTime] = useState("");
+  const [smsSegmentInfo, setSmsSegmentInfo] = useState({
+    count: 0,
+    remaining: SMS_CHAR_LIMIT_SINGLE,
+    total: 0,
+  });
+  const [customPlaceholders, setCustomPlaceholders] = useState<
+    { key: string; value: string }[]
+  >([]);
 
   // GraphQL mutations
   const { sendEmail } = useSendEmail();
@@ -148,10 +168,10 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
 
   // Helper functions
   const toggleChannel = (channel: string) => {
-    setSelectedChannels(prev => 
-      prev.includes(channel) 
-        ? prev.filter(c => c !== channel)
-        : [...prev, channel]
+    setSelectedChannels((prev) =>
+      prev.includes(channel)
+        ? prev.filter((c) => c !== channel)
+        : [...prev, channel],
     );
   };
 
@@ -177,7 +197,7 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
   // Validation
   const isFormValid = () => {
     if (selectedChannels.length === 0) return false;
-    if (selectedChannels.includes('email') && !subject.trim()) return false;
+    if (selectedChannels.includes("email") && !subject.trim()) return false;
     if (!body.trim()) return false;
     return true;
   };
@@ -185,35 +205,45 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
   // Send message handler
   const handleSend = async () => {
     if (!isFormValid()) {
-      setErrorMsg('Please fill in all required fields.');
+      setErrorMsg("Please fill in all required fields.");
       return;
     }
 
     setLoading(true);
-    setErrorMsg('');
-    setSuccess('');
+    setErrorMsg("");
+    setSuccess("");
 
     try {
       // Process recipients and filters
-      const memberIds = recipients.map(r => r.id);
-      const groupIds = recipients.filter(r => r.type === 'group').map(r => r.id);
-      const filterKeys = recipients.filter(r => r.type === 'filter').map(r => r.key);
+      const memberIds = recipients.map((r) => r.id);
+      const groupIds = recipients
+        .filter((r) => r.type === "group")
+        .map((r) => r.id);
+      const filterKeys = recipients
+        .filter((r) => r.type === "filter")
+        .map((r) => r.key);
 
       // Handle scheduling
       let scheduledDateTime = null;
       if (isScheduled && scheduledDate && scheduledTime) {
-        const [hours, minutes] = scheduledTime.split(':');
+        const [hours, minutes] = scheduledTime.split(":");
         const dateTime = new Date(scheduledDate);
         dateTime.setHours(parseInt(hours), parseInt(minutes));
         scheduledDateTime = dateTime.toISOString();
       }
 
-      let action = '';
+      let action = "";
 
       // Email
-      if (selectedChannels.includes('email')) {
-        const resolvedSubject = resolveCustomPlaceholders(resolveFrontendPlaceholders(subject, user), customPlaceholders);
-        const resolvedBody = resolveCustomPlaceholders(resolveFrontendPlaceholders(body, user), customPlaceholders);
+      if (selectedChannels.includes("email")) {
+        const resolvedSubject = resolveCustomPlaceholders(
+          resolveFrontendPlaceholders(subject, user),
+          customPlaceholders,
+        );
+        const resolvedBody = resolveCustomPlaceholders(
+          resolveFrontendPlaceholders(body, user),
+          customPlaceholders,
+        );
         await sendEmail({
           variables: {
             input: {
@@ -228,15 +258,18 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               branchId,
               scheduledAt: scheduledDateTime,
               // attachments: []
-            }
-          }
+            },
+          },
         });
-        action = 'Email sent';
+        action = "Email sent";
       }
 
       // SMS
-      if (selectedChannels.includes('sms')) {
-        const resolvedBody = resolveCustomPlaceholders(resolveFrontendPlaceholders(body, user), customPlaceholders);
+      if (selectedChannels.includes("sms")) {
+        const resolvedBody = resolveCustomPlaceholders(
+          resolveFrontendPlaceholders(body, user),
+          customPlaceholders,
+        );
         const plainTextBody = stripHtmlTags(resolvedBody);
         await sendSms({
           variables: {
@@ -249,19 +282,22 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               organisationId,
               branchId,
               scheduledAt: scheduledDateTime,
-            }
-          }
+            },
+          },
         });
-        action = action ? `${action} and SMS sent` : 'SMS sent';
+        action = action ? `${action} and SMS sent` : "SMS sent";
       }
 
       // In-App Notification
-      if (selectedChannels.includes('inapp')) {
-        const resolvedBody = resolveCustomPlaceholders(resolveFrontendPlaceholders(body, user), customPlaceholders);
+      if (selectedChannels.includes("inapp")) {
+        const resolvedBody = resolveCustomPlaceholders(
+          resolveFrontendPlaceholders(body, user),
+          customPlaceholders,
+        );
         await sendNotification({
           variables: {
             input: {
-              title: subject || 'Notification',
+              title: subject || "Notification",
               message: resolvedBody,
               recipients: filterKeys.length > 0 ? [] : memberIds,
               groupIds: groupIds.length ? groupIds : undefined,
@@ -270,27 +306,32 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               organisationId,
               branchId,
               scheduledAt: scheduledDateTime,
-            }
-          }
+            },
+          },
         });
-        action = action ? `${action} and notification sent` : 'Notification sent';
+        action = action
+          ? `${action} and notification sent`
+          : "Notification sent";
       }
 
-      setSuccess(isScheduled ? `${action} and scheduled successfully!` : `${action} successfully!`);
-      
+      setSuccess(
+        isScheduled
+          ? `${action} and scheduled successfully!`
+          : `${action} successfully!`,
+      );
+
       // Reset form
-      setSubject('');
-      setBody('');
+      setSubject("");
+      setBody("");
       setRecipients([]);
-      setBirthdayRange('');
+      setBirthdayRange("");
       setSelectedTemplate(null);
       setIsScheduled(false);
       setScheduledDate(undefined);
-      setScheduledTime('');
-
+      setScheduledTime("");
     } catch (error) {
-      console.error('Send error:', error);
-      setErrorMsg('Failed to send message. Please try again.');
+      console.error("Send error:", error);
+      setErrorMsg("Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -298,7 +339,7 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
 
   // Calculate SMS segments whenever body changes and SMS is selected
   useEffect(() => {
-    if (selectedChannels.includes('sms')) {
+    if (selectedChannels.includes("sms")) {
       setSmsSegmentInfo(calculateSmsSegments(body));
     }
   }, [body, selectedChannels]);
@@ -307,23 +348,41 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
     <div className="relative min-h-[90vh]">
       {/* Gradient Header */}
       <div className="absolute left-0 right-0 -top-10 h-60 bg-gradient-to-tr from-violet-500 via-fuchsia-400 to-pink-400 blur-2xl opacity-60 pointer-events-none z-0" />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start relative z-10 pt-6">
         {/* Main Content Column */}
         <div className="md:col-span-2 space-y-8">
           <div className="flex items-center gap-4 mb-2">
             {onBack && (
-              <Button variant="ghost" size="icon" onClick={onBack} className="text-gray-500 hover:bg-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onBack}
+                className="text-gray-500 hover:bg-gray-100"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </Button>
             )}
-            <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">Compose Message</h2>
+            <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">
+              Compose Message
+            </h2>
           </div>
 
           {/* Channel Selection */}
-          <ChannelSelector 
+          <ChannelSelector
             selectedChannels={selectedChannels}
             onToggleChannel={toggleChannel}
           />
@@ -389,9 +448,9 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
                   Sending...
                 </div>
               ) : isScheduled ? (
-                'Schedule Message'
+                "Schedule Message"
               ) : (
-                'Send Message'
+                "Send Message"
               )}
             </Button>
 
@@ -411,13 +470,19 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
 
           {/* Message Summary */}
           <Card className="p-6 rounded-3xl shadow-2xl bg-white/90 border-0">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Message Summary</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              Message Summary
+            </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Channels:</span>
                 <div className="flex gap-1">
-                  {selectedChannels.map(channel => (
-                    <Badge key={channel} variant="secondary" className="text-xs">
+                  {selectedChannels.map((channel) => (
+                    <Badge
+                      key={channel}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {channel.toUpperCase()}
                     </Badge>
                   ))}
@@ -431,7 +496,9 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subject:</span>
                   <span className="font-medium truncate ml-2" title={subject}>
-                    {subject.length > 20 ? `${subject.substring(0, 20)}...` : subject}
+                    {subject.length > 20
+                      ? `${subject.substring(0, 20)}...`
+                      : subject}
                   </span>
                 </div>
               )}
@@ -456,7 +523,10 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               <li>• Test with a small group first</li>
             </ul>
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link href="/dashboard/communication" className="text-violet-600 hover:text-violet-700 text-sm font-medium">
+              <Link
+                href="/dashboard/communication"
+                className="text-violet-600 hover:text-violet-700 text-sm font-medium"
+              >
                 ← Back to Communications
               </Link>
             </div>

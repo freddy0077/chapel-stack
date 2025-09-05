@@ -1,10 +1,10 @@
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useMemo } from 'react';
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useMemo } from "react";
 
 // Define role constants for consistency
 const ROLES = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  BRANCH_ADMIN: 'BRANCH_ADMIN',
+  SUPER_ADMIN: "SUPER_ADMIN",
+  BRANCH_ADMIN: "BRANCH_ADMIN",
   // Add other roles here as the application grows
 };
 
@@ -23,13 +23,19 @@ const ROLES = {
 export const usePermissions = () => {
   const { state } = useAuth();
   const user = state.user;
-  const role = useMemo(() => user?.primaryRole?.toUpperCase(), [user?.primaryRole]);
+  const role = useMemo(
+    () => user?.primaryRole?.toUpperCase(),
+    [user?.primaryRole],
+  );
 
   const isSuperAdmin = useMemo(() => role === ROLES.SUPER_ADMIN, [role]);
   const isBranchAdmin = useMemo(() => role === ROLES.BRANCH_ADMIN, [role]);
 
   // --- Permission sets based on roles ---
-  const canManageEvents = useMemo(() => isSuperAdmin || isBranchAdmin, [isSuperAdmin, isBranchAdmin]);
+  const canManageEvents = useMemo(
+    () => isSuperAdmin || isBranchAdmin,
+    [isSuperAdmin, isBranchAdmin],
+  );
   const canCustomizeModules = useMemo(() => isSuperAdmin, [isSuperAdmin]);
 
   return {

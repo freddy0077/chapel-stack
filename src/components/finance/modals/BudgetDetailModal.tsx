@@ -1,8 +1,13 @@
 "use client";
 
-import React from 'react';
-import { XMarkIcon, PencilIcon, CalendarIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import { Budget } from '@/graphql/queries/budget';
+import React from "react";
+import {
+  XMarkIcon,
+  PencilIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+} from "@heroicons/react/24/outline";
+import { Budget } from "@/graphql/queries/budget";
 
 interface BudgetDetailModalProps {
   isOpen: boolean;
@@ -15,12 +20,12 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
   isOpen,
   onClose,
   budget,
-  onEdit
+  onEdit,
 }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -37,15 +42,20 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         ></div>
-        
+
         {/* Modal positioning */}
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
+          &#8203;
+        </span>
+
         {/* Modal content */}
         <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           {/* Header */}
@@ -77,7 +87,9 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
                 <div className="flex items-center">
                   <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-600">Total Budget</p>
+                    <p className="text-sm font-medium text-blue-600">
+                      Total Budget
+                    </p>
                     <p className="text-2xl font-bold text-blue-900">
                       {formatCurrency(budget.totalAmount)}
                     </p>
@@ -89,7 +101,9 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
                 <div className="flex items-center">
                   <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-green-600">Total Spent</p>
+                    <p className="text-sm font-medium text-green-600">
+                      Total Spent
+                    </p>
                     <p className="text-2xl font-bold text-green-900">
                       {formatCurrency(budget.totalSpent)}
                     </p>
@@ -101,7 +115,9 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
                 <div className="flex items-center">
                   <CalendarIcon className="h-8 w-8 text-purple-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-purple-600">Progress</p>
+                    <p className="text-sm font-medium text-purple-600">
+                      Progress
+                    </p>
                     <p className="text-2xl font-bold text-purple-900">
                       {calculateProgress().toFixed(1)}%
                     </p>
@@ -113,37 +129,56 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
             {/* Budget Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-3">Budget Information</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-3">
+                  Budget Information
+                </h4>
                 <dl className="space-y-2">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Fund</dt>
-                    <dd className="text-sm text-gray-900">{budget.fund?.name}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Fiscal Year</dt>
-                    <dd className="text-sm text-gray-900">{budget.fiscalYear}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Status</dt>
-                    <dd className="text-sm text-gray-900 capitalize">{budget.status.toLowerCase()}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Period</dt>
                     <dd className="text-sm text-gray-900">
-                      {new Date(budget.startDate).toLocaleDateString()} - {new Date(budget.endDate).toLocaleDateString()}
+                      {budget.fund?.name}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Fiscal Year
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      {budget.fiscalYear}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Status
+                    </dt>
+                    <dd className="text-sm text-gray-900 capitalize">
+                      {budget.status.toLowerCase()}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Period
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                      {new Date(budget.endDate).toLocaleDateString()}
                     </dd>
                   </div>
                 </dl>
               </div>
 
               <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-3">Description</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-3">
+                  Description
+                </h4>
                 <p className="text-sm text-gray-600">
-                  {budget.description || 'No description provided.'}
+                  {budget.description || "No description provided."}
                 </p>
                 {budget.notes && (
                   <>
-                    <h4 className="text-lg font-medium text-gray-900 mb-3 mt-4">Notes</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-3 mt-4">
+                      Notes
+                    </h4>
                     <p className="text-sm text-gray-600">{budget.notes}</p>
                   </>
                 )}
@@ -152,7 +187,9 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
 
             {/* Budget Items */}
             <div>
-              <h4 className="text-lg font-medium text-gray-900 mb-3">Budget Items</h4>
+              <h4 className="text-lg font-medium text-gray-900 mb-3">
+                Budget Items
+              </h4>
               {budget.budgetItems && budget.budgetItems.length > 0 ? (
                 <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                   <table className="min-w-full divide-y divide-gray-300">
@@ -179,13 +216,13 @@ const BudgetDetailModal: React.FC<BudgetDetailModalProps> = ({
                             {item.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.description || '-'}
+                            {item.description || "-"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {formatCurrency(item.amount)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.expenseCategory?.name || '-'}
+                            {item.expenseCategory?.name || "-"}
                           </td>
                         </tr>
                       ))}

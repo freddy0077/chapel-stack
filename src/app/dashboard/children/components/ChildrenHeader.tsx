@@ -1,16 +1,20 @@
 "use client";
 
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
 interface ChildrenHeaderProps {
   onOpenAddChild: () => void;
 }
 
-export default function ChildrenHeader({ onOpenAddChild }: ChildrenHeaderProps) {
+export default function ChildrenHeader({
+  onOpenAddChild,
+}: ChildrenHeaderProps) {
   return (
     <div className="sm:flex sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-base font-semibold leading-6 text-gray-900">Children's Ministry</h1>
+        <h1 className="text-base font-semibold leading-6 text-gray-900">
+          Children's Ministry
+        </h1>
         <p className="mt-2 text-sm text-gray-700">
           Manage children's profiles, check-ins, and classroom assignments
         </p>

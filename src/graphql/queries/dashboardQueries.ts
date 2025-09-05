@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragment for KPI Card data
 export const KPI_CARD_FRAGMENT = gql`
@@ -171,8 +171,14 @@ export const GET_DASHBOARD_DATA = gql`
 
 // Query for fetching user dashboard preferences
 export const GET_USER_DASHBOARD_PREFERENCE = gql`
-  query GetUserDashboardPreference($branchId: ID!, $dashboardType: DashboardType!) {
-    userDashboardPreference(branchId: $branchId, dashboardType: $dashboardType) {
+  query GetUserDashboardPreference(
+    $branchId: ID!
+    $dashboardType: DashboardType!
+  ) {
+    userDashboardPreference(
+      branchId: $branchId
+      dashboardType: $dashboardType
+    ) {
       id
       userId
       branchId
@@ -186,8 +192,16 @@ export const GET_USER_DASHBOARD_PREFERENCE = gql`
 
 // Mutation for saving user dashboard preferences
 export const SAVE_USER_DASHBOARD_PREFERENCE = gql`
-  mutation SaveUserDashboardPreference($branchId: String!, $dashboardType: DashboardType!, $layoutConfig: JSON!) {
-    saveUserDashboardPreference(branchId: $branchId, dashboardType: $dashboardType, layoutConfig: $layoutConfig) {
+  mutation SaveUserDashboardPreference(
+    $branchId: String!
+    $dashboardType: DashboardType!
+    $layoutConfig: JSON!
+  ) {
+    saveUserDashboardPreference(
+      branchId: $branchId
+      dashboardType: $dashboardType
+      layoutConfig: $layoutConfig
+    ) {
       id
       userId
       branchId

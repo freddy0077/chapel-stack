@@ -1,6 +1,7 @@
-import { CreateMemberInput } from '../../../types/member.types';
+import { CreateMemberInput } from "../../../types/member.types";
 
-export interface WizardFormData extends Omit<CreateMemberInput, 'branchId' | 'organisationId'> {
+export interface WizardFormData
+  extends Omit<CreateMemberInput, "branchId" | "organisationId"> {
   // Additional UI-specific fields
   confirmEmail?: string;
   profileImage?: File;

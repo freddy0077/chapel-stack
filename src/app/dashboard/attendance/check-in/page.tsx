@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  ArrowLeftIcon, 
+import {
+  ArrowLeftIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   UserPlusIcon,
   ArrowPathIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import CheckInModal from "../../attendance/components/CheckInModal";
 
@@ -27,7 +27,7 @@ const mockChildren = [
     emergencyContact: "Grandma - (555) 987-6543",
     checkedIn: false,
     lastCheckIn: "2023-03-26 09:45 AM",
-    className: "Elementary (K-2)"
+    className: "Elementary (K-2)",
   },
   {
     id: "2",
@@ -41,7 +41,7 @@ const mockChildren = [
     emergencyContact: "Uncle Bob - (555) 876-5432",
     checkedIn: true,
     lastCheckIn: "2023-04-02 09:30 AM",
-    className: "Preschool (3-5)"
+    className: "Preschool (3-5)",
   },
   {
     id: "3",
@@ -55,7 +55,7 @@ const mockChildren = [
     emergencyContact: "Aunt Mary - (555) 765-4321",
     checkedIn: false,
     lastCheckIn: "2023-03-26 09:50 AM",
-    className: "Elementary (3-5)"
+    className: "Elementary (3-5)",
   },
   {
     id: "4",
@@ -69,7 +69,7 @@ const mockChildren = [
     emergencyContact: "Grandmother - (555) 654-3210",
     checkedIn: true,
     lastCheckIn: "2023-04-02 09:15 AM",
-    className: "Toddler (1-2)"
+    className: "Toddler (1-2)",
   },
   {
     id: "5",
@@ -83,7 +83,7 @@ const mockChildren = [
     emergencyContact: "Grandfather - (555) 543-2109",
     checkedIn: false,
     lastCheckIn: "2023-03-19 09:40 AM",
-    className: "Elementary (K-2)"
+    className: "Elementary (K-2)",
   },
   {
     id: "6",
@@ -97,15 +97,25 @@ const mockChildren = [
     emergencyContact: "Uncle John - (555) 432-1098",
     checkedIn: false,
     lastCheckIn: "2023-03-26 09:35 AM",
-    className: "Preschool (3-5)"
-  }
+    className: "Preschool (3-5)",
+  },
 ];
 
 // Mock events
 const mockEvents = [
   { id: "1", name: "Sunday School", date: "2023-04-02", active: true },
-  { id: "2", name: "Wednesday Night Kids Club", date: "2023-04-05", active: false },
-  { id: "3", name: "Special Easter Program", date: "2023-04-09", active: false }
+  {
+    id: "2",
+    name: "Wednesday Night Kids Club",
+    date: "2023-04-05",
+    active: false,
+  },
+  {
+    id: "3",
+    name: "Special Easter Program",
+    date: "2023-04-09",
+    active: false,
+  },
 ];
 
 export default function CheckInSystem() {
@@ -113,21 +123,23 @@ export default function CheckInSystem() {
   const [selectedEvent, setSelectedEvent] = useState(mockEvents[0]);
   const [children, setChildren] = useState(mockChildren);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedChild, setSelectedChild] = useState<typeof mockChildren[0] | null>(null);
+  const [selectedChild, setSelectedChild] = useState<
+    (typeof mockChildren)[0] | null
+  >(null);
   const [checkinMode, setCheckinMode] = useState<"in" | "out">("in");
 
   // Filter children based on search query
-  const filteredChildren = children.filter(child => {
+  const filteredChildren = children.filter((child) => {
     const fullName = `${child.firstName} ${child.lastName}`.toLowerCase();
     const parentName = child.parentName.toLowerCase();
     const query = searchQuery.toLowerCase();
-    
+
     return fullName.includes(query) || parentName.includes(query);
   });
 
   // Handlers
   const handleCheckIn = (childId: string) => {
-    const child = children.find(c => c.id === childId);
+    const child = children.find((c) => c.id === childId);
     if (child) {
       setSelectedChild(child);
       setCheckinMode(child.checkedIn ? "out" : "in");
@@ -136,18 +148,18 @@ export default function CheckInSystem() {
   };
 
   const handleCheckInComplete = (childId: string, isCheckedIn: boolean) => {
-    setChildren(prev => 
-      prev.map(child => 
-        child.id === childId 
-          ? { 
-              ...child, 
+    setChildren((prev) =>
+      prev.map((child) =>
+        child.id === childId
+          ? {
+              ...child,
               checkedIn: isCheckedIn,
-              lastCheckIn: isCheckedIn 
-                ? new Date().toLocaleString() 
-                : child.lastCheckIn
-            } 
-          : child
-      )
+              lastCheckIn: isCheckedIn
+                ? new Date().toLocaleString()
+                : child.lastCheckIn,
+            }
+          : child,
+      ),
     );
     setIsModalOpen(false);
     setSelectedChild(null);
@@ -158,16 +170,19 @@ export default function CheckInSystem() {
       {/* Header section */}
       <div className="mb-8">
         <div className="flex items-center">
-          <Link 
-            href="/dashboard/attendance" 
+          <Link
+            href="/dashboard/attendance"
             className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500"
           >
             <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Children&apos;s Ministry Check-In</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Children&apos;s Ministry Check-In
+          </h1>
         </div>
         <p className="mt-2 text-sm text-gray-500">
-          Check-in and check-out for today&apos;s children&apos;s ministry and events
+          Check-in and check-out for today&apos;s children&apos;s ministry and
+          events
         </p>
       </div>
 
@@ -184,7 +199,7 @@ export default function CheckInSystem() {
                 value={selectedEvent.id}
                 onChange={(e) => {
                   const eventId = e.target.value;
-                  const event = mockEvents.find(evt => evt.id === eventId);
+                  const event = mockEvents.find((evt) => evt.id === eventId);
                   if (event) {
                     setSelectedEvent(event);
                   }
@@ -215,12 +230,15 @@ export default function CheckInSystem() {
             </Link>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 pt-5 mt-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="relative flex-grow max-w-lg">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                <MagnifyingGlassIcon
+                  className="h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
               </div>
               <input
                 type="text"
@@ -234,17 +252,21 @@ export default function CheckInSystem() {
             </div>
             <div className="flex space-x-2">
               <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
-                {children.filter(c => c.checkedIn).length} Checked In
+                {children.filter((c) => c.checkedIn).length} Checked In
               </span>
               <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
-                {children.length - children.filter(c => c.checkedIn).length} Not Checked In
+                {children.length - children.filter((c) => c.checkedIn).length}{" "}
+                Not Checked In
               </span>
               <button
                 type="button"
                 className="inline-flex items-center rounded-md bg-white px-2.5 py-0.5 text-sm font-medium text-gray-500 hover:text-gray-700"
                 onClick={() => setChildren([...mockChildren])}
               >
-                <ArrowPathIcon className="-ml-0.5 mr-1 h-4 w-4" aria-hidden="true" />
+                <ArrowPathIcon
+                  className="-ml-0.5 mr-1 h-4 w-4"
+                  aria-hidden="true"
+                />
                 Reset
               </button>
             </div>
@@ -255,15 +277,22 @@ export default function CheckInSystem() {
       {/* Children check-in list */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Children Check-in List</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            Children Check-in List
+          </h3>
         </div>
         <ul className="divide-y divide-gray-200">
           {filteredChildren.length === 0 ? (
             <li className="px-6 py-12 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                <UserPlusIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <UserPlusIcon
+                  className="h-6 w-6 text-gray-400"
+                  aria-hidden="true"
+                />
               </div>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No children found</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No children found
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Try a different search term or add a new child to the system.
               </p>
@@ -272,7 +301,10 @@ export default function CheckInSystem() {
                   href="/dashboard/children/new"
                   className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline"
                 >
-                  <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+                  <PlusIcon
+                    className="-ml-0.5 mr-1.5 h-5 w-5"
+                    aria-hidden="true"
+                  />
                   Add New Child
                 </Link>
               </div>
@@ -284,12 +316,15 @@ export default function CheckInSystem() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white font-medium">
-                        {child.firstName.charAt(0)}{child.lastName.charAt(0)}
+                        {child.firstName.charAt(0)}
+                        {child.lastName.charAt(0)}
                       </div>
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center">
-                        <h4 className="text-sm font-medium text-gray-900">{child.firstName} {child.lastName}</h4>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {child.firstName} {child.lastName}
+                        </h4>
                         {child.checkedIn ? (
                           <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                             <CheckCircleIcon className="-ml-0.5 mr-1 h-3 w-3" />
@@ -310,7 +345,8 @@ export default function CheckInSystem() {
                       </p>
                       {child.allergies !== "None" && (
                         <p className="text-xs text-red-500 mt-1">
-                          <span className="font-medium">Allergies:</span> {child.allergies}
+                          <span className="font-medium">Allergies:</span>{" "}
+                          {child.allergies}
                         </p>
                       )}
                     </div>

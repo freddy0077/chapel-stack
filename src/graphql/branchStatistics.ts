@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const BRANCH_STATISTICS_FRAGMENT = gql`
   fragment BranchStatisticsFields on BranchStatistics {

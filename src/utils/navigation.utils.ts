@@ -1,18 +1,24 @@
-import { NavigationCategory, NavigationItem, getNavigationForRole } from '@/config/navigation.config';
+import {
+  NavigationCategory,
+  NavigationItem,
+  getNavigationForRole,
+} from "@/config/navigation.config";
 
 /**
  * Filter navigation items based on enabled modules
  */
 export function filterNavigationByModules(
   navigation: NavigationCategory[],
-  enabledModules: string[]
+  enabledModules: string[],
 ): NavigationCategory[] {
-  return navigation.map(category => ({
-    ...category,
-    items: category.items.filter(item => 
-      !item.moduleId || enabledModules.includes(item.moduleId)
-    )
-  })).filter(category => category.items.length > 0);
+  return navigation
+    .map((category) => ({
+      ...category,
+      items: category.items.filter(
+        (item) => !item.moduleId || enabledModules.includes(item.moduleId),
+      ),
+    }))
+    .filter((category) => category.items.length > 0);
 }
 
 /**
@@ -20,14 +26,14 @@ export function filterNavigationByModules(
  */
 export function getUserNavigation(
   userRole: string,
-  enabledModules: string[] = []
+  enabledModules: string[] = [],
 ): NavigationCategory[] {
   const roleNavigation = getNavigationForRole(userRole);
-  
+
   if (enabledModules.length === 0) {
     return roleNavigation;
   }
-  
+
   return filterNavigationByModules(roleNavigation, enabledModules);
 }
 
@@ -36,7 +42,7 @@ export function getUserNavigation(
  */
 export function findNavigationItem(
   navigation: NavigationCategory[],
-  href: string
+  href: string,
 ): NavigationItem | null {
   for (const category of navigation) {
     for (const item of category.items) {
@@ -53,26 +59,26 @@ export function findNavigationItem(
  */
 export function getBreadcrumbs(
   navigation: NavigationCategory[],
-  currentPath: string
+  currentPath: string,
 ): NavigationItem[] {
   const breadcrumbs: NavigationItem[] = [];
-  
+
   // Find the current item
   const currentItem = findNavigationItem(navigation, currentPath);
   if (currentItem) {
     breadcrumbs.push(currentItem);
   }
-  
+
   // Add parent items if needed (for nested routes)
-  const pathSegments = currentPath.split('/').filter(Boolean);
+  const pathSegments = currentPath.split("/").filter(Boolean);
   for (let i = pathSegments.length - 1; i > 0; i--) {
-    const parentPath = '/' + pathSegments.slice(0, i).join('/');
+    const parentPath = "/" + pathSegments.slice(0, i).join("/");
     const parentItem = findNavigationItem(navigation, parentPath);
     if (parentItem && !breadcrumbs.includes(parentItem)) {
       breadcrumbs.unshift(parentItem);
     }
   }
-  
+
   return breadcrumbs;
 }
 
@@ -81,17 +87,17 @@ export function getBreadcrumbs(
  */
 export function isNavigationItemActive(
   item: NavigationItem,
-  currentPath: string
+  currentPath: string,
 ): boolean {
   if (item.href === currentPath) {
     return true;
   }
-  
+
   // Check if current path starts with item href (for nested routes)
-  if (currentPath.startsWith(item.href) && item.href !== '/') {
+  if (currentPath.startsWith(item.href) && item.href !== "/") {
     return true;
   }
-  
+
   return false;
 }
 
@@ -100,7 +106,7 @@ export function isNavigationItemActive(
  */
 export function getActiveNavigationItem(
   navigation: NavigationCategory[],
-  currentPath: string
+  currentPath: string,
 ): NavigationItem | null {
   for (const category of navigation) {
     for (const item of category.items) {
@@ -115,8 +121,13 @@ export function getActiveNavigationItem(
 /**
  * Count total navigation items for a role
  */
-export function getNavigationItemCount(navigation: NavigationCategory[]): number {
-  return navigation.reduce((total, category) => total + category.items.length, 0);
+export function getNavigationItemCount(
+  navigation: NavigationCategory[],
+): number {
+  return navigation.reduce(
+    (total, category) => total + category.items.length,
+    0,
+  );
 }
 
 /**
@@ -124,7 +135,9 @@ export function getNavigationItemCount(navigation: NavigationCategory[]): number
  */
 export function getNavigationCategory(
   navigation: NavigationCategory[],
-  categoryName: string
+  categoryName: string,
 ): NavigationCategory | null {
-  return navigation.find(category => category.category === categoryName) || null;
+  return (
+    navigation.find((category) => category.category === categoryName) || null
+  );
 }

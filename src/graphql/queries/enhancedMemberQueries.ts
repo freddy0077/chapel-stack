@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Enhanced GET_MEMBER query with basic fields
 export const GET_MEMBER_ENHANCED = gql`
@@ -55,7 +55,10 @@ export const GET_MEMBER_ENHANCED = gql`
 
 // Enhanced GET_MEMBERS query with basic fields for list views
 export const GET_MEMBERS_ENHANCED = gql`
-  query GetMembersEnhanced($filter: UserFilterInput, $pagination: PaginationInput) {
+  query GetMembersEnhanced(
+    $filter: UserFilterInput
+    $pagination: PaginationInput
+  ) {
     members(filter: $filter, pagination: $pagination) {
       items {
         id
@@ -113,8 +116,16 @@ export const GET_MEMBERS_ENHANCED = gql`
 
 // Enhanced search query with basic fields
 export const SEARCH_MEMBERS_ENHANCED = gql`
-  query SearchMembersEnhanced($search: String, $organisationId: String, $branchId: String) {
-    members(search: $search, organisationId: $organisationId, branchId: $branchId) {
+  query SearchMembersEnhanced(
+    $search: String
+    $organisationId: String
+    $branchId: String
+  ) {
+    members(
+      search: $search
+      organisationId: $organisationId
+      branchId: $branchId
+    ) {
       id
       firstName
       middleName
@@ -149,8 +160,18 @@ export const SEARCH_MEMBERS_ENHANCED = gql`
 
 // Query for member cards with basic fields
 export const GET_MEMBERS_CARDS_ENHANCED = gql`
-  query GetMembersCardsEnhanced($organisationId: String, $branchId: String, $limit: Int, $offset: Int) {
-    members(organisationId: $organisationId, branchId: $branchId, limit: $limit, offset: $offset) {
+  query GetMembersCardsEnhanced(
+    $organisationId: String
+    $branchId: String
+    $limit: Int
+    $offset: Int
+  ) {
+    members(
+      organisationId: $organisationId
+      branchId: $branchId
+      limit: $limit
+      offset: $offset
+    ) {
       id
       firstName
       middleName

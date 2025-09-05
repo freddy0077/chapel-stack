@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 interface ChildrenSearchProps {
   searchTerm: string;
@@ -16,20 +16,23 @@ const ageGroups = [
   "Toddlers (2-3)",
   "Preschool (4-5)",
   "Elementary (6-10)",
-  "Preteen (11-12)"
+  "Preteen (11-12)",
 ];
 
-export default function ChildrenSearch({ 
-  searchTerm, 
-  onSearchChange, 
-  ageGroup, 
-  onAgeGroupChange 
+export default function ChildrenSearch({
+  searchTerm,
+  onSearchChange,
+  ageGroup,
+  onAgeGroupChange,
 }: ChildrenSearchProps) {
   return (
     <div className="mt-6 flex flex-col sm:flex-row gap-4">
       <div className="relative rounded-md shadow-sm flex-1">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <MagnifyingGlassIcon
+            className="h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
         </div>
         <input
           type="text"

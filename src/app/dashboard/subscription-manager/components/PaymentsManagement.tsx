@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery } from '@apollo/client';
-import { 
+import { useState, useMemo } from "react";
+import { useQuery } from "@apollo/client";
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowPathIcon,
@@ -11,51 +11,68 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  CreditCardIcon
-} from '@heroicons/react/24/outline';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { getPaymentStatusBadgeColor, formatCurrency, formatDateTime } from '../utils/formatters';
-import { GET_SUBSCRIPTION_PAYMENTS } from '@/graphql/subscription-management';
+  CreditCardIcon,
+} from "@heroicons/react/24/outline";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  getPaymentStatusBadgeColor,
+  formatCurrency,
+  formatDateTime,
+} from "../utils/formatters";
+import { GET_SUBSCRIPTION_PAYMENTS } from "@/graphql/subscription-management";
 
 export default function PaymentsManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Fetch payments from backend
-  const { data: paymentsData, loading, error, refetch } = useQuery(GET_SUBSCRIPTION_PAYMENTS, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+  const {
+    data: paymentsData,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_SUBSCRIPTION_PAYMENTS, {
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   const payments = paymentsData?.subscriptionPayments || [];
 
   const filteredPayments = useMemo(() => {
     return payments.filter((payment: any) => {
-      const matchesSearch = payment.subscription?.organisation?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           payment.paystackReference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           payment.subscription?.plan?.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
+      const matchesSearch =
+        payment.subscription?.organisation?.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        payment.paystackReference
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        payment.subscription?.plan?.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || payment.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [payments, searchTerm, statusFilter]);
 
-  const failedPayments = payments.filter(p => p.status === 'FAILED');
+  const failedPayments = payments.filter((p) => p.status === "FAILED");
   const totalRevenue = payments
-    .filter(p => p.status === 'SUCCESSFUL')
+    .filter((p) => p.status === "SUCCESSFUL")
     .reduce((sum, p) => sum + p.amount, 0);
 
   function getStatusIcon(status: string) {
     switch (status) {
-      case 'SUCCESSFUL':
+      case "SUCCESSFUL":
         return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
-      case 'FAILED':
+      case "FAILED":
         return <XCircleIcon className="h-4 w-4 text-red-500" />;
-      case 'PENDING':
+      case "PENDING":
         return <ClockIcon className="h-4 w-4 text-yellow-500" />;
-      case 'REFUNDED':
+      case "REFUNDED":
         return <ArrowPathIcon className="h-4 w-4 text-blue-500" />;
       default:
         return <ExclamationTriangleIcon className="h-4 w-4 text-gray-500" />;
@@ -72,41 +89,50 @@ export default function PaymentsManagement() {
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Total Revenue</p>
               <p className="text-lg font-semibold text-gray-900">
-                {formatCurrency(totalRevenue, 'GHS')}
+                {formatCurrency(totalRevenue, "GHS")}
               </p>
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center">
             <XCircleIcon className="h-8 w-8 text-red-500" />
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Failed Payments</p>
-              <p className="text-lg font-semibold text-gray-900">{failedPayments.length}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Failed Payments
+              </p>
+              <p className="text-lg font-semibold text-gray-900">
+                {failedPayments.length}
+              </p>
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center">
             <ClockIcon className="h-8 w-8 text-yellow-500" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Pending</p>
               <p className="text-lg font-semibold text-gray-900">
-                {payments.filter(p => p.status === 'PENDING').length}
+                {payments.filter((p) => p.status === "PENDING").length}
               </p>
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center">
             <ArrowPathIcon className="h-8 w-8 text-blue-500" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Success Rate</p>
               <p className="text-lg font-semibold text-gray-900">
-                {Math.round((payments.filter(p => p.status === 'SUCCESSFUL').length / payments.length) * 100)}%
+                {Math.round(
+                  (payments.filter((p) => p.status === "SUCCESSFUL").length /
+                    payments.length) *
+                    100,
+                )}
+                %
               </p>
             </div>
           </div>
@@ -127,7 +153,7 @@ export default function PaymentsManagement() {
               className="pl-10"
             />
           </div>
-          
+
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -194,7 +220,10 @@ export default function PaymentsManagement() {
                         {payment.paystackReference}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {payment.authorizationCode ? 'Card Payment' : 'Online Payment'} • {payment.subscription?.plan?.name}
+                        {payment.authorizationCode
+                          ? "Card Payment"
+                          : "Online Payment"}{" "}
+                        • {payment.subscription?.plan?.name}
                       </div>
                       {payment.failureReason && (
                         <div className="text-xs text-red-600 mt-1">
@@ -224,7 +253,9 @@ export default function PaymentsManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getStatusIcon(payment.status)}
-                      <Badge className={`ml-2 ${getPaymentStatusBadgeColor(payment.status)}`}>
+                      <Badge
+                        className={`ml-2 ${getPaymentStatusBadgeColor(payment.status)}`}
+                      >
                         {payment.status}
                       </Badge>
                     </div>
@@ -237,8 +268,12 @@ export default function PaymentsManagement() {
                       <Button variant="ghost" size="sm">
                         <EyeIcon className="h-4 w-4" />
                       </Button>
-                      {payment.status === 'FAILED' && (
-                        <Button variant="ghost" size="sm" className="text-green-600">
+                      {payment.status === "FAILED" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-green-600"
+                        >
                           <ArrowPathIcon className="h-4 w-4" />
                         </Button>
                       )}
@@ -277,10 +312,9 @@ export default function PaymentsManagement() {
                 <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">No payments found</p>
                 <p className="text-sm text-gray-500">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters' 
-                    : 'Payments will appear here once subscriptions are active'
-                  }
+                  {searchTerm || statusFilter !== "all"
+                    ? "Try adjusting your search or filters"
+                    : "Payments will appear here once subscriptions are active"}
                 </p>
               </div>
             </div>

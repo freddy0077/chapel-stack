@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import { Dialog } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useSmallGroupMutations, SmallGroupStatus, SmallGroup } from '../../../../graphql/hooks/useSmallGroups';
-import { useQuery } from '@apollo/client';
-import { GET_BRANCHES } from '@/graphql/queries/branchQueries';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import { getGroupTypeOptions } from '@/utils/groupTypes';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import { Dialog } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  useSmallGroupMutations,
+  SmallGroupStatus,
+  SmallGroup,
+} from "../../../../graphql/hooks/useSmallGroups";
+import { useQuery } from "@apollo/client";
+import { GET_BRANCHES } from "@/graphql/queries/branchQueries";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import { getGroupTypeOptions } from "@/utils/groupTypes";
 
 interface EditGroupModalProps {
   isOpen: boolean;
@@ -16,7 +20,12 @@ interface EditGroupModalProps {
   afterUpdate?: () => void;
 }
 
-export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }: EditGroupModalProps) {
+export default function EditGroupModal({
+  isOpen,
+  setIsOpen,
+  group,
+  afterUpdate,
+}: EditGroupModalProps) {
   const { user } = useAuth();
   const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
@@ -24,32 +33,32 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
   // Fetch branches for super admin
   const { data: branchesData } = useQuery(GET_BRANCHES, {
     variables: { filter: organisationId ? { organisationId } : undefined },
-    skip: user?.primaryRole !== "super_admin"
+    skip: user?.primaryRole !== "super_admin",
   });
 
   const { updateSmallGroup } = useSmallGroupMutations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    type: 'BIBLE_STUDY',
-    meetingSchedule: '',
-    meetingLocation: '',
-    status: SmallGroupStatus.ACTIVE
+    name: "",
+    description: "",
+    type: "BIBLE_STUDY",
+    meetingSchedule: "",
+    meetingLocation: "",
+    status: SmallGroupStatus.ACTIVE,
   });
 
   // Initialize form data when group changes
   useEffect(() => {
     if (group) {
       setFormData({
-        name: group.name || '',
-        description: group.description || '',
-        type: group.type || 'BIBLE_STUDY',
-        meetingSchedule: group.meetingSchedule || '',
-        meetingLocation: group.location || '',
-        status: group.status || SmallGroupStatus.ACTIVE
+        name: group.name || "",
+        description: group.description || "",
+        type: group.type || "BIBLE_STUDY",
+        meetingSchedule: group.meetingSchedule || "",
+        meetingLocation: group.location || "",
+        status: group.status || SmallGroupStatus.ACTIVE,
       });
       // Set branch for super admin
       if (user?.primaryRole === "super_admin" && group.branchId) {
@@ -57,22 +66,26 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
       }
     }
   }, [group, user?.primaryRole]);
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!group) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       await updateSmallGroup(group.id, {
         name: formData.name,
@@ -80,14 +93,14 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
         type: formData.type,
         meetingSchedule: formData.meetingSchedule,
         location: formData.meetingLocation,
-        status: formData.status
+        status: formData.status,
       });
-      
+
       if (afterUpdate) afterUpdate();
-      toast.success('Group updated successfully!');
+      toast.success("Group updated successfully!");
       setIsOpen(false);
     } catch (err: any) {
-      setError(err?.message || 'Error updating group');
+      setError(err?.message || "Error updating group");
     } finally {
       setLoading(false);
     }
@@ -97,9 +110,14 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
     setIsOpen(false);
     setError(null);
   };
-  
+
   return (
-    <Dialog as="div" className="relative z-50" open={isOpen} onClose={handleClose}>
+    <Dialog
+      as="div"
+      className="relative z-50"
+      open={isOpen}
+      onClose={handleClose}
+    >
       <div className="fixed inset-0 z-50 bg-gray-700 bg-opacity-70 transition-opacity" />
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -115,10 +133,15 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
             </button>
             {/* Header */}
             <div className="px-8 pt-8 pb-4 border-b border-gray-100 bg-gradient-to-br from-indigo-50 to-white rounded-t-3xl">
-              <Dialog.Title as="h3" className="text-2xl font-bold text-gray-900 mb-1">
+              <Dialog.Title
+                as="h3"
+                className="text-2xl font-bold text-gray-900 mb-1"
+              >
                 Edit Group
               </Dialog.Title>
-              <p className="text-sm text-gray-500">Update the details for {group?.name}.</p>
+              <p className="text-sm text-gray-500">
+                Update the details for {group?.name}.
+              </p>
             </div>
             {/* Form */}
             <form onSubmit={handleSubmit} className="px-8 py-8">
@@ -132,25 +155,36 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
               {/* Branch Selector for Super Admin */}
               {user?.primaryRole === "super_admin" && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Branch<span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Branch<span className="text-red-500">*</span>
+                  </label>
                   <select
                     name="branchId"
                     value={selectedBranchId}
-                    onChange={e => setSelectedBranchId(e.target.value)}
+                    onChange={(e) => setSelectedBranchId(e.target.value)}
                     className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
                     disabled // Branch cannot be changed when editing
                   >
                     <option value="">Select Branch</option>
                     {branchesData?.branches?.items?.map((branch: any) => (
-                      <option key={branch.id} value={branch.id}>{branch.name}</option>
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-gray-500">Branch cannot be changed when editing a group</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Branch cannot be changed when editing a group
+                  </p>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-1">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-1">Group Name *</label>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-900 mb-1"
+                  >
+                    Group Name *
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -163,7 +197,12 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   />
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
+                  <label
+                    htmlFor="type"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Type
+                  </label>
                   <select
                     id="type"
                     name="type"
@@ -180,7 +219,12 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   </select>
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-1">Description</label>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-900 mb-1"
+                  >
+                    Description
+                  </label>
                   <textarea
                     name="description"
                     id="description"
@@ -192,7 +236,12 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   />
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-900 mb-1">Status *</label>
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-900 mb-1"
+                  >
+                    Status *
+                  </label>
                   <select
                     id="status"
                     name="status"
@@ -207,7 +256,12 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   </select>
                 </div>
                 <div className="col-span-1">
-                  <label htmlFor="meetingSchedule" className="block text-sm font-medium text-gray-900 mb-1">Meeting Schedule</label>
+                  <label
+                    htmlFor="meetingSchedule"
+                    className="block text-sm font-medium text-gray-900 mb-1"
+                  >
+                    Meeting Schedule
+                  </label>
                   <input
                     type="text"
                     name="meetingSchedule"
@@ -219,7 +273,12 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   />
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="meetingLocation" className="block text-sm font-medium text-gray-900 mb-1">Meeting Location</label>
+                  <label
+                    htmlFor="meetingLocation"
+                    className="block text-sm font-medium text-gray-900 mb-1"
+                  >
+                    Meeting Location
+                  </label>
                   <input
                     type="text"
                     name="meetingLocation"
@@ -244,7 +303,7 @@ export default function EditGroupModal({ isOpen, setIsOpen, group, afterUpdate }
                   className="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2 text-base font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition"
                   disabled={loading}
                 >
-                  {loading ? 'Updating...' : 'Update Group'}
+                  {loading ? "Updating..." : "Update Group"}
                 </button>
               </div>
             </form>

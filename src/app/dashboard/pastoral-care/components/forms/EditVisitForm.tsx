@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   XMarkIcon,
   UserIcon,
@@ -11,21 +11,27 @@ import {
   ClockIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
-import { useUpdatePastoralVisit } from '@/graphql/hooks/usePastoralCare';
-import { PastoralVisit } from '@/graphql/hooks/usePastoralCare';
+} from "@heroicons/react/24/outline";
+import { useUpdatePastoralVisit } from "@/graphql/hooks/usePastoralCare";
+import { PastoralVisit } from "@/graphql/hooks/usePastoralCare";
 
 // Validation schema
 const editVisitSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  visitType: z.enum(['HOME_VISIT', 'HOSPITAL_VISIT', 'OFFICE_VISIT', 'PHONE_CALL', 'OTHER']),
-  scheduledDate: z.string().min(1, 'Scheduled date is required'),
-  status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED']),
-  memberId: z.string().min(1, 'Member selection is required'),
-  pastorId: z.string().min(1, 'Pastor assignment is required'),
+  visitType: z.enum([
+    "HOME_VISIT",
+    "HOSPITAL_VISIT",
+    "OFFICE_VISIT",
+    "PHONE_CALL",
+    "OTHER",
+  ]),
+  scheduledDate: z.string().min(1, "Scheduled date is required"),
+  status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "RESCHEDULED"]),
+  memberId: z.string().min(1, "Member selection is required"),
+  pastorId: z.string().min(1, "Pastor assignment is required"),
   notes: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
 });
 
 type EditVisitFormData = z.infer<typeof editVisitSchema>;
@@ -37,28 +43,44 @@ interface EditVisitFormProps {
 }
 
 const visitTypes = [
-  { value: 'HOME_VISIT', label: 'Home Visit' },
-  { value: 'HOSPITAL_VISIT', label: 'Hospital Visit' },
-  { value: 'OFFICE_VISIT', label: 'Office Visit' },
-  { value: 'PHONE_CALL', label: 'Phone Call' },
-  { value: 'OTHER', label: 'Other' },
+  { value: "HOME_VISIT", label: "Home Visit" },
+  { value: "HOSPITAL_VISIT", label: "Hospital Visit" },
+  { value: "OFFICE_VISIT", label: "Office Visit" },
+  { value: "PHONE_CALL", label: "Phone Call" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const visitStatuses = [
-  { value: 'SCHEDULED', label: 'Scheduled', color: 'bg-blue-100 text-blue-800' },
-  { value: 'COMPLETED', label: 'Completed', color: 'bg-green-100 text-green-800' },
-  { value: 'CANCELLED', label: 'Cancelled', color: 'bg-red-100 text-red-800' },
-  { value: 'RESCHEDULED', label: 'Rescheduled', color: 'bg-yellow-100 text-yellow-800' },
+  {
+    value: "SCHEDULED",
+    label: "Scheduled",
+    color: "bg-blue-100 text-blue-800",
+  },
+  {
+    value: "COMPLETED",
+    label: "Completed",
+    color: "bg-green-100 text-green-800",
+  },
+  { value: "CANCELLED", label: "Cancelled", color: "bg-red-100 text-red-800" },
+  {
+    value: "RESCHEDULED",
+    label: "Rescheduled",
+    color: "bg-yellow-100 text-yellow-800",
+  },
 ];
 
 const priorityLevels = [
-  { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-800' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-800' },
-  { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-800' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-800' },
+  { value: "LOW", label: "Low", color: "bg-gray-100 text-gray-800" },
+  { value: "MEDIUM", label: "Medium", color: "bg-blue-100 text-blue-800" },
+  { value: "HIGH", label: "High", color: "bg-orange-100 text-orange-800" },
+  { value: "URGENT", label: "Urgent", color: "bg-red-100 text-red-800" },
 ];
 
-export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVisitFormProps) {
+export default function EditVisitForm({
+  visit,
+  onClose,
+  onUpdateVisit,
+}: EditVisitFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { updatePastoralVisit, loading } = useUpdatePastoralVisit();
 
@@ -75,14 +97,17 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
   // Pre-populate form with existing visit data
   useEffect(() => {
     if (visit) {
-      setValue('title', visit.title);
-      setValue('description', visit.description || '');
-      setValue('visitType', visit.visitType as any);
-      setValue('scheduledDate', new Date(visit.scheduledDate).toISOString().slice(0, 16));
-      setValue('status', visit.status as any);
-      setValue('memberId', visit.memberId);
-      setValue('pastorId', visit.pastorId);
-      setValue('notes', visit.notes || '');
+      setValue("title", visit.title);
+      setValue("description", visit.description || "");
+      setValue("visitType", visit.visitType as any);
+      setValue(
+        "scheduledDate",
+        new Date(visit.scheduledDate).toISOString().slice(0, 16),
+      );
+      setValue("status", visit.status as any);
+      setValue("memberId", visit.memberId);
+      setValue("pastorId", visit.pastorId);
+      setValue("notes", visit.notes || "");
       // Note: priority field might not exist in current schema, defaulting to MEDIUM
     }
   }, [visit, setValue]);
@@ -103,26 +128,29 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
       };
 
       const updatedVisit = await updatePastoralVisit(updateInput);
-      
+
       if (onUpdateVisit && updatedVisit) {
         onUpdateVisit(updatedVisit);
       }
-      
+
       onClose();
     } catch (error) {
-      console.error('Error updating pastoral visit:', error);
+      console.error("Error updating pastoral visit:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedStatus = watch('status');
-  const selectedPriority = watch('priority');
+  const selectedStatus = watch("status");
+  const selectedPriority = watch("priority");
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          onClick={onClose}
+        />
 
         <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
           <div className="flex items-center justify-between mb-6">
@@ -141,11 +169,14 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Visit Title *
               </label>
               <input
-                {...register('title')}
+                {...register("title")}
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter visit title"
@@ -161,11 +192,14 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
             {/* Visit Type and Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="visitType" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="visitType"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Visit Type *
                 </label>
                 <select
-                  {...register('visitType')}
+                  {...register("visitType")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {visitTypes.map((type) => (
@@ -175,16 +209,21 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
                   ))}
                 </select>
                 {errors.visitType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.visitType.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.visitType.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Status *
                 </label>
                 <select
-                  {...register('status')}
+                  {...register("status")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {visitStatuses.map((status) => (
@@ -194,10 +233,16 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
                   ))}
                 </select>
                 {selectedStatus && (
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
-                    visitStatuses.find(s => s.value === selectedStatus)?.color || 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {visitStatuses.find(s => s.value === selectedStatus)?.label}
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                      visitStatuses.find((s) => s.value === selectedStatus)
+                        ?.color || "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {
+                      visitStatuses.find((s) => s.value === selectedStatus)
+                        ?.label
+                    }
                   </span>
                 )}
               </div>
@@ -205,17 +250,22 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
 
             {/* Scheduled Date */}
             <div>
-              <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="scheduledDate"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 <CalendarDaysIcon className="h-4 w-4 inline mr-1" />
                 Scheduled Date & Time *
               </label>
               <input
-                {...register('scheduledDate')}
+                {...register("scheduledDate")}
                 type="datetime-local"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
               {errors.scheduledDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.scheduledDate.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.scheduledDate.message}
+                </p>
               )}
             </div>
 
@@ -232,7 +282,9 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Member assignment cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Member assignment cannot be changed
+                </p>
               </div>
 
               <div>
@@ -245,17 +297,22 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Pastor assignment cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Pastor assignment cannot be changed
+                </p>
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Description
               </label>
               <textarea
-                {...register('description')}
+                {...register("description")}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter visit description or purpose"
@@ -264,11 +321,14 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
 
             {/* Notes */}
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="notes"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Notes
               </label>
               <textarea
-                {...register('notes')}
+                {...register("notes")}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter any additional notes or observations"
@@ -295,7 +355,7 @@ export default function EditVisitForm({ visit, onClose, onUpdateVisit }: EditVis
                     Updating...
                   </>
                 ) : (
-                  'Update Visit'
+                  "Update Visit"
                 )}
               </button>
             </div>

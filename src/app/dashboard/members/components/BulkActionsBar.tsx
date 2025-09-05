@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
   XMarkIcon,
   UserGroupIcon,
   ArrowRightIcon,
@@ -12,9 +12,9 @@ import {
   ExclamationTriangleIcon,
   UserPlusIcon,
   UserMinusIcon,
-  BookOpenIcon
-} from '@heroicons/react/24/outline';
-import { BulkActionType } from '../types/member.types';
+  BookOpenIcon,
+} from "@heroicons/react/24/outline";
+import { BulkActionType } from "../types/member.types";
 
 interface BulkActionsBarProps {
   selectedCount: number;
@@ -27,32 +27,32 @@ interface BulkActionOption {
   type: BulkActionType;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  color: 'blue' | 'green' | 'orange' | 'red' | 'purple';
+  color: "blue" | "green" | "orange" | "red" | "purple";
   requiresConfirmation?: boolean;
   description: string;
 }
 
 const bulkActions: BulkActionOption[] = [
   {
-    type: 'updateStatus',
-    label: 'Update Status',
+    type: "updateStatus",
+    label: "Update Status",
     icon: UserGroupIcon,
-    color: 'blue',
-    description: 'Change membership status for selected members'
+    color: "blue",
+    description: "Change membership status for selected members",
   },
   {
-    type: 'addToGroup',
-    label: 'Add to Group',
+    type: "addToGroup",
+    label: "Add to Group",
     icon: UserPlusIcon,
-    color: 'green',
-    description: 'Add selected members to a group'
+    color: "green",
+    description: "Add selected members to a group",
   },
   {
-    type: 'removeFromGroup',
-    label: 'Remove from Group',
+    type: "removeFromGroup",
+    label: "Remove from Group",
     icon: UserMinusIcon,
-    color: 'green',
-    description: 'Remove selected members from a group'
+    color: "green",
+    description: "Remove selected members from a group",
   },
   // {
   //   type: 'addToMinistry',
@@ -69,36 +69,37 @@ const bulkActions: BulkActionOption[] = [
   //   description: 'Remove selected members from a ministry'
   // },
   {
-    type: 'recordSacrament',
-    label: 'Record Sacrament',
+    type: "recordSacrament",
+    label: "Record Sacrament",
     icon: BookOpenIcon,
-    color: 'blue',
-    description: 'Record sacrament for selected members'
+    color: "blue",
+    description: "Record sacrament for selected members",
   },
   {
-    type: 'export',
-    label: 'Export Data',
+    type: "export",
+    label: "Export Data",
     icon: DocumentArrowDownIcon,
-    color: 'orange',
-    description: 'Export member data to CSV/Excel'
+    color: "orange",
+    description: "Export member data to CSV/Excel",
   },
   {
-    type: 'deactivate',
-    label: 'Deactivate Members',
+    type: "deactivate",
+    label: "Deactivate Members",
     icon: TrashIcon,
-    color: 'red',
+    color: "red",
     requiresConfirmation: true,
-    description: 'Deactivate selected members'
-  }
+    description: "Deactivate selected members",
+  },
 ];
 
 const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   selectedCount,
   onClearSelection,
   onBulkAction,
-  className = ""
+  className = "",
 }) => {
-  const [showConfirmation, setShowConfirmation] = useState<BulkActionType | null>(null);
+  const [showConfirmation, setShowConfirmation] =
+    useState<BulkActionType | null>(null);
 
   const handleActionClick = (action: BulkActionOption) => {
     if (action.requiresConfirmation) {
@@ -117,11 +118,11 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
 
   const getColorClasses = (color: string) => {
     const colorMap = {
-      blue: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-      green: 'bg-green-100 text-green-700 hover:bg-green-200',
-      purple: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-      orange: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
-      red: 'bg-red-100 text-red-700 hover:bg-red-200'
+      blue: "bg-blue-100 text-blue-700 hover:bg-blue-200",
+      green: "bg-green-100 text-green-700 hover:bg-green-200",
+      purple: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+      orange: "bg-orange-100 text-orange-700 hover:bg-orange-200",
+      red: "bg-red-100 text-red-700 hover:bg-red-200",
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.blue;
   };
@@ -143,12 +144,15 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  {selectedCount} member{selectedCount !== 1 ? 's' : ''} selected
+                  {selectedCount} member{selectedCount !== 1 ? "s" : ""}{" "}
+                  selected
                 </h3>
-                <p className="text-sm text-gray-600">Choose an action to perform</p>
+                <p className="text-sm text-gray-600">
+                  Choose an action to perform
+                </p>
               </div>
             </div>
-            
+
             <button
               onClick={onClearSelection}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -202,18 +206,25 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                   <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Confirm Action</h3>
-                  <p className="text-sm text-gray-600">This action cannot be undone</p>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Confirm Action
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    This action cannot be undone
+                  </p>
                 </div>
               </div>
 
               <div className="mb-6">
                 <p className="text-gray-700">
-                  Are you sure you want to{' '}
+                  Are you sure you want to{" "}
                   <span className="font-medium text-red-600">
-                    {showConfirmation === 'deactivate' ? 'deactivate' : 'perform this action on'}
-                  </span>{' '}
-                  {selectedCount} selected member{selectedCount !== 1 ? 's' : ''}?
+                    {showConfirmation === "deactivate"
+                      ? "deactivate"
+                      : "perform this action on"}
+                  </span>{" "}
+                  {selectedCount} selected member
+                  {selectedCount !== 1 ? "s" : ""}?
                 </p>
               </div>
 

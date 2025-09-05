@@ -1,8 +1,12 @@
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_MEMBERS_LIST, GET_MEMBER, GET_MEMBERS_WITH_CARDS_ALL_FIELDS } from "../queries/memberQueries";
+import {
+  GET_MEMBERS_LIST,
+  GET_MEMBER,
+  GET_MEMBERS_WITH_CARDS_ALL_FIELDS,
+} from "../queries/memberQueries";
 import { GET_MEMBER_ENHANCED } from "../queries/enhancedMemberQueries";
 import { ASSIGN_RFID_CARD_TO_MEMBER } from "../mutations/memberMutations";
-import { OrganizationBranchFilterInput } from '../types/filters';
+import { OrganizationBranchFilterInput } from "../types/filters";
 
 // Types for GraphQL responses
 interface MembersListQueryResponse {
@@ -13,45 +17,45 @@ interface MembersListQueryResponse {
 
 // Enum types for member operations
 export enum MemberStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  VISITOR = 'VISITOR',
-  FIRST_TIME_VISITOR = 'FIRST_TIME_VISITOR',
-  RETURNING_VISITOR = 'RETURNING_VISITOR',
-  TRANSFERRED_OUT = 'TRANSFERRED_OUT',
-  DECEASED = 'DECEASED',
-  EXCOMMUNICATED = 'EXCOMMUNICATED',
-  PENDING = 'PENDING',
-  PROSPECTIVE = 'PROSPECTIVE'
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  VISITOR = "VISITOR",
+  FIRST_TIME_VISITOR = "FIRST_TIME_VISITOR",
+  RETURNING_VISITOR = "RETURNING_VISITOR",
+  TRANSFERRED_OUT = "TRANSFERRED_OUT",
+  DECEASED = "DECEASED",
+  EXCOMMUNICATED = "EXCOMMUNICATED",
+  PENDING = "PENDING",
+  PROSPECTIVE = "PROSPECTIVE",
 }
 
 export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER',
-  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY'
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  UNKNOWN = "UNKNOWN",
+  PREFER_NOT_TO_SAY = "PREFER_NOT_TO_SAY",
 }
 
 export enum MaritalStatus {
-  SINGLE = 'SINGLE',
-  MARRIED = 'MARRIED',
-  DIVORCED = 'DIVORCED',
-  WIDOWED = 'WIDOWED',
-  SEPARATED = 'SEPARATED',
-  OTHER = 'OTHER'
+  SINGLE = "SINGLE",
+  MARRIED = "MARRIED",
+  DIVORCED = "DIVORCED",
+  WIDOWED = "WIDOWED",
+  SEPARATED = "SEPARATED",
+  OTHER = "OTHER",
 }
 
 export enum ContactPreference {
-  EMAIL = 'EMAIL',
-  PHONE = 'PHONE',
-  SMS = 'SMS',
-  POSTAL_MAIL = 'POSTAL_MAIL',
-  NO_CONTACT = 'NO_CONTACT'
+  EMAIL = "EMAIL",
+  PHONE = "PHONE",
+  SMS = "SMS",
+  POSTAL_MAIL = "POSTAL_MAIL",
+  NO_CONTACT = "NO_CONTACT",
 }
 
 export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC'
+  ASC = "ASC",
+  DESC = "DESC",
 }
 
 // Address type
@@ -201,7 +205,7 @@ export interface Member {
   memberIdGeneratedAt?: string;
   cardIssued?: boolean;
   cardIssuedAt?: string;
-  cardType?: 'NFC' | 'RFID' | 'BARCODE';
+  cardType?: "NFC" | "RFID" | "BARCODE";
   createdAt: string;
   updatedAt: string;
   customFields?: Record<string, string | number | boolean | null>;
@@ -215,7 +219,7 @@ export interface AddressInput {
   state?: string;
   postalCode?: string;
   country?: string;
-};
+}
 
 export type EmergencyContactInput = {
   name: string;
@@ -278,7 +282,7 @@ export type MemberInput = {
 export interface PaginationInput {
   skip?: number;
   take?: number;
-};
+}
 
 export type AgeRangeInput = {
   min?: number;
@@ -294,21 +298,27 @@ export interface UserFilterInput extends OrganizationBranchFilterInput {
   search?: string;
   status?: MemberStatus;
   gender?: Gender;
-};
+}
 
 // Hook for fetching members with pagination and filtering
-export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInput) => {
+export const useMembers = (
+  filters?: UserFilterInput,
+  pagination?: PaginationInput,
+) => {
   // Fetch paginated members
-  const { data, loading, error, refetch } = useQuery<MembersListQueryResponse>(GET_MEMBERS_LIST, {
-    variables: {
-      skip: pagination?.skip ?? 0,
-      take: pagination?.take ?? 10,
-      branchId: filters?.branchId,
-      organisationId: filters?.organisationId,
-      search: filters?.search || undefined, // <-- ensure search is sent
+  const { data, loading, error, refetch } = useQuery<MembersListQueryResponse>(
+    GET_MEMBERS_LIST,
+    {
+      variables: {
+        skip: pagination?.skip ?? 0,
+        take: pagination?.take ?? 10,
+        branchId: filters?.branchId,
+        organisationId: filters?.organisationId,
+        search: filters?.search || undefined, // <-- ensure search is sent
+      },
+      notifyOnNetworkStatusChange: true,
     },
-    notifyOnNetworkStatusChange: true,
-  });
+  );
 
   const items = data?.members || [];
   // Use the length of fetched members as total count - simpler and always consistent
@@ -319,23 +329,29 @@ export const useMembers = (filters?: UserFilterInput, pagination?: PaginationInp
     totalCount,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
 // Hook to fetch members with RFID cards and all fields for Card Management List
-export const useMembersWithCardsAllFields = (filters: UserFilterInput, pagination?: { take?: number; skip?: number }) => {
-  const { data, loading, error, refetch } = useQuery<{ members: Member[] }>(GET_MEMBERS_WITH_CARDS_ALL_FIELDS, {
-    variables: {
-      take: pagination?.take ?? 10,
-      skip: pagination?.skip ?? 0,
-      organisationId: filters.organisationId,
-      branchId: filters.branchId,
+export const useMembersWithCardsAllFields = (
+  filters: UserFilterInput,
+  pagination?: { take?: number; skip?: number },
+) => {
+  const { data, loading, error, refetch } = useQuery<{ members: Member[] }>(
+    GET_MEMBERS_WITH_CARDS_ALL_FIELDS,
+    {
+      variables: {
+        take: pagination?.take ?? 10,
+        skip: pagination?.skip ?? 0,
+        organisationId: filters.organisationId,
+        branchId: filters.branchId,
+      },
+      skip: !filters.organisationId, // Skip if no organisationId is provided
+      notifyOnNetworkStatusChange: true,
+      fetchPolicy: "cache-and-network",
     },
-    skip: !filters.organisationId, // Skip if no organisationId is provided
-    notifyOnNetworkStatusChange: true,
-    fetchPolicy: "cache-and-network",
-  });
+  );
 
   const members = data?.members || [];
   // No totalCount field in this query; can be added if backend supports
@@ -349,13 +365,14 @@ export const useMembersWithCardsAllFields = (filters: UserFilterInput, paginatio
 
 // Hook for assigning a new RFID card to a member
 export function useAssignRfidCardToMember() {
-  const [assignRfidCardToMemberMutation, { data, loading, error }] = useMutation(
-    ASSIGN_RFID_CARD_TO_MEMBER
-  );
+  const [assignRfidCardToMemberMutation, { data, loading, error }] =
+    useMutation(ASSIGN_RFID_CARD_TO_MEMBER);
 
   // Usage: assignRfidCardToMember({ assignRfidCardInput: { memberId, memberId } })
   const assignRfidCardToMember = async (assignRfidCardInput: unknown) => {
-    return assignRfidCardToMemberMutation({ variables: { assignRfidCardInput } });
+    return assignRfidCardToMemberMutation({
+      variables: { assignRfidCardInput },
+    });
   };
 
   return {
@@ -368,15 +385,18 @@ export function useAssignRfidCardToMember() {
 
 // Hook for fetching a single member by ID
 export const useMember = (id: string) => {
-  const { data, loading, error, refetch } = useQuery<{ member: Member }>(GET_MEMBER_ENHANCED, {
-    variables: { memberId: id },
-    skip: !id,
-    fetchPolicy: "cache-and-network"
-  });
+  const { data, loading, error, refetch } = useQuery<{ member: Member }>(
+    GET_MEMBER_ENHANCED,
+    {
+      variables: { memberId: id },
+      skip: !id,
+      fetchPolicy: "cache-and-network",
+    },
+  );
   return {
     member: data?.member ?? null,
     loading,
     error,
-    refetch
+    refetch,
   };
 };

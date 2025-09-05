@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { XMarkIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 
-export default function GivingStatementModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function GivingStatementModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const [member, setMember] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -14,38 +20,49 @@ export default function GivingStatementModal({ open, onClose }: { open: boolean;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
-        <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-700" onClick={onClose}>
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+          onClick={onClose}
+        >
           <XMarkIcon className="h-6 w-6" />
         </button>
-        <h2 className="text-xl font-bold text-indigo-900 mb-6">View Giving Statement</h2>
+        <h2 className="text-xl font-bold text-indigo-900 mb-6">
+          View Giving Statement
+        </h2>
         <form className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-indigo-500 mb-1">Member</label>
+            <label className="block text-xs font-semibold text-indigo-500 mb-1">
+              Member
+            </label>
             <input
               type="text"
               className="rounded-xl border border-indigo-100 px-3 py-2 w-full bg-white/90 shadow focus:ring-2 focus:ring-indigo-300"
               placeholder="Search by name or ID..."
               value={member}
-              onChange={e => setMember(e.target.value)}
+              onChange={(e) => setMember(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-xs font-semibold text-indigo-500 mb-1">Start Date</label>
+              <label className="block text-xs font-semibold text-indigo-500 mb-1">
+                Start Date
+              </label>
               <input
                 type="date"
                 className="rounded-xl border border-indigo-100 px-3 py-2 w-full bg-white/90 shadow focus:ring-2 focus:ring-indigo-300"
                 value={startDate}
-                onChange={e => setStartDate(e.target.value)}
+                onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-semibold text-indigo-500 mb-1">End Date</label>
+              <label className="block text-xs font-semibold text-indigo-500 mb-1">
+                End Date
+              </label>
               <input
                 type="date"
                 className="rounded-xl border border-indigo-100 px-3 py-2 w-full bg-white/90 shadow focus:ring-2 focus:ring-indigo-300"
                 value={endDate}
-                onChange={e => setEndDate(e.target.value)}
+                onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Mutation to create a new member
 export const CREATE_MEMBER = gql`
@@ -75,7 +75,10 @@ export const DELETE_MEMBER = gql`
 
 // Mutation to update a member's emergency contact
 export const UPDATE_EMERGENCY_CONTACT = gql`
-  mutation UpdateEmergencyContact($memberId: ID!, $input: EmergencyContactInput!) {
+  mutation UpdateEmergencyContact(
+    $memberId: ID!
+    $input: EmergencyContactInput!
+  ) {
     updateEmergencyContact(memberId: $memberId, input: $input) {
       id
       emergencyContact {

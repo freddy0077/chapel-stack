@@ -1,4 +1,4 @@
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation } from "@apollo/client";
 
 const CREATE_ORGANISATION = gql`
   mutation CreateOrganisation($input: CreateOrganisationInput!) {
@@ -30,6 +30,7 @@ const CREATE_ORGANISATION = gql`
 `;
 
 export function useCreateOrganisation() {
-  const [createOrganisation, { data, loading, error }] = useMutation(CREATE_ORGANISATION);
+  const [createOrganisation, { data, loading, error }] =
+    useMutation(CREATE_ORGANISATION);
   return { createOrganisation, data, loading, error };
 }

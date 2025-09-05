@@ -1,12 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_BUDGET_VS_ACTUAL_REPORT } from '@/graphql/queries/reports';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_BUDGET_VS_ACTUAL_REPORT } from "@/graphql/queries/reports";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface BudgetVsActualReportProps {
   branchId?: string;
@@ -40,7 +53,7 @@ const defaultTotals = {
   budgeted: 0,
   actual: 0,
   variance: 0,
-  percentVariance: 0
+  percentVariance: 0,
 };
 
 export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
@@ -50,12 +63,14 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
 }) => {
   const { loading, error, data } = useQuery(GET_BUDGET_VS_ACTUAL_REPORT, {
     variables: {
-      branchId: branchId === 'all' ? null : branchId,
-      organisationId: organisationId === 'all' ? null : organisationId,
-      dateRange: dateRange ? {
-        startDate: dateRange.startDate?.toISOString(),
-        endDate: dateRange.endDate?.toISOString(),
-      } : null,
+      branchId: branchId === "all" ? null : branchId,
+      organisationId: organisationId === "all" ? null : organisationId,
+      dateRange: dateRange
+        ? {
+            startDate: dateRange.startDate?.toISOString(),
+            endDate: dateRange.endDate?.toISOString(),
+          }
+        : null,
     },
     skip: !dateRange?.startDate || !dateRange?.endDate,
   });
@@ -66,39 +81,44 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
     if (data?.generateReport?.data) {
       try {
         let parsedData;
-        
-        if (typeof data.generateReport.data === 'string') {
+
+        if (typeof data.generateReport.data === "string") {
           try {
             parsedData = JSON.parse(data.generateReport.data);
           } catch (e) {
-            console.error('Failed to parse JSON string:', e);
+            console.error("Failed to parse JSON string:", e);
             parsedData = null;
           }
         } else {
           parsedData = data.generateReport.data;
         }
-        
+
         if (parsedData) {
           setReportData({
-            categories: Array.isArray(parsedData.categories) ? parsedData.categories : [],
-            totals: parsedData.totals ? {
-              budgeted: Number(parsedData.totals.budgeted) || 0,
-              actual: Number(parsedData.totals.actual) || 0,
-              variance: Number(parsedData.totals.variance) || 0,
-              percentVariance: Number(parsedData.totals.percentVariance) || 0
-            } : defaultTotals
+            categories: Array.isArray(parsedData.categories)
+              ? parsedData.categories
+              : [],
+            totals: parsedData.totals
+              ? {
+                  budgeted: Number(parsedData.totals.budgeted) || 0,
+                  actual: Number(parsedData.totals.actual) || 0,
+                  variance: Number(parsedData.totals.variance) || 0,
+                  percentVariance:
+                    Number(parsedData.totals.percentVariance) || 0,
+                }
+              : defaultTotals,
           });
         } else {
           setReportData({
             categories: [],
-            totals: defaultTotals
+            totals: defaultTotals,
           });
         }
       } catch (error) {
-        console.error('Failed to process report data:', error);
+        console.error("Failed to process report data:", error);
         setReportData({
           categories: [],
-          totals: defaultTotals
+          totals: defaultTotals,
         });
       }
     } else {
@@ -107,21 +127,21 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
   }, [data]);
 
   const formatCurrency = (amount: number | undefined | null) => {
-    if (amount === undefined || amount === null) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (amount === undefined || amount === null) return "$0.00";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount);
   };
 
   const formatPercentage = (value: number | undefined | null) => {
-    if (value === undefined || value === null) return '0%';
+    if (value === undefined || value === null) return "0%";
     return `${value.toFixed(1)}%`;
   };
 
   const getVarianceColor = (value: number | undefined | null) => {
-    if (value === undefined || value === null) return '';
-    return value < 0 ? 'text-red-500' : 'text-green-500';
+    if (value === undefined || value === null) return "";
+    return value < 0 ? "text-red-500" : "text-green-500";
   };
 
   if (loading) {
@@ -179,7 +199,7 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
 
   // Safely access totals with fallbacks
   const totals = reportData.totals || defaultTotals;
-  
+
   return (
     <Card>
       <CardHeader>
@@ -192,18 +212,26 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Budget
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(totals.budgeted)}</p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(totals.budgeted)}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Actual</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Actual
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(totals.actual)}</p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(totals.actual)}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -211,8 +239,11 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
               <CardTitle className="text-sm font-medium">Variance</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className={`text-2xl font-bold ${getVarianceColor(totals.percentVariance)}`}>
-                {formatCurrency(totals.variance)} ({formatPercentage(totals.percentVariance)})
+              <p
+                className={`text-2xl font-bold ${getVarianceColor(totals.percentVariance)}`}
+              >
+                {formatCurrency(totals.variance)} (
+                {formatPercentage(totals.percentVariance)})
               </p>
             </CardContent>
           </Card>
@@ -234,16 +265,25 @@ export const BudgetVsActualReport: React.FC<BudgetVsActualReportProps> = ({
               <TableBody>
                 {(reportData.categories || []).map((category, index) => (
                   <TableRow key={index}>
-                    <TableCell>{category.name || 'Unknown'}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(category.budgeted)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(category.actual)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(category.variance)}</TableCell>
-                    <TableCell className={`text-right ${getVarianceColor(category.percentVariance)}`}>
+                    <TableCell>{category.name || "Unknown"}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(category.budgeted)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(category.actual)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(category.variance)}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right ${getVarianceColor(category.percentVariance)}`}
+                    >
                       {formatPercentage(category.percentVariance)}
                     </TableCell>
                   </TableRow>
                 ))}
-                {(!reportData.categories || reportData.categories.length === 0) && (
+                {(!reportData.categories ||
+                  reportData.categories.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
                       No budget categories found for the selected period.

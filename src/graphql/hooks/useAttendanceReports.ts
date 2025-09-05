@@ -1,5 +1,8 @@
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_ATTENDANCE_REPORT, GET_ATTENDANCE_STATS } from '../queries/attendanceReportQueries';
+import { useLazyQuery } from "@apollo/client";
+import {
+  GENERATE_ATTENDANCE_REPORT,
+  GET_ATTENDANCE_STATS,
+} from "../queries/attendanceReportQueries";
 
 // Types for attendance reports
 export interface AttendanceReportInput {
@@ -23,33 +26,33 @@ export interface AttendanceReportInput {
 }
 
 export enum AttendanceReportType {
-  SUMMARY = 'SUMMARY',
-  DETAILED = 'DETAILED',
-  COMPARATIVE = 'COMPARATIVE',
-  TRENDS = 'TRENDS',
-  MEMBER_ANALYSIS = 'MEMBER_ANALYSIS',
-  SESSION_ANALYSIS = 'SESSION_ANALYSIS',
-  EVENT_ANALYSIS = 'EVENT_ANALYSIS',
+  SUMMARY = "SUMMARY",
+  DETAILED = "DETAILED",
+  COMPARATIVE = "COMPARATIVE",
+  TRENDS = "TRENDS",
+  MEMBER_ANALYSIS = "MEMBER_ANALYSIS",
+  SESSION_ANALYSIS = "SESSION_ANALYSIS",
+  EVENT_ANALYSIS = "EVENT_ANALYSIS",
 }
 
 export enum AttendanceReportFormat {
-  JSON = 'JSON',
-  CSV = 'CSV',
-  PDF = 'PDF',
-  EXCEL = 'EXCEL',
+  JSON = "JSON",
+  CSV = "CSV",
+  PDF = "PDF",
+  EXCEL = "EXCEL",
 }
 
 export enum AttendanceReportGroupBy {
-  DAY = 'DAY',
-  WEEK = 'WEEK',
-  MONTH = 'MONTH',
-  QUARTER = 'QUARTER',
-  YEAR = 'YEAR',
-  SESSION_TYPE = 'SESSION_TYPE',
-  EVENT_TYPE = 'EVENT_TYPE',
-  BRANCH = 'BRANCH',
-  AGE_GROUP = 'AGE_GROUP',
-  GENDER = 'GENDER',
+  DAY = "DAY",
+  WEEK = "WEEK",
+  MONTH = "MONTH",
+  QUARTER = "QUARTER",
+  YEAR = "YEAR",
+  SESSION_TYPE = "SESSION_TYPE",
+  EVENT_TYPE = "EVENT_TYPE",
+  BRANCH = "BRANCH",
+  AGE_GROUP = "AGE_GROUP",
+  GENDER = "GENDER",
 }
 
 export interface AttendanceReportData {
@@ -152,22 +155,28 @@ export interface AttendanceStatsInput {
  * Hook for generating attendance reports
  */
 export const useGenerateAttendanceReport = () => {
-  const [generateReport, { loading, error, data }] = useLazyQuery(GENERATE_ATTENDANCE_REPORT, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
-  });
+  const [generateReport, { loading, error, data }] = useLazyQuery(
+    GENERATE_ATTENDANCE_REPORT,
+    {
+      fetchPolicy: "cache-and-network",
+      errorPolicy: "all",
+    },
+  );
 
-  const handleGenerateReport = async (input: AttendanceReportInput, generatedBy?: string) => {
+  const handleGenerateReport = async (
+    input: AttendanceReportInput,
+    generatedBy?: string,
+  ) => {
     try {
       const result = await generateReport({
         variables: {
           input,
-          generatedBy: generatedBy || 'user',
+          generatedBy: generatedBy || "user",
         },
       });
       return result.data?.generateAttendanceReport;
     } catch (error) {
-      console.error('Error generating attendance report:', error);
+      console.error("Error generating attendance report:", error);
       throw error;
     }
   };
@@ -184,10 +193,13 @@ export const useGenerateAttendanceReport = () => {
  * Hook for getting attendance statistics
  */
 export const useAttendanceStats = () => {
-  const [getStats, { loading, error, data }] = useLazyQuery(GET_ATTENDANCE_STATS, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
-  });
+  const [getStats, { loading, error, data }] = useLazyQuery(
+    GET_ATTENDANCE_STATS,
+    {
+      fetchPolicy: "cache-and-network",
+      errorPolicy: "all",
+    },
+  );
 
   const handleGetStats = async (input: AttendanceStatsInput) => {
     try {
@@ -196,7 +208,7 @@ export const useAttendanceStats = () => {
       });
       return result.data?.attendanceStats;
     } catch (error) {
-      console.error('Error getting attendance stats:', error);
+      console.error("Error getting attendance stats:", error);
       throw error;
     }
   };
@@ -214,18 +226,21 @@ export const useAttendanceStats = () => {
  */
 export const formatReportDataForChart = (
   data: AttendanceReportData[],
-  metric: keyof AttendanceReportData
+  metric: keyof AttendanceReportData,
 ): { labels: string[]; values: number[] } => {
   return {
-    labels: data.map(item => item.period),
-    values: data.map(item => Number(item[metric]) || 0),
+    labels: data.map((item) => item.period),
+    values: data.map((item) => Number(item[metric]) || 0),
   };
 };
 
 /**
  * Utility function to calculate percentage change
  */
-export const calculatePercentageChange = (current: number, previous: number): number => {
+export const calculatePercentageChange = (
+  current: number,
+  previous: number,
+): number => {
   if (previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 };
@@ -234,7 +249,7 @@ export const calculatePercentageChange = (current: number, previous: number): nu
  * Utility function to format numbers for display
  */
 export const formatNumber = (num: number, decimals: number = 0): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(num);
@@ -250,15 +265,17 @@ export const formatPercentage = (num: number, decimals: number = 1): string => {
 /**
  * Utility function to get report type display name
  */
-export const getReportTypeDisplayName = (reportType: AttendanceReportType): string => {
+export const getReportTypeDisplayName = (
+  reportType: AttendanceReportType,
+): string => {
   const displayNames = {
-    [AttendanceReportType.SUMMARY]: 'Summary Report',
-    [AttendanceReportType.DETAILED]: 'Detailed Report',
-    [AttendanceReportType.COMPARATIVE]: 'Comparative Report',
-    [AttendanceReportType.TRENDS]: 'Trends Report',
-    [AttendanceReportType.MEMBER_ANALYSIS]: 'Member Analysis',
-    [AttendanceReportType.SESSION_ANALYSIS]: 'Session Analysis',
-    [AttendanceReportType.EVENT_ANALYSIS]: 'Event Analysis',
+    [AttendanceReportType.SUMMARY]: "Summary Report",
+    [AttendanceReportType.DETAILED]: "Detailed Report",
+    [AttendanceReportType.COMPARATIVE]: "Comparative Report",
+    [AttendanceReportType.TRENDS]: "Trends Report",
+    [AttendanceReportType.MEMBER_ANALYSIS]: "Member Analysis",
+    [AttendanceReportType.SESSION_ANALYSIS]: "Session Analysis",
+    [AttendanceReportType.EVENT_ANALYSIS]: "Event Analysis",
   };
   return displayNames[reportType] || reportType;
 };
@@ -266,7 +283,9 @@ export const getReportTypeDisplayName = (reportType: AttendanceReportType): stri
 /**
  * Utility function to get default report configuration
  */
-export const getDefaultReportConfig = (reportType: AttendanceReportType): Partial<AttendanceReportInput> => {
+export const getDefaultReportConfig = (
+  reportType: AttendanceReportType,
+): Partial<AttendanceReportInput> => {
   const baseConfig = {
     groupBy: AttendanceReportGroupBy.WEEK,
     includeStatistics: true,

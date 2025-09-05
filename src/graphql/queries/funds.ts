@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_FUNDS_QUERY = gql`
   query GetFunds($organisationId: String!, $branchId: String) {

@@ -1,22 +1,31 @@
-import { useAdminRoles } from '@/graphql/hooks/useAdminRoles';
-import { useCreateRoleWithPermissions } from '@/graphql/hooks/useCreateRoleWithPermissions';
-import React, { useState, useEffect } from 'react';
-import { SparklesIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-import { Dialog, Transition } from '@headlessui/react';
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { UserIcon, LockClosedIcon, Cog6ToothIcon, UsersIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
+import { useAdminRoles } from "@/graphql/hooks/useAdminRoles";
+import { useCreateRoleWithPermissions } from "@/graphql/hooks/useCreateRoleWithPermissions";
+import React, { useState, useEffect } from "react";
+import { SparklesIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import { Dialog, Transition } from "@headlessui/react";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  UserIcon,
+  LockClosedIcon,
+  Cog6ToothIcon,
+  UsersIcon,
+  BuildingLibraryIcon,
+} from "@heroicons/react/24/outline";
 
 function groupPermissionsBySubject(permissions: { subject: string }[]) {
-  return permissions.reduce((acc, perm) => {
-    if (!acc[perm.subject]) acc[perm.subject] = [];
-    acc[perm.subject].push(perm);
-    return acc;
-  }, {} as Record<string, typeof permissions>);
+  return permissions.reduce(
+    (acc, perm) => {
+      if (!acc[perm.subject]) acc[perm.subject] = [];
+      acc[perm.subject].push(perm);
+      return acc;
+    },
+    {} as Record<string, typeof permissions>,
+  );
 }
 
 function getAllUniquePermissions(roles: any[]) {
   const map = new Map();
-  roles.forEach(role => {
+  roles.forEach((role) => {
     role.permissions.forEach((perm: any) => {
       if (!map.has(perm.id)) map.set(perm.id, perm);
     });
@@ -25,7 +34,7 @@ function getAllUniquePermissions(roles: any[]) {
 }
 
 function prettifyRoleName(name: string) {
-  return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  return name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 const subjectIcons: Record<string, React.ReactNode> = {
@@ -37,34 +46,48 @@ const subjectIcons: Record<string, React.ReactNode> = {
 };
 
 function getSubjectIcon(subject: string) {
-  return subjectIcons[subject] || <Cog6ToothIcon className="h-5 w-5 text-gray-300" />;
+  return (
+    subjectIcons[subject] || <Cog6ToothIcon className="h-5 w-5 text-gray-300" />
+  );
 }
 
 export default function RolePermissionManager() {
   const { roles, loading, error } = useAdminRoles();
   const [expandedRoleId, setExpandedRoleId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', permissionIds: [] as string[] });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    permissionIds: [] as string[],
+  });
   const [formTouched, setFormTouched] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { createRoleWithPermissions, loading: creating, error: createError, data, reset } = useCreateRoleWithPermissions();
+  const {
+    createRoleWithPermissions,
+    loading: creating,
+    error: createError,
+    data,
+    reset,
+  } = useCreateRoleWithPermissions();
 
   // Build unique permissions for selection
   const allPermissions = getAllUniquePermissions(roles);
   const groupedPermissions = groupPermissionsBySubject(allPermissions);
 
   // Handle form changes
-  function handleFormChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleFormChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
     setForm({ ...form, [e.target.name]: e.target.value });
     setFormTouched(true);
   }
 
   function handlePermissionToggle(id: string) {
-    setForm(f => ({
+    setForm((f) => ({
       ...f,
       permissionIds: f.permissionIds.includes(id)
-        ? f.permissionIds.filter(pid => pid !== id)
+        ? f.permissionIds.filter((pid) => pid !== id)
         : [...f.permissionIds, id],
     }));
     setFormTouched(true);
@@ -73,14 +96,18 @@ export default function RolePermissionManager() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!form.name.trim() || !form.description.trim() || form.permissionIds.length === 0) {
-      setFormError('All fields and at least one permission are required.');
+    if (
+      !form.name.trim() ||
+      !form.description.trim() ||
+      form.permissionIds.length === 0
+    ) {
+      setFormError("All fields and at least one permission are required.");
       return;
     }
     try {
       await createRoleWithPermissions({ variables: { input: form } });
       setShowForm(false);
-      setForm({ name: '', description: '', permissionIds: [] });
+      setForm({ name: "", description: "", permissionIds: [] });
       setFormTouched(false);
       reset();
       setShowSuccess(true);
@@ -89,7 +116,7 @@ export default function RolePermissionManager() {
         window.location.reload();
       }, 1200);
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create role.');
+      setFormError(err.message || "Failed to create role.");
     }
   }
 
@@ -101,8 +128,16 @@ export default function RolePermissionManager() {
     reset();
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading roles...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">Failed to load roles: {error.message}</div>;
+  if (loading)
+    return (
+      <div className="p-8 text-center text-gray-500">Loading roles...</div>
+    );
+  if (error)
+    return (
+      <div className="p-8 text-center text-red-500">
+        Failed to load roles: {error.message}
+      </div>
+    );
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -113,7 +148,12 @@ export default function RolePermissionManager() {
       <div className="mb-8 flex justify-end">
         <button
           className="bg-gradient-to-br from-indigo-600 to-purple-500 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 hover:bg-indigo-700 transition-transform duration-200"
-          onClick={() => { setShowForm(true); setFormError(null); setFormTouched(false); reset(); }}
+          onClick={() => {
+            setShowForm(true);
+            setFormError(null);
+            setFormTouched(false);
+            reset();
+          }}
         >
           Add New Role
         </button>
@@ -122,16 +162,24 @@ export default function RolePermissionManager() {
         <Dialog as="div" className="relative z-50" onClose={closeForm}>
           <Transition.Child
             as={React.Fragment}
-            enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100"
-            leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0"
+            enter="ease-out duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity" />
           </Transition.Child>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <Transition.Child
               as={React.Fragment}
-              enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
-              leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
+              enter="ease-out duration-200"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-150"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-2xl rounded-2xl bg-white/80 shadow-2xl ring-1 ring-indigo-200 p-8 relative">
                 <button
@@ -177,46 +225,70 @@ export default function RolePermissionManager() {
                     </label>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-indigo-700">Permissions</label>
+                    <label className="block text-sm font-semibold mb-2 text-indigo-700">
+                      Permissions
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(groupedPermissions).map(([subject, perms]) => (
-                        <div key={subject}>
-                          <div className="font-semibold text-indigo-600 mb-2 text-base">{subject}</div>
-                          <div className="flex flex-wrap gap-2">
-                            {perms.map((perm: any) => (
-                              <label
-                                key={perm.id}
-                                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full shadow-sm border-2 transition-all cursor-pointer text-sm font-medium
-                                  ${form.permissionIds.includes(perm.id)
-                                    ? 'bg-indigo-600 text-white border-indigo-600 scale-105 shadow-indigo-200'
-                                    : 'bg-white/70 text-indigo-700 border-indigo-200 hover:bg-indigo-50'}
+                      {Object.entries(groupedPermissions).map(
+                        ([subject, perms]) => (
+                          <div key={subject}>
+                            <div className="font-semibold text-indigo-600 mb-2 text-base">
+                              {subject}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {perms.map((perm: any) => (
+                                <label
+                                  key={perm.id}
+                                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full shadow-sm border-2 transition-all cursor-pointer text-sm font-medium
+                                  ${
+                                    form.permissionIds.includes(perm.id)
+                                      ? "bg-indigo-600 text-white border-indigo-600 scale-105 shadow-indigo-200"
+                                      : "bg-white/70 text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                                  }
                                 `}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={form.permissionIds.includes(perm.id)}
-                                  onChange={() => handlePermissionToggle(perm.id)}
-                                  disabled={creating}
-                                  className="accent-indigo-600 h-4 w-4 rounded-md"
-                                />
-                                <span className="capitalize">{perm.action}</span>
-                                <span className="text-gray-400 text-xs">{perm.description}</span>
-                              </label>
-                            ))}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={form.permissionIds.includes(
+                                      perm.id,
+                                    )}
+                                    onChange={() =>
+                                      handlePermissionToggle(perm.id)
+                                    }
+                                    disabled={creating}
+                                    className="accent-indigo-600 h-4 w-4 rounded-md"
+                                  />
+                                  <span className="capitalize">
+                                    {perm.action}
+                                  </span>
+                                  <span className="text-gray-400 text-xs">
+                                    {perm.description}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                     </div>
                   </div>
-                  {formError && <div className="text-red-500 mb-2">{formError}</div>}
-                  {createError && <div className="text-red-500 mb-2">{createError.message}</div>}
+                  {formError && (
+                    <div className="text-red-500 mb-2">{formError}</div>
+                  )}
+                  {createError && (
+                    <div className="text-red-500 mb-2">
+                      {createError.message}
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="w-full bg-gradient-to-r from-indigo-600 to-purple-500 text-white py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
                     disabled={creating || !formTouched}
                   >
-                    {creating && <span className="animate-spin mr-2 h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>}
-                    {creating ? 'Creating...' : 'Create Role'}
+                    {creating && (
+                      <span className="animate-spin mr-2 h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
+                    )}
+                    {creating ? "Creating..." : "Create Role"}
                   </button>
                 </form>
               </Dialog.Panel>
@@ -236,18 +308,23 @@ export default function RolePermissionManager() {
       >
         <div className="fixed top-8 right-8 z-[60] flex items-center gap-3 bg-white/90 border border-green-200 shadow-xl rounded-2xl px-6 py-4">
           <CheckCircleIcon className="h-7 w-7 text-green-500 animate-pulse" />
-          <span className="text-green-700 font-semibold text-lg">Role created!</span>
+          <span className="text-green-700 font-semibold text-lg">
+            Role created!
+          </span>
         </div>
       </Transition>
       <div className="space-y-8">
-        {roles.map(role => {
+        {roles.map((role) => {
           const grouped = groupPermissionsBySubject(role.permissions);
           const isExpanded = expandedRoleId === role.id;
           return (
             <div
               key={role.id}
-              className={`transition-all duration-300 border rounded-3xl shadow-2xl bg-white/60 hover:shadow-3xl overflow-hidden backdrop-blur-md ${isExpanded ? 'ring-2 ring-indigo-400 scale-[1.015] shadow-indigo-200' : ''}`}
-              style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.09) 0%, rgba(236,233,254,0.8) 100%)' }}
+              className={`transition-all duration-300 border rounded-3xl shadow-2xl bg-white/60 hover:shadow-3xl overflow-hidden backdrop-blur-md ${isExpanded ? "ring-2 ring-indigo-400 scale-[1.015] shadow-indigo-200" : ""}`}
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(99,102,241,0.09) 0%, rgba(236,233,254,0.8) 100%)",
+              }}
             >
               <button
                 className="w-full flex justify-between items-center px-10 py-7 focus:outline-none hover:bg-indigo-50/40 transition-colors group"
@@ -258,10 +335,12 @@ export default function RolePermissionManager() {
                     {getSubjectIcon(role.name)}
                     {prettifyRoleName(role.name)}
                   </span>
-                  <span className="text-gray-500 text-base mt-1">{role.description}</span>
+                  <span className="text-gray-500 text-base mt-1">
+                    {role.description}
+                  </span>
                 </div>
                 <ChevronDownIcon
-                  className={`h-8 w-8 ml-6 text-indigo-400 transition-transform duration-200 group-hover:scale-125 ${isExpanded ? 'rotate-180' : ''}`}
+                  className={`h-8 w-8 ml-6 text-indigo-400 transition-transform duration-200 group-hover:scale-125 ${isExpanded ? "rotate-180" : ""}`}
                 />
               </button>
               <Transition
@@ -289,8 +368,12 @@ export default function RolePermissionManager() {
                               key={perm.id}
                               className="flex items-center gap-2 bg-white/90 border border-indigo-100 rounded-full px-4 py-2 shadow-sm hover:bg-indigo-50/80 transition text-sm font-medium"
                             >
-                              <span className="font-semibold capitalize text-indigo-700">{perm.action}</span>
-                              <span className="text-gray-500">{perm.description}</span>
+                              <span className="font-semibold capitalize text-indigo-700">
+                                {perm.action}
+                              </span>
+                              <span className="text-gray-500">
+                                {perm.description}
+                              </span>
                             </li>
                           ))}
                         </ul>

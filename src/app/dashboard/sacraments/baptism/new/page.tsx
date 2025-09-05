@@ -2,7 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, DocumentArrowUpIcon, UserIcon, TagIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  DocumentArrowUpIcon,
+  UserIcon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCreateBaptismRecord } from "@/graphql/hooks/useCreateBaptismRecord";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
@@ -26,11 +31,14 @@ export default function NewBaptismRecord() {
   const router = useRouter();
   const { state } = useAuth();
   const user = state.user;
-  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
+    useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";
   const organisationId = user?.organisationId || orgIdFromFilter;
-  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(
+    isSuperAdmin ? { organisationId } : undefined,
+  );
   const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,7 +48,7 @@ export default function NewBaptismRecord() {
     officiant: "",
     sponsors: "",
     notes: "",
-    certificate: null as File | null
+    certificate: null as File | null,
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [memberSearch, setMemberSearch] = useState("");
@@ -49,32 +57,44 @@ export default function NewBaptismRecord() {
 
   // Debounced search term
   const debouncedSearch = useDebounce(memberSearch, 400);
-  const { data, loading: searchLoading, error: searchError } = useSearchMembers(
-    debouncedSearch,
-    organisationId,
-    branchId
-  );
-  const members = Array.isArray(data) ? data : Array.isArray(data?.members) ? data.members : [];
+  const {
+    data,
+    loading: searchLoading,
+    error: searchError,
+  } = useSearchMembers(debouncedSearch, organisationId, branchId);
+  const members = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.members)
+      ? data.members
+      : [];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     setErrorMessage(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        certificate: e.target.files![0]
+        certificate: e.target.files![0],
       }));
     }
   };
 
-  const { createBaptismRecord, loading: mutationLoading, error: mutationError } = useCreateBaptismRecord();
+  const {
+    createBaptismRecord,
+    loading: mutationLoading,
+    error: mutationError,
+  } = useCreateBaptismRecord();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +131,10 @@ export default function NewBaptismRecord() {
     }
 
     // Parse sponsors/godparents
-    const sponsorsArr = formData.sponsors.split(",").map(s => s.trim()).filter(Boolean);
+    const sponsorsArr = formData.sponsors
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const godparent1Name = sponsorsArr[0] || "";
     const godparent2Name = sponsorsArr[1] || "";
 
@@ -146,12 +169,19 @@ export default function NewBaptismRecord() {
       {/* Sticky Page Header */}
       <div className="sticky top-0 z-10 bg-white pb-4 mb-8 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/sacraments" className="rounded-full bg-white p-2 text-gray-400 hover:text-gray-600 shadow-sm border border-gray-200">
+          <Link
+            href="/dashboard/sacraments"
+            className="rounded-full bg-white p-2 text-gray-400 hover:text-gray-600 shadow-sm border border-gray-200"
+          >
             <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">New Baptism Record</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Create a new baptism record for a church member</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              New Baptism Record
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Create a new baptism record for a church member
+            </p>
           </div>
         </div>
       </div>
@@ -160,27 +190,37 @@ export default function NewBaptismRecord() {
         {/* Branch Selection Logic */}
         {isSuperAdmin ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Branch<span className="text-red-500">*</span>
+            </label>
             <select
               name="branchId"
               value={selectedBranchId}
-              onChange={e => setSelectedBranchId(e.target.value)}
+              onChange={(e) => setSelectedBranchId(e.target.value)}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
               disabled={branchesLoading}
             >
               <option value="">Select Branch</option>
-              {branches.map(branch => (
-                <option key={branch.id} value={branch.id}>{branch.name}</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
               ))}
             </select>
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Branch
+            </label>
             <input
               type="text"
-              value={user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.name : ""}
+              value={
+                user?.userBranches && user.userBranches.length > 0
+                  ? user.userBranches[0].branch.name
+                  : ""
+              }
               className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
               disabled
             />
@@ -192,7 +232,10 @@ export default function NewBaptismRecord() {
             <UserIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
             Member
           </h2>
-          <label htmlFor="memberSearch" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="memberSearch"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Search or select a member <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -204,10 +247,10 @@ export default function NewBaptismRecord() {
               className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full"
               placeholder="Type member name, email, or number..."
               value={memberSearch}
-              onChange={e => {
+              onChange={(e) => {
                 setMemberSearch(e.target.value);
                 setShowDropdown(true);
-                setFormData(prev => ({ ...prev, memberId: "" }));
+                setFormData((prev) => ({ ...prev, memberId: "" }));
               }}
               autoComplete="off"
               onFocus={() => memberSearch && setShowDropdown(true)}
@@ -216,10 +259,20 @@ export default function NewBaptismRecord() {
             {/* Search Dropdown */}
             {showDropdown && memberSearch && (
               <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                {searchLoading && <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>}
-                {searchError && <div className="px-4 py-2 text-sm text-red-600">Error loading members</div>}
+                {searchLoading && (
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    Searching...
+                  </div>
+                )}
+                {searchError && (
+                  <div className="px-4 py-2 text-sm text-red-600">
+                    Error loading members
+                  </div>
+                )}
                 {!searchLoading && !searchError && members.length === 0 && (
-                  <div className="px-4 py-2 text-sm text-gray-400">No members found</div>
+                  <div className="px-4 py-2 text-sm text-gray-400">
+                    No members found
+                  </div>
                 )}
                 {members.map((member: any) => (
                   <button
@@ -227,30 +280,46 @@ export default function NewBaptismRecord() {
                     type="button"
                     className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-100 text-sm flex items-center gap-2"
                     onClick={() => {
-                      setFormData(prev => ({ ...prev, memberId: member.id }));
+                      setFormData((prev) => ({ ...prev, memberId: member.id }));
                       setMemberSearch(`${member.firstName} ${member.lastName}`);
                       setShowDropdown(false);
                       inputRef.current?.blur();
                     }}
                   >
-                    <span className="font-medium">{member.firstName} {member.lastName}</span>
-                    {member.email && <span className="text-gray-400 ml-2">{member.email}</span>}
-                    <span className="ml-auto text-xs text-gray-400">{member.id}</span>
+                    <span className="font-medium">
+                      {member.firstName} {member.lastName}
+                    </span>
+                    {member.email && (
+                      <span className="text-gray-400 ml-2">{member.email}</span>
+                    )}
+                    <span className="ml-auto text-xs text-gray-400">
+                      {member.id}
+                    </span>
                   </button>
                 ))}
               </div>
             )}
           </div>
-          <p className="mt-1 text-xs text-gray-400">Start typing to search for a member. Select from the list to fill the form.</p>
+          <p className="mt-1 text-xs text-gray-400">
+            Start typing to search for a member. Select from the list to fill
+            the form.
+          </p>
           {formData.memberId && (
-            <div className="mt-1 text-xs text-green-600">Selected member ID: {formData.memberId}</div>
+            <div className="mt-1 text-xs text-green-600">
+              Selected member ID: {formData.memberId}
+            </div>
           )}
         </div>
 
         {/* Baptism Details Card */}
         <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="baptismDate" className="block text-sm font-medium text-gray-700 mb-1">Baptism Date <span className="text-red-500">*</span></label>
+            <label
+              htmlFor="baptismDate"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Baptism Date <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               name="baptismDate"
@@ -262,7 +331,12 @@ export default function NewBaptismRecord() {
             />
           </div>
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location <span className="text-red-500">*</span></label>
+            <label
+              htmlFor="location"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Location <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="location"
@@ -275,7 +349,12 @@ export default function NewBaptismRecord() {
             />
           </div>
           <div>
-            <label htmlFor="officiant" className="block text-sm font-medium text-gray-700 mb-1">Officiant <span className="text-red-500">*</span></label>
+            <label
+              htmlFor="officiant"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Officiant <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="officiant"
@@ -288,7 +367,12 @@ export default function NewBaptismRecord() {
             />
           </div>
           <div>
-            <label htmlFor="sponsors" className="block text-sm font-medium text-gray-700 mb-1">Sponsors / Godparents</label>
+            <label
+              htmlFor="sponsors"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Sponsors / Godparents
+            </label>
             <input
               type="text"
               name="sponsors"
@@ -304,31 +388,44 @@ export default function NewBaptismRecord() {
         {/* Certificate Upload Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-            <DocumentArrowUpIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+            <DocumentArrowUpIcon
+              className="w-5 h-5 text-indigo-400"
+              aria-hidden="true"
+            />
             Certificate Upload
           </h2>
-          <label htmlFor="certificate" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="certificate"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Certificate (Optional)
           </label>
           <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg px-6 pt-5 pb-6">
-            <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 mb-2" aria-hidden="true" />
+            <DocumentArrowUpIcon
+              className="mx-auto h-12 w-12 text-gray-400 mb-2"
+              aria-hidden="true"
+            />
             <label
               htmlFor="certificate"
               className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
             >
               <span>Upload a file</span>
-              <input 
-                id="certificate" 
-                name="certificate" 
-                type="file" 
-                className="sr-only" 
+              <input
+                id="certificate"
+                name="certificate"
+                type="file"
+                className="sr-only"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleFileChange}
               />
             </label>
-            <span className="text-sm text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</span>
+            <span className="text-sm text-gray-500 mt-1">
+              PDF, PNG, JPG up to 10MB
+            </span>
             {formData.certificate && (
-              <span className="mt-2 block text-sm text-indigo-700">{formData.certificate.name}</span>
+              <span className="mt-2 block text-sm text-indigo-700">
+                {formData.certificate.name}
+              </span>
             )}
           </div>
         </div>
@@ -339,7 +436,12 @@ export default function NewBaptismRecord() {
             <TagIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
             Notes
           </h2>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Additional Notes (Optional)</label>
+          <label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Additional Notes (Optional)
+          </label>
           <textarea
             id="notes"
             name="notes"
@@ -375,11 +477,27 @@ export default function NewBaptismRecord() {
             disabled={isSubmitting || mutationLoading}
             className="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {(isSubmitting || mutationLoading) ? (
+            {isSubmitting || mutationLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Saving...
               </>

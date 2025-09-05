@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Button, Grid } from '@tremor/react';
-import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { Button, Grid } from "@tremor/react";
+import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 
 interface DeathRegisterSearchFiltersProps {
   searchTerm: string;
@@ -15,7 +15,9 @@ interface DeathRegisterSearchFiltersProps {
   onAdvancedFilters?: () => void;
 }
 
-export const DeathRegisterSearchFilters: React.FC<DeathRegisterSearchFiltersProps> = ({
+export const DeathRegisterSearchFilters: React.FC<
+  DeathRegisterSearchFiltersProps
+> = ({
   searchTerm,
   onSearchChange,
   filterYear,
@@ -38,18 +40,20 @@ export const DeathRegisterSearchFilters: React.FC<DeathRegisterSearchFiltersProp
             className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <select
           value={filterYear}
           onChange={(e) => onFilterYearChange(e.target.value)}
           className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">All Years</option>
-          {availableYears.map(year => (
-            <option key={year} value={year}>{year}</option>
+          {availableYears.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
           ))}
         </select>
-        
+
         <select
           value={sortBy}
           onChange={(e) => onSortByChange(e.target.value)}
@@ -58,7 +62,7 @@ export const DeathRegisterSearchFilters: React.FC<DeathRegisterSearchFiltersProp
           <option value="dateOfDeath">Sort by Date</option>
           <option value="name">Sort by Name</option>
         </select>
-        
+
         <Button
           variant="secondary"
           icon={FunnelIcon}

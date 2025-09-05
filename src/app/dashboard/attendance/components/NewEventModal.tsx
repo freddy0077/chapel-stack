@@ -25,7 +25,7 @@ interface NewEventModalProps {
   onCreate: (event: NewEventInput) => void;
   loading?: boolean;
   error?: string;
-  mode?: 'event' | 'session';
+  mode?: "event" | "session";
 }
 
 const EVENT_TYPES = [
@@ -36,10 +36,20 @@ const EVENT_TYPES = [
   { value: "OTHER", label: "Other" },
 ];
 
-export default function NewEventModal({ isOpen, onClose, onCreate, loading, error, mode = 'event' }: NewEventModalProps) {
+export default function NewEventModal({
+  isOpen,
+  onClose,
+  onCreate,
+  loading,
+  error,
+  mode = "event",
+}: NewEventModalProps) {
   const { user } = useAuth();
-  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
-  const [form, setForm] = useState<Omit<NewEventInput, 'organisationId' | 'branchId'>>({
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
+    useOrganizationBranchFilter();
+  const [form, setForm] = useState<
+    Omit<NewEventInput, "organisationId" | "branchId">
+  >({
     name: "",
     description: "",
     date: "",
@@ -53,28 +63,29 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
 
   // Check if user data is loaded
   const isUserLoaded = user && user.id;
-  
+
   // Branch selection logic
   const isSuperAdmin = user?.primaryRole === "SUPER_ADMIN";
   const organisationId = orgIdFromFilter;
 
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined
+    isSuperAdmin ? { organisationId } : undefined,
   );
 
   // Determine branchId for event creation - use branchIdFromFilter first, then fallback to user branches
   const branchId = isSuperAdmin
     ? selectedBranchId
-    : branchIdFromFilter || (user?.userBranches && user.userBranches.length > 0
+    : branchIdFromFilter ||
+      (user?.userBranches && user.userBranches.length > 0
         ? user.userBranches[0].branch.id
         : undefined);
 
   // Get branch name for display - simplified logic
   let branchName = "";
-  
+
   if (isSuperAdmin) {
     // For super admin, show selected branch from dropdown
-    branchName = branches.find(b => b.id === selectedBranchId)?.name || "";
+    branchName = branches.find((b) => b.id === selectedBranchId)?.name || "";
   } else {
     // For regular users, show their current branch
     if (isUserLoaded && user?.userBranches && user.userBranches.length > 0) {
@@ -82,7 +93,11 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -133,9 +148,14 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
             >
               <Dialog.Panel className="relative bg-white rounded-lg px-6 pt-6 pb-8 text-left shadow-xl transform transition-all sm:my-8 sm:max-w-lg w-full">
                 <div className="flex items-center justify-between mb-4">
-                  <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-semibold leading-6 text-gray-900"
+                  >
                     <CalendarIcon className="inline-block w-6 h-6 text-indigo-500 mr-2" />
-                    {mode === 'event' ? 'Create New Attendance Event' : 'Create New Attendance Session'}
+                    {mode === "event"
+                      ? "Create New Attendance Event"
+                      : "Create New Attendance Session"}
                   </Dialog.Title>
                   <button
                     type="button"
@@ -149,29 +169,35 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                   {/* Branch Selection Logic */}
                   {isSuperAdmin ? (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch<span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Branch<span className="text-red-500">*</span>
+                      </label>
                       <select
                         name="branchId"
                         value={selectedBranchId}
-                        onChange={e => setSelectedBranchId(e.target.value)}
+                        onChange={(e) => setSelectedBranchId(e.target.value)}
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         required
                         disabled={branchesLoading}
                       >
                         <option value="">Select Branch</option>
-                        {branches.map(branch => (
-                          <option key={branch.id} value={branch.id}>{branch.name}</option>
+                        {branches.map((branch) => (
+                          <option key={branch.id} value={branch.id}>
+                            {branch.name}
+                          </option>
                         ))}
                       </select>
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Branch
+                      </label>
                       <input
                         type="text"
                         value={
-                          !isUserLoaded 
-                            ? "Loading user data..." 
+                          !isUserLoaded
+                            ? "Loading user data..."
                             : branchName || "No branch assigned"
                         }
                         className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
@@ -185,7 +211,8 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       )}
                       {isUserLoaded && !branchName && (
                         <p className="mt-1 text-xs text-red-500">
-                          No branch assigned to your account. Please contact your administrator.
+                          No branch assigned to your account. Please contact
+                          your administrator.
                         </p>
                       )}
                     </div>
@@ -205,7 +232,9 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
                     <textarea
                       name="description"
                       value={form.description}
@@ -257,7 +286,9 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Type
+                    </label>
                     <select
                       name="type"
                       value={form.type}
@@ -265,12 +296,16 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     >
                       {EVENT_TYPES.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location
+                    </label>
                     <input
                       type="text"
                       name="location"
@@ -280,7 +315,9 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       placeholder="e.g. Main Sanctuary"
                     />
                   </div>
-                  {localError && <div className="text-red-500 text-sm">{localError}</div>}
+                  {localError && (
+                    <div className="text-red-500 text-sm">{localError}</div>
+                  )}
                   {error && <div className="text-red-500 text-sm">{error}</div>}
                   <div className="pt-2 flex justify-end gap-2">
                     <button
@@ -296,7 +333,11 @@ export default function NewEventModal({ isOpen, onClose, onCreate, loading, erro
                       className="inline-flex items-center px-4 py-2 rounded-md border border-transparent bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none disabled:opacity-60"
                       disabled={loading}
                     >
-                      {loading ? "Creating..." : mode === 'event' ? 'Create Event' : 'Create Session'}
+                      {loading
+                        ? "Creating..."
+                        : mode === "event"
+                          ? "Create Event"
+                          : "Create Session"}
                     </button>
                   </div>
                 </form>

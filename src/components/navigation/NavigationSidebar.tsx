@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { getUserNavigation } from '@/utils/navigation.utils';
-import { NavigationCategory } from './NavigationCategory';
-import { useModulePreferences } from '@/hooks/useModulePreferences';
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { getUserNavigation } from "@/utils/navigation.utils";
+import { NavigationCategory } from "./NavigationCategory";
+import { useModulePreferences } from "@/hooks/useModulePreferences";
 
 interface NavigationSidebarProps {
   className?: string;
@@ -12,7 +12,7 @@ interface NavigationSidebarProps {
 export function NavigationSidebar({ className = "" }: NavigationSidebarProps) {
   const { user, primaryRole } = useAuth();
   const { enabledModules } = useModulePreferences();
-  
+
   if (!user || !primaryRole) {
     return null;
   }
@@ -26,20 +26,24 @@ export function NavigationSidebar({ className = "" }: NavigationSidebarProps) {
         <div className="flex items-center h-16 flex-shrink-0 px-4 bg-indigo-600">
           <h1 className="text-white text-lg font-semibold">Chapel Stack</h1>
         </div>
-        
+
         {/* User Info */}
         <div className="flex-shrink-0 px-4 py-4 border-b border-gray-200">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
                 <span className="text-sm font-medium text-indigo-600">
-                  {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                  {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
                 </span>
               </div>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
-              <p className="text-xs text-gray-500">{primaryRole.replace('_', ' ')}</p>
+              <p className="text-sm font-medium text-gray-900">
+                {user.name || user.email}
+              </p>
+              <p className="text-xs text-gray-500">
+                {primaryRole.replace("_", " ")}
+              </p>
             </div>
           </div>
         </div>

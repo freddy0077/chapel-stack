@@ -1,8 +1,12 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_FAMILY_RELATIONSHIP = gql`
-  mutation CreateFamilyRelationship($createFamilyRelationshipInput: CreateFamilyRelationshipInput!) {
-    createFamilyRelationship(createFamilyRelationshipInput: $createFamilyRelationshipInput) {
+  mutation CreateFamilyRelationship(
+    $createFamilyRelationshipInput: CreateFamilyRelationshipInput!
+  ) {
+    createFamilyRelationship(
+      createFamilyRelationshipInput: $createFamilyRelationshipInput
+    ) {
       id
       memberId
       relatedMemberId

@@ -1,80 +1,77 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { useQuery } from '@apollo/client';
-import { 
-  CalendarIcon, 
-  CurrencyDollarIcon, 
-  ArrowTrendingUpIcon, 
+import React, { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { useQuery } from "@apollo/client";
+import {
+  CalendarIcon,
+  CurrencyDollarIcon,
+  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  ChartBarIcon 
-} from '@heroicons/react/24/outline';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { CASH_FLOW_ANALYSIS, CashFlowAnalysisInput, CashFlowAnalysisResult } from '../../graphql/queries/analytics';
-import {useOrganizationBranchFilter} from "@/hooks";
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import {
+  CASH_FLOW_ANALYSIS,
+  CashFlowAnalysisInput,
+  CashFlowAnalysisResult,
+} from "../../graphql/queries/analytics";
+import { useOrganizationBranchFilter } from "@/hooks";
 
 // Dynamically import Recharts components to prevent SSR issues
 const ResponsiveContainer = dynamic(
-  () => import('recharts').then((mod) => mod.ResponsiveContainer),
-  { ssr: false }
+  () => import("recharts").then((mod) => mod.ResponsiveContainer),
+  { ssr: false },
 );
 
 const AreaChart = dynamic(
-  () => import('recharts').then((mod) => mod.AreaChart),
-  { ssr: false }
+  () => import("recharts").then((mod) => mod.AreaChart),
+  { ssr: false },
 );
 
 const LineChart = dynamic(
-  () => import('recharts').then((mod) => mod.LineChart),
-  { ssr: false }
+  () => import("recharts").then((mod) => mod.LineChart),
+  { ssr: false },
 );
 
 const ComposedChart = dynamic(
-  () => import('recharts').then((mod) => mod.ComposedChart),
-  { ssr: false }
+  () => import("recharts").then((mod) => mod.ComposedChart),
+  { ssr: false },
 );
 
 const CartesianGrid = dynamic(
-  () => import('recharts').then((mod) => mod.CartesianGrid),
-  { ssr: false }
+  () => import("recharts").then((mod) => mod.CartesianGrid),
+  { ssr: false },
 );
 
-const XAxis = dynamic(
-  () => import('recharts').then((mod) => mod.XAxis),
-  { ssr: false }
-);
+const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), {
+  ssr: false,
+});
 
-const YAxis = dynamic(
-  () => import('recharts').then((mod) => mod.YAxis),
-  { ssr: false }
-);
+const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), {
+  ssr: false,
+});
 
-const Tooltip = dynamic(
-  () => import('recharts').then((mod) => mod.Tooltip),
-  { ssr: false }
-);
+const Tooltip = dynamic(() => import("recharts").then((mod) => mod.Tooltip), {
+  ssr: false,
+});
 
-const Legend = dynamic(
-  () => import('recharts').then((mod) => mod.Legend),
-  { ssr: false }
-);
+const Legend = dynamic(() => import("recharts").then((mod) => mod.Legend), {
+  ssr: false,
+});
 
-const Area = dynamic(
-  () => import('recharts').then((mod) => mod.Area),
-  { ssr: false }
-);
+const Area = dynamic(() => import("recharts").then((mod) => mod.Area), {
+  ssr: false,
+});
 
-const Line = dynamic(
-  () => import('recharts').then((mod) => mod.Line),
-  { ssr: false }
-);
+const Line = dynamic(() => import("recharts").then((mod) => mod.Line), {
+  ssr: false,
+});
 
-const Bar = dynamic(
-  () => import('recharts').then((mod) => mod.Bar),
-  { ssr: false }
-);
+const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), {
+  ssr: false,
+});
 
 interface CashFlowAnalysisProps {
   dateRange?: {
@@ -88,17 +85,20 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
   dateRange,
   fundId,
 }) => {
-  const [periodType, setPeriodType] = useState<'MONTHLY' | 'QUARTERLY' | 'YEARLY'>('MONTHLY');
+  const [periodType, setPeriodType] = useState<
+    "MONTHLY" | "QUARTERLY" | "YEARLY"
+  >("MONTHLY");
   const [isClient, setIsClient] = useState(false);
 
   // Get organisationId and branchId using the same pattern as branch-finances page
   const { state } = useAuth();
   const user = state.user;
-  const { organisationId, branchId: defaultBranchId } = useOrganizationBranchFilter();
-  console.log("CashFlowAnalysis OrganisationId",organisationId)
-  
+  const { organisationId, branchId: defaultBranchId } =
+    useOrganizationBranchFilter();
+  console.log("CashFlowAnalysis OrganisationId", organisationId);
+
   // Use the same super admin logic as the branch-finances page
-  const isSuperAdmin = user?.roles?.some(role => role.name === 'SUPER_ADMIN');
+  const isSuperAdmin = user?.roles?.some((role) => role.name === "SUPER_ADMIN");
   const effectiveBranchId = isSuperAdmin ? undefined : defaultBranchId; // For super admin, don't restrict by branch
 
   // Memoize the effective date range to prevent infinite loops
@@ -128,34 +128,42 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
       periodType,
       fundId,
     };
-    console.log('CashFlowAnalysis - GraphQL Input:', JSON.stringify(input, null, 2));
+    console.log(
+      "CashFlowAnalysis - GraphQL Input:",
+      JSON.stringify(input, null, 2),
+    );
     return input;
-  }, [organisationId, effectiveBranchId, effectiveDateRange, periodType, fundId]);
+  }, [
+    organisationId,
+    effectiveBranchId,
+    effectiveDateRange,
+    periodType,
+    fundId,
+  ]);
 
   // GraphQL query for cash flow analysis
-  const { data, loading, error } = useQuery<{ cashFlowAnalysis: CashFlowAnalysisResult }>(
-    CASH_FLOW_ANALYSIS,
-    {
-      variables: { input: cashFlowInput },
-      skip: !organisationId || !cashFlowInput, // Skip if organisationId is undefined or input is null
-      errorPolicy: 'all',
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const { data, loading, error } = useQuery<{
+    cashFlowAnalysis: CashFlowAnalysisResult;
+  }>(CASH_FLOW_ANALYSIS, {
+    variables: { input: cashFlowInput },
+    skip: !organisationId || !cashFlowInput, // Skip if organisationId is undefined or input is null
+    errorPolicy: "all",
+    notifyOnNetworkStatusChange: true,
+  });
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   // Debug logging
-  console.log('CashFlowAnalysis Debug:', {
+  console.log("CashFlowAnalysis Debug:", {
     organisationId,
     branchId: effectiveBranchId,
     dateRange,
     fundId,
     hasOrganisationId: !!organisationId,
     inputValid: !!cashFlowInput,
-    querySkipped: !organisationId || !cashFlowInput
+    querySkipped: !organisationId || !cashFlowInput,
   });
 
   // Show loading state when organizationId is not available
@@ -176,7 +184,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Cash Flow Analysis</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Cash Flow Analysis
+          </h3>
           <div className="animate-pulse bg-gray-200 h-8 w-32 rounded"></div>
         </div>
         <div className="animate-pulse">
@@ -195,11 +205,13 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
   }
 
   if (error) {
-    console.error('Cash Flow Analysis Error:', error);
+    console.error("Cash Flow Analysis Error:", error);
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Cash Flow Analysis</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Cash Flow Analysis
+          </h3>
           <select
             value={periodType}
             onChange={(e) => setPeriodType(e.target.value as any)}
@@ -211,9 +223,12 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
           </select>
         </div>
         <div className="text-center py-8">
-          <div className="text-red-500 mb-2">⚠️ Error loading cash flow data</div>
+          <div className="text-red-500 mb-2">
+            ⚠️ Error loading cash flow data
+          </div>
           <p className="text-gray-500 text-sm">
-            {error.message || 'Unable to load cash flow analysis. Please try again.'}
+            {error.message ||
+              "Unable to load cash flow analysis. Please try again."}
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -232,7 +247,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Cash Flow Analysis</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Cash Flow Analysis
+          </h3>
           <select
             value={periodType}
             onChange={(e) => setPeriodType(e.target.value as any)}
@@ -244,7 +261,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
           </select>
         </div>
         <div className="text-center py-8">
-          <div className="text-gray-400 mb-2">📊 No cash flow data available</div>
+          <div className="text-gray-400 mb-2">
+            📊 No cash flow data available
+          </div>
           <p className="text-gray-500 text-sm">
             No financial data found for the selected period and filters.
           </p>
@@ -255,23 +274,26 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
   // Calculate trend indicators
-  const netFlowTrend = cashFlowData.totalNetFlow >= 0 ? 'positive' : 'negative';
-  const avgMonthlyNet = cashFlowData.averageMonthlyIncome - cashFlowData.averageMonthlyExpenses;
+  const netFlowTrend = cashFlowData.totalNetFlow >= 0 ? "positive" : "negative";
+  const avgMonthlyNet =
+    cashFlowData.averageMonthlyIncome - cashFlowData.averageMonthlyExpenses;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Cash Flow Analysis</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Cash Flow Analysis
+        </h3>
         <select
           value={periodType}
           onChange={(e) => setPeriodType(e.target.value as any)}
@@ -288,7 +310,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
         <div className="bg-green-50 p-4 rounded-lg border border-green-200">
           <div className="flex items-center">
             <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 mr-2" />
-            <span className="text-sm font-medium text-green-800">Total Income</span>
+            <span className="text-sm font-medium text-green-800">
+              Total Income
+            </span>
           </div>
           <p className="text-2xl font-bold text-green-900 mt-1">
             {formatCurrency(cashFlowData.totalIncome)}
@@ -301,7 +325,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
         <div className="bg-red-50 p-4 rounded-lg border border-red-200">
           <div className="flex items-center">
             <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 mr-2" />
-            <span className="text-sm font-medium text-red-800">Total Expenses</span>
+            <span className="text-sm font-medium text-red-800">
+              Total Expenses
+            </span>
           </div>
           <p className="text-2xl font-bold text-red-900 mt-1">
             {formatCurrency(cashFlowData.totalExpenses)}
@@ -311,29 +337,43 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
           </p>
         </div>
 
-        <div className={`p-4 rounded-lg border ${
-          netFlowTrend === 'positive' 
-            ? 'bg-blue-50 border-blue-200' 
-            : 'bg-orange-50 border-orange-200'
-        }`}>
+        <div
+          className={`p-4 rounded-lg border ${
+            netFlowTrend === "positive"
+              ? "bg-blue-50 border-blue-200"
+              : "bg-orange-50 border-orange-200"
+          }`}
+        >
           <div className="flex items-center">
-            <CurrencyDollarIcon className={`h-5 w-5 mr-2 ${
-              netFlowTrend === 'positive' ? 'text-blue-600' : 'text-orange-600'
-            }`} />
-            <span className={`text-sm font-medium ${
-              netFlowTrend === 'positive' ? 'text-blue-800' : 'text-orange-800'
-            }`}>
+            <CurrencyDollarIcon
+              className={`h-5 w-5 mr-2 ${
+                netFlowTrend === "positive"
+                  ? "text-blue-600"
+                  : "text-orange-600"
+              }`}
+            />
+            <span
+              className={`text-sm font-medium ${
+                netFlowTrend === "positive"
+                  ? "text-blue-800"
+                  : "text-orange-800"
+              }`}
+            >
               Net Cash Flow
             </span>
           </div>
-          <p className={`text-2xl font-bold mt-1 ${
-            netFlowTrend === 'positive' ? 'text-blue-900' : 'text-orange-900'
-          }`}>
+          <p
+            className={`text-2xl font-bold mt-1 ${
+              netFlowTrend === "positive" ? "text-blue-900" : "text-orange-900"
+            }`}
+          >
             {formatCurrency(cashFlowData.totalNetFlow)}
           </p>
-          <p className={`text-xs mt-1 ${
-            netFlowTrend === 'positive' ? 'text-blue-600' : 'text-orange-600'
-          }`}>
+          <p
+            className={`text-xs mt-1 ${
+              netFlowTrend === "positive" ? "text-blue-600" : "text-orange-600"
+            }`}
+          >
             Avg: {formatCurrency(avgMonthlyNet)}/month
           </p>
         </div>
@@ -344,24 +384,26 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
         <div className="space-y-6">
           {/* Cash Flow Chart */}
           <div>
-            <h4 className="text-md font-medium text-gray-900 mb-3">Cash Flow Over Time</h4>
+            <h4 className="text-md font-medium text-gray-900 mb-3">
+              Cash Flow Over Time
+            </h4>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={cashFlowData.data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="period" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => [formatCurrency(value), '']}
+                  <Tooltip
+                    formatter={(value: number) => [formatCurrency(value), ""]}
                     labelFormatter={(label) => `Period: ${label}`}
                   />
                   <Legend />
                   <Bar dataKey="income" fill="#10b981" name="Income" />
                   <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="netFlow" 
-                    stroke="#3b82f6" 
+                  <Line
+                    type="monotone"
+                    dataKey="netFlow"
+                    stroke="#3b82f6"
                     strokeWidth={3}
                     name="Net Flow"
                   />
@@ -372,22 +414,24 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
 
           {/* Cumulative Flow Chart */}
           <div>
-            <h4 className="text-md font-medium text-gray-900 mb-3">Cumulative Cash Flow</h4>
+            <h4 className="text-md font-medium text-gray-900 mb-3">
+              Cumulative Cash Flow
+            </h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={cashFlowData.data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="period" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => [formatCurrency(value), '']}
+                  <Tooltip
+                    formatter={(value: number) => [formatCurrency(value), ""]}
                     labelFormatter={(label) => `Period: ${label}`}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="cumulativeFlow" 
-                    stroke="#8b5cf6" 
-                    fill="#8b5cf6" 
+                  <Area
+                    type="monotone"
+                    dataKey="cumulativeFlow"
+                    stroke="#8b5cf6"
+                    fill="#8b5cf6"
                     fillOpacity={0.3}
                     name="Cumulative Flow"
                   />
@@ -403,7 +447,9 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
         <div className="h-80 bg-gray-100 rounded-lg flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 mb-2">📊 Loading charts...</div>
-            <p className="text-gray-500 text-sm">Charts will appear once the page loads.</p>
+            <p className="text-gray-500 text-sm">
+              Charts will appear once the page loads.
+            </p>
           </div>
         </div>
       )}

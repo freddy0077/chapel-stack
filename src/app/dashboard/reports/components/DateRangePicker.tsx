@@ -1,9 +1,9 @@
-import React from 'react';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { CalendarIcon } from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
+import React from "react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "@heroicons/react/24/outline";
+import { format } from "date-fns";
 
 interface DateRangePickerProps {
   startDate: Date | undefined;
@@ -24,7 +24,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - days);
-    
+
     onStartDateChange(start);
     onEndDateChange(end);
   };
@@ -55,22 +55,38 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           />
         </div>
       </div>
-      
+
       <div className="flex flex-wrap gap-2 mb-4">
-        <Button variant="outline" size="sm" onClick={() => handleQuickSelect(7)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleQuickSelect(7)}
+        >
           Last 7 Days
         </Button>
-        <Button variant="outline" size="sm" onClick={() => handleQuickSelect(30)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleQuickSelect(30)}
+        >
           Last 30 Days
         </Button>
-        <Button variant="outline" size="sm" onClick={() => handleQuickSelect(90)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleQuickSelect(90)}
+        >
           Last 3 Months
         </Button>
-        <Button variant="outline" size="sm" onClick={() => handleQuickSelect(365)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleQuickSelect(365)}
+        >
           Last Year
         </Button>
       </div>
-      
+
       <div className="flex justify-end">
         <Button onClick={onApply} className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />

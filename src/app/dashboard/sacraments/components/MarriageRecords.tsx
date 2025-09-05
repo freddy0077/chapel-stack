@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  MagnifyingGlassIcon, 
-  PencilIcon, 
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
   DocumentArrowDownIcon,
   DocumentIcon,
-  PhotoIcon
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -41,7 +41,7 @@ const mockMarriageRecords: MarriageRecord[] = [
     certificateUrl: "/certificates/marriage-001.pdf",
     photoUrl: "/photos/wedding-001.jpg",
     anniversaryReminder: true,
-    notes: "Traditional ceremony"
+    notes: "Traditional ceremony",
   },
   {
     id: "mar-002",
@@ -56,7 +56,7 @@ const mockMarriageRecords: MarriageRecord[] = [
     certificateUrl: "/certificates/marriage-002.pdf",
     photoUrl: "/photos/wedding-002.jpg",
     anniversaryReminder: true,
-    notes: "Outdoor ceremony"
+    notes: "Outdoor ceremony",
   },
   {
     id: "mar-003",
@@ -71,7 +71,7 @@ const mockMarriageRecords: MarriageRecord[] = [
     certificateUrl: null,
     photoUrl: "/photos/wedding-003.jpg",
     anniversaryReminder: false,
-    notes: "Certificate pending"
+    notes: "Certificate pending",
   },
   {
     id: "mar-004",
@@ -86,7 +86,7 @@ const mockMarriageRecords: MarriageRecord[] = [
     certificateUrl: "/certificates/marriage-004.pdf",
     photoUrl: null,
     anniversaryReminder: true,
-    notes: "Evening ceremony"
+    notes: "Evening ceremony",
   },
   {
     id: "mar-005",
@@ -101,8 +101,8 @@ const mockMarriageRecords: MarriageRecord[] = [
     certificateUrl: "/certificates/marriage-005.pdf",
     photoUrl: "/photos/wedding-005.jpg",
     anniversaryReminder: true,
-    notes: "Bilingual ceremony"
-  }
+    notes: "Bilingual ceremony",
+  },
 ];
 
 export function MarriageRecords() {
@@ -110,23 +110,25 @@ export function MarriageRecords() {
   const records = mockMarriageRecords;
 
   // Filter records based on search query
-  const filteredRecords = records.filter(record => {
+  const filteredRecords = records.filter((record) => {
     const searchTerms = searchQuery.toLowerCase();
     return (
       record.spouse1Name.toLowerCase().includes(searchTerms) ||
       record.spouse2Name.toLowerCase().includes(searchTerms) ||
       record.officiant.toLowerCase().includes(searchTerms) ||
       record.location.toLowerCase().includes(searchTerms) ||
-      record.witnesses.some(witness => witness.toLowerCase().includes(searchTerms))
+      record.witnesses.some((witness) =>
+        witness.toLowerCase().includes(searchTerms),
+      )
     );
   });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -136,7 +138,10 @@ export function MarriageRecords() {
         <h2 className="text-lg font-medium text-gray-900">Marriage Records</h2>
         <div className="relative max-w-md w-full">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -154,25 +159,46 @@ export function MarriageRecords() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Couple
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Wedding Date
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Location
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Officiant
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Witnesses
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Documents
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -180,8 +206,12 @@ export function MarriageRecords() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No marriage records found. Try a different search term or add a new record.
+                <td
+                  colSpan={7}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  No marriage records found. Try a different search term or add
+                  a new record.
                 </td>
               </tr>
             ) : (
@@ -189,11 +219,17 @@ export function MarriageRecords() {
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <div>
-                      <Link href={`/dashboard/members/${record.spouse1Id}`} className="text-indigo-600 hover:text-indigo-900">
+                      <Link
+                        href={`/dashboard/members/${record.spouse1Id}`}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
                         {record.spouse1Name}
                       </Link>
                       {" & "}
-                      <Link href={`/dashboard/members/${record.spouse2Id}`} className="text-indigo-600 hover:text-indigo-900">
+                      <Link
+                        href={`/dashboard/members/${record.spouse2Id}`}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
                         {record.spouse2Name}
                       </Link>
                     </div>

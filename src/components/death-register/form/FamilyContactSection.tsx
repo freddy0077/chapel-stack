@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Title, Text, Grid, Button } from '@tremor/react';
-import { UserIcon, PhoneIcon, EnvelopeIcon, CalendarDaysIcon, CheckIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { Card, Title, Text, Grid, Button } from "@tremor/react";
+import {
+  UserIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  CalendarDaysIcon,
+  CheckIcon,
+} from "@heroicons/react/24/outline";
 
 interface FamilyContactSectionProps {
   nextOfKin: string;
@@ -29,7 +35,7 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
         <UserIcon className="h-5 w-5 mr-2" />
         Family Contact & Notification
       </Title>
-      
+
       <Grid numItems={1} numItemsSm={2} className="gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -39,15 +45,17 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
           <input
             type="text"
             value={nextOfKin}
-            onChange={(e) => onFieldChange('nextOfKin', e.target.value)}
+            onChange={(e) => onFieldChange("nextOfKin", e.target.value)}
             placeholder="Full name of next of kin"
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-              errors.nextOfKin ? 'border-red-300 bg-red-50' : 'border-slate-300'
+              errors.nextOfKin ? "border-red-300 bg-red-50" : "border-slate-300"
             }`}
             required
           />
           {errors.nextOfKin && (
-            <Text className="text-red-600 text-sm mt-1">{errors.nextOfKin}</Text>
+            <Text className="text-red-600 text-sm mt-1">
+              {errors.nextOfKin}
+            </Text>
           )}
         </div>
 
@@ -59,7 +67,7 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
           <input
             type="tel"
             value={nextOfKinPhone}
-            onChange={(e) => onFieldChange('nextOfKinPhone', e.target.value)}
+            onChange={(e) => onFieldChange("nextOfKinPhone", e.target.value)}
             placeholder="Phone number"
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
@@ -73,7 +81,7 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
           <input
             type="email"
             value={nextOfKinEmail}
-            onChange={(e) => onFieldChange('nextOfKinEmail', e.target.value)}
+            onChange={(e) => onFieldChange("nextOfKinEmail", e.target.value)}
             placeholder="Email address"
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
@@ -82,18 +90,24 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
 
       <div className="mt-6 p-4 bg-white rounded-lg border border-green-200">
         <div className="flex items-center justify-between mb-4">
-          <Text className="font-medium text-slate-700">Family Notification Status</Text>
+          <Text className="font-medium text-slate-700">
+            Family Notification Status
+          </Text>
           <Button
             size="sm"
             variant={familyNotified ? "secondary" : "primary"}
             icon={CheckIcon}
-            onClick={() => onFieldChange('familyNotified', !familyNotified)}
-            className={familyNotified ? "bg-green-100 text-green-800" : "bg-green-600 text-white"}
+            onClick={() => onFieldChange("familyNotified", !familyNotified)}
+            className={
+              familyNotified
+                ? "bg-green-100 text-green-800"
+                : "bg-green-600 text-white"
+            }
           >
-            {familyNotified ? 'Notified' : 'Mark as Notified'}
+            {familyNotified ? "Notified" : "Mark as Notified"}
           </Button>
         </div>
-        
+
         {familyNotified && (
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -103,7 +117,9 @@ export const FamilyContactSection: React.FC<FamilyContactSectionProps> = ({
             <input
               type="date"
               value={notificationDate}
-              onChange={(e) => onFieldChange('notificationDate', e.target.value)}
+              onChange={(e) =>
+                onFieldChange("notificationDate", e.target.value)
+              }
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>

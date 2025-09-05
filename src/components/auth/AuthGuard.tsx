@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
   }, [isAuthenticated, isLoading, router]);
 

@@ -20,8 +20,13 @@ export interface MarriageRecord {
 
 export function useMarriageRecords() {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { data, loading, error } = useQuery<{ sacramentalRecords: MarriageRecord[] }>(GET_MARRIAGE_RECORDS, {
+  const branchId =
+    user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
+  const { data, loading, error } = useQuery<{
+    sacramentalRecords: MarriageRecord[];
+  }>(GET_MARRIAGE_RECORDS, {
     variables: { branchId },
     fetchPolicy: "cache-and-network",
   });

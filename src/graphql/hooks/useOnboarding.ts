@@ -1,5 +1,5 @@
 // src/graphql/hooks/useOnboarding.ts
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from "@apollo/client";
 import {
   CREATE_SUPER_ADMIN_USER,
   COMPLETE_ONBOARDING_STEP,
@@ -8,20 +8,20 @@ import {
   INITIATE_BRANCH_SETUP,
   CONFIGURE_INITIAL_SETTINGS,
   IMPORT_MEMBER_DATA,
-  IMPORT_FINANCIAL_DATA
-} from '../mutations/onboardingMutations';
+  IMPORT_FINANCIAL_DATA,
+} from "../mutations/onboardingMutations";
 import {
   GET_ONBOARDING_PROGRESS,
   GENERATE_MEMBER_IMPORT_TEMPLATE,
-  GENERATE_FUNDS_IMPORT_TEMPLATE
-} from '../queries/onboardingQueries';
+  GENERATE_FUNDS_IMPORT_TEMPLATE,
+} from "../queries/onboardingQueries";
 import {
   OnboardingProgress,
   CompleteOnboardingStepInput,
   InitialBranchSetupInput,
   InitialSettingsInput,
-  ImportResult
-} from '../types/onboardingTypes';
+  ImportResult,
+} from "../types/onboardingTypes";
 
 // Type definitions for mutation responses and variables
 interface CreateSuperAdminUserVars {
@@ -33,9 +33,10 @@ interface CreateSuperAdminUserVars {
 }
 
 export const useCreateSuperAdminUser = () => {
-  const [mutate, { data, loading, error }] = useMutation<boolean, CreateSuperAdminUserVars>(
-    CREATE_SUPER_ADMIN_USER
-  );
+  const [mutate, { data, loading, error }] = useMutation<
+    boolean,
+    CreateSuperAdminUserVars
+  >(CREATE_SUPER_ADMIN_USER);
 
   return {
     createSuperAdmin: mutate,
@@ -116,9 +117,10 @@ interface InitiateBranchSetupVars {
 }
 
 export const useInitiateBranchSetup = () => {
-  const [mutate, { data, loading, error }] = useMutation<boolean, InitiateBranchSetupVars>(
-    INITIATE_BRANCH_SETUP
-  );
+  const [mutate, { data, loading, error }] = useMutation<
+    boolean,
+    InitiateBranchSetupVars
+  >(INITIATE_BRANCH_SETUP);
 
   return {
     initiateBranchSetup: mutate,
@@ -134,9 +136,10 @@ interface ConfigureInitialSettingsVars {
 }
 
 export const useConfigureInitialSettings = () => {
-  const [mutate, { data, loading, error }] = useMutation<boolean, ConfigureInitialSettingsVars>(
-    CONFIGURE_INITIAL_SETTINGS
-  );
+  const [mutate, { data, loading, error }] = useMutation<
+    boolean,
+    ConfigureInitialSettingsVars
+  >(CONFIGURE_INITIAL_SETTINGS);
 
   return {
     configureInitialSettings: mutate,
@@ -203,20 +206,18 @@ interface OnboardingProgressVars {
   branchId: string;
 }
 
-export const useOnboardingProgress = (branchId: string | null, skip?: boolean) => {
-  const {
-    data,
-    loading,
-    error,
-    refetch,
-  } = useQuery<OnboardingProgressData, OnboardingProgressVars>(
-    GET_ONBOARDING_PROGRESS,
-    {
-      variables: { branchId: branchId ?? '' },
-      skip: skip || !branchId,
-      notifyOnNetworkStatusChange: true,
-    },
-  );
+export const useOnboardingProgress = (
+  branchId: string | null,
+  skip?: boolean,
+) => {
+  const { data, loading, error, refetch } = useQuery<
+    OnboardingProgressData,
+    OnboardingProgressVars
+  >(GET_ONBOARDING_PROGRESS, {
+    variables: { branchId: branchId ?? "" },
+    skip: skip || !branchId,
+    notifyOnNetworkStatusChange: true,
+  });
 
   return {
     onboardingProgress: data?.onboardingProgress,
@@ -232,7 +233,7 @@ interface MemberImportTemplateData {
 
 export const useGenerateMemberImportTemplate = () => {
   const { data, loading, error } = useQuery<MemberImportTemplateData>(
-    GENERATE_MEMBER_IMPORT_TEMPLATE
+    GENERATE_MEMBER_IMPORT_TEMPLATE,
   );
 
   return {
@@ -248,7 +249,7 @@ interface FundsImportTemplateData {
 
 export const useGenerateFundsImportTemplate = () => {
   const { data, loading, error } = useQuery<FundsImportTemplateData>(
-    GENERATE_FUNDS_IMPORT_TEMPLATE
+    GENERATE_FUNDS_IMPORT_TEMPLATE,
   );
 
   return {

@@ -8,9 +8,12 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   ChartBarIcon,
-  ArrowUpIcon
+  ArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { useBranchStatistics, BranchStatistics as BranchStatsType } from "../../../../hooks/useBranchStatistics";
+import {
+  useBranchStatistics,
+  BranchStatistics as BranchStatsType,
+} from "../../../../hooks/useBranchStatistics";
 
 interface BranchStatisticsProps {
   branchId: string;
@@ -18,14 +21,18 @@ interface BranchStatisticsProps {
   branchName?: string;
 }
 
-export default function BranchStatistics({ branchId, statistics: initialStatistics, branchName: initialBranchName }: BranchStatisticsProps) {
+export default function BranchStatistics({
+  branchId,
+  statistics: initialStatistics,
+  branchName: initialBranchName,
+}: BranchStatisticsProps) {
   // Use the hook to fetch statistics if not provided
-  const { 
-    statistics: fetchedStatistics, 
+  const {
+    statistics: fetchedStatistics,
     branchName: fetchedBranchName,
-    loading 
-  } = useBranchStatistics({ 
-    branchId 
+    loading,
+  } = useBranchStatistics({
+    branchId,
   });
 
   // Use provided statistics or fetched ones
@@ -47,7 +54,10 @@ export default function BranchStatistics({ branchId, statistics: initialStatisti
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div
+                key={i}
+                className="h-24 bg-gray-200 dark:bg-gray-700 rounded"
+              ></div>
             ))}
           </div>
         </div>
@@ -118,11 +128,13 @@ export default function BranchStatistics({ branchId, statistics: initialStatisti
     },
     {
       title: "Annual Budget",
-      value: statistics.annualBudget ? `$${statistics.annualBudget.toLocaleString()}` : "N/A",
+      value: statistics.annualBudget
+        ? `$${statistics.annualBudget.toLocaleString()}`
+        : "N/A",
       icon: CurrencyDollarIcon,
       color: "bg-emerald-100 dark:bg-emerald-900/20",
       iconColor: "text-emerald-600 dark:text-emerald-400",
-      isMonetary: true
+      isMonetary: true,
     },
   ];
 
@@ -137,8 +149,8 @@ export default function BranchStatistics({ branchId, statistics: initialStatisti
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="p-4 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center space-x-4"
           >
             <div className={`p-2 rounded-lg ${stat.color}`}>
@@ -149,7 +161,9 @@ export default function BranchStatistics({ branchId, statistics: initialStatisti
                 {stat.title}
               </p>
               <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                {typeof stat.value === 'number' && !stat.isMonetary ? stat.value.toLocaleString() : stat.value}
+                {typeof stat.value === "number" && !stat.isMonetary
+                  ? stat.value.toLocaleString()
+                  : stat.value}
               </p>
             </div>
           </div>

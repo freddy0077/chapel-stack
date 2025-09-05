@@ -16,8 +16,13 @@ export interface CommunionRecord {
 
 export function useCommunionRecords() {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { data, loading, error } = useQuery<{ sacramentalRecords: CommunionRecord[] }>(GET_COMMUNION_RECORDS, {
+  const branchId =
+    user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
+  const { data, loading, error } = useQuery<{
+    sacramentalRecords: CommunionRecord[];
+  }>(GET_COMMUNION_RECORDS, {
     variables: { branchId },
     fetchPolicy: "cache-and-network",
   });

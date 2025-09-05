@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
+import { useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   GET_BRANCH_SETTINGS,
-  UPDATE_BRANCH_SETTINGS
-} from '../graphql/branchSettings';
-import { VisibilityLevel, ReportingLevel, BranchSettings } from '../app/dashboard/branches/components/BranchSettings';
+  UPDATE_BRANCH_SETTINGS,
+} from "../graphql/branchSettings";
+import {
+  VisibilityLevel,
+  ReportingLevel,
+  BranchSettings,
+} from "../app/dashboard/branches/components/BranchSettings";
 
 export interface UseBranchSettingsProps {
   branchId: string;
@@ -12,18 +16,20 @@ export interface UseBranchSettingsProps {
 
 export function useBranchSettings({ branchId }: UseBranchSettingsProps) {
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Query for branch settings
   const {
     data,
     loading: loadingSettings,
     error: settingsError,
-    refetch: refetchSettings
-  } = useQuery<{ branch: { id: string; name: string; branchSettings: BranchSettings } }>(GET_BRANCH_SETTINGS, {
+    refetch: refetchSettings,
+  } = useQuery<{
+    branch: { id: string; name: string; branchSettings: BranchSettings };
+  }>(GET_BRANCH_SETTINGS, {
     variables: {
-      id: branchId
+      id: branchId,
     },
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: "cache-and-network",
   });
 
   // Update branch settings mutation
@@ -32,8 +38,8 @@ export function useBranchSettings({ branchId }: UseBranchSettingsProps) {
     {
       onCompleted: () => {
         refetchSettings();
-      }
-    }
+      },
+    },
   );
 
   const saveSettings = async (settings: BranchSettings) => {
@@ -53,13 +59,13 @@ export function useBranchSettings({ branchId }: UseBranchSettingsProps) {
             currency: settings.currency,
             language: settings.language,
             brandingSettings: settings.brandingSettings,
-            notificationSettings: settings.notificationSettings
-          }
-        }
+            notificationSettings: settings.notificationSettings,
+          },
+        },
       });
       return true;
     } catch (error) {
-      console.error('Error saving branch settings:', error);
+      console.error("Error saving branch settings:", error);
       return false;
     } finally {
       setIsSaving(false);
@@ -73,6 +79,6 @@ export function useBranchSettings({ branchId }: UseBranchSettingsProps) {
     error: settingsError,
     saveSettings,
     isSaving,
-    refetch: refetchSettings
+    refetch: refetchSettings,
   };
 }

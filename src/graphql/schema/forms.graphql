@@ -1,7 +1,6 @@
 """
 Forms & Surveys schema - handles custom forms, registrations, surveys, and feedback
 """
-
 enum FormFieldType {
   TEXT
   TEXT_AREA
@@ -270,26 +269,26 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): FormConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific form
   form(id: ID!): Form @auth(requires: [STAFF])
-  
+
   # Get form for submission (public access possible)
   formForSubmission(id: ID!, token: String): Form
-  
+
   # Get form sections
   formSections(
     formId: ID!
     pagination: PaginationInput
   ): FormSectionConnection! @auth(requires: [STAFF])
-  
+
   # Get form fields for a section or entire form
   formFields(
     formId: ID!
     sectionId: ID
     pagination: PaginationInput
   ): FormFieldConnection! @auth(requires: [STAFF])
-  
+
   # Get form submissions
   formSubmissions(
     formId: ID!
@@ -299,17 +298,17 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): FormSubmissionConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific form submission
   formSubmission(id: ID!): FormSubmission @auth(requires: [STAFF])
-  
+
   # Get my form submissions
   myFormSubmissions(
     formId: ID
     status: FormSubmissionStatus
     pagination: PaginationInput
   ): FormSubmissionConnection! @auth(requires: [MEMBER])
-  
+
   # Get surveys
   surveys(
     search: String
@@ -320,13 +319,13 @@ extend type Query {
     groupId: ID
     pagination: PaginationInput
   ): SurveyConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific survey
   survey(id: ID!): Survey @auth(requires: [STAFF])
-  
+
   # Get survey analytics
   surveyAnalytics(surveyId: ID!): SurveyAnalytics! @auth(requires: [STAFF])
-  
+
   # Get form templates
   formTemplates(
     search: String
@@ -335,10 +334,10 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): FormTemplateConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific form template
   formTemplate(id: ID!): FormTemplate @auth(requires: [STAFF])
-  
+
   # Get form invitations
   formInvitations(
     formId: ID!
@@ -346,10 +345,10 @@ extend type Query {
     expiresAfter: DateTime
     pagination: PaginationInput
   ): FormInvitationConnection! @auth(requires: [STAFF])
-  
+
   # Validate form invitation token
   validateFormInvitation(token: String!): FormInvitation
-  
+
   # Get form submission answers
   formSubmissionAnswers(
     submissionId: ID!
@@ -440,93 +439,111 @@ type FormAnswerEdge {
 extend type Mutation {
   # Create a form
   createForm(input: CreateFormInput!): Form! @auth(requires: [STAFF])
-  
+
   # Update a form
   updateForm(id: ID!, input: UpdateFormInput!): Form! @auth(requires: [STAFF])
-  
+
   # Delete a form
   deleteForm(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Duplicate a form
   duplicateForm(id: ID!, newTitle: String!): Form! @auth(requires: [STAFF])
-  
+
   # Change form status
   changeFormStatus(id: ID!, status: FormStatus!): Form! @auth(requires: [STAFF])
-  
+
   # Create a form section
-  createFormSection(input: CreateFormSectionInput!): FormSection! @auth(requires: [STAFF])
-  
+  createFormSection(input: CreateFormSectionInput!): FormSection!
+    @auth(requires: [STAFF])
+
   # Update a form section
-  updateFormSection(id: ID!, input: UpdateFormSectionInput!): FormSection! @auth(requires: [STAFF])
-  
+  updateFormSection(id: ID!, input: UpdateFormSectionInput!): FormSection!
+    @auth(requires: [STAFF])
+
   # Delete a form section
   deleteFormSection(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Reorder form sections
-  reorderFormSections(formId: ID!, sectionIds: [ID!]!): [FormSection!]! @auth(requires: [STAFF])
-  
+  reorderFormSections(formId: ID!, sectionIds: [ID!]!): [FormSection!]!
+    @auth(requires: [STAFF])
+
   # Create a form field
-  createFormField(input: CreateFormFieldInput!): FormField! @auth(requires: [STAFF])
-  
+  createFormField(input: CreateFormFieldInput!): FormField!
+    @auth(requires: [STAFF])
+
   # Update a form field
-  updateFormField(id: ID!, input: UpdateFormFieldInput!): FormField! @auth(requires: [STAFF])
-  
+  updateFormField(id: ID!, input: UpdateFormFieldInput!): FormField!
+    @auth(requires: [STAFF])
+
   # Delete a form field
   deleteFormField(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Reorder form fields
-  reorderFormFields(sectionId: ID!, fieldIds: [ID!]!): [FormField!]! @auth(requires: [STAFF])
-  
+  reorderFormFields(sectionId: ID!, fieldIds: [ID!]!): [FormField!]!
+    @auth(requires: [STAFF])
+
   # Submit a form
   submitForm(input: SubmitFormInput!): FormSubmission!
-  
+
   # Save form progress
-  saveFormProgress(input: SaveFormProgressInput!): FormSubmission! @auth(requires: [MEMBER])
-  
+  saveFormProgress(input: SaveFormProgressInput!): FormSubmission!
+    @auth(requires: [MEMBER])
+
   # Review form submission
-  reviewFormSubmission(id: ID!, input: ReviewFormSubmissionInput!): FormSubmission! @auth(requires: [STAFF])
-  
+  reviewFormSubmission(
+    id: ID!
+    input: ReviewFormSubmissionInput!
+  ): FormSubmission! @auth(requires: [STAFF])
+
   # Create a survey
   createSurvey(input: CreateSurveyInput!): Survey! @auth(requires: [STAFF])
-  
+
   # Update a survey
-  updateSurvey(id: ID!, input: UpdateSurveyInput!): Survey! @auth(requires: [STAFF])
-  
+  updateSurvey(id: ID!, input: UpdateSurveyInput!): Survey!
+    @auth(requires: [STAFF])
+
   # Delete a survey
   deleteSurvey(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Publish a survey
   publishSurvey(id: ID!): Survey! @auth(requires: [STAFF])
-  
+
   # Close a survey
   closeSurvey(id: ID!): Survey! @auth(requires: [STAFF])
-  
+
   # Create a form template
-  createFormTemplate(input: CreateFormTemplateInput!): FormTemplate! @auth(requires: [STAFF])
-  
+  createFormTemplate(input: CreateFormTemplateInput!): FormTemplate!
+    @auth(requires: [STAFF])
+
   # Update a form template
-  updateFormTemplate(id: ID!, input: UpdateFormTemplateInput!): FormTemplate! @auth(requires: [STAFF])
-  
+  updateFormTemplate(id: ID!, input: UpdateFormTemplateInput!): FormTemplate!
+    @auth(requires: [STAFF])
+
   # Delete a form template
   deleteFormTemplate(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a form from template
-  createFormFromTemplate(templateId: ID!, input: CreateFormFromTemplateInput!): Form! @auth(requires: [STAFF])
-  
+  createFormFromTemplate(
+    templateId: ID!
+    input: CreateFormFromTemplateInput!
+  ): Form! @auth(requires: [STAFF])
+
   # Send form invitations
-  sendFormInvitations(input: SendFormInvitationsInput!): [FormInvitation!]! @auth(requires: [STAFF])
-  
+  sendFormInvitations(input: SendFormInvitationsInput!): [FormInvitation!]!
+    @auth(requires: [STAFF])
+
   # Resend form invitation
   resendFormInvitation(id: ID!): FormInvitation! @auth(requires: [STAFF])
-  
+
   # Cancel form invitation
   cancelFormInvitation(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Bulk cancel form invitations
   bulkCancelFormInvitations(ids: [ID!]!): Boolean! @auth(requires: [STAFF])
-  
+
   # Export form submissions
-  exportFormSubmissions(formId: ID!, format: String!): String! @auth(requires: [STAFF])
+  exportFormSubmissions(formId: ID!, format: String!): String!
+    @auth(requires: [STAFF])
 }
 
 input CreateFormInput {
@@ -737,10 +754,10 @@ input SendFormInvitationsInput {
 extend type Subscription {
   # Get notified of new form submissions
   formSubmissionCreated(formId: ID!): FormSubmission! @auth(requires: [STAFF])
-  
+
   # Get notified of form submission reviews
   formSubmissionReviewed(formId: ID!): FormSubmission! @auth(requires: [STAFF])
-  
+
   # Get notified when a survey is closed
   surveyClosed(id: ID!): Survey! @auth(requires: [STAFF])
 }

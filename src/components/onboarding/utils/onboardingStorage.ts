@@ -17,14 +17,14 @@ export function loadOnboardingStepData(step: string) {
 
 export function loadAllOnboardingStepData(steps: string[]) {
   const result: Record<string, unknown> = {};
-  steps.forEach(step => {
+  steps.forEach((step) => {
     result[step] = loadOnboardingStepData(step);
   });
   return result;
 }
 
 export function clearAllOnboardingStepData(steps: string[]) {
-  steps.forEach(step => {
+  steps.forEach((step) => {
     localStorage.removeItem(`onboardingStepData_${step}`);
   });
 }

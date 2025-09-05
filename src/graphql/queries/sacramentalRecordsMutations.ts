@@ -110,7 +110,10 @@ export const CREATE_MATRIMONY_RECORD = gql`
 `;
 
 export const UPDATE_SACRAMENTAL_RECORD = gql`
-  mutation UpdateSacramentalRecord($id: ID!, $input: UpdateSacramentalRecordInput!) {
+  mutation UpdateSacramentalRecord(
+    $id: ID!
+    $input: UpdateSacramentalRecordInput!
+  ) {
     updateSacramentalRecord(id: $id, input: $input) {
       id
       sacramentType

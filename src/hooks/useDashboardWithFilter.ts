@@ -1,7 +1,11 @@
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql } from "@apollo/client";
 
 export const DASHBOARD_DATA_QUERY = gql`
-  query DashboardData($branchId: String, $dashboardType: DashboardType!, $organisationId: String) {
+  query DashboardData(
+    $branchId: String
+    $dashboardType: DashboardType!
+    $organisationId: String
+  ) {
     dashboardData(
       branchId: $branchId
       dashboardType: $dashboardType
@@ -107,7 +111,7 @@ export interface KPI {
   value: string;
   percentChange: number;
   icon: string;
-  widgetType: 'KPI_CARD';
+  widgetType: "KPI_CARD";
 }
 
 export interface ChartDataset {
@@ -176,15 +180,50 @@ export interface PrayerRequestSummaryData {
 }
 
 export type DashboardWidget =
-  | ({ __typename: 'KpiCard' } & KPI)
-  | ({ __typename: 'ChartData' } & Chart)
-  | { __typename: 'MinistryInvolvementWidget'; title: string; widgetType: string; ministries: MinistryInvolvementItem[] }
-  | { __typename: 'RecentSacramentsWidget'; title: string; widgetType: string; sacraments: SacramentItem[] }
-  | { __typename: 'PrayerRequestSummaryWidget'; title: string; widgetType: string; summary: PrayerRequestSummaryData[] }
-  | { __typename: 'AnnouncementsWidget'; title: string; widgetType: string; announcements: Announcement[] }
-  | { __typename: 'QuickLinksWidget'; title: string; widgetType: string; links: QuickLink[] }
-  | { __typename: 'UpcomingEventsWidget'; title: string; widgetType: string; events: UpcomingEvent[] }
-  | { __typename: 'NotificationsWidget'; title: string; widgetType: string; notifications: Notification[] };
+  | ({ __typename: "KpiCard" } & KPI)
+  | ({ __typename: "ChartData" } & Chart)
+  | {
+      __typename: "MinistryInvolvementWidget";
+      title: string;
+      widgetType: string;
+      ministries: MinistryInvolvementItem[];
+    }
+  | {
+      __typename: "RecentSacramentsWidget";
+      title: string;
+      widgetType: string;
+      sacraments: SacramentItem[];
+    }
+  | {
+      __typename: "PrayerRequestSummaryWidget";
+      title: string;
+      widgetType: string;
+      summary: PrayerRequestSummaryData[];
+    }
+  | {
+      __typename: "AnnouncementsWidget";
+      title: string;
+      widgetType: string;
+      announcements: Announcement[];
+    }
+  | {
+      __typename: "QuickLinksWidget";
+      title: string;
+      widgetType: string;
+      links: QuickLink[];
+    }
+  | {
+      __typename: "UpcomingEventsWidget";
+      title: string;
+      widgetType: string;
+      events: UpcomingEvent[];
+    }
+  | {
+      __typename: "NotificationsWidget";
+      title: string;
+      widgetType: string;
+      notifications: Notification[];
+    };
 
 export interface DashboardData {
   organisationId: string;
@@ -196,11 +235,21 @@ export interface DashboardData {
   layout: any;
 }
 
-export function useDashboardWithFilter({ branchId, organisationId, dashboardType }: { branchId?: string; organisationId?: string; dashboardType: string; }) {
-  const { data, loading, error, refetch } = useQuery<{ dashboardData: DashboardData }>(DASHBOARD_DATA_QUERY, {
+export function useDashboardWithFilter({
+  branchId,
+  organisationId,
+  dashboardType,
+}: {
+  branchId?: string;
+  organisationId?: string;
+  dashboardType: string;
+}) {
+  const { data, loading, error, refetch } = useQuery<{
+    dashboardData: DashboardData;
+  }>(DASHBOARD_DATA_QUERY, {
     variables: { branchId, organisationId, dashboardType },
     skip: !dashboardType,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {

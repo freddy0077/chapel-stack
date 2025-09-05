@@ -26,7 +26,8 @@ export interface UpdateMemberInput {
 }
 
 export function useUpdateMember() {
-  const [updateMemberMutation, { loading, error, data }] = useMutation(UPDATE_MEMBER);
+  const [updateMemberMutation, { loading, error, data }] =
+    useMutation(UPDATE_MEMBER);
 
   const updateMember = async (id: string, input: UpdateMemberInput) => {
     const result = await updateMemberMutation({

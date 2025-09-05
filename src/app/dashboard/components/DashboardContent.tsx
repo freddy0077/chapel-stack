@@ -18,30 +18,33 @@ interface DashboardContentProps {
   refetch: () => void;
 }
 
-export default function DashboardContent({ 
-  dashboardData, 
-  isLoading, 
-  error, 
-  refetch 
+export default function DashboardContent({
+  dashboardData,
+  isLoading,
+  error,
+  refetch,
 }: DashboardContentProps) {
-  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="flex h-screen justify-center items-center flex-col"> 
+        <div className="flex h-screen justify-center items-center flex-col">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
-          <h2 className="text-2xl font-semibold text-gray-900">Loading Dashboard...</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Loading Dashboard...
+          </h2>
         </div>
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex h-screen justify-center items-center flex-col">
-          <div className="text-red-600 text-xl mb-4">Error loading dashboard data</div>
-          <button 
+          <div className="text-red-600 text-xl mb-4">
+            Error loading dashboard data
+          </div>
+          <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -51,12 +54,14 @@ export default function DashboardContent({
       </div>
     );
   }
-  
+
   if (!dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex h-screen justify-center items-center flex-col">
-          <div className="text-gray-600 text-xl mb-4">No dashboard data available</div>
+          <div className="text-gray-600 text-xl mb-4">
+            No dashboard data available
+          </div>
         </div>
       </div>
     );
@@ -71,7 +76,8 @@ export default function DashboardContent({
             {dashboardData.branchName} Dashboard
           </h2>
           <p className="text-sm text-gray-500">
-            {dashboardData.dashboardType} View • Last updated: {new Date(dashboardData.generatedAt).toLocaleString()}
+            {dashboardData.dashboardType} View • Last updated:{" "}
+            {new Date(dashboardData.generatedAt).toLocaleString()}
           </p>
         </div>
       )}
@@ -119,7 +125,7 @@ export default function DashboardContent({
             <NotificationsWidget widget={dashboardData.notifications} />
           </div>
         )}
-        
+
         {/* Groups Widget */}
         {dashboardData.myGroups && (
           <div className="col-span-1">

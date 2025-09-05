@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_UPCOMING_SACRAMENT_ANNIVERSARIES = gql`
   query GetUpcomingSacramentAnniversaries($limit: Int, $branchId: ID) {

@@ -1,5 +1,8 @@
-import { useQuery } from '@apollo/client';
-import { GET_MARRIAGE_ANALYTICS, GET_MEMBER_MARRIAGE_HISTORY } from '../queries/marriageAnalyticsQueries';
+import { useQuery } from "@apollo/client";
+import {
+  GET_MARRIAGE_ANALYTICS,
+  GET_MEMBER_MARRIAGE_HISTORY,
+} from "../queries/marriageAnalyticsQueries";
 
 // Types for marriage analytics
 export interface MonthlyMarriageData {
@@ -58,21 +61,27 @@ export interface MemberMarriageHistoryInput {
 
 // Hook for marriage analytics
 export const useMarriageAnalytics = (input: MarriageAnalyticsInput) => {
-  return useQuery<{ marriageAnalytics: MarriageAnalytics }>(GET_MARRIAGE_ANALYTICS, {
-    variables: { input },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-    errorPolicy: 'all',
-  });
+  return useQuery<{ marriageAnalytics: MarriageAnalytics }>(
+    GET_MARRIAGE_ANALYTICS,
+    {
+      variables: { input },
+      fetchPolicy: "cache-and-network",
+      notifyOnNetworkStatusChange: true,
+      errorPolicy: "all",
+    },
+  );
 };
 
 // Hook for member marriage history
 export const useMemberMarriageHistory = (input: MemberMarriageHistoryInput) => {
-  return useQuery<{ memberMarriageHistory: MemberMarriageHistory | null }>(GET_MEMBER_MARRIAGE_HISTORY, {
-    variables: { input },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-    errorPolicy: 'all',
-    skip: !input.memberId, // Skip query if no member ID provided
-  });
+  return useQuery<{ memberMarriageHistory: MemberMarriageHistory | null }>(
+    GET_MEMBER_MARRIAGE_HISTORY,
+    {
+      variables: { input },
+      fetchPolicy: "cache-and-network",
+      notifyOnNetworkStatusChange: true,
+      errorPolicy: "all",
+      skip: !input.memberId, // Skip query if no member ID provided
+    },
+  );
 };

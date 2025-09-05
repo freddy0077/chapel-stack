@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode, useState, InputHTMLAttributes } from 'react';
-import './AuthStyles.css';
+import { ReactNode, useState, InputHTMLAttributes } from "react";
+import "./AuthStyles.css";
 
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -22,7 +22,7 @@ export default function FormInput({
   ...props
 }: FormInputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  
+
   return (
     <div className="form-group">
       <label htmlFor={name} className="form-label">
@@ -39,18 +39,18 @@ export default function FormInput({
           name={name}
           className={`
             form-input 
-            ${leftIcon ? 'pl-10' : ''} 
-            ${rightIcon ? 'pr-10' : ''} 
-            ${error ? 'error' : ''}
-            ${isFocused ? 'ring-2 ring-indigo-500 ring-opacity-50' : ''}
-            ${className || ''}
+            ${leftIcon ? "pl-10" : ""} 
+            ${rightIcon ? "pr-10" : ""} 
+            ${error ? "error" : ""}
+            ${isFocused ? "ring-2 ring-indigo-500 ring-opacity-50" : ""}
+            ${className || ""}
           `}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
         />
         {rightIcon && (
-          <div 
+          <div
             className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
             onClick={onRightIconClick}
           >

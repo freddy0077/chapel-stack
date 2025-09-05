@@ -34,18 +34,28 @@ export default function SacramentSearchFilters({
   onApplyFilters,
   onClearFilters,
   loading = false,
-  sacramentTypes = ['BAPTISM', 'EUCHARIST_FIRST_COMMUNION', 'CONFIRMATION', 'MARRIAGE'],
+  sacramentTypes = [
+    "BAPTISM",
+    "EUCHARIST_FIRST_COMMUNION",
+    "CONFIRMATION",
+    "MARRIAGE",
+  ],
 }: SacramentSearchFiltersProps) {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const handleFilterChange = (key: keyof SacramentSearchFilters, value: string) => {
+  const handleFilterChange = (
+    key: keyof SacramentSearchFilters,
+    value: string,
+  ) => {
     onFiltersChange({
       ...filters,
       [key]: value,
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value.trim() !== '');
+  const hasActiveFilters = Object.values(filters).some(
+    (value) => value.trim() !== "",
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
@@ -59,11 +69,11 @@ export default function SacramentSearchFilters({
             type="text"
             placeholder="Search by member ID, officiant name, or location..."
             value={filters.searchTerm}
-            onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+            onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -77,15 +87,15 @@ export default function SacramentSearchFilters({
               </span>
             )}
           </button>
-          
+
           <button
             onClick={onApplyFilters}
             disabled={loading}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? "Searching..." : "Search"}
           </button>
-          
+
           {hasActiveFilters && (
             <button
               onClick={onClearFilters}
@@ -110,11 +120,11 @@ export default function SacramentSearchFilters({
               <input
                 type="date"
                 value={filters.dateFrom}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <CalendarIcon className="h-4 w-4 inline mr-1" />
@@ -123,11 +133,11 @@ export default function SacramentSearchFilters({
               <input
                 type="date"
                 value={filters.dateTo}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                onChange={(e) => handleFilterChange("dateTo", e.target.value)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
               />
             </div>
-            
+
             {/* Officiant */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -138,11 +148,13 @@ export default function SacramentSearchFilters({
                 type="text"
                 placeholder="Officiant name"
                 value={filters.officiant}
-                onChange={(e) => handleFilterChange('officiant', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange("officiant", e.target.value)
+                }
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
               />
             </div>
-            
+
             {/* Location */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -153,12 +165,12 @@ export default function SacramentSearchFilters({
                 type="text"
                 placeholder="Location"
                 value={filters.location}
-                onChange={(e) => handleFilterChange('location', e.target.value)}
+                onChange={(e) => handleFilterChange("location", e.target.value)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
               />
             </div>
           </div>
-          
+
           {/* Sacrament Type Filter */}
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -166,11 +178,11 @@ export default function SacramentSearchFilters({
             </label>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => handleFilterChange('sacramentType', '')}
+                onClick={() => handleFilterChange("sacramentType", "")}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  filters.sacramentType === ''
-                    ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                  filters.sacramentType === ""
+                    ? "bg-indigo-100 text-indigo-800 border border-indigo-200"
+                    : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
                 }`}
               >
                 All Types
@@ -178,31 +190,36 @@ export default function SacramentSearchFilters({
               {sacramentTypes.map((type) => (
                 <button
                   key={type}
-                  onClick={() => handleFilterChange('sacramentType', type)}
+                  onClick={() => handleFilterChange("sacramentType", type)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                     filters.sacramentType === type
-                      ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                      : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                      ? "bg-indigo-100 text-indigo-800 border border-indigo-200"
+                      : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
                   }`}
                 >
-                  {type.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                  {type
+                    .replace("_", " ")
+                    .toLowerCase()
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </button>
               ))}
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Active Filters Summary */}
       {hasActiveFilters && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-gray-700">Active filters:</span>
+            <span className="text-sm font-medium text-gray-700">
+              Active filters:
+            </span>
             {filters.searchTerm && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Search: "{filters.searchTerm}"
                 <button
-                  onClick={() => handleFilterChange('searchTerm', '')}
+                  onClick={() => handleFilterChange("searchTerm", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-200"
                 >
                   <XMarkIcon className="h-3 w-3" />
@@ -213,7 +230,7 @@ export default function SacramentSearchFilters({
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 From: {filters.dateFrom}
                 <button
-                  onClick={() => handleFilterChange('dateFrom', '')}
+                  onClick={() => handleFilterChange("dateFrom", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-green-200"
                 >
                   <XMarkIcon className="h-3 w-3" />
@@ -224,7 +241,7 @@ export default function SacramentSearchFilters({
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 To: {filters.dateTo}
                 <button
-                  onClick={() => handleFilterChange('dateTo', '')}
+                  onClick={() => handleFilterChange("dateTo", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-green-200"
                 >
                   <XMarkIcon className="h-3 w-3" />
@@ -235,7 +252,7 @@ export default function SacramentSearchFilters({
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                 Officiant: {filters.officiant}
                 <button
-                  onClick={() => handleFilterChange('officiant', '')}
+                  onClick={() => handleFilterChange("officiant", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-purple-200"
                 >
                   <XMarkIcon className="h-3 w-3" />
@@ -246,7 +263,7 @@ export default function SacramentSearchFilters({
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                 Location: {filters.location}
                 <button
-                  onClick={() => handleFilterChange('location', '')}
+                  onClick={() => handleFilterChange("location", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-yellow-200"
                 >
                   <XMarkIcon className="h-3 w-3" />
@@ -255,9 +272,9 @@ export default function SacramentSearchFilters({
             )}
             {filters.sacramentType && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                Type: {filters.sacramentType.replace('_', ' ')}
+                Type: {filters.sacramentType.replace("_", " ")}
                 <button
-                  onClick={() => handleFilterChange('sacramentType', '')}
+                  onClick={() => handleFilterChange("sacramentType", "")}
                   className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-indigo-200"
                 >
                   <XMarkIcon className="h-3 w-3" />

@@ -13,10 +13,10 @@ import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import BranchFinanceStats from "@/components/BranchFinanceStats";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ChartBarIcon, 
-  UsersIcon, 
-  CurrencyDollarIcon, 
+import {
+  ChartBarIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
   CalendarDaysIcon,
   BellIcon,
   Cog6ToothIcon,
@@ -31,7 +31,7 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  EllipsisHorizontalIcon
+  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 
@@ -43,11 +43,14 @@ const BRANCH_DASHBOARD_QUERY = gql`
         name
         organisation
         isActive
-        admins { id name }
+        admins {
+          id
+          name
+        }
       }
-      memberStats { 
-        total 
-        newMembersThisMonth 
+      memberStats {
+        total
+        newMembersThisMonth
         growthRate
         monthlyTrends {
           month
@@ -57,12 +60,12 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       financeStats {
-        totalContributions 
+        totalContributions
         totalExpenses
-        tithes 
-        pledge 
-        offering 
-        donation 
+        tithes
+        pledge
+        offering
+        donation
         specialContribution
         growthRate
         netIncome
@@ -74,8 +77,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           netIncome
         }
       }
-      attendanceStats { 
-        totalAttendance 
+      attendanceStats {
+        totalAttendance
         uniqueAttendeesThisMonth
         averageAttendance
         growthRate
@@ -86,8 +89,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           uniqueAttendees
         }
       }
-      sacramentStats { 
-        totalSacraments 
+      sacramentStats {
+        totalSacraments
         breakdown {
           type
           count
@@ -98,8 +101,16 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       activityStats {
-        recentEvents { id title startDate }
-        upcomingEvents { id title startDate }
+        recentEvents {
+          id
+          title
+          startDate
+        }
+        upcomingEvents {
+          id
+          title
+          startDate
+        }
         recentMembers {
           id
           name
@@ -127,16 +138,35 @@ const BRANCH_DASHBOARD_QUERY = gql`
       }
       systemStatus {
         timestamp
-        database { status latency }
+        database {
+          status
+          latency
+        }
         system {
-          totalMemory freeMemory
-          memoryUsage { rss heapTotal heapUsed external }
-          cpuUsage { user system }
-          systemUptime processUptime platform nodeVersion
+          totalMemory
+          freeMemory
+          memoryUsage {
+            rss
+            heapTotal
+            heapUsed
+            external
+          }
+          cpuUsage {
+            user
+            system
+          }
+          systemUptime
+          processUptime
+          platform
+          nodeVersion
         }
       }
       branchAnnouncements {
-        announcements { id title startDate }
+        announcements {
+          id
+          title
+          startDate
+        }
       }
     }
   }
@@ -150,7 +180,9 @@ const ModernLoader = () => (
         <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600 mx-auto mb-6"></div>
         <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-ping border-t-blue-400 mx-auto"></div>
       </div>
-      <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Dashboard</h3>
+      <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        Loading Dashboard
+      </h3>
       <p className="text-gray-500">Preparing your branch insights...</p>
     </div>
   </div>
@@ -163,10 +195,14 @@ const ModernError = ({ error }: { error: any }) => (
       <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
         <span className="text-white text-3xl">⚠</span>
       </div>
-      <h3 className="text-2xl font-bold text-gray-800 mb-3">Oops! Something went wrong</h3>
-      <p className="text-gray-600 mb-6">We're having trouble loading your dashboard. Please try again.</p>
-      <button 
-        onClick={() => window.location.reload()} 
+      <h3 className="text-2xl font-bold text-gray-800 mb-3">
+        Oops! Something went wrong
+      </h3>
+      <p className="text-gray-600 mb-6">
+        We're having trouble loading your dashboard. Please try again.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
         className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
       >
         <ArrowPathIcon className="w-5 h-5 inline mr-2" />
@@ -184,8 +220,13 @@ const ModernNoData = () => (
       <div className="w-20 h-20 bg-gradient-to-r from-gray-400 to-slate-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
         <ChartBarIcon className="w-10 h-10 text-white" />
       </div>
-      <h3 className="text-2xl font-bold text-gray-800 mb-3">No Data Available</h3>
-      <p className="text-gray-600 mb-6">We couldn't find any data for this branch. Please check your permissions or contact support.</p>
+      <h3 className="text-2xl font-bold text-gray-800 mb-3">
+        No Data Available
+      </h3>
+      <p className="text-gray-600 mb-6">
+        We couldn't find any data for this branch. Please check your permissions
+        or contact support.
+      </p>
       <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
         Contact Support
       </button>
@@ -194,12 +235,21 @@ const ModernNoData = () => (
 );
 
 // Quick Action Button Component
-const QuickActionButton = ({ icon: Icon, label, onClick, href, color = "blue" }: any) => {
+const QuickActionButton = ({
+  icon: Icon,
+  label,
+  onClick,
+  href,
+  color = "blue",
+}: any) => {
   const colorClasses = {
     blue: "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
-    green: "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
-    purple: "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
-    orange: "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+    green:
+      "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+    purple:
+      "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
+    orange:
+      "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
   };
 
   const buttonClasses = `bg-gradient-to-r ${colorClasses[color]} text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center space-x-2`;
@@ -214,10 +264,7 @@ const QuickActionButton = ({ icon: Icon, label, onClick, href, color = "blue" }:
   }
 
   return (
-    <button
-      onClick={onClick}
-      className={buttonClasses}
-    >
+    <button onClick={onClick} className={buttonClasses}>
       <Icon className="w-4 h-4" />
       <span className="text-sm">{label}</span>
     </button>
@@ -244,19 +291,22 @@ export default function UltraModernBranchDashboard() {
   });
 
   // Fetch funds for this branch
-  const { data: fundsData } = useQuery(gql`
-    query GetFunds($organisationId: String!, $branchId: String) {
-      funds(organisationId: $organisationId, branchId: $branchId) {
-        id
-        name
-        description
-        branchId
+  const { data: fundsData } = useQuery(
+    gql`
+      query GetFunds($organisationId: String!, $branchId: String) {
+        funds(organisationId: $organisationId, branchId: $branchId) {
+          id
+          name
+          description
+          branchId
+        }
       }
-    }
-  `, {
-    variables: { organisationId, branchId },
-    skip: !organisationId || !branchId,
-  });
+    `,
+    {
+      variables: { organisationId, branchId },
+      skip: !organisationId || !branchId,
+    },
+  );
 
   if (loading) return <ModernLoader />;
   if (error) return <ModernError error={error} />;
@@ -265,7 +315,12 @@ export default function UltraModernBranchDashboard() {
   if (!branchDashboard) return <ModernNoData />;
 
   const timeOfDay = currentTime.getHours();
-  const greeting = timeOfDay < 12 ? "Good morning" : timeOfDay < 18 ? "Good afternoon" : "Good evening";
+  const greeting =
+    timeOfDay < 12
+      ? "Good morning"
+      : timeOfDay < 18
+        ? "Good afternoon"
+        : "Good evening";
   const timeIcon = timeOfDay < 18 ? SunIcon : MoonIcon;
 
   return (
@@ -283,7 +338,7 @@ export default function UltraModernBranchDashboard() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center space-x-3 mb-1">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
@@ -295,13 +350,17 @@ export default function UltraModernBranchDashboard() {
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <timeIcon className="w-4 h-4" />
-                    <span>{greeting}, {userName}</span>
+                    <span>
+                      {greeting}, {userName}
+                    </span>
                     <span className="text-gray-300">•</span>
-                    <span>{currentTime.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}</span>
+                    <span>
+                      {currentTime.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -310,9 +369,24 @@ export default function UltraModernBranchDashboard() {
               <div className="flex items-center space-x-4">
                 {/* Quick Actions */}
                 <div className="hidden lg:flex items-center space-x-3">
-                  <QuickActionButton icon={PlusIcon} label="Add Member" href="/dashboard/members" color="blue" />
-                  <QuickActionButton icon={CurrencyDollarIcon} label="Record Offering" href="/dashboard/finances/" color="green" />
-                  <QuickActionButton icon={CalendarDaysIcon} label="New Event" href="/dashboard/calendar/new" color="purple" />
+                  <QuickActionButton
+                    icon={PlusIcon}
+                    label="Add Member"
+                    href="/dashboard/members"
+                    color="blue"
+                  />
+                  <QuickActionButton
+                    icon={CurrencyDollarIcon}
+                    label="Record Offering"
+                    href="/dashboard/finances/"
+                    color="green"
+                  />
+                  <QuickActionButton
+                    icon={CalendarDaysIcon}
+                    label="New Event"
+                    href="/dashboard/calendar/new"
+                    color="purple"
+                  />
                 </div>
 
                 {/* Search */}
@@ -334,7 +408,7 @@ export default function UltraModernBranchDashboard() {
                       3 new notifications
                     </span>
                   </button>
-                  
+
                   <button className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200">
                     <Cog6ToothIcon className="w-5 h-5" />
                   </button>
@@ -353,7 +427,9 @@ export default function UltraModernBranchDashboard() {
           {/* Quick Stats with Enhanced Design */}
           <section className="mb-10">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Dashboard Overview</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Dashboard Overview
+              </h2>
               <div className="flex items-center space-x-3">
                 <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-all duration-200">
                   <FunnelIcon className="w-4 h-4" />
@@ -365,7 +441,7 @@ export default function UltraModernBranchDashboard() {
                 </button>
               </div>
             </div>
-            
+
             <div className="transform transition-all duration-500 hover:scale-[1.01]">
               <BranchOverviewWidgets
                 branchName={branchDashboard.branchInfo.name}
@@ -387,18 +463,22 @@ export default function UltraModernBranchDashboard() {
                     <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Analytics & Insights</h2>
-                    <p className="text-gray-500">Track your branch performance and growth</p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Analytics & Insights
+                    </h2>
+                    <p className="text-gray-500">
+                      Track your branch performance and growth
+                    </p>
                   </div>
                 </div>
-                
+
                 <button className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                   <EyeIcon className="w-5 h-5" />
                   <span>View Detailed Report</span>
                   <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </button>
               </div>
-              
+
               <BranchAnalyticsTrends
                 memberTrends={branchDashboard.memberStats.monthlyTrends}
                 financeTrends={branchDashboard.financeStats.monthlyTrends}
@@ -418,17 +498,25 @@ export default function UltraModernBranchDashboard() {
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
                     <ClockIcon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Recent Activity
+                  </h3>
                 </div>
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                   Live
                 </span>
               </div>
-              
+
               <BranchActivityFeed
-                recentMembers={branchDashboard.activityStats.recentMembers || []}
-                recentContributions={branchDashboard.activityStats.recentContributions || []}
-                recentSacraments={branchDashboard.activityStats.recentSacraments || []}
+                recentMembers={
+                  branchDashboard.activityStats.recentMembers || []
+                }
+                recentContributions={
+                  branchDashboard.activityStats.recentContributions || []
+                }
+                recentSacraments={
+                  branchDashboard.activityStats.recentSacraments || []
+                }
                 activitySummary={branchDashboard.activityStats.activitySummary}
               />
             </div>
@@ -440,20 +528,24 @@ export default function UltraModernBranchDashboard() {
                   <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
                     <CurrencyDollarIcon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Financial Overview</h3>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Financial Overview
+                  </h3>
                 </div>
                 <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
                   Updated
                 </span>
               </div>
-              
+
               <div className="space-y-6">
                 <BranchFinanceStats
                   organisationId={organisationId}
                   branchId={branchId}
                   funds={fundsData?.funds || []}
                 />
-                <FinancialBreakdown financeStats={branchDashboard.financeStats} />
+                <FinancialBreakdown
+                  financeStats={branchDashboard.financeStats}
+                />
               </div>
             </div>
           </section>
@@ -466,9 +558,13 @@ export default function UltraModernBranchDashboard() {
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-violet-500 rounded-lg flex items-center justify-center">
                   <CalendarDaysIcon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Upcoming Events</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Upcoming Events
+                </h3>
               </div>
-              <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
+              <UpcomingEvents
+                events={branchDashboard.activityStats.upcomingEvents}
+              />
             </div>
 
             {/* Announcements */}
@@ -477,9 +573,13 @@ export default function UltraModernBranchDashboard() {
                 <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
                   <BellIcon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Announcements</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Announcements
+                </h3>
               </div>
-              <BranchAnnouncements branchAnnouncements={branchDashboard.branchAnnouncements} />
+              <BranchAnnouncements
+                branchAnnouncements={branchDashboard.branchAnnouncements}
+              />
             </div>
 
             {/* Admin Tools */}

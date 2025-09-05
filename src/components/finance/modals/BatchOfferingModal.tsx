@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import SharedModal from './SharedModal';
-import { formatDate } from '@/utils/financeHelpers';
-import { Event, BatchEventItem } from '@/types/finance';
+import React, { useState, useEffect } from "react";
+import SharedModal from "./SharedModal";
+import { formatDate } from "@/utils/financeHelpers";
+import { Event, BatchEventItem } from "@/types/finance";
 
 interface BatchOfferingModalProps {
   open: boolean;
@@ -13,53 +13,70 @@ interface BatchOfferingModalProps {
   loading: boolean;
 }
 
-export default function BatchOfferingModal({ 
-  open, 
-  onClose, 
-  events, 
-  onSubmit, 
-  loading 
+export default function BatchOfferingModal({
+  open,
+  onClose,
+  events,
+  onSubmit,
+  loading,
 }: BatchOfferingModalProps) {
   const [form, setForm] = useState<BatchEventItem[]>([]);
 
   useEffect(() => {
-    setForm(events.map((e: Event) => ({ 
-      eventId: e.id, 
-      amount: '', 
-      note: '',
-      included: false
-    })));
+    setForm(
+      events.map((e: Event) => ({
+        eventId: e.id,
+        amount: "",
+        note: "",
+        included: false,
+      })),
+    );
   }, [events, open]);
 
-  const handleChange = (idx: number, field: 'amount' | 'note' | 'included', value: string | boolean) => {
-    setForm(f => f.map((row, i) => i === idx ? { ...row, [field]: value } : row));
+  const handleChange = (
+    idx: number,
+    field: "amount" | "note" | "included",
+    value: string | boolean,
+  ) => {
+    setForm((f) =>
+      f.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const batch = form.filter(row => 
-      row.included && row.amount && !isNaN(Number(row.amount)) && Number(row.amount) > 0
+    const batch = form.filter(
+      (row) =>
+        row.included &&
+        row.amount &&
+        !isNaN(Number(row.amount)) &&
+        Number(row.amount) > 0,
     );
-    
+
     if (batch.length > 0) {
       onSubmit(batch);
     } else {
-      alert('Please include at least one event with a valid amount.');
+      alert("Please include at least one event with a valid amount.");
     }
   };
 
   const handleSelectAll = () => {
-    const allSelected = form.every(row => row.included);
-    setForm(f => f.map(row => ({ ...row, included: !allSelected })));
+    const allSelected = form.every((row) => row.included);
+    setForm((f) => f.map((row) => ({ ...row, included: !allSelected })));
   };
 
-  const selectedCount = form.filter(row => row.included).length;
+  const selectedCount = form.filter((row) => row.included).length;
   const totalAmount = form
-    .filter(row => row.included && row.amount)
+    .filter((row) => row.included && row.amount)
     .reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
 
   return (
-    <SharedModal open={open} title="Batch Offering for Events" onClose={onClose} maxWidth="xl">
+    <SharedModal
+      open={open}
+      title="Batch Offering for Events"
+      onClose={onClose}
+      maxWidth="xl"
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Summary */}
         <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
@@ -80,7 +97,7 @@ export default function BatchOfferingModal({
             onClick={handleSelectAll}
             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
           >
-            {form.every(row => row.included) ? 'Deselect All' : 'Select All'}
+            {form.every((row) => row.included) ? "Deselect All" : "Select All"}
           </button>
         </div>
 
@@ -89,11 +106,21 @@ export default function BatchOfferingModal({
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 text-left font-semibold text-gray-900">Include</th>
-                <th className="px-3 py-3 text-left font-semibold text-gray-900">Event</th>
-                <th className="px-3 py-3 text-left font-semibold text-gray-900">Date</th>
-                <th className="px-3 py-3 text-left font-semibold text-gray-900">Amount (₵)</th>
-                <th className="px-3 py-3 text-left font-semibold text-gray-900">Note (optional)</th>
+                <th className="px-3 py-3 text-left font-semibold text-gray-900">
+                  Include
+                </th>
+                <th className="px-3 py-3 text-left font-semibold text-gray-900">
+                  Event
+                </th>
+                <th className="px-3 py-3 text-left font-semibold text-gray-900">
+                  Date
+                </th>
+                <th className="px-3 py-3 text-left font-semibold text-gray-900">
+                  Amount (₵)
+                </th>
+                <th className="px-3 py-3 text-left font-semibold text-gray-900">
+                  Note (optional)
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -103,7 +130,9 @@ export default function BatchOfferingModal({
                     <input
                       type="checkbox"
                       checked={form[idx]?.included || false}
-                      onChange={(e) => handleChange(idx, 'included', e.target.checked)}
+                      onChange={(e) =>
+                        handleChange(idx, "included", e.target.checked)
+                      }
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                   </td>
@@ -111,15 +140,17 @@ export default function BatchOfferingModal({
                     {event.title || event.name}
                   </td>
                   <td className="px-3 py-3 text-gray-600">
-                    {formatDate(event.startDate || event.date || '')}
+                    {formatDate(event.startDate || event.date || "")}
                   </td>
                   <td className="px-3 py-3">
                     <input
                       type="number"
                       step="0.01"
                       min="0"
-                      value={form[idx]?.amount || ''}
-                      onChange={(e) => handleChange(idx, 'amount', e.target.value)}
+                      value={form[idx]?.amount || ""}
+                      onChange={(e) =>
+                        handleChange(idx, "amount", e.target.value)
+                      }
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="0.00"
                       disabled={!form[idx]?.included}
@@ -128,8 +159,10 @@ export default function BatchOfferingModal({
                   <td className="px-3 py-3">
                     <input
                       type="text"
-                      value={form[idx]?.note || ''}
-                      onChange={(e) => handleChange(idx, 'note', e.target.value)}
+                      value={form[idx]?.note || ""}
+                      onChange={(e) =>
+                        handleChange(idx, "note", e.target.value)
+                      }
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Optional note"
                       disabled={!form[idx]?.included}
@@ -149,16 +182,16 @@ export default function BatchOfferingModal({
 
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             Cancel
           </button>
-          <button 
-            type="submit" 
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed" 
+          <button
+            type="submit"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading || selectedCount === 0}
           >
             {loading ? "Processing..." : `Record ${selectedCount} Offerings`}

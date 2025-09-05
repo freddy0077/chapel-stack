@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import {
   Card,
   Title,
@@ -386,7 +386,12 @@ export default function MembershipGrowthChart() {
               className="mt-6 h-80"
               data={membershipData}
               index="date"
-              categories={["Main Campus", "East Side", "West End", "South Chapel"]}
+              categories={[
+                "Main Campus",
+                "East Side",
+                "West End",
+                "South Chapel",
+              ]}
               colors={["indigo", "emerald", "amber", "rose"]}
               valueFormatter={(number) => `${number.toLocaleString()} members`}
               yAxisWidth={60}
@@ -398,9 +403,16 @@ export default function MembershipGrowthChart() {
               className="mt-6 h-80"
               data={newMembersData}
               index="date"
-              categories={["Main Campus", "East Side", "West End", "South Chapel"]}
+              categories={[
+                "Main Campus",
+                "East Side",
+                "West End",
+                "South Chapel",
+              ]}
               colors={["indigo", "emerald", "amber", "rose"]}
-              valueFormatter={(number) => `${number.toLocaleString()} new members`}
+              valueFormatter={(number) =>
+                `${number.toLocaleString()} new members`
+              }
               yAxisWidth={60}
               showLegend={true}
             />
@@ -410,7 +422,12 @@ export default function MembershipGrowthChart() {
               className="mt-6 h-80"
               data={retentionData}
               index="date"
-              categories={["Main Campus", "East Side", "West End", "South Chapel"]}
+              categories={[
+                "Main Campus",
+                "East Side",
+                "West End",
+                "South Chapel",
+              ]}
               colors={["indigo", "emerald", "amber", "rose"]}
               valueFormatter={(number) => `${number.toFixed(1)}%`}
               yAxisWidth={60}

@@ -1,4 +1,4 @@
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql } from "@apollo/client";
 
 export const ADMIN_DASHBOARD_STATS = gql`
   query AdminDashboardStats {

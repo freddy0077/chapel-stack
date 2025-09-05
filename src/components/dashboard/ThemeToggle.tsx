@@ -17,17 +17,23 @@ export const ThemeToggle = () => {
         className="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-xs"
         onClick={() => setTheme("light")}
         aria-label="Light mode"
-      >🌞</button>
+      >
+        🌞
+      </button>
       <button
         className="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-xs"
         onClick={() => setTheme("dark")}
         aria-label="Dark mode"
-      >🌚</button>
+      >
+        🌚
+      </button>
       <button
         className="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-xs"
         onClick={() => setTheme("system")}
         aria-label="System mode"
-      >🖥️</button>
+      >
+        🖥️
+      </button>
     </div>
   );
 };

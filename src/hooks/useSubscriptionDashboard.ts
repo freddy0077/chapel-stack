@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from "@apollo/client";
 import {
   GET_SUBSCRIPTION_DASHBOARD_STATS,
   GET_SUBSCRIPTION_RECENT_ACTIVITY,
@@ -6,14 +6,14 @@ import {
   SubscriptionDashboardStats,
   SubscriptionActivityItem,
   SubscriptionTabCounts,
-} from '../graphql/subscription-management';
+} from "../graphql/subscription-management";
 
 // Hook for dashboard statistics
 export const useSubscriptionDashboardStats = () => {
   const { data, loading, error, refetch } = useQuery<{
     subscriptionDashboardStats: SubscriptionDashboardStats;
   }>(GET_SUBSCRIPTION_DASHBOARD_STATS, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -31,7 +31,7 @@ export const useSubscriptionRecentActivity = (limit: number = 10) => {
     subscriptionRecentActivity: SubscriptionActivityItem[];
   }>(GET_SUBSCRIPTION_RECENT_ACTIVITY, {
     variables: { limit },
-    errorPolicy: 'all',
+    errorPolicy: "all",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -48,7 +48,7 @@ export const useSubscriptionTabCounts = () => {
   const { data, loading, error, refetch } = useQuery<{
     subscriptionTabCounts: SubscriptionTabCounts;
   }>(GET_SUBSCRIPTION_TAB_COUNTS, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
     notifyOnNetworkStatusChange: true,
   });
 
@@ -66,7 +66,8 @@ export const useSubscriptionDashboard = () => {
   const activityQuery = useSubscriptionRecentActivity(10);
   const countsQuery = useSubscriptionTabCounts();
 
-  const loading = statsQuery.loading || activityQuery.loading || countsQuery.loading;
+  const loading =
+    statsQuery.loading || activityQuery.loading || countsQuery.loading;
   const error = statsQuery.error || activityQuery.error || countsQuery.error;
 
   const refetchAll = async () => {

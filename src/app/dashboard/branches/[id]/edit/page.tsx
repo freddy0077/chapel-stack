@@ -26,13 +26,18 @@ const GHANA_REGIONS = [
   "Western North",
   "Oti",
   "Savannah",
-  "North East"
+  "North East",
 ];
 
 export default function EditBranchPage() {
   const router = useRouter();
   const params = useParams();
-  const branchId = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : undefined;
+  const branchId =
+    typeof params?.id === "string"
+      ? params.id
+      : Array.isArray(params?.id)
+        ? params.id[0]
+        : undefined;
 
   const { branch, loading, error } = useBranch(branchId || "");
   const [formData, setFormData] = useState({
@@ -45,7 +50,7 @@ export default function EditBranchPage() {
     email: "",
     website: "",
     establishedDate: "",
-    status: "active"
+    status: "active",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,8 +65,10 @@ export default function EditBranchPage() {
         phoneNumber: branch.phoneNumber || "",
         // email: branch.email || "",
         // website: branch.website || "",
-        establishedDate: branch.establishedAt ? branch.establishedAt.substring(0, 10) : "",
-        status: branch.isActive ? "active" : "inactive"
+        establishedDate: branch.establishedAt
+          ? branch.establishedAt.substring(0, 10)
+          : "",
+        status: branch.isActive ? "active" : "inactive",
       });
     }
   }, [branch]);
@@ -69,7 +76,9 @@ export default function EditBranchPage() {
   const [updateBranch] = useMutation(UPDATE_BRANCH);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -90,14 +99,20 @@ export default function EditBranchPage() {
         state: formData.state,
         country: formData.country,
         // Only include email if it's not an empty string
-        ...(formData.email && formData.email.trim() !== "" ? { email: formData.email } : {}),
+        ...(formData.email && formData.email.trim() !== ""
+          ? { email: formData.email }
+          : {}),
         phoneNumber: formData.phoneNumber,
         website: formData.website,
-        establishedAt: formData.establishedDate ? new Date(formData.establishedDate).toISOString() : undefined,
+        establishedAt: formData.establishedDate
+          ? new Date(formData.establishedDate).toISOString()
+          : undefined,
         isActive: formData.status === "active",
       };
-      
-      const { data } = await updateBranch({ variables: { id: branchId, input } });
+
+      const { data } = await updateBranch({
+        variables: { id: branchId, input },
+      });
       if (data?.updateBranch) {
         toast.success("Branch updated successfully!");
         router.push("/dashboard/branches");
@@ -113,7 +128,12 @@ export default function EditBranchPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-700">
         <h1 className="text-2xl font-bold mb-2">No Branch ID Provided</h1>
-        <Link href="/dashboard/branches" className="text-indigo-600 hover:underline">Back to Branches</Link>
+        <Link
+          href="/dashboard/branches"
+          className="text-indigo-600 hover:underline"
+        >
+          Back to Branches
+        </Link>
       </div>
     );
   }
@@ -131,8 +151,15 @@ export default function EditBranchPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-red-700">
         <h1 className="text-2xl font-bold mb-2">Branch Not Found</h1>
-        <p className="mb-4">{error?.message || "Could not load branch details."}</p>
-        <Link href="/dashboard/branches" className="text-indigo-600 hover:underline">Back to Branches</Link>
+        <p className="mb-4">
+          {error?.message || "Could not load branch details."}
+        </p>
+        <Link
+          href="/dashboard/branches"
+          className="text-indigo-600 hover:underline"
+        >
+          Back to Branches
+        </Link>
       </div>
     );
   }
@@ -141,7 +168,10 @@ export default function EditBranchPage() {
     <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-3xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center">
-          <Link href="/dashboard/branches" className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500">
+          <Link
+            href="/dashboard/branches"
+            className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500"
+          >
             <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Edit Branch</h1>
@@ -156,12 +186,29 @@ export default function EditBranchPage() {
             {/* Branch Info Card */}
             <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
               <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 01-8 0m8 0a4 4 0 00-8 0m8 0V5a4 4 0 00-8 0v2m8 0v2a4 4 0 01-8 0V7m8 0a4 4 0 00-8 0"></path></svg>
+                <svg
+                  className="w-5 h-5 text-indigo-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16 7a4 4 0 01-8 0m8 0a4 4 0 00-8 0m8 0V5a4 4 0 00-8 0v2m8 0v2a4 4 0 01-8 0V7m8 0a4 4 0 00-8 0"
+                  ></path>
+                </svg>
                 Branch Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-indigo-800 mb-1">Branch Name <span className="text-red-500">*</span></label>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Branch Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -174,7 +221,12 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-indigo-800 mb-1">Address</label>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Address
+                  </label>
                   <input
                     type="text"
                     name="address"
@@ -186,7 +238,12 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-indigo-800 mb-1">City</label>
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    City
+                  </label>
                   <input
                     type="text"
                     name="city"
@@ -198,7 +255,12 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-indigo-800 mb-1">Region</label>
+                  <label
+                    htmlFor="state"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Region
+                  </label>
                   <select
                     name="state"
                     id="state"
@@ -207,13 +269,20 @@ export default function EditBranchPage() {
                     onChange={handleChange}
                   >
                     <option value="">Select Region</option>
-                    {GHANA_REGIONS.map(region => (
-                      <option key={region} value={region}>{region}</option>
+                    {GHANA_REGIONS.map((region) => (
+                      <option key={region} value={region}>
+                        {region}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="country" className="block text-sm font-medium text-indigo-800 mb-1">Country</label>
+                  <label
+                    htmlFor="country"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Country
+                  </label>
                   <input
                     type="text"
                     name="country"
@@ -225,7 +294,12 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-indigo-800 mb-1">Phone Number</label>
+                  <label
+                    htmlFor="phoneNumber"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Phone Number
+                  </label>
                   <input
                     type="text"
                     name="phoneNumber"
@@ -265,12 +339,34 @@ export default function EditBranchPage() {
             {/* Status & Established Date Card */}
             <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100">
               <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9"></path><path strokeLinecap="round" strokeLinejoin="round" d="M12 7V4m0 0a2 2 0 012 2v2m-2-2a2 2 0 00-2 2v2m0 9h6"></path></svg>
+                <svg
+                  className="w-5 h-5 text-indigo-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9"
+                  ></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 7V4m0 0a2 2 0 012 2v2m-2-2a2 2 0 00-2 2v2m0 9h6"
+                  ></path>
+                </svg>
                 Branch Status & Established Date
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div>
-                  <label htmlFor="establishedDate" className="block text-sm font-medium text-indigo-800 mb-1">Established Date</label>
+                  <label
+                    htmlFor="establishedDate"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Established Date
+                  </label>
                   <input
                     type="date"
                     name="establishedDate"
@@ -281,7 +377,12 @@ export default function EditBranchPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-indigo-800 mb-1">Branch Status</label>
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Branch Status
+                  </label>
                   <select
                     id="status"
                     name="status"
@@ -310,9 +411,25 @@ export default function EditBranchPage() {
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Saving...
                 </>

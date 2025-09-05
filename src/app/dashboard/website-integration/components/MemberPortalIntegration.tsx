@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Switch } from '@headlessui/react';
-import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { useState } from "react";
+import { Switch } from "@headlessui/react";
+import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 type MemberFeature = {
@@ -29,65 +29,65 @@ export default function MemberPortalIntegration() {
   });
 
   const [features, setFeatures] = useState<MemberFeature[]>([
-    { 
-      id: '1', 
-      name: 'View Giving History',
-      description: 'Allow members to view their donation history',
+    {
+      id: "1",
+      name: "View Giving History",
+      description: "Allow members to view their donation history",
       enabled: true,
-      requiresApproval: false
+      requiresApproval: false,
     },
-    { 
-      id: '2', 
-      name: 'Online Donations',
-      description: 'Allow members to make donations through the portal',
+    {
+      id: "2",
+      name: "Online Donations",
+      description: "Allow members to make donations through the portal",
       enabled: true,
-      requiresApproval: false
+      requiresApproval: false,
     },
-    { 
-      id: '3', 
-      name: 'Ministry Registration',
-      description: 'Allow members to register for ministries',
+    {
+      id: "3",
+      name: "Ministry Registration",
+      description: "Allow members to register for ministries",
       enabled: true,
-      requiresApproval: true
+      requiresApproval: true,
     },
-    { 
-      id: '4', 
-      name: 'Event Registration',
-      description: 'Allow members to register for events',
+    {
+      id: "4",
+      name: "Event Registration",
+      description: "Allow members to register for events",
       enabled: true,
-      requiresApproval: false
+      requiresApproval: false,
     },
-    { 
-      id: '5', 
-      name: 'Prayer Requests',
-      description: 'Allow members to submit prayer requests',
+    {
+      id: "5",
+      name: "Prayer Requests",
+      description: "Allow members to submit prayer requests",
       enabled: true,
-      requiresApproval: true
+      requiresApproval: true,
     },
-    { 
-      id: '6', 
-      name: 'Directory Access',
-      description: 'Allow members to view church directory',
+    {
+      id: "6",
+      name: "Directory Access",
+      description: "Allow members to view church directory",
       enabled: false,
-      requiresApproval: true
+      requiresApproval: true,
     },
-    { 
-      id: '7', 
-      name: 'Volunteer Signup',
-      description: 'Allow members to sign up for volunteer opportunities',
+    {
+      id: "7",
+      name: "Volunteer Signup",
+      description: "Allow members to sign up for volunteer opportunities",
       enabled: true,
-      requiresApproval: true
+      requiresApproval: true,
     },
-    { 
-      id: '8', 
-      name: 'Sacramental Records',
-      description: 'Allow members to view their sacramental records',
+    {
+      id: "8",
+      name: "Sacramental Records",
+      description: "Allow members to view their sacramental records",
       enabled: true,
-      requiresApproval: false
+      requiresApproval: false,
     },
   ]);
 
-  const [portalUrl, setPortalUrl] = useState('https://yourchurch.org/members');
+  const [portalUrl, setPortalUrl] = useState("https://yourchurch.org/members");
   const [sessionTimeout, setSessionTimeout] = useState(30);
 
   const handleToggle = (key: string) => {
@@ -100,10 +100,8 @@ export default function MemberPortalIntegration() {
   const toggleFeature = (id: string) => {
     setFeatures(
       features.map((feature) =>
-        feature.id === id
-          ? { ...feature, enabled: !feature.enabled }
-          : feature
-      )
+        feature.id === id ? { ...feature, enabled: !feature.enabled } : feature,
+      ),
     );
   };
 
@@ -112,15 +110,17 @@ export default function MemberPortalIntegration() {
       features.map((feature) =>
         feature.id === id
           ? { ...feature, requiresApproval: !feature.requiresApproval }
-          : feature
-      )
+          : feature,
+      ),
     );
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Member Portal Integration</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          Member Portal Integration
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           Configure how your members access church data through your website.
         </p>
@@ -130,7 +130,10 @@ export default function MemberPortalIntegration() {
         <div className="px-4 py-5 sm:p-6">
           <div className="space-y-6">
             <div>
-              <label htmlFor="portal-url" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="portal-url"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Member Portal URL
               </label>
               <div className="mt-1">
@@ -151,12 +154,16 @@ export default function MemberPortalIntegration() {
 
             <div className="space-y-4">
               {Object.entries(settings).map(([key, enabled]) => (
-                <Switch.Group as="div" className="flex items-center justify-between" key={key}>
+                <Switch.Group
+                  as="div"
+                  className="flex items-center justify-between"
+                  key={key}
+                >
                   <div className="flex flex-grow items-center">
                     <Switch.Label as="span" className="flex-grow text-sm">
                       <span className="font-medium text-gray-900">
                         {key
-                          .replace(/([A-Z])/g, ' $1')
+                          .replace(/([A-Z])/g, " $1")
                           .replace(/^./, (str) => str.toUpperCase())
                           .replace(/([A-Z])/g, (match) => match.toUpperCase())}
                       </span>
@@ -166,15 +173,15 @@ export default function MemberPortalIntegration() {
                     checked={enabled}
                     onChange={() => handleToggle(key)}
                     className={classNames(
-                      enabled ? 'bg-blue-600' : 'bg-gray-200',
-                      'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                      enabled ? "bg-blue-600" : "bg-gray-200",
+                      "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                     )}
                   >
                     <span
                       aria-hidden="true"
                       className={classNames(
-                        enabled ? 'translate-x-5' : 'translate-x-0',
-                        'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                        enabled ? "translate-x-5" : "translate-x-0",
+                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
                       )}
                     />
                   </Switch>
@@ -183,7 +190,10 @@ export default function MemberPortalIntegration() {
             </div>
 
             <div>
-              <label htmlFor="session-timeout" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="session-timeout"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Session Timeout (minutes)
               </label>
               <div className="mt-1">
@@ -199,7 +209,8 @@ export default function MemberPortalIntegration() {
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Members will be automatically logged out after this period of inactivity.
+                Members will be automatically logged out after this period of
+                inactivity.
               </p>
             </div>
           </div>
@@ -210,12 +221,15 @@ export default function MemberPortalIntegration() {
         <div className="px-4 py-5 sm:p-6">
           <div className="flex items-center">
             <ShieldCheckIcon className="h-6 w-6 text-blue-500 mr-2" />
-            <h3 className="text-base font-semibold leading-6 text-gray-900">Security Notice</h3>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Security Notice
+            </h3>
           </div>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>
-              The member portal has access to sensitive personal information. We strongly recommend enabling MFA and 
-              requiring email verification for all accounts.
+              The member portal has access to sensitive personal information. We
+              strongly recommend enabling MFA and requiring email verification
+              for all accounts.
             </p>
           </div>
         </div>
@@ -223,7 +237,9 @@ export default function MemberPortalIntegration() {
 
       <div className="bg-white shadow sm:rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-base font-semibold leading-6 text-gray-900">Member Portal Features</h3>
+          <h3 className="text-base font-semibold leading-6 text-gray-900">
+            Member Portal Features
+          </h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>Configure which features are available in the member portal.</p>
           </div>
@@ -232,16 +248,28 @@ export default function MemberPortalIntegration() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Feature
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Description
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Enabled
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Requires Approval
                 </th>
               </tr>
@@ -260,15 +288,15 @@ export default function MemberPortalIntegration() {
                       checked={feature.enabled}
                       onChange={() => toggleFeature(feature.id)}
                       className={classNames(
-                        feature.enabled ? 'bg-blue-600' : 'bg-gray-200',
-                        'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                        feature.enabled ? "bg-blue-600" : "bg-gray-200",
+                        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                       )}
                     >
                       <span
                         aria-hidden="true"
                         className={classNames(
-                          feature.enabled ? 'translate-x-5' : 'translate-x-0',
-                          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                          feature.enabled ? "translate-x-5" : "translate-x-0",
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
                         )}
                       />
                     </Switch>
@@ -278,15 +306,19 @@ export default function MemberPortalIntegration() {
                       checked={feature.requiresApproval}
                       onChange={() => toggleApproval(feature.id)}
                       className={classNames(
-                        feature.requiresApproval ? 'bg-blue-600' : 'bg-gray-200',
-                        'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                        feature.requiresApproval
+                          ? "bg-blue-600"
+                          : "bg-gray-200",
+                        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                       )}
                     >
                       <span
                         aria-hidden="true"
                         className={classNames(
-                          feature.requiresApproval ? 'translate-x-5' : 'translate-x-0',
-                          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                          feature.requiresApproval
+                            ? "translate-x-5"
+                            : "translate-x-0",
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
                         )}
                       />
                     </Switch>

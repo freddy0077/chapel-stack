@@ -1,11 +1,10 @@
 """
 Member Management schema - handles member profiles, families, and related functionality
 """
-
 enum Gender {
   MALE
   FEMALE
-  OTHER
+  UNKNOWN
   PREFER_NOT_TO_SAY
 }
 
@@ -177,44 +176,44 @@ extend type Query {
     sortBy: String
     sortDirection: SortOrder
   ): MemberConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific member by ID
   member(id: ID!): Member @auth(requires: [STAFF])
-  
+
   # Get a specific member by user ID
   memberByUserId(userId: ID!): Member @auth(requires: [STAFF])
-  
+
   # Get my member profile (for authenticated users)
   myProfile: Member @auth(requires: [MEMBER])
-  
+
   # Get all families
   families(
-    search: String, 
-    branchId: ID, 
+    search: String
+    branchId: ID
     pagination: PaginationInput
   ): FamilyConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific family
   family(id: ID!): Family @auth(requires: [STAFF])
-  
+
   # Get follow-ups
   followUps(
-    status: String, 
-    assignedToId: ID, 
-    dateRange: DateRangeInput, 
-    branchId: ID, 
+    status: String
+    assignedToId: ID
+    dateRange: DateRangeInput
+    branchId: ID
     pagination: PaginationInput
   ): FollowUpConnection! @auth(requires: [STAFF])
-  
+
   # Get all skills
   skills: [Skill!]! @auth(requires: [STAFF])
-  
+
   # Get all interests
   interests: [Interest!]! @auth(requires: [STAFF])
-  
+
   # Search members (simpler version with fewer filters)
   searchMembers(query: String!, limit: Int): [Member!]! @auth(requires: [STAFF])
-  
+
   # Get relationships for a member
   memberRelationships(memberId: ID!): [Relationship!]! @auth(requires: [STAFF])
 }
@@ -262,60 +261,85 @@ input DateRangeInput {
 extend type Mutation {
   # Create a new member
   createMember(input: CreateMemberInput!): Member! @auth(requires: [STAFF])
-  
+
   # Update an existing member
-  updateMember(id: ID!, input: UpdateMemberInput!): Member! @auth(requires: [STAFF])
-  
+  updateMember(id: ID!, input: UpdateMemberInput!): Member!
+    @auth(requires: [STAFF])
+
   # Delete a member
   deleteMember(id: ID!, reason: String): Boolean! @auth(requires: [ADMIN])
-  
+
   # Update member status
-  updateMemberStatus(id: ID!, status: MemberStatus!, reason: String, notes: String): Member! @auth(requires: [STAFF])
-  
+  updateMemberStatus(
+    id: ID!
+    status: MemberStatus!
+    reason: String
+    notes: String
+  ): Member! @auth(requires: [STAFF])
+
   # Create a new family
   createFamily(input: CreateFamilyInput!): Family! @auth(requires: [STAFF])
-  
+
   # Update an existing family
-  updateFamily(id: ID!, input: UpdateFamilyInput!): Family! @auth(requires: [STAFF])
-  
+  updateFamily(id: ID!, input: UpdateFamilyInput!): Family!
+    @auth(requires: [STAFF])
+
   # Add a member to a family
-  addMemberToFamily(familyId: ID!, memberId: ID!, relationshipType: RelationshipType!): Family! @auth(requires: [STAFF])
-  
+  addMemberToFamily(
+    familyId: ID!
+    memberId: ID!
+    relationshipType: RelationshipType!
+  ): Family! @auth(requires: [STAFF])
+
   # Remove a member from a family
-  removeMemberFromFamily(familyId: ID!, memberId: ID!): Family! @auth(requires: [STAFF])
-  
+  removeMemberFromFamily(familyId: ID!, memberId: ID!): Family!
+    @auth(requires: [STAFF])
+
   # Create a relationship between members
-  createRelationship(input: CreateRelationshipInput!): Relationship! @auth(requires: [STAFF])
-  
+  createRelationship(input: CreateRelationshipInput!): Relationship!
+    @auth(requires: [STAFF])
+
   # Update a relationship
-  updateRelationship(id: ID!, relationshipType: RelationshipType!, isPrimary: Boolean): Relationship! @auth(requires: [STAFF])
-  
+  updateRelationship(
+    id: ID!
+    relationshipType: RelationshipType!
+    isPrimary: Boolean
+  ): Relationship! @auth(requires: [STAFF])
+
   # Delete a relationship
   deleteRelationship(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a follow-up task
-  createFollowUp(input: CreateFollowUpInput!): FollowUp! @auth(requires: [STAFF])
-  
+  createFollowUp(input: CreateFollowUpInput!): FollowUp!
+    @auth(requires: [STAFF])
+
   # Update a follow-up task
-  updateFollowUp(id: ID!, input: UpdateFollowUpInput!): FollowUp! @auth(requires: [STAFF])
-  
+  updateFollowUp(id: ID!, input: UpdateFollowUpInput!): FollowUp!
+    @auth(requires: [STAFF])
+
   # Complete a follow-up task
-  completeFollowUp(id: ID!, outcome: String!): FollowUp! @auth(requires: [STAFF])
-  
+  completeFollowUp(id: ID!, outcome: String!): FollowUp!
+    @auth(requires: [STAFF])
+
   # Add or update member's emergency contact
-  updateEmergencyContact(memberId: ID!, input: EmergencyContactInput!): Member! @auth(requires: [STAFF])
-  
+  updateEmergencyContact(memberId: ID!, input: EmergencyContactInput!): Member!
+    @auth(requires: [STAFF])
+
   # Create a new skill
-  createSkill(name: String!, description: String): Skill! @auth(requires: [STAFF])
-  
+  createSkill(name: String!, description: String): Skill!
+    @auth(requires: [STAFF])
+
   # Create a new interest
-  createInterest(name: String!, description: String): Interest! @auth(requires: [STAFF])
-  
+  createInterest(name: String!, description: String): Interest!
+    @auth(requires: [STAFF])
+
   # Add skills to a member
-  addSkillsToMember(memberId: ID!, skillIds: [ID!]!): Member! @auth(requires: [STAFF])
-  
+  addSkillsToMember(memberId: ID!, skillIds: [ID!]!): Member!
+    @auth(requires: [STAFF])
+
   # Add interests to a member
-  addInterestsToMember(memberId: ID!, interestIds: [ID!]!): Member! @auth(requires: [STAFF])
+  addInterestsToMember(memberId: ID!, interestIds: [ID!]!): Member!
+    @auth(requires: [STAFF])
 }
 
 input CreateMemberInput {
@@ -442,13 +466,13 @@ input UpdateFollowUpInput {
 extend type Subscription {
   # Get notified when a new member is created
   memberCreated(branchId: ID): Member! @auth(requires: [STAFF])
-  
+
   # Get notified when a member's status changes
   memberStatusChanged(branchId: ID): Member! @auth(requires: [STAFF])
-  
+
   # Get notified when a follow-up is assigned to you
   followUpAssigned: FollowUp! @auth(requires: [STAFF])
-  
+
   # Get notified when a follow-up status changes
   followUpStatusChanged(assignedToId: ID): FollowUp! @auth(requires: [STAFF])
 }

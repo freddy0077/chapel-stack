@@ -3,12 +3,7 @@
 import { useState, Fragment, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   PlusIcon,
   CalendarIcon,
@@ -42,9 +37,20 @@ import CreateCommunionModal from "./components/CreateCommunionModal";
 import CreateConfirmationModal from "./components/CreateConfirmationModal";
 import CreateMarriageModal from "./components/CreateMarriageModal";
 
-const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
+const BaptismRecords = ({
+  onOpenModal,
+  refetch,
+}: {
+  onOpenModal?: () => void;
+  refetch?: () => void;
+}) => (
   <BaptismRecordsLoader>
-    {(records: BaptismRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+    {(
+      records: BaptismRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -53,16 +59,22 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
                 <SparklesIcon className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Baptism Records</h3>
-                <p className="text-sm text-gray-600">Sacred initiation into faith</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Baptism Records
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Sacred initiation into faith
+                </p>
               </div>
             </div>
             <div className="bg-blue-100 px-3 py-1 rounded-full">
-              <span className="text-blue-800 font-medium text-sm">{records.length} Records</span>
+              <span className="text-blue-800 font-medium text-sm">
+                {records.length} Records
+              </span>
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-48">
             <div className="relative">
@@ -75,16 +87,24 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
             <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
               <DocumentTextIcon className="h-8 w-8 text-red-500" />
             </div>
-            <p className="text-red-600 font-semibold">Failed to load baptism records</p>
-            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+            <p className="text-red-600 font-semibold">
+              Failed to load baptism records
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Please try refreshing the page
+            </p>
           </div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="bg-blue-50 p-4 rounded-full inline-flex mb-4">
               <SparklesIcon className="h-12 w-12 text-blue-400" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Baptism Records</h4>
-            <p className="text-gray-500 mb-6">Start by adding your first baptism record</p>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              No Baptism Records
+            </h4>
+            <p className="text-gray-500 mb-6">
+              Start by adding your first baptism record
+            </p>
             <button
               onClick={onOpenModal}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -97,7 +117,10 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
           <div className="overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
               {records.map((rec) => (
-                <div key={rec.id} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300 group">
+                <div
+                  key={rec.id}
+                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300 group"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="bg-blue-100 p-2 rounded-lg group-hover:bg-blue-200 transition-colors">
                       <SparklesIcon className="h-5 w-5 text-blue-600" />
@@ -106,9 +129,11 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
                       {new Date(rec.dateOfSacrament).toLocaleDateString()}
                     </span>
                   </div>
-                  
+
                   {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {rec.sacramentType}
+                  </h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -119,20 +144,22 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
                       <span>{rec.locationOfSacrament}</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex items-center justify-between">
                     {rec.certificateUrl ? (
-                      <a 
-                        href={rec.certificateUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={rec.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
                         <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
                         Certificate
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No certificate</span>
+                      <span className="text-gray-400 text-sm">
+                        No certificate
+                      </span>
                     )}
                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
                       <EyeIcon className="h-4 w-4" />
@@ -148,9 +175,20 @@ const BaptismRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, re
   </BaptismRecordsLoader>
 );
 
-const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
+const CommunionRecords = ({
+  onOpenModal,
+  refetch,
+}: {
+  onOpenModal?: () => void;
+  refetch?: () => void;
+}) => (
   <CommunionRecordsLoader>
-    {(records: CommunionRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+    {(
+      records: CommunionRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -159,16 +197,22 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
                 <GiftIcon className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">First Communion Records</h3>
-                <p className="text-sm text-gray-600">First reception of the Eucharist</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  First Communion Records
+                </h3>
+                <p className="text-sm text-gray-600">
+                  First reception of the Eucharist
+                </p>
               </div>
             </div>
             <div className="bg-amber-100 px-3 py-1 rounded-full">
-              <span className="text-amber-800 font-medium text-sm">{records.length} Records</span>
+              <span className="text-amber-800 font-medium text-sm">
+                {records.length} Records
+              </span>
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-48">
             <div className="relative">
@@ -181,16 +225,24 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
             <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
               <DocumentTextIcon className="h-8 w-8 text-red-500" />
             </div>
-            <p className="text-red-600 font-semibold">Failed to load communion records</p>
-            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+            <p className="text-red-600 font-semibold">
+              Failed to load communion records
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Please try refreshing the page
+            </p>
           </div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="bg-amber-50 p-4 rounded-full inline-flex mb-4">
               <GiftIcon className="h-12 w-12 text-amber-400" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Communion Records</h4>
-            <p className="text-gray-500 mb-6">Start by adding your first communion record</p>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              No Communion Records
+            </h4>
+            <p className="text-gray-500 mb-6">
+              Start by adding your first communion record
+            </p>
             <button
               onClick={onOpenModal}
               className="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
@@ -203,7 +255,10 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
           <div className="overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
               {records.map((rec) => (
-                <div key={rec.id} className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-100 hover:shadow-lg transition-all duration-300 group">
+                <div
+                  key={rec.id}
+                  className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-100 hover:shadow-lg transition-all duration-300 group"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="bg-amber-100 p-2 rounded-lg group-hover:bg-amber-200 transition-colors">
                       <GiftIcon className="h-5 w-5 text-amber-600" />
@@ -212,9 +267,11 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
                       {new Date(rec.dateOfSacrament).toLocaleDateString()}
                     </span>
                   </div>
-                  
+
                   {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {rec.sacramentType}
+                  </h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -225,20 +282,22 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
                       <span>{rec.locationOfSacrament}</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex items-center justify-between">
                     {rec.certificateUrl ? (
-                      <a 
-                        href={rec.certificateUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={rec.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center text-amber-600 hover:text-amber-800 text-sm font-medium"
                       >
                         <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
                         Certificate
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No certificate</span>
+                      <span className="text-gray-400 text-sm">
+                        No certificate
+                      </span>
                     )}
                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
                       <EyeIcon className="h-4 w-4" />
@@ -254,9 +313,20 @@ const CommunionRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, 
   </CommunionRecordsLoader>
 );
 
-const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
+const ConfirmationRecords = ({
+  onOpenModal,
+  refetch,
+}: {
+  onOpenModal?: () => void;
+  refetch?: () => void;
+}) => (
   <ConfirmationRecordsLoader>
-    {(records: ConfirmationRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+    {(
+      records: ConfirmationRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -265,16 +335,22 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
                 <HeartIcon className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Confirmation Records</h3>
-                <p className="text-sm text-gray-600">Strengthening of faith through the Spirit</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Confirmation Records
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Strengthening of faith through the Spirit
+                </p>
               </div>
             </div>
             <div className="bg-purple-100 px-3 py-1 rounded-full">
-              <span className="text-purple-800 font-medium text-sm">{records.length} Records</span>
+              <span className="text-purple-800 font-medium text-sm">
+                {records.length} Records
+              </span>
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-48">
             <div className="relative">
@@ -287,16 +363,24 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
             <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
               <DocumentTextIcon className="h-8 w-8 text-red-500" />
             </div>
-            <p className="text-red-600 font-semibold">Failed to load confirmation records</p>
-            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+            <p className="text-red-600 font-semibold">
+              Failed to load confirmation records
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Please try refreshing the page
+            </p>
           </div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="bg-purple-50 p-4 rounded-full inline-flex mb-4">
               <HeartIcon className="h-12 w-12 text-purple-400" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Confirmation Records</h4>
-            <p className="text-gray-500 mb-6">Start by adding your first confirmation record</p>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              No Confirmation Records
+            </h4>
+            <p className="text-gray-500 mb-6">
+              Start by adding your first confirmation record
+            </p>
             <button
               onClick={onOpenModal}
               className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -309,7 +393,10 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
           <div className="overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
               {records.map((rec) => (
-                <div key={rec.id} className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100 hover:shadow-lg transition-all duration-300 group">
+                <div
+                  key={rec.id}
+                  className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100 hover:shadow-lg transition-all duration-300 group"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="bg-purple-100 p-2 rounded-lg group-hover:bg-purple-200 transition-colors">
                       <HeartIcon className="h-5 w-5 text-purple-600" />
@@ -318,9 +405,11 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
                       {new Date(rec.dateOfSacrament).toLocaleDateString()}
                     </span>
                   </div>
-                  
+
                   {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {rec.sacramentType}
+                  </h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -331,20 +420,22 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
                       <span>{rec.locationOfSacrament}</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex items-center justify-between">
                     {rec.certificateUrl ? (
-                      <a 
-                        href={rec.certificateUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={rec.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium"
                       >
                         <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
                         Certificate
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No certificate</span>
+                      <span className="text-gray-400 text-sm">
+                        No certificate
+                      </span>
                     )}
                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
                       <EyeIcon className="h-4 w-4" />
@@ -360,9 +451,20 @@ const ConfirmationRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => voi
   </ConfirmationRecordsLoader>
 );
 
-const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, refetch?: () => void }) => (
+const MarriageRecords = ({
+  onOpenModal,
+  refetch,
+}: {
+  onOpenModal?: () => void;
+  refetch?: () => void;
+}) => (
   <MarriageRecordsLoader>
-    {(records: MarriageRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+    {(
+      records: MarriageRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -371,16 +473,22 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
                 <HeartIcon className="h-6 w-6 text-rose-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Marriage Records</h3>
-                <p className="text-sm text-gray-600">Sacred union blessed by God</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Marriage Records
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Sacred union blessed by God
+                </p>
               </div>
             </div>
             <div className="bg-rose-100 px-3 py-1 rounded-full">
-              <span className="text-rose-800 font-medium text-sm">{records.length} Records</span>
+              <span className="text-rose-800 font-medium text-sm">
+                {records.length} Records
+              </span>
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-48">
             <div className="relative">
@@ -393,16 +501,24 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
             <div className="bg-red-50 p-4 rounded-full inline-flex mb-4">
               <DocumentTextIcon className="h-8 w-8 text-red-500" />
             </div>
-            <p className="text-red-600 font-semibold">Failed to load marriage records</p>
-            <p className="text-gray-500 text-sm mt-1">Please try refreshing the page</p>
+            <p className="text-red-600 font-semibold">
+              Failed to load marriage records
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Please try refreshing the page
+            </p>
           </div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="bg-rose-50 p-4 rounded-full inline-flex mb-4">
               <HeartIcon className="h-12 w-12 text-rose-400" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Marriage Records</h4>
-            <p className="text-gray-500 mb-6">Start by adding your first marriage record</p>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+              No Marriage Records
+            </h4>
+            <p className="text-gray-500 mb-6">
+              Start by adding your first marriage record
+            </p>
             <button
               onClick={onOpenModal}
               className="inline-flex items-center px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors"
@@ -415,7 +531,10 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
           <div className="overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
               {records.map((rec) => (
-                <div key={rec.id} className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6 border border-rose-100 hover:shadow-lg transition-all duration-300 group">
+                <div
+                  key={rec.id}
+                  className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6 border border-rose-100 hover:shadow-lg transition-all duration-300 group"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="bg-rose-100 p-2 rounded-lg group-hover:bg-rose-200 transition-colors">
                       <HeartIcon className="h-5 w-5 text-rose-600" />
@@ -424,9 +543,11 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
                       {new Date(rec.dateOfSacrament).toLocaleDateString()}
                     </span>
                   </div>
-                  
+
                   {/*<h4 className="font-semibold text-gray-900 mb-2">{rec.memberId}</h4>*/}
-                  <h4 className="font-semibold text-gray-900 mb-2">{rec.sacramentType}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {rec.sacramentType}
+                  </h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UserGroupIcon className="h-4 w-4 mr-2 text-gray-400" />
@@ -437,20 +558,22 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
                       <span>{rec.locationOfSacrament}</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex items-center justify-between">
                     {rec.certificateUrl ? (
-                      <a 
-                        href={rec.certificateUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={rec.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center text-rose-600 hover:text-rose-800 text-sm font-medium"
                       >
                         <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
                         Certificate
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No certificate</span>
+                      <span className="text-gray-400 text-sm">
+                        No certificate
+                      </span>
                     )}
                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
                       <EyeIcon className="h-4 w-4" />
@@ -469,7 +592,9 @@ const MarriageRecords = ({ onOpenModal, refetch }: { onOpenModal?: () => void, r
 const AnniversaryTracker = () => (
   <div className="text-center py-8">
     <h3 className="text-lg font-medium">Anniversary Tracker</h3>
-    <p className="text-gray-500 mt-2">Track upcoming sacramental anniversaries</p>
+    <p className="text-gray-500 mt-2">
+      Track upcoming sacramental anniversaries
+    </p>
   </div>
 );
 
@@ -482,7 +607,15 @@ interface StatsCardProps {
   icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
   iconColor: string;
 }
-const StatsCard = ({ title, value, description, trend, percentage, icon: Icon, iconColor }: StatsCardProps) => (
+const StatsCard = ({
+  title,
+  value,
+  description,
+  trend,
+  percentage,
+  icon: Icon,
+  iconColor,
+}: StatsCardProps) => (
   <div className="bg-white overflow-hidden rounded-lg shadow-sm">
     <div className="p-5">
       <div className="flex items-center">
@@ -490,7 +623,9 @@ const StatsCard = ({ title, value, description, trend, percentage, icon: Icon, i
           <Icon className="h-6 w-6 text-white" aria-hidden="true" />
         </div>
         <div className="ml-5 w-0 flex-1">
-          <dt className="truncate text-sm font-medium text-gray-500">{title}</dt>
+          <dt className="truncate text-sm font-medium text-gray-500">
+            {title}
+          </dt>
           <dd>
             <div className="text-lg font-medium text-gray-900">{value}</div>
           </dd>
@@ -599,9 +734,15 @@ export default function SacramentsPage() {
             <Menu as="div" className="relative inline-block text-left">
               <div>
                 <Menu.Button className="inline-flex w-full justify-center rounded-lg bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-indigo-700 shadow-lg hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200 transition-all duration-200">
-                  <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-indigo-600" aria-hidden="true" />
+                  <PlusIcon
+                    className="-ml-1 mr-2 h-5 w-5 text-indigo-600"
+                    aria-hidden="true"
+                  />
                   New Record
-                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5 text-indigo-400" aria-hidden="true" />
+                  <ChevronDownIcon
+                    className="-mr-1 ml-2 h-5 w-5 text-indigo-400"
+                    aria-hidden="true"
+                  />
                 </Menu.Button>
               </div>
               <Transition
@@ -666,16 +807,21 @@ export default function SacramentsPage() {
           </div>
         }
       />
-   
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Overview */}
         <div className="mb-8">
           <SacramentStatsLoader period="all">
-            {(stats: any[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+            {(
+              stats: any[],
+              loading: boolean,
+              error: unknown,
+              loaderRefetch: () => void,
+            ) => (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard
                   title="Total Baptisms"
-                  value={stats.find(s => s.type === 'BAPTISM')?.count || 0}
+                  value={stats.find((s) => s.type === "BAPTISM")?.count || 0}
                   description="Sacred initiations"
                   icon={SparklesIcon}
                   iconColor="text-blue-600"
@@ -684,7 +830,10 @@ export default function SacramentsPage() {
                 />
                 <StatsCard
                   title="First Communions"
-                  value={stats.find(s => s.type === 'EUCHARIST_FIRST_COMMUNION')?.count || 0}
+                  value={
+                    stats.find((s) => s.type === "EUCHARIST_FIRST_COMMUNION")
+                      ?.count || 0
+                  }
                   description="First Eucharist receptions"
                   icon={GiftIcon}
                   iconColor="text-amber-600"
@@ -693,7 +842,9 @@ export default function SacramentsPage() {
                 />
                 <StatsCard
                   title="Confirmations"
-                  value={stats.find(s => s.type === 'CONFIRMATION')?.count || 0}
+                  value={
+                    stats.find((s) => s.type === "CONFIRMATION")?.count || 0
+                  }
                   description="Faith strengthened"
                   icon={HeartIcon}
                   iconColor="text-purple-600"
@@ -701,7 +852,7 @@ export default function SacramentsPage() {
                 />
                 <StatsCard
                   title="Marriages"
-                  value={stats.find(s => s.type === 'MARRIAGE')?.count || 0}
+                  value={stats.find((s) => s.type === "MARRIAGE")?.count || 0}
                   description="Sacred unions"
                   icon={HeartIcon}
                   iconColor="text-rose-600"
@@ -716,7 +867,12 @@ export default function SacramentsPage() {
         {/* Upcoming Anniversaries */}
         <div className="mb-8">
           <UpcomingAnniversariesLoader>
-            {(anniversaries: any[], loading: boolean, error: unknown, loaderRefetch: () => void) => (
+            {(
+              anniversaries: any[],
+              loading: boolean,
+              error: unknown,
+              loaderRefetch: () => void,
+            ) => (
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center justify-between">
@@ -725,11 +881,15 @@ export default function SacramentsPage() {
                         <CalendarIcon className="h-6 w-6 text-indigo-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Upcoming Anniversaries</h3>
-                        <p className="text-sm text-gray-600">Celebrate spiritual milestones</p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Upcoming Anniversaries
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Celebrate spiritual milestones
+                        </p>
                       </div>
                     </div>
-                    <Link 
+                    <Link
                       href="/dashboard/sacraments/anniversaries"
                       className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
                     >
@@ -738,7 +898,7 @@ export default function SacramentsPage() {
                     </Link>
                   </div>
                 </div>
-                
+
                 {loading ? (
                   <div className="p-8 text-center">
                     <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
@@ -752,19 +912,30 @@ export default function SacramentsPage() {
                   <div className="p-6">
                     <div className="space-y-3">
                       {anniversaries.slice(0, 5).map((anniversary, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg"
+                        >
                           <div className="flex items-center space-x-3">
                             <div className="bg-indigo-100 p-2 rounded-full">
                               <CalendarIcon className="h-4 w-4 text-indigo-600" />
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{anniversary.memberName}</p>
-                              <p className="text-sm text-gray-600">{anniversary.sacramentType} Anniversary</p>
+                              <p className="font-medium text-gray-900">
+                                {anniversary.memberName}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {anniversary.sacramentType} Anniversary
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">{anniversary.anniversaryDate}</p>
-                            <p className="text-xs text-gray-500">{anniversary.yearsAgo} years</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {anniversary.anniversaryDate}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {anniversary.yearsAgo} years
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -779,46 +950,66 @@ export default function SacramentsPage() {
         {/* Sacrament Records Tabs */}
         <Tabs defaultValue="baptism" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/50 backdrop-blur-sm rounded-xl p-1">
-            <TabsTrigger value="baptism" className="flex items-center space-x-2 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
+            <TabsTrigger
+              value="baptism"
+              className="flex items-center space-x-2 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700"
+            >
               <SparklesIcon className="h-4 w-4" />
               <span>Baptism</span>
             </TabsTrigger>
-            <TabsTrigger value="communion" className="flex items-center space-x-2 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700">
+            <TabsTrigger
+              value="communion"
+              className="flex items-center space-x-2 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700"
+            >
               <GiftIcon className="h-4 w-4" />
               <span>Communion</span>
             </TabsTrigger>
-            <TabsTrigger value="confirmation" className="flex items-center space-x-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
+            <TabsTrigger
+              value="confirmation"
+              className="flex items-center space-x-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700"
+            >
               <HeartIcon className="h-4 w-4" />
               <span>Confirmation</span>
             </TabsTrigger>
-            <TabsTrigger value="marriage" className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700">
+            <TabsTrigger
+              value="marriage"
+              className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700"
+            >
               <HeartIcon className="h-4 w-4" />
               <span>Marriage</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="baptism">
-            <BaptismRecords 
-              onOpenModal={() => setIsBaptismModalOpen(true)} 
-              refetch={(loaderRefetch) => baptismRefetchRef.current = loaderRefetch}
+            <BaptismRecords
+              onOpenModal={() => setIsBaptismModalOpen(true)}
+              refetch={(loaderRefetch) =>
+                (baptismRefetchRef.current = loaderRefetch)
+              }
             />
           </TabsContent>
           <TabsContent value="communion">
-            <CommunionRecords 
-              onOpenModal={() => setIsCommunionModalOpen(true)} 
-              refetch={(loaderRefetch) => communionRefetchRef.current = loaderRefetch}
+            <CommunionRecords
+              onOpenModal={() => setIsCommunionModalOpen(true)}
+              refetch={(loaderRefetch) =>
+                (communionRefetchRef.current = loaderRefetch)
+              }
             />
           </TabsContent>
           <TabsContent value="confirmation">
-            <ConfirmationRecords 
-              onOpenModal={() => setIsConfirmationModalOpen(true)} 
-              refetch={(loaderRefetch) => confirmationRefetchRef.current = loaderRefetch}
+            <ConfirmationRecords
+              onOpenModal={() => setIsConfirmationModalOpen(true)}
+              refetch={(loaderRefetch) =>
+                (confirmationRefetchRef.current = loaderRefetch)
+              }
             />
           </TabsContent>
           <TabsContent value="marriage">
-            <MarriageRecords 
-              onOpenModal={() => setIsMarriageModalOpen(true)} 
-              refetch={(loaderRefetch) => marriageRefetchRef.current = loaderRefetch}
+            <MarriageRecords
+              onOpenModal={() => setIsMarriageModalOpen(true)}
+              refetch={(loaderRefetch) =>
+                (marriageRefetchRef.current = loaderRefetch)
+              }
             />
           </TabsContent>
         </Tabs>

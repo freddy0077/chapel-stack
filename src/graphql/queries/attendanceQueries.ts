@@ -24,8 +24,12 @@ export const GET_ATTENDANCE_RECORDS = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }
@@ -38,10 +42,7 @@ export const GET_ATTENDANCE_RECORDS_FOR_SESSION = gql`
     $sessionId: ID!
     $filter: AttendanceFilterInput
   ) {
-    attendanceRecords(
-      sessionId: $sessionId
-      filter: $filter
-    ) {
+    attendanceRecords(sessionId: $sessionId, filter: $filter) {
       id
       checkInTime
       checkOutTime
@@ -59,8 +60,12 @@ export const GET_ATTENDANCE_RECORDS_FOR_SESSION = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }
@@ -73,10 +78,7 @@ export const GET_ATTENDANCE_RECORDS_FOR_EVENT = gql`
     $eventId: ID!
     $filter: AttendanceFilterInput
   ) {
-    eventAttendanceRecords(
-      eventId: $eventId
-      filter: $filter
-    ) {
+    eventAttendanceRecords(eventId: $eventId, filter: $filter) {
       id
       checkInTime
       checkOutTime
@@ -97,8 +99,12 @@ export const GET_ATTENDANCE_RECORDS_FOR_EVENT = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }
@@ -136,8 +142,12 @@ export const GET_ALL_ATTENDANCE_RECORDS = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }
@@ -164,14 +174,8 @@ export const CREATE_ATTENDANCE_SESSION = gql`
 `;
 
 export const GET_FILTERED_ATTENDANCE_SESSIONS = gql`
-  query GetFilteredAttendanceSessions(
-    $organisationId: ID
-    $branchId: ID
-  ) {
-    attendanceSessions(
-      organisationId: $organisationId
-      branchId: $branchId
-    ) {
+  query GetFilteredAttendanceSessions($organisationId: ID, $branchId: ID) {
+    attendanceSessions(organisationId: $organisationId, branchId: $branchId) {
       id
       name
       description
@@ -257,8 +261,12 @@ export const RECORD_ATTENDANCE = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }
@@ -273,7 +281,10 @@ export const RECORD_BULK_ATTENDANCE = gql`
 
 // Update attendance record mutation (now supported by backend)
 export const UPDATE_ATTENDANCE_RECORD = gql`
-  mutation UpdateAttendanceRecord($id: ID!, $input: UpdateAttendanceRecordInput!) {
+  mutation UpdateAttendanceRecord(
+    $id: ID!
+    $input: UpdateAttendanceRecordInput!
+  ) {
     updateAttendanceRecord(id: $id, input: $input) {
       id
       checkInTime
@@ -396,8 +407,12 @@ export const CHECK_OUT_ATTENDANCE = gql`
       visitorName
       visitorEmail
       visitorPhone
-      recordedBy { id }
-      branch { id }
+      recordedBy {
+        id
+      }
+      branch {
+        id
+      }
       createdAt
       updatedAt
     }

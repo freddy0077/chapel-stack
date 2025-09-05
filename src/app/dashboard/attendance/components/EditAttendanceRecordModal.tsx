@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { useState, useEffect } from "react";
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
   XMarkIcon,
   CalendarIcon,
@@ -10,11 +10,11 @@ import {
   UserIcon,
   TagIcon,
   CheckIcon,
-} from '@heroicons/react/24/outline';
-import { useMutation } from '@apollo/client';
-import { UPDATE_ATTENDANCE_RECORD } from '@/graphql/queries/attendanceQueries';
-import { AttendanceRecord } from '@/graphql/hooks/useAttendance';
-import { format } from 'date-fns';
+} from "@heroicons/react/24/outline";
+import { useMutation } from "@apollo/client";
+import { UPDATE_ATTENDANCE_RECORD } from "@/graphql/queries/attendanceQueries";
+import { AttendanceRecord } from "@/graphql/hooks/useAttendance";
+import { format } from "date-fns";
 
 interface EditAttendanceRecordModalProps {
   isOpen: boolean;
@@ -30,13 +30,13 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
   onSuccess,
 }) => {
   const [formData, setFormData] = useState({
-    checkInTime: '',
-    checkOutTime: '',
-    checkInMethod: '',
-    notes: '',
-    visitorName: '',
-    visitorEmail: '',
-    visitorPhone: '',
+    checkInTime: "",
+    checkOutTime: "",
+    checkInMethod: "",
+    notes: "",
+    visitorName: "",
+    visitorEmail: "",
+    visitorPhone: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,20 +46,28 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
   useEffect(() => {
     if (record) {
       setFormData({
-        checkInTime: record.checkInTime ? format(new Date(record.checkInTime), "yyyy-MM-dd'T'HH:mm") : '',
-        checkOutTime: record.checkOutTime ? format(new Date(record.checkOutTime), "yyyy-MM-dd'T'HH:mm") : '',
-        checkInMethod: record.checkInMethod || '',
-        notes: record.notes || '',
-        visitorName: record.visitorName || '',
-        visitorEmail: record.visitorEmail || '',
-        visitorPhone: record.visitorPhone || '',
+        checkInTime: record.checkInTime
+          ? format(new Date(record.checkInTime), "yyyy-MM-dd'T'HH:mm")
+          : "",
+        checkOutTime: record.checkOutTime
+          ? format(new Date(record.checkOutTime), "yyyy-MM-dd'T'HH:mm")
+          : "",
+        checkInMethod: record.checkInMethod || "",
+        notes: record.notes || "",
+        visitorName: record.visitorName || "",
+        visitorEmail: record.visitorEmail || "",
+        visitorPhone: record.visitorPhone || "",
       });
     }
   }, [record]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -74,8 +82,12 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
 
     try {
       const input = {
-        checkInTime: formData.checkInTime ? new Date(formData.checkInTime).toISOString() : undefined,
-        checkOutTime: formData.checkOutTime ? new Date(formData.checkOutTime).toISOString() : undefined,
+        checkInTime: formData.checkInTime
+          ? new Date(formData.checkInTime).toISOString()
+          : undefined,
+        checkOutTime: formData.checkOutTime
+          ? new Date(formData.checkOutTime).toISOString()
+          : undefined,
         checkInMethod: formData.checkInMethod || undefined,
         notes: formData.notes || undefined,
         visitorName: formData.visitorName || undefined,
@@ -95,7 +107,7 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to update attendance record');
+      setError(err.message || "Failed to update attendance record");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +117,7 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
     if (record?.member) {
       return `${record.member.firstName} ${record.member.lastName}`;
     }
-    return record?.visitorName || 'Unknown';
+    return record?.visitorName || "Unknown";
   };
 
   const getEventOrSessionName = () => {
@@ -115,7 +127,7 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
     if (record?.event) {
       return record.event.title;
     }
-    return 'Unknown';
+    return "Unknown";
   };
 
   if (!record) return null;
@@ -157,7 +169,8 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                       Edit Attendance Record
                     </Dialog.Title>
                     <p className="text-sm text-gray-500 mt-1">
-                      Update attendance information for {getAttendeeDisplayName()}
+                      Update attendance information for{" "}
+                      {getAttendeeDisplayName()}
                     </p>
                   </div>
                   <button
@@ -175,7 +188,9 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                   <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
                     <div className="flex">
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">Error</h3>
+                        <h3 className="text-sm font-medium text-red-800">
+                          Error
+                        </h3>
                         <div className="mt-2 text-sm text-red-700">
                           <p>{error}</p>
                         </div>
@@ -188,11 +203,14 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                 <div className="bg-blue-50 rounded-lg p-4 mb-6">
                   <div className="flex items-center mb-2">
                     <CalendarIcon className="h-5 w-5 text-blue-500 mr-2" />
-                    <span className="font-medium text-blue-900">{getEventOrSessionName()}</span>
+                    <span className="font-medium text-blue-900">
+                      {getEventOrSessionName()}
+                    </span>
                   </div>
                   <div className="flex items-center text-sm text-blue-700">
                     <UserIcon className="h-4 w-4 mr-1" />
-                    {getAttendeeDisplayName()} • {record.member ? 'Member' : 'Visitor'}
+                    {getAttendeeDisplayName()} •{" "}
+                    {record.member ? "Member" : "Visitor"}
                   </div>
                 </div>
 
@@ -201,7 +219,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                   {/* Attendance Times */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="checkInTime" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="checkInTime"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Check-in Time *
                       </label>
                       <input
@@ -215,7 +236,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label htmlFor="checkOutTime" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="checkOutTime"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Check-out Time
                       </label>
                       <input
@@ -231,7 +255,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
 
                   {/* Check-in Method */}
                   <div>
-                    <label htmlFor="checkInMethod" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="checkInMethod"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Check-in Method
                     </label>
                     <select
@@ -258,7 +285,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label htmlFor="visitorName" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="visitorName"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Name
                           </label>
                           <input
@@ -271,7 +301,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                           />
                         </div>
                         <div>
-                          <label htmlFor="visitorEmail" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="visitorEmail"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Email
                           </label>
                           <input
@@ -284,7 +317,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
                           />
                         </div>
                         <div>
-                          <label htmlFor="visitorPhone" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="visitorPhone"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Phone
                           </label>
                           <input
@@ -302,7 +338,10 @@ const EditAttendanceRecordModal: React.FC<EditAttendanceRecordModalProps> = ({
 
                   {/* Notes */}
                   <div>
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="notes"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Notes
                     </label>
                     <textarea

@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useApolloClient } from '@apollo/client';
-import { useState } from 'react';
+import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useState } from "react";
 import {
   GET_FUND_MAPPING_CONFIGURATION,
   GET_CONTRIBUTION_TYPE_FUND_MAPPINGS,
@@ -9,7 +9,7 @@ import {
   CREATE_DEFAULT_FUND_MAPPINGS,
   GET_FUND_FOR_CONTRIBUTION_TYPE,
   GET_FUND_FOR_CONTRIBUTION_TYPE_NAME,
-} from '../queries/fundMappingQueries';
+} from "../queries/fundMappingQueries";
 
 // Types
 export interface ContributionTypeInfo {
@@ -73,14 +73,22 @@ export interface UpdateContributionTypeFundMappingInput {
 }
 
 // Hook for getting fund mapping configuration
-export function useFundMappingConfiguration(branchId: string, organisationId: string) {
-  const { data, loading, error, refetch } = useQuery(GET_FUND_MAPPING_CONFIGURATION, {
-    variables: { branchId, organisationId },
-    skip: !branchId || !organisationId,
-  });
+export function useFundMappingConfiguration(
+  branchId: string,
+  organisationId: string,
+) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_FUND_MAPPING_CONFIGURATION,
+    {
+      variables: { branchId, organisationId },
+      skip: !branchId || !organisationId,
+    },
+  );
 
   return {
-    configuration: data?.fundMappingConfiguration as FundMappingConfiguration | undefined,
+    configuration: data?.fundMappingConfiguration as
+      | FundMappingConfiguration
+      | undefined,
     loading,
     error,
     refetch,
@@ -88,14 +96,21 @@ export function useFundMappingConfiguration(branchId: string, organisationId: st
 }
 
 // Hook for getting fund mappings with filtering
-export function useFundMappings(filter: ContributionTypeFundMappingFilterInput) {
-  const { data, loading, error, refetch } = useQuery(GET_CONTRIBUTION_TYPE_FUND_MAPPINGS, {
-    variables: { filter },
-    skip: !filter.branchId && !filter.organisationId,
-  });
+export function useFundMappings(
+  filter: ContributionTypeFundMappingFilterInput,
+) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_CONTRIBUTION_TYPE_FUND_MAPPINGS,
+    {
+      variables: { filter },
+      skip: !filter.branchId && !filter.organisationId,
+    },
+  );
 
   return {
-    mappings: data?.contributionTypeFundMappings?.mappings as ContributionTypeFundMapping[] | undefined,
+    mappings: data?.contributionTypeFundMappings?.mappings as
+      | ContributionTypeFundMapping[]
+      | undefined,
     total: data?.contributionTypeFundMappings?.total as number | undefined,
     loading,
     error,
@@ -105,7 +120,9 @@ export function useFundMappings(filter: ContributionTypeFundMappingFilterInput) 
 
 // Hook for creating fund mappings
 export function useCreateFundMapping() {
-  const [createMapping, { loading, error }] = useMutation(CREATE_CONTRIBUTION_TYPE_FUND_MAPPING);
+  const [createMapping, { loading, error }] = useMutation(
+    CREATE_CONTRIBUTION_TYPE_FUND_MAPPING,
+  );
   const client = useApolloClient();
 
   const create = async (input: CreateContributionTypeFundMappingInput) => {
@@ -115,7 +132,10 @@ export function useCreateFundMapping() {
         refetchQueries: [
           {
             query: GET_FUND_MAPPING_CONFIGURATION,
-            variables: { branchId: input.branchId, organisationId: input.organisationId },
+            variables: {
+              branchId: input.branchId,
+              organisationId: input.organisationId,
+            },
           },
         ],
       });
@@ -127,7 +147,7 @@ export function useCreateFundMapping() {
 
       return result.data?.createContributionTypeFundMapping;
     } catch (err) {
-      console.error('Error creating fund mapping:', err);
+      console.error("Error creating fund mapping:", err);
       throw err;
     }
   };
@@ -137,7 +157,9 @@ export function useCreateFundMapping() {
 
 // Hook for updating fund mappings
 export function useUpdateFundMapping() {
-  const [updateMapping, { loading, error }] = useMutation(UPDATE_CONTRIBUTION_TYPE_FUND_MAPPING);
+  const [updateMapping, { loading, error }] = useMutation(
+    UPDATE_CONTRIBUTION_TYPE_FUND_MAPPING,
+  );
   const client = useApolloClient();
 
   const update = async (input: UpdateContributionTypeFundMappingInput) => {
@@ -148,12 +170,15 @@ export function useUpdateFundMapping() {
 
       // Invalidate related queries
       await client.refetchQueries({
-        include: [GET_FUND_MAPPING_CONFIGURATION, GET_CONTRIBUTION_TYPE_FUND_MAPPINGS],
+        include: [
+          GET_FUND_MAPPING_CONFIGURATION,
+          GET_CONTRIBUTION_TYPE_FUND_MAPPINGS,
+        ],
       });
 
       return result.data?.updateContributionTypeFundMapping;
     } catch (err) {
-      console.error('Error updating fund mapping:', err);
+      console.error("Error updating fund mapping:", err);
       throw err;
     }
   };
@@ -163,7 +188,9 @@ export function useUpdateFundMapping() {
 
 // Hook for deleting fund mappings
 export function useDeleteFundMapping() {
-  const [deleteMapping, { loading, error }] = useMutation(DELETE_CONTRIBUTION_TYPE_FUND_MAPPING);
+  const [deleteMapping, { loading, error }] = useMutation(
+    DELETE_CONTRIBUTION_TYPE_FUND_MAPPING,
+  );
   const client = useApolloClient();
 
   const deleteFundMapping = async (id: string) => {
@@ -174,12 +201,15 @@ export function useDeleteFundMapping() {
 
       // Invalidate related queries
       await client.refetchQueries({
-        include: [GET_FUND_MAPPING_CONFIGURATION, GET_CONTRIBUTION_TYPE_FUND_MAPPINGS],
+        include: [
+          GET_FUND_MAPPING_CONFIGURATION,
+          GET_CONTRIBUTION_TYPE_FUND_MAPPINGS,
+        ],
       });
 
       return result.data?.deleteContributionTypeFundMapping;
     } catch (err) {
-      console.error('Error deleting fund mapping:', err);
+      console.error("Error deleting fund mapping:", err);
       throw err;
     }
   };
@@ -189,10 +219,15 @@ export function useDeleteFundMapping() {
 
 // Hook for creating default fund mappings
 export function useCreateDefaultFundMappings() {
-  const [createDefaults, { loading, error }] = useMutation(CREATE_DEFAULT_FUND_MAPPINGS);
+  const [createDefaults, { loading, error }] = useMutation(
+    CREATE_DEFAULT_FUND_MAPPINGS,
+  );
   const client = useApolloClient();
 
-  const createDefaultMappings = async (branchId: string, organisationId: string) => {
+  const createDefaultMappings = async (
+    branchId: string,
+    organisationId: string,
+  ) => {
     try {
       const result = await createDefaults({
         variables: { branchId, organisationId },
@@ -211,7 +246,7 @@ export function useCreateDefaultFundMappings() {
 
       return result.data?.createDefaultFundMappings;
     } catch (err) {
-      console.error('Error creating default fund mappings:', err);
+      console.error("Error creating default fund mappings:", err);
       throw err;
     }
   };
@@ -243,10 +278,13 @@ export function useFundForContributionTypeName(
   branchId: string,
   organisationId: string,
 ) {
-  const { data, loading, error } = useQuery(GET_FUND_FOR_CONTRIBUTION_TYPE_NAME, {
-    variables: { contributionTypeName, branchId, organisationId },
-    skip: !contributionTypeName || !branchId || !organisationId,
-  });
+  const { data, loading, error } = useQuery(
+    GET_FUND_FOR_CONTRIBUTION_TYPE_NAME,
+    {
+      variables: { contributionTypeName, branchId, organisationId },
+      skip: !contributionTypeName || !branchId || !organisationId,
+    },
+  );
 
   return {
     fundId: data?.getFundForContributionTypeName as string | null,
@@ -256,8 +294,12 @@ export function useFundForContributionTypeName(
 }
 
 // Combined hook for all fund mapping operations
-export function useFundMappingManager(branchId: string, organisationId: string) {
-  const [selectedMapping, setSelectedMapping] = useState<ContributionTypeFundMapping | null>(null);
+export function useFundMappingManager(
+  branchId: string,
+  organisationId: string,
+) {
+  const [selectedMapping, setSelectedMapping] =
+    useState<ContributionTypeFundMapping | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -269,18 +311,20 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
 
   const openCreateModal = () => setIsCreateModalOpen(true);
   const closeCreateModal = () => setIsCreateModalOpen(false);
-  
+
   const openEditModal = (mapping: ContributionTypeFundMapping) => {
     setSelectedMapping(mapping);
     setIsEditModalOpen(true);
   };
-  
+
   const closeEditModal = () => {
     setSelectedMapping(null);
     setIsEditModalOpen(false);
   };
 
-  const handleCreate = async (input: CreateContributionTypeFundMappingInput) => {
+  const handleCreate = async (
+    input: CreateContributionTypeFundMappingInput,
+  ) => {
     const result = await createMapping.create({
       ...input,
       branchId,
@@ -290,7 +334,9 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
     return result;
   };
 
-  const handleUpdate = async (input: UpdateContributionTypeFundMappingInput) => {
+  const handleUpdate = async (
+    input: UpdateContributionTypeFundMappingInput,
+  ) => {
     const result = await updateMapping.update(input);
     setIsEditModalOpen(false);
     setSelectedMapping(null);
@@ -310,11 +356,11 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
     configuration: configuration.configuration,
     loading: configuration.loading,
     error: configuration.error,
-    
+
     // Selected state
     selectedMapping,
     setSelectedMapping,
-    
+
     // Modal state
     isCreateModalOpen,
     isEditModalOpen,
@@ -322,14 +368,14 @@ export function useFundMappingManager(branchId: string, organisationId: string) 
     closeCreateModal,
     openEditModal,
     closeEditModal,
-    
+
     // Actions
     handleCreate,
     handleUpdate,
     handleDelete,
     handleCreateDefaults,
     refetch: configuration.refetch,
-    
+
     // Loading states
     creating: createMapping.loading,
     updating: updateMapping.loading,

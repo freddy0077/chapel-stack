@@ -27,7 +27,7 @@ export interface UseContributionsStatsResult {
 }
 
 export const useContributionsStats = (
-  branchId: string
+  branchId: string,
 ): UseContributionsStatsResult => {
   const { data, loading, error, refetch } = useQuery(GET_CONTRIBUTIONS_STATS, {
     variables: { branchId },

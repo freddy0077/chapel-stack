@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Current user profile query with comprehensive data
 export const ME_QUERY = gql`

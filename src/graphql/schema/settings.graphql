@@ -1,7 +1,6 @@
 """
 Settings schema - handles user preferences, security settings, and account configuration
 """
-
 enum LanguageCode {
   ENGLISH
   SPANISH
@@ -243,40 +242,38 @@ type UserSettings {
 extend type Query {
   # Get all user settings in a single query
   userSettings: UserSettings! @auth(requires: [MEMBER])
-  
+
   # Get individual settings categories
   generalSettings: GeneralSettings! @auth(requires: [MEMBER])
   notificationSettings: NotificationSettings! @auth(requires: [MEMBER])
   securitySettings: SecuritySettings! @auth(requires: [MEMBER])
   branchSettings: BranchSettings! @auth(requires: [MEMBER])
   deviceSettings: DeviceSettings! @auth(requires: [MEMBER])
-  
+
   # Get active sessions
   activeSessions: [ActiveSession!]! @auth(requires: [MEMBER])
-  
+
   # Get security audit events (limited to recent for regular users)
-  securityEvents(
-    limit: Int = 10,
-    offset: Int = 0
-  ): [SecurityEvent!]! @auth(requires: [MEMBER])
-  
+  securityEvents(limit: Int = 10, offset: Int = 0): [SecurityEvent!]!
+    @auth(requires: [MEMBER])
+
   # Get all security audit events (for admins, with filtering)
   allSecurityEvents(
-    userId: ID,
-    eventType: String,
-    dateRange: DateRangeInput,
+    userId: ID
+    eventType: String
+    dateRange: DateRangeInput
     pagination: PaginationInput
   ): SecurityEventConnection! @auth(requires: [ADMIN])
-  
+
   # Get connected devices
   connectedDevices: [ConnectedDevice!]! @auth(requires: [MEMBER])
-  
+
   # Get attendance cards
   attendanceCards: [AttendanceCard!]! @auth(requires: [MEMBER])
-  
+
   # Get available language options
   availableLanguages: [LanguageOption!]! @auth(requires: [MEMBER])
-  
+
   # Get available timezone options
   availableTimeZones: [TimeZoneOption!]! @auth(requires: [MEMBER])
 }
@@ -305,42 +302,66 @@ type SecurityEventEdge {
 
 extend type Mutation {
   # Update general settings
-  updateGeneralSettings(input: UpdateGeneralSettingsInput!): GeneralSettings! @auth(requires: [MEMBER])
-  
+  updateGeneralSettings(input: UpdateGeneralSettingsInput!): GeneralSettings!
+    @auth(requires: [MEMBER])
+
   # Update notification settings
-  updateNotificationSettings(input: UpdateNotificationSettingsInput!): NotificationSettings! @auth(requires: [MEMBER])
-  
+  updateNotificationSettings(
+    input: UpdateNotificationSettingsInput!
+  ): NotificationSettings! @auth(requires: [MEMBER])
+
   # Update category notification preferences
-  updateNotificationCategorySettings(input: UpdateNotificationCategoryInput!): NotificationCategorySetting! @auth(requires: [MEMBER])
-  
+  updateNotificationCategorySettings(
+    input: UpdateNotificationCategoryInput!
+  ): NotificationCategorySetting! @auth(requires: [MEMBER])
+
   # Update all notification categories at once
-  bulkUpdateNotificationCategories(input: [UpdateNotificationCategoryInput!]!): [NotificationCategorySetting!]! @auth(requires: [MEMBER])
-  
+  bulkUpdateNotificationCategories(
+    input: [UpdateNotificationCategoryInput!]!
+  ): [NotificationCategorySetting!]! @auth(requires: [MEMBER])
+
   # Security settings mutations
-  changePassword(input: ChangePasswordInput!): Boolean! @auth(requires: [MEMBER])
-  enableTwoFactor(input: EnableTwoFactorInput!): SecuritySettings! @auth(requires: [MEMBER])
-  disableTwoFactor(password: String!): SecuritySettings! @auth(requires: [MEMBER])
-  updateLoginAlerts(enabled: Boolean!): SecuritySettings! @auth(requires: [MEMBER])
-  updateSessionTimeout(timeout: SessionTimeoutDuration!): SecuritySettings! @auth(requires: [MEMBER])
-  
+  changePassword(input: ChangePasswordInput!): Boolean!
+    @auth(requires: [MEMBER])
+  enableTwoFactor(input: EnableTwoFactorInput!): SecuritySettings!
+    @auth(requires: [MEMBER])
+  disableTwoFactor(password: String!): SecuritySettings!
+    @auth(requires: [MEMBER])
+  updateLoginAlerts(enabled: Boolean!): SecuritySettings!
+    @auth(requires: [MEMBER])
+  updateSessionTimeout(timeout: SessionTimeoutDuration!): SecuritySettings!
+    @auth(requires: [MEMBER])
+
   # Session management
   revokeSession(sessionId: ID!): Boolean! @auth(requires: [MEMBER])
-  revokeAllSessions(exceptCurrent: Boolean = true): Boolean! @auth(requires: [MEMBER])
-  
+  revokeAllSessions(exceptCurrent: Boolean = true): Boolean!
+    @auth(requires: [MEMBER])
+
   # Branch settings mutations
   updateDefaultBranch(branchId: ID!): BranchSettings! @auth(requires: [MEMBER])
-  updateBranchNotifications(input: UpdateBranchNotificationsInput!): BranchNotificationSetting! @auth(requires: [MEMBER])
-  
+  updateBranchNotifications(
+    input: UpdateBranchNotificationsInput!
+  ): BranchNotificationSetting! @auth(requires: [MEMBER])
+
   # Device settings mutations
-  updateDeviceSettings(input: UpdateDeviceSettingsInput!): DeviceSettings! @auth(requires: [MEMBER])
+  updateDeviceSettings(input: UpdateDeviceSettingsInput!): DeviceSettings!
+    @auth(requires: [MEMBER])
   removeConnectedDevice(deviceId: ID!): Boolean! @auth(requires: [MEMBER])
-  updateDeviceTrustStatus(deviceId: ID!, isTrusted: Boolean!): ConnectedDevice! @auth(requires: [MEMBER])
-  
+  updateDeviceTrustStatus(deviceId: ID!, isTrusted: Boolean!): ConnectedDevice!
+    @auth(requires: [MEMBER])
+
   # Attendance card mutations
-  registerAttendanceCard(input: RegisterAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
-  updateAttendanceCard(id: ID!, input: UpdateAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
+  registerAttendanceCard(input: RegisterAttendanceCardInput!): AttendanceCard!
+    @auth(requires: [MEMBER])
+  updateAttendanceCard(
+    id: ID!
+    input: UpdateAttendanceCardInput!
+  ): AttendanceCard! @auth(requires: [MEMBER])
   deactivateAttendanceCard(id: ID!): AttendanceCard! @auth(requires: [MEMBER])
-  replaceAttendanceCard(oldCardId: ID!, input: RegisterAttendanceCardInput!): AttendanceCard! @auth(requires: [MEMBER])
+  replaceAttendanceCard(
+    oldCardId: ID!
+    input: RegisterAttendanceCardInput!
+  ): AttendanceCard! @auth(requires: [MEMBER])
 }
 
 input UpdateGeneralSettingsInput {
@@ -416,10 +437,10 @@ input UpdateAttendanceCardInput {
 extend type Subscription {
   # Get notified when a new device connects to your account
   deviceConnected: ConnectedDevice! @auth(requires: [MEMBER])
-  
+
   # Get notified of security events
   securityEventOccurred: SecurityEvent! @auth(requires: [MEMBER])
-  
+
   # Get notified when settings change
   settingsUpdated: UserSettings! @auth(requires: [MEMBER])
 }

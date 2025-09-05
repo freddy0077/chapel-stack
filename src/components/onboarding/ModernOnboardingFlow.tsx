@@ -1,43 +1,51 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useOnboardingState } from './hooks/useOnboardingState';
-import { ChurchProfileData } from '@/graphql/types/onboardingTypes';
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { Button } from '@tremor/react';
+import { useState, useEffect } from "react";
+import { useOnboardingState } from "./hooks/useOnboardingState";
+import { ChurchProfileData } from "@/graphql/types/onboardingTypes";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { Button } from "@tremor/react";
 
 // Import extracted screen components
-import WelcomeScreen from './screens/WelcomeScreen';
-import ChurchProfileScreen from './screens/ChurchProfileScreen';
-import AdminSetupScreen from './screens/AdminSetupScreen';
+import WelcomeScreen from "./screens/WelcomeScreen";
+import ChurchProfileScreen from "./screens/ChurchProfileScreen";
+import AdminSetupScreen from "./screens/AdminSetupScreen";
 // import BrandingScreen from './screens/BrandingScreen';
-import UserInvitationsScreen from './screens/UserInvitationsScreen';
+import UserInvitationsScreen from "./screens/UserInvitationsScreen";
 // import RoleConfigurationScreen from './screens/RoleConfigurationScreen';
-import FinanceSetupScreen from './screens/FinanceSetupScreen';
-import OnboardingCompletionScreen from './screens/OnboardingCompletionScreen';
-import BranchCountScreen from './screens/BranchCountScreen';
-import BranchDetailsScreen from './screens/BranchDetailsScreen';
+import FinanceSetupScreen from "./screens/FinanceSetupScreen";
+import OnboardingCompletionScreen from "./screens/OnboardingCompletionScreen";
+import BranchCountScreen from "./screens/BranchCountScreen";
+import BranchDetailsScreen from "./screens/BranchDetailsScreen";
 
 // Import common components
-import LoadingSpinner from './common/LoadingSpinner';
+import LoadingSpinner from "./common/LoadingSpinner";
 
 // Import types and utilities
-import { getCompletedScreens } from './utils/completedScreens';
-import { ONBOARDING_SCREEN_ORDER } from './utils/onboardingStepOrder';
+import { getCompletedScreens } from "./utils/completedScreens";
+import { ONBOARDING_SCREEN_ORDER } from "./utils/onboardingStepOrder";
 
 // Import type for BranchDetailsInput
-import type { BranchDetailsInput } from './screens/BranchDetailsScreen';
+import type { BranchDetailsInput } from "./screens/BranchDetailsScreen";
 
 // Main onboarding flow component
 interface ModernOnboardingFlowProps {
   branchId: string | null;
-  onComplete: (selectedModules: string[], churchProfile: ChurchProfileData) => void;
+  onComplete: (
+    selectedModules: string[],
+    churchProfile: ChurchProfileData,
+  ) => void;
 }
 
-const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProps) => {
+const ModernOnboardingFlow = ({
+  branchId,
+  onComplete,
+}: ModernOnboardingFlowProps) => {
   // New: State for branch onboarding
   const [branchStep, setBranchStep] = useState<number>(0); // 0: Welcome, 1: Church Profile, 2: Admin Setup, 3: BranchCount, 4: BranchDetails, ...
-  const [churchProfile, setChurchProfile] = useState<ChurchProfileData | null>(null);
+  const [churchProfile, setChurchProfile] = useState<ChurchProfileData | null>(
+    null,
+  );
   const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [apiError] = useState<string | null>(null);
 
@@ -47,29 +55,157 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
 
   // Optionally: module/currency options for BranchDetailsScreen
   const moduleOptions = [
-    'Attendance', 'Finance', 'Groups', 'Ministries', 'Sacraments', 'Staff', 'Reports', 'Events', 'Media', 'Messaging', 'Settings',
+    "Attendance",
+    "Finance",
+    "Groups",
+    "Ministries",
+    "Sacraments",
+    "Staff",
+    "Reports",
+    "Events",
+    "Media",
+    "Messaging",
+    "Settings",
   ];
   const currencyOptions = [
-    'USD', 'EUR', 'GBP', 'GHS', 'NGN', 'KES', 'ZAR', 'INR', 'CNY', 'JPY', 'BRL', 'MXN', 'AUD', 'CAD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'RUB', 'TRY', 'EGP', 'MAD', 'AED', 'SAR', 'ILS', 'PKR', 'BDT', 'UAH', 'ARS', 'CLP', 'COP', 'PEN', 'VND', 'THB', 'SGD', 'MYR', 'IDR', 'KRW', 'PHP', 'NZD', 'HKD', 'TWD', 'CZK', 'HUF', 'RON', 'HRK', 'BGN', 'SRD', 'XOF', 'XAF', 'XCD', 'XPF', 'XDR', 'XAG', 'XAU', 'XPT', 'XPD', 'BTC', 'ETH', 'USDT', 'USDC', 'BUSD', 'DAI', 'SOL', 'BNB', 'MATIC', 'DOGE', 'SHIB', 'LTC', 'TRX', 'DOT', 'AVAX', 'UNI', 'LINK', 'ADA', 'XRP', 'BCH', 'XLM', 'FIL', 'ETC', 'EOS', 'XTZ', 'ATOM', 'NEO', 'AAVE', 'KSM', 'YFI', 'SUSHI', 'COMP', 'SNX', 'CRV', 'MKR', 'ZRX', 'ENJ', 'BAT', 'CHZ', 'GRT', '1INCH', 'REN', 'BAL', 'SRM', 'ALGO', 'AMP', 'ANKR', 'BAND', 'CVC', 'DNT', 'GNO', 'KNC', 'LOOM', 'LRC', 'MANA', 'NMR', 'OXT', 'PAX', 'RLC', 'STORJ', 'UMA', 'ZEC', 'ZEN', 'ZIL', 'ZRX',
+    "USD",
+    "EUR",
+    "GBP",
+    "GHS",
+    "NGN",
+    "KES",
+    "ZAR",
+    "INR",
+    "CNY",
+    "JPY",
+    "BRL",
+    "MXN",
+    "AUD",
+    "CAD",
+    "CHF",
+    "SEK",
+    "NOK",
+    "DKK",
+    "PLN",
+    "RUB",
+    "TRY",
+    "EGP",
+    "MAD",
+    "AED",
+    "SAR",
+    "ILS",
+    "PKR",
+    "BDT",
+    "UAH",
+    "ARS",
+    "CLP",
+    "COP",
+    "PEN",
+    "VND",
+    "THB",
+    "SGD",
+    "MYR",
+    "IDR",
+    "KRW",
+    "PHP",
+    "NZD",
+    "HKD",
+    "TWD",
+    "CZK",
+    "HUF",
+    "RON",
+    "HRK",
+    "BGN",
+    "SRD",
+    "XOF",
+    "XAF",
+    "XCD",
+    "XPF",
+    "XDR",
+    "XAG",
+    "XAU",
+    "XPT",
+    "XPD",
+    "BTC",
+    "ETH",
+    "USDT",
+    "USDC",
+    "BUSD",
+    "DAI",
+    "SOL",
+    "BNB",
+    "MATIC",
+    "DOGE",
+    "SHIB",
+    "LTC",
+    "TRX",
+    "DOT",
+    "AVAX",
+    "UNI",
+    "LINK",
+    "ADA",
+    "XRP",
+    "BCH",
+    "XLM",
+    "FIL",
+    "ETC",
+    "EOS",
+    "XTZ",
+    "ATOM",
+    "NEO",
+    "AAVE",
+    "KSM",
+    "YFI",
+    "SUSHI",
+    "COMP",
+    "SNX",
+    "CRV",
+    "MKR",
+    "ZRX",
+    "ENJ",
+    "BAT",
+    "CHZ",
+    "GRT",
+    "1INCH",
+    "REN",
+    "BAL",
+    "SRM",
+    "ALGO",
+    "AMP",
+    "ANKR",
+    "BAND",
+    "CVC",
+    "DNT",
+    "GNO",
+    "KNC",
+    "LOOM",
+    "LRC",
+    "MANA",
+    "NMR",
+    "OXT",
+    "PAX",
+    "RLC",
+    "STORJ",
+    "UMA",
+    "ZEC",
+    "ZEN",
+    "ZIL",
+    "ZRX",
   ];
 
   // Use the centralized onboarding state hook
-  const {
-    currentStep,
-    handleNext,
-    handleBack,
-    handleFinish
-  } = useOnboardingState({ branchId, onComplete });
+  const { currentStep, handleNext, handleBack, handleFinish } =
+    useOnboardingState({ branchId, onComplete });
 
   // Stepper steps definition
   const ONBOARDING_STEPS = [
-    'Welcome',
-    'Church Profile',
-    'Admin Setup',
-    'Branch Count',
-    'Branch Details',
-    'User Invitations',
-    'Complete',
+    "Welcome",
+    "Church Profile",
+    "Admin Setup",
+    "Branch Count",
+    "Branch Details",
+    "User Invitations",
+    "Complete",
   ];
 
   function Stepper({ currentStep }: { currentStep: number }) {
@@ -85,13 +221,22 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
               >
                 <div
                   className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg border-4 transition
-                    ${isActive ? 'bg-indigo-600 border-indigo-600 text-white' : isCompleted ? 'bg-green-400 border-green-400 text-white' : 'bg-white border-gray-300 text-gray-400'}`}
+                    ${isActive ? "bg-indigo-600 border-indigo-600 text-white" : isCompleted ? "bg-green-400 border-green-400 text-white" : "bg-white border-gray-300 text-gray-400"}`}
                 >
-                  {isCompleted ? <span>&#10003;</span> : ONBOARDING_STEPS.indexOf(label) + 1}
+                  {isCompleted ? (
+                    <span>&#10003;</span>
+                  ) : (
+                    ONBOARDING_STEPS.indexOf(label) + 1
+                  )}
                 </div>
-                <span className={`mt-2 text-xs md:text-sm font-medium text-center ${isActive ? 'text-indigo-700' : isCompleted ? 'text-green-700' : 'text-gray-400'}`}>{label}</span>
+                <span
+                  className={`mt-2 text-xs md:text-sm font-medium text-center ${isActive ? "text-indigo-700" : isCompleted ? "text-green-700" : "text-gray-400"}`}
+                >
+                  {label}
+                </span>
               </div>
-              {ONBOARDING_STEPS.indexOf(label) < ONBOARDING_STEPS.length - 1 && (
+              {ONBOARDING_STEPS.indexOf(label) <
+                ONBOARDING_STEPS.length - 1 && (
                 <div className="w-8 h-1 bg-gray-200 md:w-12 mx-1 md:mx-2 rounded-full" />
               )}
             </div>
@@ -105,7 +250,11 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
   useEffect(() => {
     const completed = getCompletedScreens();
     if (completed.length > 0) {
-      const lastIdx = Math.max(...completed.map(s => ONBOARDING_SCREEN_ORDER.indexOf(s)).filter(idx => idx >= 0));
+      const lastIdx = Math.max(
+        ...completed
+          .map((s) => ONBOARDING_SCREEN_ORDER.indexOf(s))
+          .filter((idx) => idx >= 0),
+      );
       if (lastIdx >= 0 && lastIdx < ONBOARDING_SCREEN_ORDER.length - 1) {
         setBranchStep(lastIdx + 1);
       }
@@ -139,9 +288,15 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
     setBranchStep(ONBOARDING_STEPS.length - 1);
     // Mark all steps as completed in localStorage
     ONBOARDING_STEPS.forEach((step) => {
-      localStorage.setItem(`onboardingStepData_${step}`, JSON.stringify({ completed: true }));
+      localStorage.setItem(
+        `onboardingStepData_${step}`,
+        JSON.stringify({ completed: true }),
+      );
     });
-    localStorage.setItem('onboardingProgress', JSON.stringify(ONBOARDING_STEPS.map((_, i) => i)));
+    localStorage.setItem(
+      "onboardingProgress",
+      JSON.stringify(ONBOARDING_STEPS.map((_, i) => i)),
+    );
   };
 
   // Render the current step based on the step index
@@ -184,27 +339,27 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <BranchCountScreen
           onNext={(count: number) => {
             setBranchCount(count);
-            setBranches(prev => {
+            setBranches((prev) => {
               if (prev.length === count) return prev;
               if (count > prev.length) {
                 // Extend with empty branches, preserving existing data
                 return [
                   ...prev,
                   ...Array.from({ length: count - prev.length }, () => ({
-                    branchName: '',
-                    address: '',
-                    status: '',
-                    establishedDate: '',
-                    city: '',
-                    country: '',
-                    phone: '',
-                    email: '',
-                    website: '',
-                    currency: '',
+                    branchName: "",
+                    address: "",
+                    status: "",
+                    establishedDate: "",
+                    city: "",
+                    country: "",
+                    phone: "",
+                    email: "",
+                    website: "",
+                    currency: "",
                     modules: [],
-                    admin: { name: '', email: '', password: '' },
-                    settings: { timezone: '' },
-                  }))
+                    admin: { name: "", email: "", password: "" },
+                    settings: { timezone: "" },
+                  })),
                 ];
               } else {
                 // Truncate, preserving existing data
@@ -303,7 +458,6 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Stepper UI for all onboarding steps */}
@@ -311,9 +465,7 @@ const ModernOnboardingFlow = ({ branchId, onComplete }: ModernOnboardingFlowProp
         <Stepper currentStep={branchStep} />
       </div>
       {/* Content area */}
-      <div className="px-4 py-10">
-        {renderCurrentStep()}
-      </div>
+      <div className="px-4 py-10">{renderCurrentStep()}</div>
     </div>
   );
 };

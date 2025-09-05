@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useLazyQuery } from '@apollo/client';
-import { 
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
+import {
   CREATE_MEMBER,
   UPDATE_MEMBER,
   REMOVE_MEMBER,
@@ -21,9 +21,9 @@ import {
   DELETE_MEMBER_RELATIONSHIP,
   CREATE_MEMBERSHIP_HISTORY,
   SEARCH_MEMBERS_ENHANCED,
-  GENERATE_MEMBER_REPORT
-} from '@/graphql/queries/memberQueries';
-import { useOrganisationBranch } from '../../../../hooks/useOrganisationBranch';
+  GENERATE_MEMBER_REPORT,
+} from "@/graphql/queries/memberQueries";
+import { useOrganisationBranch } from "../../../../hooks/useOrganisationBranch";
 
 // Types for the operations
 interface CreateMemberInput {
@@ -117,18 +117,25 @@ interface SearchFilters {
 export const useCreateMember = () => {
   const { organisationId, branchId } = useOrganisationBranch();
   const [createMember, { data, loading, error }] = useMutation(CREATE_MEMBER, {
-    refetchQueries: ['GetMembersList', 'GetMemberStatistics', 'GetTotalMembersCount'],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced",
+    ],
     awaitRefetchQueries: true,
   });
 
   const handleCreateMember = async (createMemberInput: CreateMemberInput) => {
     try {
       const result = await createMember({
-        variables: { createMemberInput: { ...createMemberInput, organisationId, branchId } }
+        variables: {
+          createMemberInput: { ...createMemberInput, organisationId, branchId },
+        },
       });
       return result.data?.createMember;
     } catch (err) {
-      console.error('Error creating member:', err);
+      console.error("Error creating member:", err);
       throw err;
     }
   };
@@ -137,7 +144,7 @@ export const useCreateMember = () => {
     createMember: handleCreateMember,
     data,
     loading,
-    error
+    error,
   };
 };
 
@@ -145,18 +152,29 @@ export const useCreateMember = () => {
 export const useUpdateMember = () => {
   const { organisationId, branchId } = useOrganisationBranch();
   const [updateMember, { data, loading, error }] = useMutation(UPDATE_MEMBER, {
-    refetchQueries: ['GetMembersList', 'GetMemberById'],
+    refetchQueries: ["GetMembersList", "GetMemberById"],
     awaitRefetchQueries: true,
   });
 
-  const handleUpdateMember = async (id: string, updateMemberInput: Partial<UpdateMemberInput>) => {
+  const handleUpdateMember = async (
+    id: string,
+    updateMemberInput: Partial<UpdateMemberInput>,
+  ) => {
     try {
       const result = await updateMember({
-        variables: { id, updateMemberInput: { id, ...updateMemberInput, organisationId, branchId } }
+        variables: {
+          id,
+          updateMemberInput: {
+            id,
+            ...updateMemberInput,
+            organisationId,
+            branchId,
+          },
+        },
       });
       return result.data?.updateMember;
     } catch (err) {
-      console.error('Error updating member:', err);
+      console.error("Error updating member:", err);
       throw err;
     }
   };
@@ -165,7 +183,7 @@ export const useUpdateMember = () => {
     updateMember: handleUpdateMember,
     data,
     loading,
-    error
+    error,
   };
 };
 
@@ -175,30 +193,33 @@ export const useMemberById = (id: string, skip = false) => {
   const { data, loading, error, refetch } = useQuery(GET_MEMBER_BY_ID, {
     variables: { id, organisationId, branchId },
     skip: skip || !id,
-    errorPolicy: 'all'
+    errorPolicy: "all",
   });
 
   return {
     member: data?.member,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
 // Hook for getting member statistics
 export const useMemberStatistics = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const { data, loading, error, refetch } = useQuery(GET_MEMBER_STATISTICS_DETAILED, {
-    variables: { organisationId, branchId },
-    errorPolicy: 'all'
-  });
+  const { data, loading, error, refetch } = useQuery(
+    GET_MEMBER_STATISTICS_DETAILED,
+    {
+      variables: { organisationId, branchId },
+      errorPolicy: "all",
+    },
+  );
 
   return {
     statistics: data?.memberStatistics,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
@@ -207,14 +228,14 @@ export const useMembersCount = () => {
   const { organisationId, branchId } = useOrganisationBranch();
   const { data, loading, error, refetch } = useQuery(GET_TOTAL_MEMBERS_COUNT, {
     variables: { organisationId, branchId },
-    errorPolicy: 'all'
+    errorPolicy: "all",
   });
 
   return {
     count: data?.membersCount,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
@@ -222,18 +243,23 @@ export const useMembersCount = () => {
 export const useRemoveMember = () => {
   const { organisationId, branchId } = useOrganisationBranch();
   const [removeMember, { data, loading, error }] = useMutation(REMOVE_MEMBER, {
-    refetchQueries: ['GetMembersList', 'GetMemberStatistics', 'GetTotalMembersCount'],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced",
+    ],
     awaitRefetchQueries: true,
   });
 
   const handleRemoveMember = async (id: string) => {
     try {
       const result = await removeMember({
-        variables: { id, organisationId, branchId }
+        variables: { id, organisationId, branchId },
       });
       return result.data?.removeMember;
     } catch (err) {
-      console.error('Error removing member:', err);
+      console.error("Error removing member:", err);
       throw err;
     }
   };
@@ -242,31 +268,34 @@ export const useRemoveMember = () => {
     removeMember: handleRemoveMember,
     data,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for transferring a member between branches
 export const useTransferMember = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [transferMember, { data, loading, error }] = useMutation(TRANSFER_MEMBER, {
-    refetchQueries: ['GetMembersList', 'GetMemberById'],
-    awaitRefetchQueries: true,
-  });
+  const [transferMember, { data, loading, error }] = useMutation(
+    TRANSFER_MEMBER,
+    {
+      refetchQueries: ["GetMembersList", "GetMemberById"],
+      awaitRefetchQueries: true,
+    },
+  );
 
   const handleTransferMember = async (
-    id: string, 
-    fromBranchId: string, 
-    toBranchId: string, 
-    reason?: string
+    id: string,
+    fromBranchId: string,
+    toBranchId: string,
+    reason?: string,
   ) => {
     try {
       const result = await transferMember({
-        variables: { id, fromBranchId, toBranchId, reason, organisationId }
+        variables: { id, fromBranchId, toBranchId, reason, organisationId },
       });
       return result.data?.transferMember;
     } catch (err) {
-      console.error('Error transferring member:', err);
+      console.error("Error transferring member:", err);
       throw err;
     }
   };
@@ -275,26 +304,38 @@ export const useTransferMember = () => {
     transferMember: handleTransferMember,
     data,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for updating member status
 export const useUpdateMemberStatus = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [updateMemberStatus, { data, loading, error }] = useMutation(UPDATE_MEMBER_STATUS, {
-    refetchQueries: ['GetMembersList', 'GetMemberById', 'GetMemberStatistics'],
-    awaitRefetchQueries: true,
-  });
+  const [updateMemberStatus, { data, loading, error }] = useMutation(
+    UPDATE_MEMBER_STATUS,
+    {
+      refetchQueries: [
+        "GetMembersList",
+        "GetMemberById",
+        "GetMemberStatisticsDetailed",
+        "MemberStatisticsEnhanced",
+      ],
+      awaitRefetchQueries: true,
+    },
+  );
 
-  const handleUpdateMemberStatus = async (id: string, status: string, reason?: string) => {
+  const handleUpdateMemberStatus = async (
+    id: string,
+    status: string,
+    reason?: string,
+  ) => {
     try {
       const result = await updateMemberStatus({
-        variables: { id, status, reason, organisationId, branchId }
+        variables: { id, status, reason, organisationId, branchId },
       });
       return result.data?.updateMemberStatus;
     } catch (err) {
-      console.error('Error updating member status:', err);
+      console.error("Error updating member status:", err);
       throw err;
     }
   };
@@ -303,33 +344,46 @@ export const useUpdateMemberStatus = () => {
     updateMemberStatus: handleUpdateMemberStatus,
     data,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for RFID card operations
 export const useRfidOperations = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [assignRfidCard, { loading: assignLoading, error: assignError }] = useMutation(ASSIGN_RFID_CARD, {
-    refetchQueries: ['GetMembersList', 'GetMemberById'],
-    awaitRefetchQueries: true,
-  });
+  const [assignRfidCard, { loading: assignLoading, error: assignError }] =
+    useMutation(ASSIGN_RFID_CARD, {
+      refetchQueries: ["GetMembersList", "GetMemberById"],
+      awaitRefetchQueries: true,
+    });
 
-  const [removeRfidCard, { loading: removeLoading, error: removeError }] = useMutation(REMOVE_RFID_CARD, {
-    refetchQueries: ['GetMembersList', 'GetMemberById'],
-    awaitRefetchQueries: true,
-  });
+  const [removeRfidCard, { loading: removeLoading, error: removeError }] =
+    useMutation(REMOVE_RFID_CARD, {
+      refetchQueries: ["GetMembersList", "GetMemberById"],
+      awaitRefetchQueries: true,
+    });
 
-  const [getMemberByRfid, { data: rfidData, loading: rfidLoading, error: rfidError }] = useLazyQuery(GET_MEMBER_BY_RFID);
+  const [
+    getMemberByRfid,
+    { data: rfidData, loading: rfidLoading, error: rfidError },
+  ] = useLazyQuery(GET_MEMBER_BY_RFID);
 
-  const handleAssignRfidCard = async (assignRfidCardInput: AssignRfidCardInput) => {
+  const handleAssignRfidCard = async (
+    assignRfidCardInput: AssignRfidCardInput,
+  ) => {
     try {
       const result = await assignRfidCard({
-        variables: { assignRfidCardInput: { ...assignRfidCardInput, organisationId, branchId } }
+        variables: {
+          assignRfidCardInput: {
+            ...assignRfidCardInput,
+            organisationId,
+            branchId,
+          },
+        },
       });
       return result.data?.assignRfidCardToMember;
     } catch (err) {
-      console.error('Error assigning RFID card:', err);
+      console.error("Error assigning RFID card:", err);
       throw err;
     }
   };
@@ -337,11 +391,11 @@ export const useRfidOperations = () => {
   const handleRemoveRfidCard = async (memberId: string) => {
     try {
       const result = await removeRfidCard({
-        variables: { memberId, organisationId, branchId }
+        variables: { memberId, organisationId, branchId },
       });
       return result.data?.removeRfidCardFromMember;
     } catch (err) {
-      console.error('Error removing RFID card:', err);
+      console.error("Error removing RFID card:", err);
       throw err;
     }
   };
@@ -349,11 +403,11 @@ export const useRfidOperations = () => {
   const handleGetMemberByRfid = async (rfidCardId: string) => {
     try {
       const result = await getMemberByRfid({
-        variables: { rfidCardId, organisationId, branchId }
+        variables: { rfidCardId, organisationId, branchId },
       });
       return result.data?.memberByRfidCard;
     } catch (err) {
-      console.error('Error getting member by RFID:', err);
+      console.error("Error getting member by RFID:", err);
       throw err;
     }
   };
@@ -364,43 +418,49 @@ export const useRfidOperations = () => {
     getMemberByRfid: handleGetMemberByRfid,
     memberByRfid: rfidData?.memberByRfidCard,
     loading: assignLoading || removeLoading || rfidLoading,
-    error: assignError || removeError || rfidError
+    error: assignError || removeError || rfidError,
   };
 };
 
 // Hook for member dashboard
 export const useMemberDashboard = (memberId: string, skip = false) => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const { data, loading, error, refetch } = useQuery(GET_MEMBER_DASHBOARD_DETAILED, {
-    variables: { memberId, organisationId, branchId },
-    skip: skip || !memberId,
-    errorPolicy: 'all'
-  });
+  const { data, loading, error, refetch } = useQuery(
+    GET_MEMBER_DASHBOARD_DETAILED,
+    {
+      variables: { memberId, organisationId, branchId },
+      skip: skip || !memberId,
+      errorPolicy: "all",
+    },
+  );
 
   return {
     dashboard: data?.memberDashboard,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
 // Hook for uploading member image
 export const useUploadMemberImage = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [uploadMemberImage, { data, loading, error }] = useMutation(UPLOAD_MEMBER_IMAGE, {
-    refetchQueries: ['GetMemberById'],
-    awaitRefetchQueries: true,
-  });
+  const [uploadMemberImage, { data, loading, error }] = useMutation(
+    UPLOAD_MEMBER_IMAGE,
+    {
+      refetchQueries: ["GetMemberById"],
+      awaitRefetchQueries: true,
+    },
+  );
 
   const handleUploadMemberImage = async (memberId: string, file: File) => {
     try {
       const result = await uploadMemberImage({
-        variables: { memberId, organisationId, branchId, file }
+        variables: { memberId, organisationId, branchId, file },
       });
       return result.data?.uploadMemberImage;
     } catch (err) {
-      console.error('Error uploading member image:', err);
+      console.error("Error uploading member image:", err);
       throw err;
     }
   };
@@ -409,20 +469,22 @@ export const useUploadMemberImage = () => {
     uploadMemberImage: handleUploadMemberImage,
     imageUrl: data?.uploadMemberImage,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for enhanced member search
 export const useSearchMembers = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [searchMembers, { data, loading, error }] = useLazyQuery(SEARCH_MEMBERS_ENHANCED);
+  const [searchMembers, { data, loading, error }] = useLazyQuery(
+    SEARCH_MEMBERS_ENHANCED,
+  );
 
   const handleSearchMembers = async (
     query: string,
     filters: SearchFilters = {},
     skip = 0,
-    take = 20
+    take = 20,
   ) => {
     try {
       const result = await searchMembers({
@@ -432,12 +494,12 @@ export const useSearchMembers = () => {
           organisationId,
           branchId,
           skip,
-          take
-        }
+          take,
+        },
       });
       return result.data?.searchMembers;
     } catch (err) {
-      console.error('Error searching members:', err);
+      console.error("Error searching members:", err);
       throw err;
     }
   };
@@ -446,27 +508,33 @@ export const useSearchMembers = () => {
     searchMembers: handleSearchMembers,
     members: data?.searchMembers,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for communication preferences
 export const useCommunicationPrefs = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [updateCommunicationPrefs, { data, loading, error }] = useMutation(UPDATE_COMMUNICATION_PREFS, {
-    refetchQueries: ['GetMemberById'],
-    awaitRefetchQueries: true,
-  });
+  const [updateCommunicationPrefs, { data, loading, error }] = useMutation(
+    UPDATE_COMMUNICATION_PREFS,
+    {
+      refetchQueries: ["GetMemberById"],
+      awaitRefetchQueries: true,
+    },
+  );
 
-  const handleUpdateCommunicationPrefs = async (memberId: string, preferences: any) => {
+  const handleUpdateCommunicationPrefs = async (
+    memberId: string,
+    preferences: any,
+  ) => {
     try {
       const prefsData = JSON.stringify(preferences);
       const result = await updateCommunicationPrefs({
-        variables: { memberId, organisationId, branchId, prefsData }
+        variables: { memberId, organisationId, branchId, prefsData },
       });
       return result.data?.updateCommunicationPrefs;
     } catch (err) {
-      console.error('Error updating communication preferences:', err);
+      console.error("Error updating communication preferences:", err);
       throw err;
     }
   };
@@ -475,36 +543,44 @@ export const useCommunicationPrefs = () => {
     updateCommunicationPrefs: handleUpdateCommunicationPrefs,
     data,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for member relationships
 export const useMemberRelationships = () => {
-  const [createRelationship, { loading: createLoading, error: createError }] = useMutation(CREATE_MEMBER_RELATIONSHIP);
-  const [updateRelationship, { loading: updateLoading, error: updateError }] = useMutation(UPDATE_MEMBER_RELATIONSHIP);
-  const [deleteRelationship, { loading: deleteLoading, error: deleteError }] = useMutation(DELETE_MEMBER_RELATIONSHIP);
+  const [createRelationship, { loading: createLoading, error: createError }] =
+    useMutation(CREATE_MEMBER_RELATIONSHIP);
+  const [updateRelationship, { loading: updateLoading, error: updateError }] =
+    useMutation(UPDATE_MEMBER_RELATIONSHIP);
+  const [deleteRelationship, { loading: deleteLoading, error: deleteError }] =
+    useMutation(DELETE_MEMBER_RELATIONSHIP);
 
-  const handleCreateRelationship = async (relationshipInput: MemberRelationshipInput) => {
+  const handleCreateRelationship = async (
+    relationshipInput: MemberRelationshipInput,
+  ) => {
     try {
       const result = await createRelationship({
-        variables: { createMemberRelationshipInput: relationshipInput }
+        variables: { createMemberRelationshipInput: relationshipInput },
       });
       return result.data?.createMemberRelationship;
     } catch (err) {
-      console.error('Error creating member relationship:', err);
+      console.error("Error creating member relationship:", err);
       throw err;
     }
   };
 
-  const handleUpdateRelationship = async (id: string, relationshipInput: Partial<MemberRelationshipInput>) => {
+  const handleUpdateRelationship = async (
+    id: string,
+    relationshipInput: Partial<MemberRelationshipInput>,
+  ) => {
     try {
       const result = await updateRelationship({
-        variables: { id, updateMemberRelationshipInput: relationshipInput }
+        variables: { id, updateMemberRelationshipInput: relationshipInput },
       });
       return result.data?.updateMemberRelationship;
     } catch (err) {
-      console.error('Error updating member relationship:', err);
+      console.error("Error updating member relationship:", err);
       throw err;
     }
   };
@@ -512,11 +588,11 @@ export const useMemberRelationships = () => {
   const handleDeleteRelationship = async (id: string) => {
     try {
       const result = await deleteRelationship({
-        variables: { id }
+        variables: { id },
       });
       return result.data?.deleteMemberRelationship;
     } catch (err) {
-      console.error('Error deleting member relationship:', err);
+      console.error("Error deleting member relationship:", err);
       throw err;
     }
   };
@@ -527,23 +603,33 @@ export const useMemberRelationships = () => {
     updateRelationship: handleUpdateRelationship,
     deleteRelationship: handleDeleteRelationship,
     loading: createLoading || updateLoading || deleteLoading,
-    error: createError || updateError || deleteError
+    error: createError || updateError || deleteError,
   };
 };
 
 // Hook for membership history
 export const useMembershipHistory = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [createMembershipHistory, { data, loading, error }] = useMutation(CREATE_MEMBERSHIP_HISTORY);
+  const [createMembershipHistory, { data, loading, error }] = useMutation(
+    CREATE_MEMBERSHIP_HISTORY,
+  );
 
-  const handleCreateMembershipHistory = async (historyInput: MembershipHistoryInput) => {
+  const handleCreateMembershipHistory = async (
+    historyInput: MembershipHistoryInput,
+  ) => {
     try {
       const result = await createMembershipHistory({
-        variables: { createMembershipHistoryInput: { ...historyInput, organisationId, branchId } }
+        variables: {
+          createMembershipHistoryInput: {
+            ...historyInput,
+            organisationId,
+            branchId,
+          },
+        },
       });
       return result.data?.createMembershipHistoryEntry;
     } catch (err) {
-      console.error('Error creating membership history:', err);
+      console.error("Error creating membership history:", err);
       throw err;
     }
   };
@@ -552,23 +638,25 @@ export const useMembershipHistory = () => {
     createMembershipHistory: handleCreateMembershipHistory,
     data,
     loading,
-    error
+    error,
   };
 };
 
 // Hook for generating member reports
 export const useMemberReports = () => {
   const { organisationId, branchId } = useOrganisationBranch();
-  const [generateReport, { data, loading, error }] = useLazyQuery(GENERATE_MEMBER_REPORT);
+  const [generateReport, { data, loading, error }] = useLazyQuery(
+    GENERATE_MEMBER_REPORT,
+  );
 
   const handleGenerateReport = async (reportInput: any) => {
     try {
       const result = await generateReport({
-        variables: { input: { ...reportInput, organisationId, branchId } }
+        variables: { input: { ...reportInput, organisationId, branchId } },
       });
       return result.data?.generateMemberReport;
     } catch (err) {
-      console.error('Error generating member report:', err);
+      console.error("Error generating member report:", err);
       throw err;
     }
   };
@@ -577,6 +665,6 @@ export const useMemberReports = () => {
     generateReport: handleGenerateReport,
     report: data?.generateMemberReport,
     loading,
-    error
+    error,
   };
 };

@@ -1,7 +1,6 @@
 """
 Attendance Tracking schema - handles check-ins, attendance records, and related functionality
 """
-
 enum CheckInMethod {
   CARD_SCAN
   NFC
@@ -156,7 +155,7 @@ extend type Query {
     groupId: ID
     pagination: PaginationInput
   ): AttendanceConnection! @auth(requires: [STAFF])
-  
+
   # Attendance statistics
   attendanceStatistics(
     eventType: EventType
@@ -164,13 +163,13 @@ extend type Query {
     ministryId: ID
     dateRange: DateRangeInput!
   ): AttendanceStatistics! @auth(requires: [STAFF])
-  
+
   # Dashboard attendance metrics (real-time)
   dashboardAttendanceMetrics(
     branchId: ID
     timeframe: String = "TODAY" # TODAY, WEEK, MONTH, YEAR
   ): DashboardAttendanceMetrics! @auth(requires: [STAFF])
-  
+
   # Dashboard attendance trends
   dashboardAttendanceTrends(
     branchId: ID
@@ -178,10 +177,10 @@ extend type Query {
     intervals: Int = 12
     eventTypes: [EventType!]
   ): DashboardAttendanceTrends! @auth(requires: [STAFF])
-  
+
   # Get a specific attendance record
   attendance(id: ID!): Attendance @auth(requires: [STAFF])
-  
+
   # Get all check-ins for a specific date/event/service
   checkIns(
     branchId: ID!
@@ -193,13 +192,13 @@ extend type Query {
     status: CheckInStatus
     pagination: PaginationInput
   ): CheckInConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific check-in
   checkIn(id: ID!): CheckIn @auth(requires: [STAFF])
-  
+
   # Check if a member is checked in
   isMemberCheckedIn(memberId: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Get attendance summary statistics
   attendanceSummary(
     branchId: ID
@@ -210,7 +209,7 @@ extend type Query {
     ministryId: ID
     groupId: ID
   ): AttendanceSummary! @auth(requires: [STAFF])
-  
+
   # Get attendance trends
   attendanceTrends(
     branchId: ID!
@@ -218,27 +217,28 @@ extend type Query {
     type: AttendanceType
     interval: String!
   ): [AttendanceTrend!]! @auth(requires: [STAFF])
-  
+
   # Get attendance statistics for a specific member
-  memberAttendanceStats(memberId: ID!): MemberAttendanceStats! @auth(requires: [STAFF])
-  
+  memberAttendanceStats(memberId: ID!): MemberAttendanceStats!
+    @auth(requires: [STAFF])
+
   # Get all registered devices
   devices(
     branchId: ID
     status: Status
     pagination: PaginationInput
   ): DeviceConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific device
   device(id: ID!): Device @auth(requires: [STAFF])
-  
+
   # Get device logs
   deviceLogs(
     deviceId: ID!
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): DeviceLogConnection! @auth(requires: [STAFF])
-  
+
   # Get members with attendance issues (missing several services)
   membersWithAttendanceIssues(
     branchId: ID!
@@ -290,41 +290,50 @@ type DeviceLogEdge {
 
 extend type Mutation {
   # Create a new attendance record
-  createAttendance(input: CreateAttendanceInput!): Attendance! @auth(requires: [STAFF])
-  
+  createAttendance(input: CreateAttendanceInput!): Attendance!
+    @auth(requires: [STAFF])
+
   # Update an attendance record
-  updateAttendance(id: ID!, input: UpdateAttendanceInput!): Attendance! @auth(requires: [STAFF])
-  
+  updateAttendance(id: ID!, input: UpdateAttendanceInput!): Attendance!
+    @auth(requires: [STAFF])
+
   # Delete an attendance record
   deleteAttendance(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Check in a member
   checkInMember(input: CheckInMemberInput!): CheckIn! @auth(requires: [STAFF])
-  
+
   # Check out a member
-  checkOutMember(id: ID!, checkOutTime: DateTime): CheckIn! @auth(requires: [STAFF])
-  
+  checkOutMember(id: ID!, checkOutTime: DateTime): CheckIn!
+    @auth(requires: [STAFF])
+
   # Check in a family (multiple members at once)
-  checkInFamily(input: CheckInFamilyInput!): [CheckIn!]! @auth(requires: [STAFF])
-  
+  checkInFamily(input: CheckInFamilyInput!): [CheckIn!]!
+    @auth(requires: [STAFF])
+
   # Record absence for a member
-  recordAbsence(memberId: ID!, date: Date!, reason: String): Boolean! @auth(requires: [STAFF])
-  
+  recordAbsence(memberId: ID!, date: Date!, reason: String): Boolean!
+    @auth(requires: [STAFF])
+
   # Bulk check-in (for processing offline check-ins)
-  bulkCheckIn(input: [CheckInMemberInput!]!): [CheckIn!]! @auth(requires: [STAFF])
-  
+  bulkCheckIn(input: [CheckInMemberInput!]!): [CheckIn!]!
+    @auth(requires: [STAFF])
+
   # Register a new device
-  registerDevice(input: RegisterDeviceInput!): Device! @auth(requires: [BRANCH_ADMIN])
-  
+  registerDevice(input: RegisterDeviceInput!): Device!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Update a device
-  updateDevice(id: ID!, input: UpdateDeviceInput!): Device! @auth(requires: [BRANCH_ADMIN])
-  
+  updateDevice(id: ID!, input: UpdateDeviceInput!): Device!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Deactivate a device
-  deactivateDevice(id: ID!, reason: String): Device! @auth(requires: [BRANCH_ADMIN])
-  
+  deactivateDevice(id: ID!, reason: String): Device!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Sync device data (for offline devices)
   syncDeviceData(deviceId: ID!, data: JSON!): Boolean! @auth(requires: [STAFF])
-  
+
   # Generate QR code for check-in
   generateCheckInQR(
     eventId: ID
@@ -417,13 +426,13 @@ input UpdateDeviceInput {
 extend type Subscription {
   # Get real-time check-ins for a branch
   checkInReceived(branchId: ID!): CheckIn! @auth(requires: [STAFF])
-  
+
   # Get real-time check-outs for a branch
   checkOutReceived(branchId: ID!): CheckIn! @auth(requires: [STAFF])
-  
+
   # Get device status updates
   deviceStatusUpdated(branchId: ID): Device! @auth(requires: [STAFF])
-  
+
   # Get notifications for members with attendance issues
   memberAttendanceAlert(branchId: ID!): Member! @auth(requires: [STAFF])
 }

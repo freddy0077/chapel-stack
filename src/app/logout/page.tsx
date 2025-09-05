@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export default function LogoutPage() {
   const { logout } = useAuth();
@@ -17,11 +17,11 @@ export default function LogoutPage() {
         try {
           await logout();
           // Redirect to login page after logout
-          router.push('/auth/login');
+          router.push("/auth/login");
         } catch (error) {
-          console.error('Logout failed:', error);
+          console.error("Logout failed:", error);
           // Still redirect to login page even if logout fails
-          router.push('/auth/login');
+          router.push("/auth/login");
         }
       };
 

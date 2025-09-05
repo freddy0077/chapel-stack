@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get all small groups with details
 export const GET_ALL_SMALL_GROUPS = gql`
@@ -104,7 +104,8 @@ export const GET_FILTERED_SMALL_GROUPS = gql`
         joinDate
         status
         memberId
-        member { # This is the actual Member, included by the service
+        member {
+          # This is the actual Member, included by the service
           id
           firstName
           lastName

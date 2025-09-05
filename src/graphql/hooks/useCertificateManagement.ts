@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from "@apollo/client";
 import {
   GET_CERTIFICATE_TEMPLATES,
   SEARCH_CERTIFICATE_TEMPLATES,
@@ -11,70 +11,87 @@ import {
   GET_RECENT_CERTIFICATES,
   GENERATE_CERTIFICATE,
   BULK_GENERATE_CERTIFICATES,
-} from '../queries/certificateManagementQueries';
+} from "../queries/certificateManagementQueries";
 
 // Hook for getting certificate templates
-export const useCertificateTemplates = (denomination?: string, sacramentType?: string) => {
+export const useCertificateTemplates = (
+  denomination?: string,
+  sacramentType?: string,
+) => {
   return useQuery(GET_CERTIFICATE_TEMPLATES, {
     variables: { denomination, sacramentType },
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
   });
 };
 
 // Hook for searching certificate templates
-export const useSearchCertificateTemplates = (searchTerm: string, denomination?: string, sacramentType?: string) => {
+export const useSearchCertificateTemplates = (
+  searchTerm: string,
+  denomination?: string,
+  sacramentType?: string,
+) => {
   return useQuery(SEARCH_CERTIFICATE_TEMPLATES, {
     variables: { searchTerm, denomination, sacramentType },
     skip: !searchTerm || searchTerm.length < 2,
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
   });
 };
 
 // Hook for getting default templates
-export const useDefaultTemplates = (denomination: string, sacramentType: string) => {
+export const useDefaultTemplates = (
+  denomination: string,
+  sacramentType: string,
+) => {
   return useQuery(GET_DEFAULT_TEMPLATES, {
     variables: { denomination, sacramentType },
     skip: !denomination || !sacramentType,
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
   });
 };
 
 // Hook for getting recommended templates
-export const useRecommendedTemplates = (branchId: string, sacramentType?: string, limit?: number) => {
+export const useRecommendedTemplates = (
+  branchId: string,
+  sacramentType?: string,
+  limit?: number,
+) => {
   return useQuery(GET_RECOMMENDED_TEMPLATES, {
     variables: { branchId, sacramentType, limit },
     skip: !branchId,
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
   });
 };
 
 // Hook for getting supported denominations
 export const useSupportedDenominations = () => {
   return useQuery(GET_SUPPORTED_DENOMINATIONS, {
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-first',
+    errorPolicy: "all",
+    fetchPolicy: "cache-first",
   });
 };
 
 // Hook for getting supported sacrament types
 export const useSupportedSacramentTypes = () => {
   return useQuery(GET_SUPPORTED_SACRAMENT_TYPES, {
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-first',
+    errorPolicy: "all",
+    fetchPolicy: "cache-first",
   });
 };
 
 // Hook for getting template preview URL
-export const useTemplatePreviewUrl = (templateId: string, sacramentalRecordId: string) => {
+export const useTemplatePreviewUrl = (
+  templateId: string,
+  sacramentalRecordId: string,
+) => {
   return useQuery(GET_TEMPLATE_PREVIEW_URL, {
     variables: { templateId, sacramentalRecordId },
     skip: !templateId || !sacramentalRecordId,
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-first',
+    errorPolicy: "all",
+    fetchPolicy: "cache-first",
   });
 };
 
@@ -82,8 +99,8 @@ export const useTemplatePreviewUrl = (templateId: string, sacramentalRecordId: s
 export const useCertificateGenerationStats = (branchId?: string) => {
   return useQuery(GET_CERTIFICATE_GENERATION_STATS, {
     variables: { branchId },
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
     pollInterval: 30000, // Poll every 30 seconds for real-time updates
   });
 };
@@ -92,8 +109,8 @@ export const useCertificateGenerationStats = (branchId?: string) => {
 export const useRecentCertificates = (limit?: number, branchId?: string) => {
   return useQuery(GET_RECENT_CERTIFICATES, {
     variables: { limit, branchId },
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
     pollInterval: 15000, // Poll every 15 seconds for real-time updates
   });
 };
@@ -101,22 +118,16 @@ export const useRecentCertificates = (limit?: number, branchId?: string) => {
 // Hook for generating a certificate
 export const useGenerateCertificate = () => {
   return useMutation(GENERATE_CERTIFICATE, {
-    errorPolicy: 'all',
-    refetchQueries: [
-      'GetCertificateGenerationStats',
-      'GetRecentCertificates',
-    ],
+    errorPolicy: "all",
+    refetchQueries: ["GetCertificateGenerationStats", "GetRecentCertificates"],
   });
 };
 
 // Hook for bulk generating certificates
 export const useBulkGenerateCertificates = () => {
   return useMutation(BULK_GENERATE_CERTIFICATES, {
-    errorPolicy: 'all',
-    refetchQueries: [
-      'GetCertificateGenerationStats',
-      'GetRecentCertificates',
-    ],
+    errorPolicy: "all",
+    refetchQueries: ["GetCertificateGenerationStats", "GetRecentCertificates"],
   });
 };
 
@@ -150,7 +161,11 @@ export const useCertificateManagementDashboard = (branchId?: string) => {
       loading: sacramentTypesQuery.loading,
       error: sacramentTypesQuery.error,
     },
-    loading: statsQuery.loading || recentCertificatesQuery.loading || denominationsQuery.loading || sacramentTypesQuery.loading,
+    loading:
+      statsQuery.loading ||
+      recentCertificatesQuery.loading ||
+      denominationsQuery.loading ||
+      sacramentTypesQuery.loading,
     refetch: () => {
       statsQuery.refetch();
       recentCertificatesQuery.refetch();
@@ -159,18 +174,30 @@ export const useCertificateManagementDashboard = (branchId?: string) => {
 };
 
 // Combined hook for template management
-export const useTemplateManagement = (searchTerm?: string, denomination?: string, sacramentType?: string) => {
+export const useTemplateManagement = (
+  searchTerm?: string,
+  denomination?: string,
+  sacramentType?: string,
+) => {
   const templatesQuery = useCertificateTemplates(denomination, sacramentType);
-  const searchQuery = useSearchCertificateTemplates(searchTerm || '', denomination, sacramentType);
+  const searchQuery = useSearchCertificateTemplates(
+    searchTerm || "",
+    denomination,
+    sacramentType,
+  );
   const denominationsQuery = useSupportedDenominations();
   const sacramentTypesQuery = useSupportedSacramentTypes();
 
   // Use search results if search term is provided, otherwise use all templates
-  const activeQuery = searchTerm && searchTerm.length >= 2 ? searchQuery : templatesQuery;
+  const activeQuery =
+    searchTerm && searchTerm.length >= 2 ? searchQuery : templatesQuery;
 
   return {
     templates: {
-      data: activeQuery.data?.certificateTemplates || activeQuery.data?.searchCertificateTemplates || [],
+      data:
+        activeQuery.data?.certificateTemplates ||
+        activeQuery.data?.searchCertificateTemplates ||
+        [],
       loading: activeQuery.loading,
       error: activeQuery.error,
       refetch: activeQuery.refetch,
@@ -185,6 +212,9 @@ export const useTemplateManagement = (searchTerm?: string, denomination?: string
       loading: sacramentTypesQuery.loading,
       error: sacramentTypesQuery.error,
     },
-    loading: activeQuery.loading || denominationsQuery.loading || sacramentTypesQuery.loading,
+    loading:
+      activeQuery.loading ||
+      denominationsQuery.loading ||
+      sacramentTypesQuery.loading,
   };
 };

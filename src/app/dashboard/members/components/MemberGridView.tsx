@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
+import React from "react";
+import { motion } from "framer-motion";
+import {
   CheckIcon,
   CreditCardIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
-import { Member } from '../types/member.types';
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { Member } from "../types/member.types";
 
 interface MemberGridViewProps {
   members: Member[];
@@ -20,18 +20,20 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
   members,
   selectedMembers,
   onSelectMember,
-  onMemberClick
+  onMemberClick,
 }) => {
   const getStatusColor = (status: string) => {
     const statusColors = {
-      ACTIVE: 'border-green-400 bg-green-50',
-      INACTIVE: 'border-gray-400 bg-gray-50',
-      VISITOR: 'border-blue-400 bg-blue-50',
-      MEMBER: 'border-purple-400 bg-purple-50',
-      DEACTIVATED: 'border-red-400 bg-red-50',
-      TRANSFERRED: 'border-orange-400 bg-orange-50'
+      ACTIVE: "border-green-400 bg-green-50",
+      INACTIVE: "border-gray-400 bg-gray-50",
+      VISITOR: "border-blue-400 bg-blue-50",
+      MEMBER: "border-purple-400 bg-purple-50",
+      DEACTIVATED: "border-red-400 bg-red-50",
+      TRANSFERRED: "border-orange-400 bg-orange-50",
     };
-    return statusColors[status as keyof typeof statusColors] || statusColors.ACTIVE;
+    return (
+      statusColors[status as keyof typeof statusColors] || statusColors.ACTIVE
+    );
   };
 
   const handleMemberClick = (member: Member) => {
@@ -49,7 +51,7 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
         const isSelected = selectedMembers.includes(member.id);
         const fullName = [member.firstName, member.middleName, member.lastName]
           .filter(Boolean)
-          .join(' ');
+          .join(" ");
         const displayName = member.preferredName || fullName;
         const statusColor = getStatusColor(member.membershipStatus);
 
@@ -61,7 +63,7 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
             transition={{ delay: index * 0.02 }}
             whileHover={{ scale: 1.05, y: -2 }}
             className={`relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden aspect-square ${
-              isSelected ? 'ring-2 ring-blue-500' : ''
+              isSelected ? "ring-2 ring-blue-500" : ""
             } ${statusColor}`}
             onClick={() => handleMemberClick(member)}
           >
@@ -71,8 +73,8 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
                 onClick={(e) => handleSelect(e, member.id)}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                   isSelected
-                    ? 'bg-blue-600 border-blue-600 text-white'
-                    : 'bg-white border-gray-300 hover:border-blue-400'
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "bg-white border-gray-300 hover:border-blue-400"
                 }`}
               >
                 {isSelected && <CheckIcon className="w-3 h-3" />}
@@ -82,7 +84,10 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
             {/* RFID Indicator */}
             {member.rfidCardId && (
               <div className="absolute top-2 right-2 z-10">
-                <CreditCardIcon className="w-4 h-4 text-green-600 bg-white rounded p-0.5" title="Has RFID Card" />
+                <CreditCardIcon
+                  className="w-4 h-4 text-green-600 bg-white rounded p-0.5"
+                  title="Has RFID Card"
+                />
               </div>
             )}
 
@@ -99,7 +104,8 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
                 ) : (
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center border-2 border-white shadow-md">
                     <span className="text-white font-semibold text-lg">
-                      {member.firstName.charAt(0)}{member.lastName?.charAt(0)}
+                      {member.firstName.charAt(0)}
+                      {member.lastName?.charAt(0)}
                     </span>
                   </div>
                 )}
@@ -112,25 +118,39 @@ const MemberGridView: React.FC<MemberGridViewProps> = ({
 
               {/* Status Badge */}
               <div className="text-xs">
-                <span className={`px-2 py-1 rounded-full font-medium ${
-                  member.membershipStatus === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                  member.membershipStatus === 'INACTIVE' ? 'bg-gray-100 text-gray-800' :
-                  member.membershipStatus === 'VISITOR' ? 'bg-blue-100 text-blue-800' :
-                  member.membershipStatus === 'MEMBER' ? 'bg-purple-100 text-purple-800' :
-                  member.membershipStatus === 'DEACTIVATED' ? 'bg-red-100 text-red-800' :
-                  'bg-orange-100 text-orange-800'
-                }`}>
-                  {member.membershipStatus?.toLowerCase().replace('_', ' ') || 'Unknown'}
+                <span
+                  className={`px-2 py-1 rounded-full font-medium ${
+                    member.membershipStatus === "ACTIVE"
+                      ? "bg-green-100 text-green-800"
+                      : member.membershipStatus === "INACTIVE"
+                        ? "bg-gray-100 text-gray-800"
+                        : member.membershipStatus === "VISITOR"
+                          ? "bg-blue-100 text-blue-800"
+                          : member.membershipStatus === "MEMBER"
+                            ? "bg-purple-100 text-purple-800"
+                            : member.membershipStatus === "DEACTIVATED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-orange-100 text-orange-800"
+                  }`}
+                >
+                  {member.membershipStatus?.toLowerCase().replace("_", " ") ||
+                    "Unknown"}
                 </span>
               </div>
 
               {/* Additional Info */}
               <div className="mt-2 flex items-center justify-center space-x-1">
                 {member.isRegularAttendee && (
-                  <div className="w-2 h-2 bg-green-500 rounded-full" title="Regular Attendee" />
+                  <div
+                    className="w-2 h-2 bg-green-500 rounded-full"
+                    title="Regular Attendee"
+                  />
                 )}
                 {member.headOfHousehold && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full" title="Head of Household" />
+                  <div
+                    className="w-2 h-2 bg-blue-500 rounded-full"
+                    title="Head of Household"
+                  />
                 )}
               </div>
             </div>

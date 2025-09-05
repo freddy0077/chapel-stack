@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Template fragments for reusability
 const TEMPLATE_FRAGMENT = gql`
@@ -70,8 +70,14 @@ const RECENT_CERTIFICATE_FRAGMENT = gql`
 
 // Get all templates
 export const GET_CERTIFICATE_TEMPLATES = gql`
-  query GetCertificateTemplates($denomination: ChurchDenomination, $sacramentType: CertificateSacramentType) {
-    certificateTemplates(denomination: $denomination, sacramentType: $sacramentType) {
+  query GetCertificateTemplates(
+    $denomination: ChurchDenomination
+    $sacramentType: CertificateSacramentType
+  ) {
+    certificateTemplates(
+      denomination: $denomination
+      sacramentType: $sacramentType
+    ) {
       ...TemplateFragment
     }
   }
@@ -80,8 +86,16 @@ export const GET_CERTIFICATE_TEMPLATES = gql`
 
 // Search templates
 export const SEARCH_CERTIFICATE_TEMPLATES = gql`
-  query SearchCertificateTemplates($searchTerm: String!, $denomination: ChurchDenomination, $sacramentType: CertificateSacramentType) {
-    searchCertificateTemplates(searchTerm: $searchTerm, denomination: $denomination, sacramentType: $sacramentType) {
+  query SearchCertificateTemplates(
+    $searchTerm: String!
+    $denomination: ChurchDenomination
+    $sacramentType: CertificateSacramentType
+  ) {
+    searchCertificateTemplates(
+      searchTerm: $searchTerm
+      denomination: $denomination
+      sacramentType: $sacramentType
+    ) {
       ...TemplateFragment
     }
   }
@@ -90,8 +104,14 @@ export const SEARCH_CERTIFICATE_TEMPLATES = gql`
 
 // Get default templates
 export const GET_DEFAULT_TEMPLATES = gql`
-  query GetDefaultTemplates($denomination: ChurchDenomination!, $sacramentType: CertificateSacramentType!) {
-    defaultCertificateTemplate(denomination: $denomination, sacramentType: $sacramentType) {
+  query GetDefaultTemplates(
+    $denomination: ChurchDenomination!
+    $sacramentType: CertificateSacramentType!
+  ) {
+    defaultCertificateTemplate(
+      denomination: $denomination
+      sacramentType: $sacramentType
+    ) {
       ...TemplateFragment
     }
   }
@@ -100,8 +120,16 @@ export const GET_DEFAULT_TEMPLATES = gql`
 
 // Get recommended templates
 export const GET_RECOMMENDED_TEMPLATES = gql`
-  query GetRecommendedTemplates($branchId: ID!, $sacramentType: CertificateSacramentType, $limit: Float) {
-    recommendedCertificateTemplates(branchId: $branchId, sacramentType: $sacramentType, limit: $limit) {
+  query GetRecommendedTemplates(
+    $branchId: ID!
+    $sacramentType: CertificateSacramentType
+    $limit: Float
+  ) {
+    recommendedCertificateTemplates(
+      branchId: $branchId
+      sacramentType: $sacramentType
+      limit: $limit
+    ) {
       ...TemplateFragment
     }
   }
@@ -125,7 +153,10 @@ export const GET_SUPPORTED_SACRAMENT_TYPES = gql`
 // Get template preview URL
 export const GET_TEMPLATE_PREVIEW_URL = gql`
   query GetTemplatePreviewUrl($templateId: ID!, $sacramentalRecordId: ID!) {
-    certificateTemplatePreview(templateId: $templateId, sacramentalRecordId: $sacramentalRecordId)
+    certificateTemplatePreview(
+      templateId: $templateId
+      sacramentalRecordId: $sacramentalRecordId
+    )
   }
 `;
 

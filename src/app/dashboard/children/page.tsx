@@ -1,34 +1,38 @@
 "use client";
 
-import { useState } from 'react';
-import ChildrenHeader from './components/ChildrenHeader';
-import ChildrenStats from './components/ChildrenStats';
-import ChildrenSearch from './components/ChildrenSearch';
-import ChildrenList, { mockChildren, Child } from './components/ChildrenList';
-import ChildDetailModal from './components/ChildDetailModal';
+import { useState } from "react";
+import ChildrenHeader from "./components/ChildrenHeader";
+import ChildrenStats from "./components/ChildrenStats";
+import ChildrenSearch from "./components/ChildrenSearch";
+import ChildrenList, { mockChildren, Child } from "./components/ChildrenList";
+import ChildDetailModal from "./components/ChildDetailModal";
 
 export default function ChildrenMinistry() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAgeGroup, setSelectedAgeGroup] = useState('All Ages');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState("All Ages");
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Filter children based on search term and age group
   const filteredChildren = mockChildren.filter((child) => {
-    const matchesSearch = 
-      `${child.firstName} ${child.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      `${child.firstName} ${child.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       child.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       child.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesAgeGroup = selectedAgeGroup === 'All Ages' || child.ageGroup === selectedAgeGroup;
-    
+
+    const matchesAgeGroup =
+      selectedAgeGroup === "All Ages" || child.ageGroup === selectedAgeGroup;
+
     return matchesSearch && matchesAgeGroup;
   });
 
   // Statistics for the dashboard
   const totalChildren = mockChildren.length;
-  const checkedInToday = mockChildren.filter(child => child.checkedIn).length;
-  const classrooms = [...new Set(mockChildren.map(child => child.classroom))].length;
+  const checkedInToday = mockChildren.filter((child) => child.checkedIn).length;
+  const classrooms = [...new Set(mockChildren.map((child) => child.classroom))]
+    .length;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -36,14 +40,14 @@ export default function ChildrenMinistry() {
       <ChildrenHeader onOpenAddChild={() => setIsAddModalOpen(true)} />
 
       {/* Statistics cards */}
-      <ChildrenStats 
+      <ChildrenStats
         totalChildren={totalChildren}
         checkedInToday={checkedInToday}
         classrooms={classrooms}
       />
 
       {/* Search and filter bar */}
-      <ChildrenSearch 
+      <ChildrenSearch
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         ageGroup={selectedAgeGroup}
@@ -51,14 +55,14 @@ export default function ChildrenMinistry() {
       />
 
       {/* Children table/list */}
-      <ChildrenList 
+      <ChildrenList
         children={filteredChildren}
         onSelectChild={setSelectedChild}
       />
 
       {/* Child detail modal */}
       {selectedChild && (
-        <ChildDetailModal 
+        <ChildDetailModal
           child={selectedChild}
           onClose={() => setSelectedChild(null)}
         />
@@ -71,15 +75,29 @@ export default function ChildrenMinistry() {
             <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               <div>
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-indigo-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 text-indigo-600"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
                   </svg>
                 </div>
                 <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-base font-semibold leading-6 text-gray-900">Add New Child</h3>
+                  <h3 className="text-base font-semibold leading-6 text-gray-900">
+                    Add New Child
+                  </h3>
                   <div className="mt-4">
                     <p className="text-sm text-gray-500">
-                      This modal would contain a form to add a new child to the system.
+                      This modal would contain a form to add a new child to the
+                      system.
                     </p>
                   </div>
                 </div>

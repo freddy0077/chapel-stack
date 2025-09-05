@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { CheckIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
-import { useSettings, useUpdateSetting } from '@/graphql/hooks/useSettings';
+import { useState, useEffect } from "react";
+import { CheckIcon, BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import { useSettings, useUpdateSetting } from "@/graphql/hooks/useSettings";
 
 type Branch = {
   id: string;
@@ -14,11 +14,31 @@ type Branch = {
 };
 
 const permissionCategories = [
-  { id: 'attendance', name: 'Attendance', permissions: ['view', 'create', 'edit', 'delete'] },
-  { id: 'members', name: 'Members', permissions: ['view', 'create', 'edit', 'delete'] },
-  { id: 'events', name: 'Events', permissions: ['view', 'create', 'edit', 'delete'] },
-  { id: 'finances', name: 'Finances', permissions: ['view', 'create', 'edit', 'delete'] },
-  { id: 'ministries', name: 'Ministries', permissions: ['view', 'create', 'edit', 'delete'] },
+  {
+    id: "attendance",
+    name: "Attendance",
+    permissions: ["view", "create", "edit", "delete"],
+  },
+  {
+    id: "members",
+    name: "Members",
+    permissions: ["view", "create", "edit", "delete"],
+  },
+  {
+    id: "events",
+    name: "Events",
+    permissions: ["view", "create", "edit", "delete"],
+  },
+  {
+    id: "finances",
+    name: "Finances",
+    permissions: ["view", "create", "edit", "delete"],
+  },
+  {
+    id: "ministries",
+    name: "Ministries",
+    permissions: ["view", "create", "edit", "delete"],
+  },
 ];
 
 export default function BranchSettings() {
@@ -29,61 +49,76 @@ export default function BranchSettings() {
   // Sample data for my branches (would come from API)
   const [branches, setBranches] = useState<Branch[]>([
     {
-      id: '1',
-      name: 'St. Mary\'s Cathedral',
-      address: '123 Main St, New York, NY',
-      role: 'Branch Admin',
+      id: "1",
+      name: "St. Mary's Cathedral",
+      address: "123 Main St, New York, NY",
+      role: "Branch Admin",
       isDefault: true,
       permissions: [
-        'attendance.view', 'attendance.create', 'attendance.edit',
-        'members.view', 'members.create', 'members.edit',
-        'events.view', 'events.create', 'events.edit',
-        'finances.view', 'finances.create',
-        'ministries.view', 'ministries.create', 'ministries.edit'
-      ]
+        "attendance.view",
+        "attendance.create",
+        "attendance.edit",
+        "members.view",
+        "members.create",
+        "members.edit",
+        "events.view",
+        "events.create",
+        "events.edit",
+        "finances.view",
+        "finances.create",
+        "ministries.view",
+        "ministries.create",
+        "ministries.edit",
+      ],
     },
     {
-      id: '2',
-      name: 'St. Joseph\'s Parish',
-      address: '456 Oak St, Brooklyn, NY',
-      role: 'Staff',
+      id: "2",
+      name: "St. Joseph's Parish",
+      address: "456 Oak St, Brooklyn, NY",
+      role: "Staff",
       isDefault: false,
       permissions: [
-        'attendance.view', 'attendance.create',
-        'members.view',
-        'events.view',
-        'ministries.view'
-      ]
+        "attendance.view",
+        "attendance.create",
+        "members.view",
+        "events.view",
+        "ministries.view",
+      ],
     },
     {
-      id: '3',
-      name: 'Sacred Heart Church',
-      address: '789 Pine St, Queens, NY',
-      role: 'Ministry Leader',
+      id: "3",
+      name: "Sacred Heart Church",
+      address: "789 Pine St, Queens, NY",
+      role: "Ministry Leader",
       isDefault: false,
       permissions: [
-        'attendance.view',
-        'members.view',
-        'events.view',
-        'ministries.view', 'ministries.create'
-      ]
-    }
+        "attendance.view",
+        "members.view",
+        "events.view",
+        "ministries.view",
+        "ministries.create",
+      ],
+    },
   ]);
 
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(branches[0].id);
-  const [defaultBranchId, setDefaultBranchId] = useState<string>('');
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(
+    branches[0].id,
+  );
+  const [defaultBranchId, setDefaultBranchId] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Load default branch setting from API (key: defaultBranchId)
   useEffect(() => {
     if (data?.settings) {
-      const def = data.settings.find(s => s.key === 'defaultBranchId');
+      const def = data.settings.find((s) => s.key === "defaultBranchId");
       if (def) setDefaultBranchId(def.value);
     }
   }, [data]);
 
-  const selectedBranch = branches.find(branch => branch.id === selectedBranchId);
+  const selectedBranch = branches.find(
+    (branch) => branch.id === selectedBranchId,
+  );
 
   const hasPermission = (categoryId: string, permission: string): boolean => {
     const permissionKey = `${categoryId}.${permission}`;
@@ -92,10 +127,12 @@ export default function BranchSettings() {
 
   const handleDefaultBranchChange = (branchId: string) => {
     setDefaultBranchId(branchId);
-    setBranches(branches.map(branch => ({
-      ...branch,
-      isDefault: branch.id === branchId
-    })));
+    setBranches(
+      branches.map((branch) => ({
+        ...branch,
+        isDefault: branch.id === branchId,
+      })),
+    );
   };
 
   const handleSave = async () => {
@@ -107,14 +144,14 @@ export default function BranchSettings() {
       }
       await updateSetting({
         variables: {
-          id: settingsMap['defaultBranchId'],
-          input: { key: 'defaultBranchId', value: defaultBranchId }
+          id: settingsMap["defaultBranchId"],
+          input: { key: "defaultBranchId", value: defaultBranchId },
         },
       });
       setSaveSuccess(true);
       refetch();
     } catch {
-      toast.error('An unexpected error occurred.');
+      toast.error("An unexpected error occurred.");
     }
     setIsSaving(false);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -123,7 +160,9 @@ export default function BranchSettings() {
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Branch Settings</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          Branch Settings
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           Manage your branch preferences and access
         </p>
@@ -132,7 +171,10 @@ export default function BranchSettings() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-6">
         <div className="sm:col-span-2 space-y-4">
           <div>
-            <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="branch-select"
+              className="block text-sm font-medium text-gray-700"
+            >
               Select Branch
             </label>
             <select
@@ -144,7 +186,7 @@ export default function BranchSettings() {
             >
               {branches.map((branch) => (
                 <option key={branch.id} value={branch.id}>
-                  {branch.name} {branch.isDefault && '(Default)'}
+                  {branch.name} {branch.isDefault && "(Default)"}
                 </option>
               ))}
             </select>
@@ -170,7 +212,9 @@ export default function BranchSettings() {
                     <div className="mt-1 flex items-center text-xs text-gray-500">
                       <p>{branch.address}</p>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">Role: {branch.role}</div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      Role: {branch.role}
+                    </div>
                   </div>
                 </li>
               ))}
@@ -178,7 +222,9 @@ export default function BranchSettings() {
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-900">Default Branch</h4>
+            <h4 className="text-sm font-medium text-gray-900">
+              Default Branch
+            </h4>
             <p className="mt-1 text-xs text-gray-500">
               Set your default branch for when you log in
             </p>
@@ -190,8 +236,10 @@ export default function BranchSettings() {
                 onChange={(e) => handleDefaultBranchChange(e.target.value)}
                 className="mt-1 block w-full rounded-xl border border-purple-100 bg-white/70 shadow-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-200 backdrop-blur placeholder:text-purple-300 text-purple-900 font-medium transition-all duration-150"
               >
-                {branches.map(branch => (
-                  <option key={branch.id} value={branch.id}>{branch.name}</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -200,7 +248,9 @@ export default function BranchSettings() {
 
         <div className="sm:col-span-4">
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Branch Access Permissions</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">
+              Branch Access Permissions
+            </h4>
             <p className="text-xs text-gray-500 mb-4">
               Your assigned permissions for {selectedBranch?.name}
             </p>
@@ -209,19 +259,34 @@ export default function BranchSettings() {
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       Module
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       View
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       Create
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       Edit
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       Delete
                     </th>
                   </tr>
@@ -233,7 +298,10 @@ export default function BranchSettings() {
                         {category.name}
                       </td>
                       {category.permissions.map((permission) => (
-                        <td key={permission} className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        <td
+                          key={permission}
+                          className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                        >
                           {hasPermission(category.id, permission) ? (
                             <CheckIcon className="h-5 w-5 text-green-500" />
                           ) : (
@@ -248,12 +316,15 @@ export default function BranchSettings() {
             </div>
 
             <p className="mt-2 text-xs text-gray-500">
-              To request additional permissions, please contact your branch administrator.
+              To request additional permissions, please contact your branch
+              administrator.
             </p>
           </div>
 
           <div className="mt-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Branch Notification Preferences</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">
+              Branch Notification Preferences
+            </h4>
             <div className="space-y-4">
               <div className="flex items-start">
                 <div className="flex h-5 items-center">
@@ -266,10 +337,15 @@ export default function BranchSettings() {
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="branch-notifications" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="branch-notifications"
+                    className="font-medium text-gray-700"
+                  >
                     Branch announcements
                   </label>
-                  <p className="text-gray-500">Receive notifications about branch-wide announcements</p>
+                  <p className="text-gray-500">
+                    Receive notifications about branch-wide announcements
+                  </p>
                 </div>
               </div>
 
@@ -284,10 +360,15 @@ export default function BranchSettings() {
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="branch-events" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="branch-events"
+                    className="font-medium text-gray-700"
+                  >
                     Branch events
                   </label>
-                  <p className="text-gray-500">Receive notifications about events at this branch</p>
+                  <p className="text-gray-500">
+                    Receive notifications about events at this branch
+                  </p>
                 </div>
               </div>
 
@@ -302,10 +383,16 @@ export default function BranchSettings() {
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="branch-ministry" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="branch-ministry"
+                    className="font-medium text-gray-700"
+                  >
                     Ministry updates
                   </label>
-                  <p className="text-gray-500">Receive notifications about ministry activities at this branch</p>
+                  <p className="text-gray-500">
+                    Receive notifications about ministry activities at this
+                    branch
+                  </p>
                 </div>
               </div>
             </div>
@@ -326,7 +413,7 @@ export default function BranchSettings() {
           disabled={isSaving}
           className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 shadow-lg hover:from-indigo-700 hover:to-purple-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all duration-200 border-2 border-white/80 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSaving ? 'Saving...' : 'Save Settings'}
+          {isSaving ? "Saving..." : "Save Settings"}
         </button>
       </div>
     </div>

@@ -1,9 +1,15 @@
 "use client";
 
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, CalendarIcon, ClockIcon, MusicalNoteIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import type { ServicePlan } from '../ServicesList';
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon,
+  MusicalNoteIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
+import type { ServicePlan } from "../ServicesList";
 
 interface ServiceDetailsModalProps {
   service: ServicePlan;
@@ -11,24 +17,28 @@ interface ServiceDetailsModalProps {
   onClose: () => void;
 }
 
-export default function ServiceDetailsModal({ service, isOpen, onClose }: ServiceDetailsModalProps) {
+export default function ServiceDetailsModal({
+  service,
+  isOpen,
+  onClose,
+}: ServiceDetailsModalProps) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
     });
   };
 
   // Format time for display
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -69,13 +79,16 @@ export default function ServiceDetailsModal({ service, isOpen, onClose }: Servic
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div>
                   <div className="mt-3 sm:mt-0">
-                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-semibold leading-6 text-gray-900"
+                    >
                       {service.title}
                     </Dialog.Title>
-                    
+
                     <div className="mt-2 text-sm text-gray-500">
                       <p>{service.description}</p>
                     </div>
@@ -84,67 +97,113 @@ export default function ServiceDetailsModal({ service, isOpen, onClose }: Servic
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                         <div className="sm:col-span-1">
                           <dt className="text-sm font-medium text-gray-500 flex items-center">
-                            <CalendarIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                            <CalendarIcon
+                              className="mr-1 h-4 w-4"
+                              aria-hidden="true"
+                            />
                             Date
                           </dt>
-                          <dd className="mt-1 text-sm text-gray-900">{formatDate(service.date)}</dd>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {formatDate(service.date)}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
                           <dt className="text-sm font-medium text-gray-500 flex items-center">
-                            <ClockIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                            <ClockIcon
+                              className="mr-1 h-4 w-4"
+                              aria-hidden="true"
+                            />
                             Time
                           </dt>
-                          <dd className="mt-1 text-sm text-gray-900">{formatTime(service.date)}</dd>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {formatTime(service.date)}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Location</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.location}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Location
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.location}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Status</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.status}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Status
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.status}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Type</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.serviceType}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Type
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.serviceType}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Theme</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.theme}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Theme
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.theme}
+                          </dd>
                         </div>
                       </dl>
                     </div>
 
                     <div className="mt-6 border-t border-gray-100 pt-4">
                       <h4 className="text-sm font-medium text-gray-500 flex items-center">
-                        <UserGroupIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                        <UserGroupIcon
+                          className="mr-1 h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Leadership
                       </h4>
                       <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Lead Pastor</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.leadPastor}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Lead Pastor
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.leadPastor}
+                          </dd>
                         </div>
                         <div className="sm:col-span-1">
-                          <dt className="text-sm font-medium text-gray-500">Worship Leader</dt>
-                          <dd className="mt-1 text-sm text-gray-900">{service.worshipLeader}</dd>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Worship Leader
+                          </dt>
+                          <dd className="mt-1 text-sm text-gray-900">
+                            {service.worshipLeader}
+                          </dd>
                         </div>
                       </dl>
                     </div>
 
                     <div className="mt-6 border-t border-gray-100 pt-4">
                       <h4 className="text-sm font-medium text-gray-500 flex items-center">
-                        <MusicalNoteIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                        <MusicalNoteIcon
+                          className="mr-1 h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Songs
                       </h4>
                       <ul className="mt-3 divide-y divide-gray-100">
                         {service.songs.map((song, index) => (
                           <li key={index} className="py-2 flex justify-between">
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{song.title}</p>
-                              <p className="text-xs text-gray-500">{song.artist}</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                {song.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {song.artist}
+                              </p>
                             </div>
-                            <p className="text-sm text-gray-500 font-mono">{song.key}</p>
+                            <p className="text-sm text-gray-500 font-mono">
+                              {song.key}
+                            </p>
                           </li>
                         ))}
                       </ul>
@@ -152,18 +211,28 @@ export default function ServiceDetailsModal({ service, isOpen, onClose }: Servic
 
                     <div className="mt-6 border-t border-gray-100 pt-4">
                       <h4 className="text-sm font-medium text-gray-500 flex items-center">
-                        <UserGroupIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                        <UserGroupIcon
+                          className="mr-1 h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Team
                       </h4>
                       <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                         {service.team.map((member, index) => (
                           <li key={index} className="flex items-center">
                             <span className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                              <UserGroupIcon className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                              <UserGroupIcon
+                                className="h-4 w-4 text-indigo-600"
+                                aria-hidden="true"
+                              />
                             </span>
                             <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900">{member.name}</p>
-                              <p className="text-xs text-gray-500">{member.role}</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                {member.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {member.role}
+                              </p>
                             </div>
                           </li>
                         ))}
@@ -171,7 +240,7 @@ export default function ServiceDetailsModal({ service, isOpen, onClose }: Servic
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"

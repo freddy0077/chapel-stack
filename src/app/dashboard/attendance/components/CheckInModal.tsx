@@ -2,7 +2,12 @@
 
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { XMarkIcon, CheckIcon, QrCodeIcon, PrinterIcon } from "@heroicons/react/24/outline";
+import {
+  XMarkIcon,
+  CheckIcon,
+  QrCodeIcon,
+  PrinterIcon,
+} from "@heroicons/react/24/outline";
 
 interface ChildInfo {
   id: string;
@@ -41,20 +46,22 @@ export default function CheckInModal({
   const [pickupPerson, setPickupPerson] = useState("Parent");
   const [printLabel, setPrintLabel] = useState(true);
   const [additionalNotes, setAdditionalNotes] = useState("");
-  
+
   // Generate a random 3-character alphanumeric security code
   function generateSecurityCode() {
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
+    const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let result = "";
     for (let i = 0; i < 3; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     return result;
   }
 
   const handleComplete = () => {
     setIsProcessing(true);
-    
+
     // Simulate processing time (would be actual check-in/out logic in a real app)
     setTimeout(() => {
       onComplete(child.id, mode === "in");
@@ -104,23 +111,32 @@ export default function CheckInModal({
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div>
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
                     {mode === "in" ? (
-                      <QrCodeIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                      <QrCodeIcon
+                        className="h-6 w-6 text-indigo-600"
+                        aria-hidden="true"
+                      />
                     ) : (
-                      <CheckIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                      <CheckIcon
+                        className="h-6 w-6 text-indigo-600"
+                        aria-hidden="true"
+                      />
                     )}
                   </div>
                   <div className="mt-3 text-center sm:mt-5">
-                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-base font-semibold leading-6 text-gray-900"
+                    >
                       {mode === "in" ? "Child Check-In" : "Child Check-Out"}
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        {mode === "in" 
-                          ? "Check in the child to the selected event and print their name tag." 
+                        {mode === "in"
+                          ? "Check in the child to the selected event and print their name tag."
                           : "Check out the child from the current event."}
                       </p>
                     </div>
@@ -128,43 +144,64 @@ export default function CheckInModal({
                 </div>
 
                 <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-900">Child Information</h4>
+                  <h4 className="text-sm font-medium text-gray-900">
+                    Child Information
+                  </h4>
                   <div className="mt-2 grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-gray-500">Name</p>
-                      <p className="text-sm font-medium text-gray-900">{child.firstName} {child.lastName}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {child.firstName} {child.lastName}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Age</p>
-                      <p className="text-sm font-medium text-gray-900">{child.age} years (DOB: {formatDate(child.birthdate)})</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {child.age} years (DOB: {formatDate(child.birthdate)})
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Class</p>
-                      <p className="text-sm font-medium text-gray-900">{child.className}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {child.className}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Parents</p>
-                      <p className="text-sm font-medium text-gray-900">{child.parentName}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {child.parentName}
+                      </p>
                     </div>
                     {child.allergies !== "None" && (
                       <div className="col-span-2">
-                        <p className="text-xs text-red-500 font-medium">Allergies</p>
-                        <p className="text-sm font-medium text-red-500">{child.allergies}</p>
+                        <p className="text-xs text-red-500 font-medium">
+                          Allergies
+                        </p>
+                        <p className="text-sm font-medium text-red-500">
+                          {child.allergies}
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Event Details</h4>
-                  <p className="text-sm text-gray-500">{eventName} - {new Date().toLocaleDateString()}</p>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Event Details
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    {eventName} - {new Date().toLocaleDateString()}
+                  </p>
                 </div>
 
                 {mode === "in" ? (
                   // Check-in specific fields
                   <div className="mt-4 space-y-4">
                     <div>
-                      <label htmlFor="security-code" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="security-code"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Security Code (for pickup)
                       </label>
                       <div className="mt-1 flex items-center">
@@ -179,7 +216,9 @@ export default function CheckInModal({
                         <button
                           type="button"
                           className="ml-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
-                          onClick={() => setSecurityCode(generateSecurityCode())}
+                          onClick={() =>
+                            setSecurityCode(generateSecurityCode())
+                          }
                         >
                           Regenerate
                         </button>
@@ -198,13 +237,19 @@ export default function CheckInModal({
                         checked={printLabel}
                         onChange={(e) => setPrintLabel(e.target.checked)}
                       />
-                      <label htmlFor="print-label" className="ml-2 block text-sm text-gray-900">
+                      <label
+                        htmlFor="print-label"
+                        className="ml-2 block text-sm text-gray-900"
+                      >
                         Print name tag and security label
                       </label>
                     </div>
 
                     <div>
-                      <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="notes"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Additional Notes (Optional)
                       </label>
                       <div className="mt-1">
@@ -224,7 +269,10 @@ export default function CheckInModal({
                   // Check-out specific fields
                   <div className="mt-4 space-y-4">
                     <div>
-                      <label htmlFor="pickup-person" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="pickup-person"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Pickup Person
                       </label>
                       <select
@@ -242,7 +290,10 @@ export default function CheckInModal({
                     </div>
 
                     <div>
-                      <label htmlFor="security-code-verification" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="security-code-verification"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Verify Security Code
                       </label>
                       <div className="mt-1">
@@ -255,12 +306,16 @@ export default function CheckInModal({
                         />
                       </div>
                       <p className="mt-1 text-xs text-gray-500">
-                        The pickup person must provide the security code from the child&apos;s name tag
+                        The pickup person must provide the security code from
+                        the child&apos;s name tag
                       </p>
                     </div>
 
                     <div>
-                      <label htmlFor="checkout-notes" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="checkout-notes"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Checkout Notes (Optional)
                       </label>
                       <div className="mt-1">
@@ -335,7 +390,10 @@ export default function CheckInModal({
                         type="button"
                         className="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm border border-gray-300 hover:bg-gray-50 focus:outline-none"
                       >
-                        <PrinterIcon className="-ml-0.5 mr-1.5 h-4 w-4" aria-hidden="true" />
+                        <PrinterIcon
+                          className="-ml-0.5 mr-1.5 h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Print Preview
                       </button>
                     </div>

@@ -5,21 +5,44 @@ import {
   MusicalNoteIcon,
   UserGroupIcon,
   BookOpenIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 
 interface WorshipTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export default function WorshipTabs({ activeTab, onTabChange }: WorshipTabsProps) {
+export default function WorshipTabs({
+  activeTab,
+  onTabChange,
+}: WorshipTabsProps) {
   const tabs = [
-    { name: 'Service Plans', value: 'services', icon: <CalendarDaysIcon className="w-5 h-5" /> },
-    { name: 'Song Library', value: 'songs', icon: <MusicalNoteIcon className="w-5 h-5" /> },
-    { name: 'Team Scheduling', value: 'teams', icon: <UserGroupIcon className="w-5 h-5" /> },
-    { name: 'Rehearsals', value: 'rehearsals', icon: <ClockIcon className="w-5 h-5" /> },
-    { name: 'Resources', value: 'resources', icon: <BookOpenIcon className="w-5 h-5" /> },
+    {
+      name: "Service Plans",
+      value: "services",
+      icon: <CalendarDaysIcon className="w-5 h-5" />,
+    },
+    {
+      name: "Song Library",
+      value: "songs",
+      icon: <MusicalNoteIcon className="w-5 h-5" />,
+    },
+    {
+      name: "Team Scheduling",
+      value: "teams",
+      icon: <UserGroupIcon className="w-5 h-5" />,
+    },
+    {
+      name: "Rehearsals",
+      value: "rehearsals",
+      icon: <ClockIcon className="w-5 h-5" />,
+    },
+    {
+      name: "Resources",
+      value: "resources",
+      icon: <BookOpenIcon className="w-5 h-5" />,
+    },
   ];
 
   return (
@@ -54,12 +77,16 @@ export default function WorshipTabs({ activeTab, onTabChange }: WorshipTabsProps
                 onClick={() => onTabChange(tab.value)}
                 className={`
                   flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-all duration-200 flex-1
-                  ${activeTab === tab.value
-                    ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-500'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+                  ${
+                    activeTab === tab.value
+                      ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-500"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }
                 `}
               >
-                <span className={`${activeTab === tab.value ? 'text-indigo-600' : 'text-gray-500'}`}>
+                <span
+                  className={`${activeTab === tab.value ? "text-indigo-600" : "text-gray-500"}`}
+                >
                   {tab.icon}
                 </span>
                 <span>{tab.name}</span>

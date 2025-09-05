@@ -3,14 +3,14 @@
  * Manages authentication state with proper immutability and type safety
  */
 
-import { 
-  AuthState, 
-  AuthAction, 
-  AuthActionType, 
-  AuthUser, 
-  AuthTokens, 
-  AuthError 
-} from '@/types/auth-enhanced.types';
+import {
+  AuthState,
+  AuthAction,
+  AuthActionType,
+  AuthUser,
+  AuthTokens,
+  AuthError,
+} from "@/types/auth-enhanced.types";
 
 export const initialAuthState: AuthState = {
   user: null,
@@ -79,7 +79,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
 
     case AuthActionType.UPDATE_USER:
       if (!state.user) return state;
-      
+
       return {
         ...state,
         user: {
@@ -108,10 +108,13 @@ export class AuthUtils {
   /**
    * Check if token is expired or will expire soon
    */
-  static isTokenExpired(expiresAt: number, thresholdMinutes: number = 5): boolean {
+  static isTokenExpired(
+    expiresAt: number,
+    thresholdMinutes: number = 5,
+  ): boolean {
     const now = Date.now();
     const threshold = thresholdMinutes * 60 * 1000; // Convert to milliseconds
-    return (expiresAt - now) <= threshold;
+    return expiresAt - now <= threshold;
   }
 
   /**
@@ -127,7 +130,7 @@ export class AuthUtils {
    */
   static getTokenExpiry(token: string): number {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.exp * 1000; // Convert to milliseconds
     } catch {
       return Date.now(); // Treat as expired if can't parse
@@ -138,10 +141,10 @@ export class AuthUtils {
    * Create auth error object
    */
   static createAuthError(
-    code: string, 
-    message: string, 
-    details?: any, 
-    recoverable: boolean = true
+    code: string,
+    message: string,
+    details?: any,
+    recoverable: boolean = true,
   ): AuthError {
     return {
       code,
@@ -170,29 +173,32 @@ export class AuthUtils {
   /**
    * Validate password strength
    */
-  static validatePassword(password: string): { isValid: boolean; errors: string[] } {
+  static validatePassword(password: string): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
-    
+
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push("Password must be at least 8 characters long");
     }
-    
+
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push("Password must contain at least one uppercase letter");
     }
-    
+
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push("Password must contain at least one lowercase letter");
     }
-    
+
     if (!/\d/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push("Password must contain at least one number");
     }
-    
+
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('Password must contain at least one special character');
+      errors.push("Password must contain at least one special character");
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -235,10 +241,13 @@ export class AuthUtils {
   /**
    * Check if session is active based on last activity
    */
-  static isSessionActive(lastActivity: number, timeoutMinutes: number): boolean {
+  static isSessionActive(
+    lastActivity: number,
+    timeoutMinutes: number,
+  ): boolean {
     const now = Date.now();
     const timeout = timeoutMinutes * 60 * 1000; // Convert to milliseconds
-    return (now - lastActivity) < timeout;
+    return now - lastActivity < timeout;
   }
 
   /**
@@ -246,18 +255,24 @@ export class AuthUtils {
    */
   static formatErrorMessage(error: AuthError): string {
     const errorMessages: Record<string, string> = {
-      'INVALID_CREDENTIALS': 'Invalid email or password. Please try again.',
-      'ACCOUNT_LOCKED': 'Your account has been temporarily locked. Please contact support.',
-      'EMAIL_NOT_VERIFIED': 'Please verify your email address before logging in.',
-      'TOKEN_EXPIRED': 'Your session has expired. Please log in again.',
-      'NETWORK_ERROR': 'Unable to connect to the server. Please check your internet connection.',
-      'SERVER_ERROR': 'A server error occurred. Please try again later.',
-      'MFA_REQUIRED': 'Multi-factor authentication is required.',
-      'INVALID_MFA_CODE': 'Invalid verification code. Please try again.',
-      'RATE_LIMITED': 'Too many attempts. Please wait before trying again.',
+      INVALID_CREDENTIALS: "Invalid email or password. Please try again.",
+      ACCOUNT_LOCKED:
+        "Your account has been temporarily locked. Please contact support.",
+      EMAIL_NOT_VERIFIED: "Please verify your email address before logging in.",
+      TOKEN_EXPIRED: "Your session has expired. Please log in again.",
+      NETWORK_ERROR:
+        "Unable to connect to the server. Please check your internet connection.",
+      SERVER_ERROR: "A server error occurred. Please try again later.",
+      MFA_REQUIRED: "Multi-factor authentication is required.",
+      INVALID_MFA_CODE: "Invalid verification code. Please try again.",
+      RATE_LIMITED: "Too many attempts. Please wait before trying again.",
     };
 
-    return errorMessages[error.code] || error.message || 'An unexpected error occurred.';
+    return (
+      errorMessages[error.code] ||
+      error.message ||
+      "An unexpected error occurred."
+    );
   }
 
   /**
@@ -265,10 +280,10 @@ export class AuthUtils {
    */
   static isRecoverableError(error: AuthError): boolean {
     const nonRecoverableErrors = [
-      'ACCOUNT_DELETED',
-      'ACCOUNT_SUSPENDED',
-      'INVALID_CLIENT',
-      'UNAUTHORIZED_CLIENT',
+      "ACCOUNT_DELETED",
+      "ACCOUNT_SUSPENDED",
+      "INVALID_CLIENT",
+      "UNAUTHORIZED_CLIENT",
     ];
 
     return !nonRecoverableErrors.includes(error.code);
@@ -309,16 +324,16 @@ export class AuthEventEmitter {
   emit(event: string, data?: any): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
-      eventListeners.forEach(callback => callback(data));
+      eventListeners.forEach((callback) => callback(data));
     }
   }
 
   // Browser storage event handling for multi-tab sync
   setupStorageSync(): void {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('storage', (event) => {
-        if (event.key?.startsWith('chapel_')) {
-          this.emit('storage_change', {
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", (event) => {
+        if (event.key?.startsWith("chapel_")) {
+          this.emit("storage_change", {
             key: event.key,
             oldValue: event.oldValue,
             newValue: event.newValue,

@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
+import { useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   GET_BRANCH_TRANSFER_REQUESTS,
   CREATE_TRANSFER_REQUEST,
   UPDATE_TRANSFER_REQUEST,
-  REMOVE_TRANSFER_REQUEST
-} from '../graphql/transferRequests';
+  REMOVE_TRANSFER_REQUEST,
+} from "../graphql/transferRequests";
 
-export type TransferStatus = 'pending' | 'approved' | 'rejected' | 'completed';
-export type TransferDataType = 'PERSONAL' | 'SACRAMENTS' | 'MINISTRIES' | 'DONATION_HISTORY';
+export type TransferStatus = "pending" | "approved" | "rejected" | "completed";
+export type TransferDataType =
+  | "PERSONAL"
+  | "SACRAMENTS"
+  | "MINISTRIES"
+  | "DONATION_HISTORY";
 
 export interface TransferRequest {
   id: string;
@@ -54,31 +58,34 @@ export interface UseTransferRequestsProps {
 export function useTransferRequests({
   branchId,
   incomingPageSize = 10,
-  outgoingPageSize = 10
+  outgoingPageSize = 10,
 }: UseTransferRequestsProps) {
   const [incomingPage, setIncomingPage] = useState(0);
   const [outgoingPage, setOutgoingPage] = useState(0);
-  
+
   // Query for branch transfer requests
   const {
     data,
     loading: loadingTransfers,
     error: transfersError,
-    refetch: refetchTransfers
-  } = useQuery<{ branch: BranchTransferData['branch'] }>(GET_BRANCH_TRANSFER_REQUESTS, {
-    variables: {
-      id: branchId,
-      incomingPaginationInput: {
-        skip: incomingPage * incomingPageSize,
-        take: incomingPageSize
+    refetch: refetchTransfers,
+  } = useQuery<{ branch: BranchTransferData["branch"] }>(
+    GET_BRANCH_TRANSFER_REQUESTS,
+    {
+      variables: {
+        id: branchId,
+        incomingPaginationInput: {
+          skip: incomingPage * incomingPageSize,
+          take: incomingPageSize,
+        },
+        outgoingPaginationInput: {
+          skip: outgoingPage * outgoingPageSize,
+          take: outgoingPageSize,
+        },
       },
-      outgoingPaginationInput: {
-        skip: outgoingPage * outgoingPageSize,
-        take: outgoingPageSize
-      }
+      fetchPolicy: "cache-and-network",
     },
-    fetchPolicy: 'cache-and-network'
-  });
+  );
 
   // Create transfer request mutation
   const [createTransferRequest, { loading: creatingTransfer }] = useMutation(
@@ -86,8 +93,8 @@ export function useTransferRequests({
     {
       onCompleted: () => {
         refetchTransfers();
-      }
-    }
+      },
+    },
   );
 
   // Update transfer request mutation (approve, reject, complete)
@@ -96,8 +103,8 @@ export function useTransferRequests({
     {
       onCompleted: () => {
         refetchTransfers();
-      }
-    }
+      },
+    },
   );
 
   // Remove transfer request mutation
@@ -106,8 +113,8 @@ export function useTransferRequests({
     {
       onCompleted: () => {
         refetchTransfers();
-      }
-    }
+      },
+    },
   );
 
   // Helper functions for transfer actions
@@ -116,21 +123,24 @@ export function useTransferRequests({
       variables: {
         input: {
           id: transferId,
-          status: 'APPROVED'
-        }
-      }
+          status: "APPROVED",
+        },
+      },
     });
   };
 
-  const rejectTransfer = async (transferId: string, rejectionReason: string) => {
+  const rejectTransfer = async (
+    transferId: string,
+    rejectionReason: string,
+  ) => {
     await updateTransferRequest({
       variables: {
         input: {
           id: transferId,
-          status: 'REJECTED',
-          rejectionReason
-        }
-      }
+          status: "REJECTED",
+          rejectionReason,
+        },
+      },
     });
   };
 
@@ -139,9 +149,9 @@ export function useTransferRequests({
       variables: {
         input: {
           id: transferId,
-          status: 'COMPLETED'
-        }
-      }
+          status: "COMPLETED",
+        },
+      },
     });
   };
 
@@ -155,53 +165,58 @@ export function useTransferRequests({
     // Make sure transferData values are uppercase
     const formattedInput = {
       ...input,
-      transferData: input.transferData.map(type => {
+      transferData: input.transferData.map((type) => {
         // If the type is already uppercase, return it as is
-        if (type === 'PERSONAL' || type === 'SACRAMENTS' || type === 'MINISTRIES' || type === 'DONATION_HISTORY') {
+        if (
+          type === "PERSONAL" ||
+          type === "SACRAMENTS" ||
+          type === "MINISTRIES" ||
+          type === "DONATION_HISTORY"
+        ) {
           return type;
         }
         // Otherwise convert to uppercase format
         return type.toUpperCase() as TransferDataType;
-      })
+      }),
     };
-    
+
     await createTransferRequest({
       variables: {
-        input: formattedInput
-      }
+        input: formattedInput,
+      },
     });
   };
 
   const deleteTransfer = async (transferId: string) => {
     await removeTransferRequest({
       variables: {
-        id: transferId
-      }
+        id: transferId,
+      },
     });
   };
 
   // Pagination controls
   const nextIncomingPage = () => {
     if (data?.branch?.incomingTransfers?.hasNextPage) {
-      setIncomingPage(prev => prev + 1);
+      setIncomingPage((prev) => prev + 1);
     }
   };
 
   const prevIncomingPage = () => {
     if (incomingPage > 0) {
-      setIncomingPage(prev => prev - 1);
+      setIncomingPage((prev) => prev - 1);
     }
   };
 
   const nextOutgoingPage = () => {
     if (data?.branch?.outgoingTransfers?.hasNextPage) {
-      setOutgoingPage(prev => prev + 1);
+      setOutgoingPage((prev) => prev + 1);
     }
   };
 
   const prevOutgoingPage = () => {
     if (outgoingPage > 0) {
-      setOutgoingPage(prev => prev - 1);
+      setOutgoingPage((prev) => prev - 1);
     }
   };
 
@@ -211,28 +226,32 @@ export function useTransferRequests({
     incomingTransfersMeta: {
       totalCount: data?.branch?.incomingTransfers?.totalCount || 0,
       hasNextPage: data?.branch?.incomingTransfers?.hasNextPage || false,
-      currentPage: incomingPage
+      currentPage: incomingPage,
     },
     outgoingTransfersMeta: {
       totalCount: data?.branch?.outgoingTransfers?.totalCount || 0,
       hasNextPage: data?.branch?.outgoingTransfers?.hasNextPage || false,
-      currentPage: outgoingPage
+      currentPage: outgoingPage,
     },
-    loading: loadingTransfers || creatingTransfer || updatingTransfer || removingTransfer,
+    loading:
+      loadingTransfers ||
+      creatingTransfer ||
+      updatingTransfer ||
+      removingTransfer,
     error: transfersError,
     actions: {
       approveTransfer,
       rejectTransfer,
       completeTransfer,
       createTransfer,
-      deleteTransfer
+      deleteTransfer,
     },
     pagination: {
       nextIncomingPage,
       prevIncomingPage,
       nextOutgoingPage,
-      prevOutgoingPage
+      prevOutgoingPage,
     },
-    refetch: refetchTransfers
+    refetch: refetchTransfers,
   };
 }

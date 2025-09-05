@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_BRANCH_USERS } from "@/graphql/queries/branchQueries";
-import { ASSIGN_USER_ROLE, REMOVE_USER_ROLE, ADD_USER_TO_BRANCH } from "@/graphql/mutations/userMutations";
+import {
+  ASSIGN_USER_ROLE,
+  REMOVE_USER_ROLE,
+  ADD_USER_TO_BRANCH,
+} from "@/graphql/mutations/userMutations";
 import { USERS_QUERY } from "@/graphql/queries/user";
 import { usePermissions } from "@/hooks/usePermissions";
 import toast from "react-hot-toast";
@@ -25,11 +29,11 @@ interface BranchUserRolesPanelProps {
   onRefetchComplete?: () => void;
 }
 
-export default function BranchUserRolesPanel({ 
-  branchId, 
+export default function BranchUserRolesPanel({
+  branchId,
   onCreateUser,
   shouldRefetchUsers,
-  onRefetchComplete
+  onRefetchComplete,
 }: BranchUserRolesPanelProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,24 +45,30 @@ export default function BranchUserRolesPanel({
   const [selectedNewUserRole, setSelectedNewUserRole] = useState("MEMBER");
   const [newUser, setNewUser] = useState<any>(null);
   const { isSuperAdmin, isBranchAdmin } = usePermissions();
-  
+
   // Fetch branch users
   const { loading, error, data, refetch } = useQuery(GET_BRANCH_USERS, {
     variables: { branchId },
     skip: !branchId,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Fetch all users for the add user modal
-  const { loading: loadingAllUsers, data: allUsersData } = useQuery(USERS_QUERY, {
-    variables: { pagination: { take: 50 } },
-    skip: !showAddUserModal,
-  });
+  const { loading: loadingAllUsers, data: allUsersData } = useQuery(
+    USERS_QUERY,
+    {
+      variables: { pagination: { take: 50 } },
+      skip: !showAddUserModal,
+    },
+  );
 
   // Mutations
-  const [assignUserRole, { loading: assigningRole }] = useMutation(ASSIGN_USER_ROLE);
-  const [removeUserRole, { loading: removingRole }] = useMutation(REMOVE_USER_ROLE);
-  const [addUserToBranch, { loading: addingUser }] = useMutation(ADD_USER_TO_BRANCH);
+  const [assignUserRole, { loading: assigningRole }] =
+    useMutation(ASSIGN_USER_ROLE);
+  const [removeUserRole, { loading: removingRole }] =
+    useMutation(REMOVE_USER_ROLE);
+  const [addUserToBranch, { loading: addingUser }] =
+    useMutation(ADD_USER_TO_BRANCH);
 
   // Update users when data changes
   useEffect(() => {
@@ -79,20 +89,26 @@ export default function BranchUserRolesPanel({
   }, [shouldRefetchUsers, refetch, onRefetchComplete]);
 
   // Filter users based on search term and exclude users with SUBSCRIPTION_MANAGER role
-  const filteredUsers = users.filter(user => 
-    !user.roles.includes('SUBSCRIPTION_MANAGER') && // Exclude subscription manager users
-    (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.email?.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredUsers = users.filter(
+    (user) =>
+      !user.roles.includes("SUBSCRIPTION_MANAGER") && // Exclude subscription manager users
+      (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   // Filter all users for the add user modal (also exclude subscription managers)
   const allUsers = allUsersData?.users?.items || [];
-  const filteredAllUsers = allUsers.filter(user => 
-    !users.some(branchUser => branchUser.id === user.id) && // Only show users not already in the branch
-    !user.roles?.includes('SUBSCRIPTION_MANAGER') && // Exclude subscription manager users
-    (user.firstName?.toLowerCase().includes(newUserSearchTerm.toLowerCase()) ||
-     user.lastName?.toLowerCase().includes(newUserSearchTerm.toLowerCase()) ||
-     user.email?.toLowerCase().includes(newUserSearchTerm.toLowerCase()))
+  const filteredAllUsers = allUsers.filter(
+    (user) =>
+      !users.some((branchUser) => branchUser.id === user.id) && // Only show users not already in the branch
+      !user.roles?.includes("SUBSCRIPTION_MANAGER") && // Exclude subscription manager users
+      (user.firstName
+        ?.toLowerCase()
+        .includes(newUserSearchTerm.toLowerCase()) ||
+        user.lastName
+          ?.toLowerCase()
+          .includes(newUserSearchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(newUserSearchTerm.toLowerCase())),
   );
 
   // Handle role assignment
@@ -107,8 +123,8 @@ export default function BranchUserRolesPanel({
         variables: {
           userId: selectedUser.id,
           branchId,
-          role: selectedRole
-        }
+          role: selectedRole,
+        },
       });
       toast.success(`Role ${selectedRole} assigned to ${selectedUser.name}`);
       refetch();
@@ -129,8 +145,8 @@ export default function BranchUserRolesPanel({
         variables: {
           userId: selectedNewUser.id,
           branchId,
-          role: selectedNewUserRole
-        }
+          role: selectedNewUserRole,
+        },
       });
       toast.success(`User added to branch with role ${selectedNewUserRole}`);
       setShowAddUserModal(false);
@@ -149,8 +165,8 @@ export default function BranchUserRolesPanel({
         variables: {
           userId,
           branchId,
-          role
-        }
+          role,
+        },
       });
       toast.success(`Role ${role} removed`);
       refetch();
@@ -162,22 +178,22 @@ export default function BranchUserRolesPanel({
   // Get role badge color
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'bg-red-100 text-red-800';
-      case 'ADMIN':
-        return 'bg-purple-100 text-purple-800';
-      case 'MODERATOR':
-        return 'bg-blue-100 text-blue-800';
-      case 'MEMBER':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'BRANCH_ADMIN':
-        return 'bg-green-100 text-green-800';
-      case 'FINANCE':
-        return 'bg-orange-100 text-orange-800';
-      case 'PASTORAL':
-        return 'bg-pink-100 text-pink-800';
+      case "SUPER_ADMIN":
+        return "bg-red-100 text-red-800";
+      case "ADMIN":
+        return "bg-purple-100 text-purple-800";
+      case "MODERATOR":
+        return "bg-blue-100 text-blue-800";
+      case "MEMBER":
+        return "bg-yellow-100 text-yellow-800";
+      case "BRANCH_ADMIN":
+        return "bg-green-100 text-green-800";
+      case "FINANCE":
+        return "bg-orange-100 text-orange-800";
+      case "PASTORAL":
+        return "bg-pink-100 text-pink-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -200,17 +216,21 @@ export default function BranchUserRolesPanel({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
       <div className="px-4 py-5 sm:px-6 border-b border-gray-100 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">User Role Management</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          User Role Management
+        </h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Assign and manage user roles for this branch
         </p>
       </div>
-      
+
       {/* Search and Add Role Section */}
       {(isSuperAdmin || isBranchAdmin) && (
         <div className="p-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Manage Existing Branch Users</h4>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Manage Existing Branch Users
+            </h4>
             <div className="flex space-x-2">
               <button
                 onClick={onCreateUser}
@@ -222,7 +242,10 @@ export default function BranchUserRolesPanel({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="search"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Search Users
               </label>
               <input
@@ -235,7 +258,10 @@ export default function BranchUserRolesPanel({
               />
             </div>
             <div className="col-span-1">
-              <label htmlFor="user" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="user"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Select User
               </label>
               <select
@@ -243,20 +269,24 @@ export default function BranchUserRolesPanel({
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
                 value={selectedUser?.id || ""}
                 onChange={(e) => {
-                  const user = users.find(u => u.id === e.target.value);
+                  const user = users.find((u) => u.id === e.target.value);
                   setSelectedUser(user || null);
                 }}
               >
                 <option value="">Select a user</option>
-                {filteredUsers.map(user => (
+                {filteredUsers.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.name || `${user.firstName} ${user.lastName}`} ({user.email})
+                    {user.name || `${user.firstName} ${user.lastName}`} (
+                    {user.email})
                   </option>
                 ))}
               </select>
             </div>
             <div className="col-span-1">
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Select Role
               </label>
               <div className="flex space-x-2">
@@ -285,23 +315,35 @@ export default function BranchUserRolesPanel({
           </div>
         </div>
       )}
-      
+
       {/* Users List */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 User
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Email
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 Roles
               </th>
               {(isSuperAdmin || isBranchAdmin) && (
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               )}
@@ -310,18 +352,23 @@ export default function BranchUserRolesPanel({
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td
+                  colSpan={4}
+                  className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
                   No users found
                 </td>
               </tr>
             ) : (
-              filteredUsers.map(user => (
+              filteredUsers.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                         <span className="text-sm font-medium text-indigo-600">
-                          {user.name ? user.name[0] : `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`}
+                          {user.name
+                            ? user.name[0]
+                            : `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`}
                         </span>
                       </div>
                       <div className="ml-4">
@@ -337,11 +384,13 @@ export default function BranchUserRolesPanel({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-2">
                       {user.roles.length === 0 ? (
-                        <span className="text-sm text-gray-500 dark:text-gray-400">No roles</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          No roles
+                        </span>
                       ) : (
-                        user.roles.map(role => (
-                          <span 
-                            key={role} 
+                        user.roles.map((role) => (
+                          <span
+                            key={role}
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(role)}`}
                           >
                             {role}
@@ -353,7 +402,7 @@ export default function BranchUserRolesPanel({
                   {(isSuperAdmin || isBranchAdmin) && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
-                        {user.roles.map(role => (
+                        {user.roles.map((role) => (
                           <button
                             key={role}
                             onClick={() => handleRemoveRole(user.id, role)}
@@ -372,28 +421,44 @@ export default function BranchUserRolesPanel({
           </tbody>
         </table>
       </div>
-      
+
       {/* Add User Modal */}
       {showAddUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add User to Branch</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Add User to Branch
+                </h3>
                 <button
                   onClick={() => setShowAddUserModal(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
-            
+
             <div className="p-4">
               <div className="mb-4">
-                <label htmlFor="newUserSearch" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  htmlFor="newUserSearch"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Search Users
                 </label>
                 <input
@@ -405,9 +470,12 @@ export default function BranchUserRolesPanel({
                   onChange={(e) => setNewUserSearchTerm(e.target.value)}
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label htmlFor="newUser" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  htmlFor="newUser"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Select User
                 </label>
                 <select
@@ -415,21 +483,24 @@ export default function BranchUserRolesPanel({
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm"
                   value={selectedNewUser?.id || ""}
                   onChange={(e) => {
-                    const user = allUsers.find(u => u.id === e.target.value);
+                    const user = allUsers.find((u) => u.id === e.target.value);
                     setSelectedNewUser(user || null);
                   }}
                 >
                   <option value="">Select a user</option>
-                  {filteredAllUsers.map(user => (
+                  {filteredAllUsers.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.firstName} {user.lastName} ({user.email})
                     </option>
                   ))}
                 </select>
               </div>
-              
+
               <div className="mb-4">
-                <label htmlFor="newUserRole" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  htmlFor="newUserRole"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Select Role
                 </label>
                 <select
@@ -446,7 +517,7 @@ export default function BranchUserRolesPanel({
                   {isSuperAdmin && <option value="ADMIN">Admin</option>}
                 </select>
               </div>
-              
+
               <div className="flex justify-end space-x-2 mt-6">
                 <button
                   onClick={() => setShowAddUserModal(false)}

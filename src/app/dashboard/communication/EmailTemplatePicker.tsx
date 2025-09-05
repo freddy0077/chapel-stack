@@ -18,20 +18,21 @@ export type EmailTemplate = {
 
 const categoryColors: Record<string, string> = {
   "Worship & Services": "bg-blue-100 text-blue-800 border-blue-200",
-  "Ministry & Volunteer Communication": "bg-purple-100 text-purple-800 border-purple-200",
+  "Ministry & Volunteer Communication":
+    "bg-purple-100 text-purple-800 border-purple-200",
   "Administrative Notices": "bg-amber-100 text-amber-800 border-amber-200",
   "Celebrations & Events": "bg-green-100 text-green-800 border-green-200",
 };
 
 const getFavorites = () => {
   try {
-    return JSON.parse(localStorage.getItem('email_template_favs') || '[]');
+    return JSON.parse(localStorage.getItem("email_template_favs") || "[]");
   } catch {
     return [];
   }
 };
 const setFavorites = (favNames: string[]) => {
-  localStorage.setItem('email_template_favs', JSON.stringify(favNames));
+  localStorage.setItem("email_template_favs", JSON.stringify(favNames));
 };
 
 const templates: EmailTemplate[] = [
@@ -70,7 +71,7 @@ const templates: EmailTemplate[] = [
     purpose: "Notify members of upcoming church meetings.",
     subjectLines: [
       "Notice: Annual Church Meeting",
-      "You're Invited: {Church Name} Annual Meeting"
+      "You're Invited: {Church Name} Annual Meeting",
     ],
     audience: "All members",
     tone: "Informative, respectful, transparent",
@@ -99,11 +100,17 @@ const templates: EmailTemplate[] = [
     purpose: "Invite to special church events.",
     subjectLines: [
       "Celebrate with Us: {Event Name} at {Church Name}",
-      "You're Invited: {Event Name} Celebration"
+      "You're Invited: {Event Name} Celebration",
     ],
     audience: "All members, community, friends",
     tone: "Joyful, celebratory, inclusive",
-    tags: ["[First Name]", "[Event Name]", "[Event Date]", "[Event Time]", "[Location]"],
+    tags: [
+      "[First Name]",
+      "[Event Name]",
+      "[Event Date]",
+      "[Event Time]",
+      "[Location]",
+    ],
     bodyHtml: `
       <div style="font-family:Arial,sans-serif;">
         <h2 style="color:#e11d48;">{Event Name} Invitation</h2>
@@ -128,7 +135,7 @@ const templates: EmailTemplate[] = [
     purpose: "Thank volunteers for their service.",
     subjectLines: [
       "Thank You for Serving, {First Name}!",
-      "We Appreciate You, {Ministry Name} Volunteer"
+      "We Appreciate You, {Ministry Name} Volunteer",
     ],
     audience: "Volunteers, ministry teams",
     tone: "Grateful, encouraging, affirming",
@@ -164,7 +171,8 @@ const templates: EmailTemplate[] = [
   {
     category: "Ministry & Volunteer Communication",
     name: "Volunteer Appreciation",
-    purpose: "Thank volunteers for their dedication and highlight their impact.",
+    purpose:
+      "Thank volunteers for their dedication and highlight their impact.",
     subjectLines: ["Thank You for Serving!"],
     audience: "Volunteers",
     tone: "Warm, Grateful",
@@ -253,7 +261,10 @@ const templates: EmailTemplate[] = [
     category: "Celebrations & Events",
     name: "Holiday Greetings",
     purpose: "Send special greetings for holidays such as Christmas or Easter.",
-    subjectLines: ["Merry Christmas from {Church Name}!", "Happy Easter from {Church Name}!"],
+    subjectLines: [
+      "Merry Christmas from {Church Name}!",
+      "Happy Easter from {Church Name}!",
+    ],
     audience: "All Members",
     tone: "Festive, Warm",
     tags: ["holiday", "greeting", "celebration"],
@@ -262,32 +273,44 @@ const templates: EmailTemplate[] = [
   },
 ];
 
-export default function EmailTemplatePicker({ onSelect }: { onSelect: (template: EmailTemplate) => void }) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [modalTemplate, setModalTemplate] = useState<EmailTemplate | null>(null);
-  const [search, setSearch] = useState('');
+export default function EmailTemplatePicker({
+  onSelect,
+}: {
+  onSelect: (template: EmailTemplate) => void;
+}) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [modalTemplate, setModalTemplate] = useState<EmailTemplate | null>(
+    null,
+  );
+  const [search, setSearch] = useState("");
   const [favorites, setFavs] = useState<string[]>(getFavorites());
   const [keyboardFocus, setKeyboardFocus] = useState<number>(-1);
-  const cardRefs = useRef<(HTMLDivElement|null)[]>([]);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Filter and sort logic
-  let filteredTemplates = templates.filter(t => {
-    const searchText = `${t.name} ${t.purpose} ${t.subjectLines.join(' ')} ${t.tags.join(' ')}`.toLowerCase();
+  let filteredTemplates = templates.filter((t) => {
+    const searchText =
+      `${t.name} ${t.purpose} ${t.subjectLines.join(" ")} ${t.tags.join(" ")}`.toLowerCase();
     return (
-      (selectedCategory === 'All' || t.category === selectedCategory) &&
+      (selectedCategory === "All" || t.category === selectedCategory) &&
       (!search || searchText.includes(search.toLowerCase()))
     );
   });
 
   // Show favorites first if "Favorites" is selected
-  const showFavsOnly = selectedCategory === 'Favorites';
+  const showFavsOnly = selectedCategory === "Favorites";
   if (showFavsOnly) {
-    filteredTemplates = filteredTemplates.filter(t => favorites.includes(t.name));
+    filteredTemplates = filteredTemplates.filter((t) =>
+      favorites.includes(t.name),
+    );
   }
 
   // Add "Favorites" category if any exist
-  const baseCategories = Array.from(new Set(templates.map(t => t.category)));
-  const categories = favorites.length > 0 ? ['All', 'Favorites', ...baseCategories] : ['All', ...baseCategories];
+  const baseCategories = Array.from(new Set(templates.map((t) => t.category)));
+  const categories =
+    favorites.length > 0
+      ? ["All", "Favorites", ...baseCategories]
+      : ["All", ...baseCategories];
 
   // Keyboard navigation
   useEffect(() => {
@@ -300,16 +323,16 @@ export default function EmailTemplatePicker({ onSelect }: { onSelect: (template:
   useEffect(() => {
     if (modalTemplate) {
       const handle = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') setModalTemplate(null);
+        if (e.key === "Escape") setModalTemplate(null);
       };
-      window.addEventListener('keydown', handle);
-      return () => window.removeEventListener('keydown', handle);
+      window.addEventListener("keydown", handle);
+      return () => window.removeEventListener("keydown", handle);
     }
   }, [modalTemplate]);
 
   const toggleFavorite = (name: string) => {
     let newFavs = favorites.includes(name)
-      ? favorites.filter(f => f !== name)
+      ? favorites.filter((f) => f !== name)
       : [...favorites, name];
     setFavs(newFavs);
     setFavorites(newFavs);
@@ -322,17 +345,23 @@ export default function EmailTemplatePicker({ onSelect }: { onSelect: (template:
         <input
           type="text"
           value={search}
-          onChange={e => { setSearch(e.target.value); setKeyboardFocus(-1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setKeyboardFocus(-1);
+          }}
           placeholder="Search templates..."
           className="border rounded px-3 py-2 text-sm w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <div className="flex flex-wrap gap-2">
-          {categories.map(category => (
+          {categories.map((category) => (
             <Button
               key={category}
-              variant={selectedCategory === category ? 'default' : 'outline'}
+              variant={selectedCategory === category ? "default" : "outline"}
               className="rounded-full px-4 py-1 text-sm"
-              onClick={() => { setSelectedCategory(category); setKeyboardFocus(-1); }}
+              onClick={() => {
+                setSelectedCategory(category);
+                setKeyboardFocus(-1);
+              }}
             >
               {category}
             </Button>
@@ -343,45 +372,78 @@ export default function EmailTemplatePicker({ onSelect }: { onSelect: (template:
       {/* Grid of template cards */}
       <div className="flex-1 overflow-y-auto pr-2">
         {filteredTemplates.length === 0 ? (
-          <div className="text-center text-gray-500 py-10 col-span-full">No templates found.</div>
+          <div className="text-center text-gray-500 py-10 col-span-full">
+            No templates found.
+          </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredTemplates.map((template, idx) => (
               <Card
                 key={template.name}
-                ref={el => cardRefs.current[idx] = el}
+                ref={(el) => (cardRefs.current[idx] = el)}
                 tabIndex={0}
                 aria-label={`Preview ${template.name}`}
-                className={`relative p-4 hover:shadow-lg cursor-pointer transition focus:ring-2 focus:ring-blue-400 ${keyboardFocus === idx ? 'ring-2 ring-blue-400' : ''}`}
+                className={`relative p-4 hover:shadow-lg cursor-pointer transition focus:ring-2 focus:ring-blue-400 ${keyboardFocus === idx ? "ring-2 ring-blue-400" : ""}`}
                 onClick={() => setModalTemplate(template)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') setModalTemplate(template);
-                  if (e.key === 'ArrowRight') setKeyboardFocus(idx + 1 < filteredTemplates.length ? idx + 1 : 0);
-                  if (e.key === 'ArrowLeft') setKeyboardFocus(idx - 1 >= 0 ? idx - 1 : filteredTemplates.length - 1);
-                  if (e.key === 'ArrowDown') setKeyboardFocus(idx + 2 < filteredTemplates.length ? idx + 2 : idx);
-                  if (e.key === 'ArrowUp') setKeyboardFocus(idx - 2 >= 0 ? idx - 2 : idx);
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ")
+                    setModalTemplate(template);
+                  if (e.key === "ArrowRight")
+                    setKeyboardFocus(
+                      idx + 1 < filteredTemplates.length ? idx + 1 : 0,
+                    );
+                  if (e.key === "ArrowLeft")
+                    setKeyboardFocus(
+                      idx - 1 >= 0 ? idx - 1 : filteredTemplates.length - 1,
+                    );
+                  if (e.key === "ArrowDown")
+                    setKeyboardFocus(
+                      idx + 2 < filteredTemplates.length ? idx + 2 : idx,
+                    );
+                  if (e.key === "ArrowUp")
+                    setKeyboardFocus(idx - 2 >= 0 ? idx - 2 : idx);
                 }}
                 onFocus={() => setKeyboardFocus(idx)}
               >
                 <button
-                  className={`absolute top-2 right-2 text-yellow-400 hover:text-yellow-500 focus:outline-none ${favorites.includes(template.name) ? '' : 'opacity-50'}`}
-                  aria-label={favorites.includes(template.name) ? 'Unstar template' : 'Star template'}
+                  className={`absolute top-2 right-2 text-yellow-400 hover:text-yellow-500 focus:outline-none ${favorites.includes(template.name) ? "" : "opacity-50"}`}
+                  aria-label={
+                    favorites.includes(template.name)
+                      ? "Unstar template"
+                      : "Star template"
+                  }
                   tabIndex={-1}
-                  onClick={e => { e.stopPropagation(); toggleFavorite(template.name); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(template.name);
+                  }}
                 >
                   {/* Star SVG */}
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path d="M10 15l-5.09 2.67 1.09-6.36L1 7.64l6.41-.93L10 1.5l2.59 5.21 6.41.93-4.65 4.67 1.09 6.36z" />
                   </svg>
                 </button>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold text-base text-gray-800 truncate max-w-[120px]">{template.name}</span>
-                  <Badge className={`ml-1 ${categoryColors[template.category] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>{template.category}</Badge>
+                  <span className="font-semibold text-base text-gray-800 truncate max-w-[120px]">
+                    {template.name}
+                  </span>
+                  <Badge
+                    className={`ml-1 ${categoryColors[template.category] || "bg-gray-100 text-gray-600 border-gray-200"}`}
+                  >
+                    {template.category}
+                  </Badge>
                 </div>
-                <div className="text-xs text-gray-500 mb-1 truncate">{template.purpose}</div>
+                <div className="text-xs text-gray-500 mb-1 truncate">
+                  {template.purpose}
+                </div>
                 <div className="text-xs text-gray-400 line-clamp-2 min-h-[32px]">
                   {/* Thumbnail preview: strip HTML and show first 200 chars */}
-                  {template.bodyHtml.replace(/<[^>]+>/g, '').slice(0, 100)}...
+                  {template.bodyHtml.replace(/<[^>]+>/g, "").slice(0, 100)}...
                 </div>
               </Card>
             ))}
@@ -396,36 +458,86 @@ export default function EmailTemplatePicker({ onSelect }: { onSelect: (template:
           role="dialog"
           aria-modal="true"
         >
-          <div className="absolute inset-0 bg-black/30" onClick={() => setModalTemplate(null)} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in" tabIndex={-1}>
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setModalTemplate(null)}
+          />
+          <div
+            className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in"
+            tabIndex={-1}
+          >
             <div className="px-6 py-4 border-b flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{modalTemplate.name}</h3>
-                <Badge className={`${categoryColors[modalTemplate.category] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>{modalTemplate.category}</Badge>
+                <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">
+                  {modalTemplate.name}
+                </h3>
+                <Badge
+                  className={`${categoryColors[modalTemplate.category] || "bg-gray-100 text-gray-600 border-gray-200"}`}
+                >
+                  {modalTemplate.category}
+                </Badge>
               </div>
-              <button className="text-gray-400 hover:text-gray-600" onClick={() => setModalTemplate(null)} aria-label="Close preview">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2"/></svg>
+              <button
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setModalTemplate(null)}
+                aria-label="Close preview"
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M6 6l12 12M6 18L18 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                </svg>
               </button>
             </div>
             <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
-              <div className="text-sm text-gray-600">{modalTemplate.purpose}</div>
+              <div className="text-sm text-gray-600">
+                {modalTemplate.purpose}
+              </div>
               <div className="flex flex-wrap gap-1">
-                {modalTemplate.tags.map(tag => (
-                  <Badge key={tag} className="bg-gray-100 text-gray-600 border border-gray-200 text-xs">{tag}</Badge>
+                {modalTemplate.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    className="bg-gray-100 text-gray-600 border border-gray-200 text-xs"
+                  >
+                    {tag}
+                  </Badge>
                 ))}
               </div>
-              <div className="text-xs text-gray-500">Audience: {modalTemplate.audience} • Tone: {modalTemplate.tone}</div>
-              <div>
-                <div className="text-xs font-medium text-gray-500 mb-1">Suggested Subject</div>
-                <div className="border rounded bg-gray-50 p-2 text-sm text-gray-800">{modalTemplate.subjectLines[0]}</div>
+              <div className="text-xs text-gray-500">
+                Audience: {modalTemplate.audience} • Tone: {modalTemplate.tone}
               </div>
-              <div className="border rounded bg-white p-4 shadow-inner max-h-[30vh] overflow-y-auto" style={{fontFamily:'Inter, sans-serif'}}>
-                <div dangerouslySetInnerHTML={{__html: modalTemplate.bodyHtml}}></div>
+              <div>
+                <div className="text-xs font-medium text-gray-500 mb-1">
+                  Suggested Subject
+                </div>
+                <div className="border rounded bg-gray-50 p-2 text-sm text-gray-800">
+                  {modalTemplate.subjectLines[0]}
+                </div>
+              </div>
+              <div
+                className="border rounded bg-white p-4 shadow-inner max-h-[30vh] overflow-y-auto"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                <div
+                  dangerouslySetInnerHTML={{ __html: modalTemplate.bodyHtml }}
+                ></div>
               </div>
             </div>
             <div className="px-6 py-4 border-t flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setModalTemplate(null)}>Cancel</Button>
-              <Button onClick={() => { onSelect(modalTemplate); setModalTemplate(null); }} className="bg-blue-600 hover:bg-blue-700 text-white">Use this template</Button>
+              <Button variant="outline" onClick={() => setModalTemplate(null)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  onSelect(modalTemplate);
+                  setModalTemplate(null);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Use this template
+              </Button>
             </div>
           </div>
         </div>

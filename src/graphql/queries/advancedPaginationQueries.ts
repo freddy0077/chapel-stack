@@ -1,9 +1,21 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Updated to use actual backend queries: members and searchMembers
 export const ADVANCED_MEMBERS_QUERY = gql`
-  query GetMembers($branchId: String, $organisationId: String, $search: String, $skip: Int = 0, $take: Int = 10) {
-    members(branchId: $branchId, organisationId: $organisationId, search: $search, skip: $skip, take: $take) {
+  query GetMembers(
+    $branchId: String
+    $organisationId: String
+    $search: String
+    $skip: Int = 0
+    $take: Int = 10
+  ) {
+    members(
+      branchId: $branchId
+      organisationId: $organisationId
+      search: $search
+      skip: $skip
+      take: $take
+    ) {
       id
       firstName
       lastName
@@ -29,8 +41,24 @@ export const ADVANCED_MEMBERS_QUERY = gql`
 `;
 
 export const SEARCH_MEMBERS_QUERY = gql`
-  query SearchMembers($query: String!, $branchId: String, $gender: String, $membershipStatus: String, $ageGroup: String, $skip: Int = 0, $take: Int = 20) {
-    searchMembers(query: $query, branchId: $branchId, gender: $gender, membershipStatus: $membershipStatus, ageGroup: $ageGroup, skip: $skip, take: $take) {
+  query SearchMembers(
+    $query: String!
+    $branchId: String
+    $gender: String
+    $membershipStatus: String
+    $ageGroup: String
+    $skip: Int = 0
+    $take: Int = 20
+  ) {
+    searchMembers(
+      query: $query
+      branchId: $branchId
+      gender: $gender
+      membershipStatus: $membershipStatus
+      ageGroup: $ageGroup
+      skip: $skip
+      take: $take
+    ) {
       id
       firstName
       lastName

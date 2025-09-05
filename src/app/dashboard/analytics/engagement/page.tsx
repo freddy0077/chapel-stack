@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { 
-  ArrowLeftIcon, 
+import { useState } from "react";
+import Link from "next/link";
+import {
+  ArrowLeftIcon,
   ArrowDownTrayIcon,
   ChartPieIcon,
   UsersIcon,
   PuzzlePieceIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
-import MinistryEngagementTracker from '../components/MinistryEngagementTracker';
-import { Card, Title, Text, BarList, Grid, Col, Select, SelectItem, Flex, Subtitle } from '@tremor/react';
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
+import MinistryEngagementTracker from "../components/MinistryEngagementTracker";
+import {
+  Card,
+  Title,
+  Text,
+  BarList,
+  Grid,
+  Col,
+  Select,
+  SelectItem,
+  Flex,
+  Subtitle,
+} from "@tremor/react";
 
 // Mock ministry categories
 const ministryCategories = [
@@ -20,7 +31,7 @@ const ministryCategories = [
   { name: "Education", value: "education" },
   { name: "Outreach", value: "outreach" },
   { name: "Fellowship", value: "fellowship" },
-  { name: "Administration", value: "administration" }
+  { name: "Administration", value: "administration" },
 ];
 
 // Mock top ministries by engagement
@@ -31,7 +42,7 @@ const topMinistries = [
   { name: "Outreach & Missions", value: 182 },
   { name: "Youth Group", value: 147 },
   { name: "Prayer Team", value: 109 },
-  { name: "Hospitality", value: 146 }
+  { name: "Hospitality", value: 146 },
 ];
 
 // Mock most growing ministries
@@ -40,7 +51,7 @@ const growingMinistries = [
   { name: "Outreach & Missions", value: 15.7 },
   { name: "Children's Ministry", value: 12.3 },
   { name: "Hospitality", value: 9.5 },
-  { name: "Worship Team", value: 8.5 }
+  { name: "Worship Team", value: 8.5 },
 ];
 
 // Mock top volunteer stats
@@ -48,12 +59,12 @@ const volunteerStats = [
   { name: "Active Volunteers", value: 623, change: "+8.5%" },
   { name: "Volunteer Hours (Monthly)", value: 2875, change: "+12.3%" },
   { name: "Avg Hours per Volunteer", value: 4.6, change: "+3.4%" },
-  { name: "Multi-Ministry Volunteers", value: 215, change: "+15.1%" }
+  { name: "Multi-Ministry Volunteers", value: 215, change: "+15.1%" },
 ];
 
 export default function MinistryEngagementPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  
+
   return (
     <div className="p-6">
       {/* Page Header */}
@@ -63,7 +74,9 @@ export default function MinistryEngagementPage() {
             <ArrowLeftIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
           </Link>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Ministry Engagement</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Ministry Engagement
+            </h1>
             <p className="mt-1 text-sm text-gray-500">
               Track participation across ministries and branches
             </p>
@@ -75,14 +88,20 @@ export default function MinistryEngagementPage() {
             type="button"
             className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            <ArrowDownTrayIcon className="-ml-1 mr-2 h-5 w-5 text-gray-500" aria-hidden="true" />
+            <ArrowDownTrayIcon
+              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+              aria-hidden="true"
+            />
             Export Data
           </button>
           <button
             type="button"
             className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            <ArrowPathIcon className="-ml-1 mr-2 h-5 w-5 text-gray-500" aria-hidden="true" />
+            <ArrowPathIcon
+              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+              aria-hidden="true"
+            />
             Refresh Data
           </button>
         </div>
@@ -91,7 +110,10 @@ export default function MinistryEngagementPage() {
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="sm:max-w-xs">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700"
+          >
             Ministry Category
           </label>
           <select
@@ -119,10 +141,30 @@ export default function MinistryEngagementPage() {
       <div className="mt-8">
         <Grid numItems={1} numItemsMd={2} numItemsLg={4} className="gap-6">
           {volunteerStats.map((stat, index) => (
-            <Card key={index} decoration="top" decorationColor={index === 0 ? "indigo" : index === 1 ? "emerald" : index === 2 ? "amber" : "rose"}>
+            <Card
+              key={index}
+              decoration="top"
+              decorationColor={
+                index === 0
+                  ? "indigo"
+                  : index === 1
+                    ? "emerald"
+                    : index === 2
+                      ? "amber"
+                      : "rose"
+              }
+            >
               <Text>{stat.name}</Text>
-              <Flex justifyContent="start" alignItems="baseline" className="space-x-2">
-                <Title>{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</Title>
+              <Flex
+                justifyContent="start"
+                alignItems="baseline"
+                className="space-x-2"
+              >
+                <Title>
+                  {typeof stat.value === "number"
+                    ? stat.value.toLocaleString()
+                    : stat.value}
+                </Title>
                 <Text className="text-emerald-600">{stat.change}</Text>
               </Flex>
             </Card>
@@ -143,9 +185,9 @@ export default function MinistryEngagementPage() {
               <span className="font-semibold">Volunteers</span>
             </Text>
           </Flex>
-          <BarList 
-            data={topMinistries} 
-            className="mt-2" 
+          <BarList
+            data={topMinistries}
+            className="mt-2"
             valueFormatter={(number) => `${number} volunteers`}
             color="indigo"
           />
@@ -162,9 +204,9 @@ export default function MinistryEngagementPage() {
               <span className="font-semibold">Growth %</span>
             </Text>
           </Flex>
-          <BarList 
-            data={growingMinistries} 
-            className="mt-2" 
+          <BarList
+            data={growingMinistries}
+            className="mt-2"
             valueFormatter={(number) => `+${number}%`}
             color="emerald"
           />
@@ -175,37 +217,45 @@ export default function MinistryEngagementPage() {
       <div className="mt-8">
         <Card>
           <Title>Engagement Insights & Recommendations</Title>
-          
+
           <div className="mt-4 space-y-4">
             <div className="bg-blue-50 p-4 rounded-md">
               <Text className="font-medium">Cross-Branch Opportunities</Text>
               <Text className="text-sm text-gray-600">
-                Volunteers at East Side and South Chapel branches show higher engagement rates (22.0% and 25.5% respectively) 
-                than Main Campus (18.5%). Consider implementing their recruitment and retention strategies across all branches.
+                Volunteers at East Side and South Chapel branches show higher
+                engagement rates (22.0% and 25.5% respectively) than Main Campus
+                (18.5%). Consider implementing their recruitment and retention
+                strategies across all branches.
               </Text>
             </div>
-            
+
             <div className="bg-green-50 p-4 rounded-md">
               <Text className="font-medium">High-Growth Potential</Text>
               <Text className="text-sm text-gray-600">
-                Young Adults Ministry shows the highest growth rate at 28.5%. This demonstrates significant opportunity 
-                to engage this demographic further across all branches with targeted programming and leadership development.
+                Young Adults Ministry shows the highest growth rate at 28.5%.
+                This demonstrates significant opportunity to engage this
+                demographic further across all branches with targeted
+                programming and leadership development.
               </Text>
             </div>
-            
+
             <div className="bg-amber-50 p-4 rounded-md">
               <Text className="font-medium">Multi-Ministry Participation</Text>
               <Text className="text-sm text-gray-600">
-                215 volunteers (34.5% of all volunteers) serve in multiple ministries, up 15.1% from last year. 
-                These highly engaged members should be prioritized for leadership development and mentoring opportunities.
+                215 volunteers (34.5% of all volunteers) serve in multiple
+                ministries, up 15.1% from last year. These highly engaged
+                members should be prioritized for leadership development and
+                mentoring opportunities.
               </Text>
             </div>
-            
+
             <div className="bg-rose-50 p-4 rounded-md">
               <Text className="font-medium">Resource Allocation</Text>
               <Text className="text-sm text-gray-600">
-                Outreach & Missions ministry shows both high engagement (182 volunteers) and strong growth (15.7%). 
-                Consider increasing resources and support for this ministry to capitalize on momentum and impact.
+                Outreach & Missions ministry shows both high engagement (182
+                volunteers) and strong growth (15.7%). Consider increasing
+                resources and support for this ministry to capitalize on
+                momentum and impact.
               </Text>
             </div>
           </div>
@@ -217,70 +267,138 @@ export default function MinistryEngagementPage() {
         <Card>
           <Title>Recent Ministry Activities</Title>
           <Subtitle>Last 30 days of engagement across branches</Subtitle>
-          
+
           <div className="mt-4 overflow-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Date
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Ministry
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Branch
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Participants
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Volunteers
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Apr 10, 2025</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Youth Group</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Main Campus</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">68</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Apr 10, 2025
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Youth Group
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Main Campus
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    68
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    12
+                  </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Apr 9, 2025</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Adult Bible Study</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">East Side</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">42</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Apr 9, 2025
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Adult Bible Study
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    East Side
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    42
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    5
+                  </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Apr 8, 2025</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Outreach & Missions</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">South Chapel</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">35</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Apr 8, 2025
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Outreach & Missions
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    South Chapel
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    35
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    18
+                  </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Apr 7, 2025</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Prayer Team</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">West End</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">24</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Apr 7, 2025
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Prayer Team
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    West End
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    24
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    8
+                  </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Apr 5, 2025</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Children's Ministry</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Main Campus</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">72</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Apr 5, 2025
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Children's Ministry
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Main Campus
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    72
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    15
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          
+
           <div className="mt-4 flex justify-center">
-            <Link href="/dashboard/analytics/engagement/activities" className="text-sm text-indigo-600 hover:text-indigo-800">
+            <Link
+              href="/dashboard/analytics/engagement/activities"
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+            >
               View all activities →
             </Link>
           </div>

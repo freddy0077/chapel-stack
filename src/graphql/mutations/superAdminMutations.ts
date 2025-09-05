@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_SUPER_ADMIN_USER = gql`
   mutation CreateSuperAdminUser(

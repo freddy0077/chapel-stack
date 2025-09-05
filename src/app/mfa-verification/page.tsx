@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export default function MFAVerificationPage() {
-  const [code, setCode] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [code, setCode] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(30);
   const router = useRouter();
@@ -22,35 +22,38 @@ export default function MFAVerificationPage() {
 
   // Check if MFA session exists
   useEffect(() => {
-    const mfaSessionId = sessionStorage.getItem('mfaSessionId');
+    const mfaSessionId = sessionStorage.getItem("mfaSessionId");
     if (!mfaSessionId) {
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     if (!code || code.length < 6) {
-      setErrorMessage('Please enter a valid verification code');
+      setErrorMessage("Please enter a valid verification code");
       setIsLoading(false);
       return;
     }
 
     try {
       const result = await verifyMFA(code);
-      
+
       if (result.success) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
-        setErrorMessage(result.error || 'Invalid verification code');
+        setErrorMessage(result.error || "Invalid verification code");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred during verification';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An error occurred during verification";
       setErrorMessage(errorMessage);
-      console.error('MFA verification error:', error);
+      console.error("MFA verification error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +76,7 @@ export default function MFAVerificationPage() {
             Enter the verification code from your authenticator app
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="code" className="sr-only">
@@ -94,7 +97,10 @@ export default function MFAVerificationPage() {
           </div>
 
           {errorMessage && (
-            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div
+              className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <span className="block sm:inline">{errorMessage}</span>
             </div>
           )}
@@ -107,33 +113,50 @@ export default function MFAVerificationPage() {
             >
               {isLoading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                 </span>
               ) : null}
-              {isLoading ? 'Verifying...' : 'Verify Code'}
+              {isLoading ? "Verifying..." : "Verify Code"}
             </button>
           </div>
         </form>
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Code expires in <span className="font-medium">{countdown}</span> seconds
+            Code expires in <span className="font-medium">{countdown}</span>{" "}
+            seconds
           </p>
           <button
             onClick={handleResendCode}
             disabled={countdown > 0}
             className="mt-2 text-indigo-600 hover:text-indigo-500 text-sm font-medium disabled:text-gray-400"
           >
-            {countdown > 0 ? `Resend code (${countdown}s)` : 'Resend code'}
+            {countdown > 0 ? `Resend code (${countdown}s)` : "Resend code"}
           </button>
         </div>
 
         <div className="text-center mt-4">
           <button
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push("/auth/login")}
             className="text-indigo-600 hover:text-indigo-500 text-sm font-medium"
           >
             Back to login

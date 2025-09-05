@@ -1,6 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Title, Text, Button, Grid, Flex, Dialog, DialogPanel } from '@tremor/react';
-import { 
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  Title,
+  Text,
+  Button,
+  Grid,
+  Flex,
+  Dialog,
+  DialogPanel,
+} from "@tremor/react";
+import {
   UserIcon,
   CalendarDaysIcon,
   MapPinIcon,
@@ -10,24 +19,26 @@ import {
   XMarkIcon,
   CheckIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
-import { useQuery } from '@apollo/client';
-import { GET_MEMBERS } from '../../graphql/queries/memberQueries';
-import { 
-  DeathRegister, 
-  CreateDeathRegisterInput, 
-  UpdateDeathRegisterInput, 
+} from "@heroicons/react/24/outline";
+import { useQuery } from "@apollo/client";
+import { GET_MEMBERS } from "../../graphql/queries/memberQueries";
+import {
+  DeathRegister,
+  CreateDeathRegisterInput,
+  UpdateDeathRegisterInput,
   BurialType,
-  DeathRegisterFormData 
-} from '../../types/deathRegister';
-import { formatDateForInput } from '../../utils/dateUtils';
-import { toast } from 'react-hot-toast';
+  DeathRegisterFormData,
+} from "../../types/deathRegister";
+import { formatDateForInput } from "../../utils/dateUtils";
+import { toast } from "react-hot-toast";
 
 interface DeathRegisterFormProps {
   deathRegister?: DeathRegister;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateDeathRegisterInput | UpdateDeathRegisterInput) => Promise<void>;
+  onSubmit: (
+    data: CreateDeathRegisterInput | UpdateDeathRegisterInput,
+  ) => Promise<void>;
   loading: boolean;
   organisationId: string;
   branchId?: string;
@@ -56,32 +67,32 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<DeathRegisterFormData>({
     selectedMember: undefined,
-    dateOfDeath: '',
-    timeOfDeath: '',
-    placeOfDeath: '',
-    causeOfDeath: '',
-    circumstances: '',
-    funeralDate: '',
-    funeralLocation: '',
-    funeralOfficiant: '',
+    dateOfDeath: "",
+    timeOfDeath: "",
+    placeOfDeath: "",
+    causeOfDeath: "",
+    circumstances: "",
+    funeralDate: "",
+    funeralLocation: "",
+    funeralOfficiant: "",
     burialCremation: BurialType.BURIAL,
-    cemeteryLocation: '',
-    nextOfKin: '',
-    nextOfKinPhone: '',
-    nextOfKinEmail: '',
+    cemeteryLocation: "",
+    nextOfKin: "",
+    nextOfKinPhone: "",
+    nextOfKinEmail: "",
     familyNotified: false,
-    notificationDate: '',
-    deathCertificateUrl: '',
-    obituaryUrl: '',
+    notificationDate: "",
+    deathCertificateUrl: "",
+    obituaryUrl: "",
     photoUrls: [],
     additionalDocuments: [],
-    branchId: branchId || '',
+    branchId: branchId || "",
     organisationId,
-    funeralEventId: '',
+    funeralEventId: "",
   });
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
-  const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [memberSearchTerm, setMemberSearchTerm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Fetch members for selection
@@ -90,7 +101,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
       filter: {
         organisationId,
         branchId,
-        status: 'ACTIVE', // Only show active members
+        status: "ACTIVE", // Only show active members
         searchTerm: memberSearchTerm,
         take: 20,
       },
@@ -109,48 +120,55 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           profileImageUrl: deathRegister.member.profileImageUrl,
         },
         dateOfDeath: formatDateForInput(deathRegister.dateOfDeath),
-        timeOfDeath: deathRegister.timeOfDeath || '',
+        timeOfDeath: deathRegister.timeOfDeath || "",
         placeOfDeath: deathRegister.placeOfDeath,
-        causeOfDeath: deathRegister.causeOfDeath || '',
-        circumstances: deathRegister.circumstances || '',
-        funeralDate: deathRegister.funeralDate ? formatDateForInput(deathRegister.funeralDate) : '',
-        funeralLocation: deathRegister.funeralLocation || '',
-        funeralOfficiant: deathRegister.funeralOfficiant || '',
+        causeOfDeath: deathRegister.causeOfDeath || "",
+        circumstances: deathRegister.circumstances || "",
+        funeralDate: deathRegister.funeralDate
+          ? formatDateForInput(deathRegister.funeralDate)
+          : "",
+        funeralLocation: deathRegister.funeralLocation || "",
+        funeralOfficiant: deathRegister.funeralOfficiant || "",
         burialCremation: deathRegister.burialCremation,
-        cemeteryLocation: deathRegister.cemeteryLocation || '',
+        cemeteryLocation: deathRegister.cemeteryLocation || "",
         nextOfKin: deathRegister.nextOfKin,
-        nextOfKinPhone: deathRegister.nextOfKinPhone || '',
-        nextOfKinEmail: deathRegister.nextOfKinEmail || '',
+        nextOfKinPhone: deathRegister.nextOfKinPhone || "",
+        nextOfKinEmail: deathRegister.nextOfKinEmail || "",
         familyNotified: deathRegister.familyNotified,
-        notificationDate: deathRegister.notificationDate ? formatDateForInput(deathRegister.notificationDate) : '',
-        deathCertificateUrl: deathRegister.deathCertificateUrl || '',
-        obituaryUrl: deathRegister.obituaryUrl || '',
+        notificationDate: deathRegister.notificationDate
+          ? formatDateForInput(deathRegister.notificationDate)
+          : "",
+        deathCertificateUrl: deathRegister.deathCertificateUrl || "",
+        obituaryUrl: deathRegister.obituaryUrl || "",
         photoUrls: deathRegister.photoUrls || [],
         additionalDocuments: deathRegister.additionalDocuments || [],
-        branchId: deathRegister.branchId || '',
+        branchId: deathRegister.branchId || "",
         organisationId: deathRegister.organisationId,
-        funeralEventId: deathRegister.funeralEventId || '',
+        funeralEventId: deathRegister.funeralEventId || "",
       });
     }
   }, [deathRegister]);
 
-  const handleInputChange = useCallback((field: keyof DeathRegisterFormData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleInputChange = useCallback(
+    (field: keyof DeathRegisterFormData, value: any) => {
+      setFormData((prev) => ({
         ...prev,
-        [field]: '',
+        [field]: value,
       }));
-    }
-  }, [errors]);
+
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+    },
+    [errors],
+  );
 
   const handleMemberSelect = useCallback((member: Member) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       selectedMember: {
         id: member.id,
@@ -160,99 +178,110 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
       },
     }));
     setShowMemberSearch(false);
-    setMemberSearchTerm('');
+    setMemberSearchTerm("");
   }, []);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.selectedMember) {
-      newErrors.selectedMember = 'Please select a member';
+      newErrors.selectedMember = "Please select a member";
     }
     if (!formData.dateOfDeath) {
-      newErrors.dateOfDeath = 'Date of death is required';
+      newErrors.dateOfDeath = "Date of death is required";
     }
     if (!formData.placeOfDeath.trim()) {
-      newErrors.placeOfDeath = 'Place of death is required';
+      newErrors.placeOfDeath = "Place of death is required";
     }
     if (!formData.nextOfKin.trim()) {
-      newErrors.nextOfKin = 'Next of kin is required';
+      newErrors.nextOfKin = "Next of kin is required";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error('Please fix the form errors');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    try {
-      const submitData = {
-        ...(deathRegister && { id: deathRegister.id }),
-        memberId: formData.selectedMember!.id,
-        dateOfDeath: new Date(formData.dateOfDeath),
-        timeOfDeath: formData.timeOfDeath || undefined,
-        placeOfDeath: formData.placeOfDeath,
-        causeOfDeath: formData.causeOfDeath || undefined,
-        circumstances: formData.circumstances || undefined,
-        funeralDate: formData.funeralDate ? new Date(formData.funeralDate) : undefined,
-        funeralLocation: formData.funeralLocation || undefined,
-        funeralOfficiant: formData.funeralOfficiant || undefined,
-        burialCremation: formData.burialCremation,
-        cemeteryLocation: formData.cemeteryLocation || undefined,
-        nextOfKin: formData.nextOfKin,
-        nextOfKinPhone: formData.nextOfKinPhone || undefined,
-        nextOfKinEmail: formData.nextOfKinEmail || undefined,
-        familyNotified: formData.familyNotified,
-        notificationDate: formData.notificationDate ? new Date(formData.notificationDate) : undefined,
-        deathCertificateUrl: formData.deathCertificateUrl || undefined,
-        obituaryUrl: formData.obituaryUrl || undefined,
-        photoUrls: formData.photoUrls,
-        additionalDocuments: formData.additionalDocuments,
-        branchId: formData.branchId || undefined,
-        organisationId: formData.organisationId,
-        funeralEventId: formData.funeralEventId || undefined,
-      };
+      if (!validateForm()) {
+        toast.error("Please fix the form errors");
+        return;
+      }
 
-      await onSubmit(submitData);
-      onClose();
-      toast.success(deathRegister ? 'Death register updated successfully' : 'Death register created successfully');
-    } catch (error) {
-      toast.error('Failed to save death register');
-      console.error('Form submission error:', error);
-    }
-  }, [formData, deathRegister, validateForm, onSubmit, onClose]);
+      try {
+        const submitData = {
+          ...(deathRegister && { id: deathRegister.id }),
+          memberId: formData.selectedMember!.id,
+          dateOfDeath: new Date(formData.dateOfDeath),
+          timeOfDeath: formData.timeOfDeath || undefined,
+          placeOfDeath: formData.placeOfDeath,
+          causeOfDeath: formData.causeOfDeath || undefined,
+          circumstances: formData.circumstances || undefined,
+          funeralDate: formData.funeralDate
+            ? new Date(formData.funeralDate)
+            : undefined,
+          funeralLocation: formData.funeralLocation || undefined,
+          funeralOfficiant: formData.funeralOfficiant || undefined,
+          burialCremation: formData.burialCremation,
+          cemeteryLocation: formData.cemeteryLocation || undefined,
+          nextOfKin: formData.nextOfKin,
+          nextOfKinPhone: formData.nextOfKinPhone || undefined,
+          nextOfKinEmail: formData.nextOfKinEmail || undefined,
+          familyNotified: formData.familyNotified,
+          notificationDate: formData.notificationDate
+            ? new Date(formData.notificationDate)
+            : undefined,
+          deathCertificateUrl: formData.deathCertificateUrl || undefined,
+          obituaryUrl: formData.obituaryUrl || undefined,
+          photoUrls: formData.photoUrls,
+          additionalDocuments: formData.additionalDocuments,
+          branchId: formData.branchId || undefined,
+          organisationId: formData.organisationId,
+          funeralEventId: formData.funeralEventId || undefined,
+        };
+
+        await onSubmit(submitData);
+        onClose();
+        toast.success(
+          deathRegister
+            ? "Death register updated successfully"
+            : "Death register created successfully",
+        );
+      } catch (error) {
+        toast.error("Failed to save death register");
+        console.error("Form submission error:", error);
+      }
+    },
+    [formData, deathRegister, validateForm, onSubmit, onClose],
+  );
 
   const handleClose = useCallback(() => {
     setFormData({
       selectedMember: undefined,
-      dateOfDeath: '',
-      timeOfDeath: '',
-      placeOfDeath: '',
-      causeOfDeath: '',
-      circumstances: '',
-      funeralDate: '',
-      funeralLocation: '',
-      funeralOfficiant: '',
+      dateOfDeath: "",
+      timeOfDeath: "",
+      placeOfDeath: "",
+      causeOfDeath: "",
+      circumstances: "",
+      funeralDate: "",
+      funeralLocation: "",
+      funeralOfficiant: "",
       burialCremation: BurialType.BURIAL,
-      cemeteryLocation: '',
-      nextOfKin: '',
-      nextOfKinPhone: '',
-      nextOfKinEmail: '',
+      cemeteryLocation: "",
+      nextOfKin: "",
+      nextOfKinPhone: "",
+      nextOfKinEmail: "",
       familyNotified: false,
-      notificationDate: '',
-      deathCertificateUrl: '',
-      obituaryUrl: '',
+      notificationDate: "",
+      deathCertificateUrl: "",
+      obituaryUrl: "",
       photoUrls: [],
       additionalDocuments: [],
-      branchId: branchId || '',
+      branchId: branchId || "",
       organisationId,
-      funeralEventId: '',
+      funeralEventId: "",
     });
     setErrors({});
     onClose();
@@ -265,7 +294,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           {/* Header */}
           <Flex justifyContent="between" alignItems="center">
             <Title className="text-xl font-semibold">
-              {deathRegister ? 'Edit Death Register' : 'Create Death Register'}
+              {deathRegister ? "Edit Death Register" : "Create Death Register"}
             </Title>
             <Button
               variant="light"
@@ -278,9 +307,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           {/* Member Selection */}
           <Card className="p-4">
             <Title className="text-lg mb-4">Member Information</Title>
-            
+
             {formData.selectedMember ? (
-              <Flex alignItems="center" className="space-x-3 p-3 bg-blue-50 rounded-lg">
+              <Flex
+                alignItems="center"
+                className="space-x-3 p-3 bg-blue-50 rounded-lg"
+              >
                 <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                   {formData.selectedMember.profileImageUrl ? (
                     <img
@@ -294,7 +326,8 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                 </div>
                 <div className="flex-1">
                   <Text className="font-medium">
-                    {formData.selectedMember.firstName} {formData.selectedMember.lastName}
+                    {formData.selectedMember.firstName}{" "}
+                    {formData.selectedMember.lastName}
                   </Text>
                   <Text className="text-sm text-gray-600">Selected Member</Text>
                 </div>
@@ -318,7 +351,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   Select Member
                 </Button>
                 {errors.selectedMember && (
-                  <Text className="text-red-600 text-sm mt-1">{errors.selectedMember}</Text>
+                  <Text className="text-red-600 text-sm mt-1">
+                    {errors.selectedMember}
+                  </Text>
                 )}
               </div>
             )}
@@ -327,7 +362,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           {/* Death Information */}
           <Card className="p-4">
             <Title className="text-lg mb-4">Death Information</Title>
-            
+
             <Grid numItems={1} numItemsSm={2} className="gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -338,13 +373,17 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.dateOfDeath}
-                  onChange={(e) => handleInputChange('dateOfDeath', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("dateOfDeath", e.target.value)
+                  }
                 />
                 {errors.dateOfDeath && (
-                  <Text className="text-red-600 text-sm mt-1">{errors.dateOfDeath}</Text>
+                  <Text className="text-red-600 text-sm mt-1">
+                    {errors.dateOfDeath}
+                  </Text>
                 )}
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Time of Death
@@ -353,10 +392,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   type="time"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.timeOfDeath}
-                  onChange={(e) => handleInputChange('timeOfDeath', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("timeOfDeath", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Place of Death *
@@ -367,13 +408,17 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Hospital, home, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.placeOfDeath}
-                  onChange={(e) => handleInputChange('placeOfDeath', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("placeOfDeath", e.target.value)
+                  }
                 />
                 {errors.placeOfDeath && (
-                  <Text className="text-red-600 text-sm mt-1">{errors.placeOfDeath}</Text>
+                  <Text className="text-red-600 text-sm mt-1">
+                    {errors.placeOfDeath}
+                  </Text>
                 )}
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cause of Death
@@ -383,10 +428,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Natural causes, illness, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.causeOfDeath}
-                  onChange={(e) => handleInputChange('causeOfDeath', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("causeOfDeath", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Circumstances
@@ -396,7 +443,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Additional details about the circumstances..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.circumstances}
-                  onChange={(e) => handleInputChange('circumstances', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("circumstances", e.target.value)
+                  }
                 />
               </div>
             </Grid>
@@ -405,7 +454,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           {/* Funeral Information */}
           <Card className="p-4">
             <Title className="text-lg mb-4">Funeral Information</Title>
-            
+
             <Grid numItems={1} numItemsSm={2} className="gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -415,10 +464,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   type="date"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.funeralDate}
-                  onChange={(e) => handleInputChange('funeralDate', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("funeralDate", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Burial/Cremation *
@@ -427,13 +478,18 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.burialCremation}
-                  onChange={(e) => handleInputChange('burialCremation', e.target.value as BurialType)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "burialCremation",
+                      e.target.value as BurialType,
+                    )
+                  }
                 >
                   <option value={BurialType.BURIAL}>Burial</option>
                   <option value={BurialType.CREMATION}>Cremation</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Funeral Location
@@ -443,10 +499,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Church, funeral home, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.funeralLocation}
-                  onChange={(e) => handleInputChange('funeralLocation', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("funeralLocation", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Funeral Officiant
@@ -456,10 +514,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Pastor, priest, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.funeralOfficiant}
-                  onChange={(e) => handleInputChange('funeralOfficiant', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("funeralOfficiant", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cemetery/Crematorium Location
@@ -469,7 +529,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Final resting place..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.cemeteryLocation}
-                  onChange={(e) => handleInputChange('cemeteryLocation', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("cemeteryLocation", e.target.value)
+                  }
                 />
               </div>
             </Grid>
@@ -478,7 +540,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           {/* Family & Contact Information */}
           <Card className="p-4">
             <Title className="text-lg mb-4">Family & Contact Information</Title>
-            
+
             <Grid numItems={1} numItemsSm={2} className="gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -490,13 +552,17 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Name and relationship"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.nextOfKin}
-                  onChange={(e) => handleInputChange('nextOfKin', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("nextOfKin", e.target.value)
+                  }
                 />
                 {errors.nextOfKin && (
-                  <Text className="text-red-600 text-sm mt-1">{errors.nextOfKin}</Text>
+                  <Text className="text-red-600 text-sm mt-1">
+                    {errors.nextOfKin}
+                  </Text>
                 )}
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Next of Kin Phone
@@ -506,10 +572,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Phone number"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.nextOfKinPhone}
-                  onChange={(e) => handleInputChange('nextOfKinPhone', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("nextOfKinPhone", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Next of Kin Email
@@ -519,10 +587,12 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                   placeholder="Email address"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={formData.nextOfKinEmail}
-                  onChange={(e) => handleInputChange('nextOfKinEmail', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("nextOfKinEmail", e.target.value)
+                  }
                 />
               </div>
-              
+
               <div className="sm:col-span-2">
                 <div className="flex items-center space-x-2">
                   <input
@@ -530,13 +600,18 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                     id="familyNotified"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     checked={formData.familyNotified}
-                    onChange={(e) => handleInputChange('familyNotified', e.target.checked)}
+                    onChange={(e) =>
+                      handleInputChange("familyNotified", e.target.checked)
+                    }
                   />
-                  <label htmlFor="familyNotified" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="familyNotified"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Family has been notified
                   </label>
                 </div>
-                
+
                 {formData.familyNotified && (
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -546,7 +621,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                       type="date"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       value={formData.notificationDate}
-                      onChange={(e) => handleInputChange('notificationDate', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("notificationDate", e.target.value)
+                      }
                     />
                   </div>
                 )}
@@ -570,17 +647,20 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
               loading={loading}
               icon={CheckIcon}
             >
-              {deathRegister ? 'Update Record' : 'Create Record'}
+              {deathRegister ? "Update Record" : "Create Record"}
             </Button>
           </Flex>
         </form>
 
         {/* Member Search Modal */}
-        <Dialog open={showMemberSearch} onClose={() => setShowMemberSearch(false)}>
+        <Dialog
+          open={showMemberSearch}
+          onClose={() => setShowMemberSearch(false)}
+        >
           <DialogPanel className="max-w-2xl">
             <div className="space-y-4">
               <Title className="text-lg font-semibold">Select Member</Title>
-              
+
               <div className="relative">
                 <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
@@ -596,7 +676,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                 {membersLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                    <Text className="mt-2 text-gray-600">Loading members...</Text>
+                    <Text className="mt-2 text-gray-600">
+                      Loading members...
+                    </Text>
                   </div>
                 ) : membersData?.members?.length === 0 ? (
                   <div className="text-center py-8">
@@ -625,10 +707,13 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
                           </div>
                           <div className="flex-1">
                             <Text className="font-medium">
-                              {member.firstName} {member.middleName} {member.lastName}
+                              {member.firstName} {member.middleName}{" "}
+                              {member.lastName}
                             </Text>
                             <Text className="text-sm text-gray-600">
-                              {member.email || member.phoneNumber || 'No contact info'}
+                              {member.email ||
+                                member.phoneNumber ||
+                                "No contact info"}
                             </Text>
                           </div>
                         </Flex>

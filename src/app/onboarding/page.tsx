@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import ModernOnboardingFlow from '@/components/onboarding/ModernOnboardingFlow';
-import { saveModulePreferences, loadModulePreferences, ChurchProfile } from '@/components/onboarding/ModulePreferences';
-import { useAuth } from '@/contexts/AuthContextEnhanced'; // Updated to use new auth context
-import { setCookie } from 'cookies-next';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ModernOnboardingFlow from "@/components/onboarding/ModernOnboardingFlow";
+import {
+  saveModulePreferences,
+  loadModulePreferences,
+  ChurchProfile,
+} from "@/components/onboarding/ModulePreferences";
+import { useAuth } from "@/contexts/AuthContextEnhanced"; // Updated to use new auth context
+import { setCookie } from "cookies-next";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -15,7 +19,7 @@ export default function OnboardingPage() {
 
   // Check if onboarding has already been completed
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const { isOnboardingCompleted } = loadModulePreferences();
       if (isOnboardingCompleted) {
         setShouldSkip(true);
@@ -25,37 +29,55 @@ export default function OnboardingPage() {
   }, []);
 
   // Handle onboarding completion with selected modules and church profile
-  const handleOnboardingComplete = (selectedModules: string[], churchProfile: ChurchProfile) => {
+  const handleOnboardingComplete = (
+    selectedModules: string[],
+    churchProfile: ChurchProfile,
+  ) => {
     saveModulePreferences(selectedModules, churchProfile);
-    setCookie('onboardingDeferred', 'true', { path: '/' });
-    router.push('/dashboard');
+    setCookie("onboardingDeferred", "true", { path: "/" });
+    router.push("/dashboard");
   };
-  
+
   // If onboarding should be skipped, redirect to dashboard
   useEffect(() => {
-    if (shouldSkip && !isCheckingPrefs && !authLoading) { // Check authLoading as well
-      router.replace('/dashboard');
+    if (shouldSkip && !isCheckingPrefs && !authLoading) {
+      // Check authLoading as well
+      router.replace("/dashboard");
     }
   }, [shouldSkip, isCheckingPrefs, authLoading, router]);
 
   // Redirect to login if not authenticated and auth is loaded
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login?redirect=/onboarding');
+      router.push("/auth/login?redirect=/onboarding");
     }
   }, [authLoading, isAuthenticated, router]);
-  
+
   // Only allow onboarding for SUPER_ADMIN
-  const isSuperAdmin = user && typeof user === 'object' && user.roles && Array.isArray(user.roles)
-    ? user.roles.some((role: unknown) => {
-        if (typeof role === 'string') return role.toLowerCase() === 'super_admin' || role.toLowerCase() === 'superadmin';
-        if (role && typeof role === 'object' && 'name' in role && typeof role.name === 'string') return role.name.toLowerCase() === 'super_admin' || role.name.toLowerCase() === 'superadmin';
-        return false;
-      })
-    : false;
+  const isSuperAdmin =
+    user && typeof user === "object" && user.roles && Array.isArray(user.roles)
+      ? user.roles.some((role: unknown) => {
+          if (typeof role === "string")
+            return (
+              role.toLowerCase() === "super_admin" ||
+              role.toLowerCase() === "superadmin"
+            );
+          if (
+            role &&
+            typeof role === "object" &&
+            "name" in role &&
+            typeof role.name === "string"
+          )
+            return (
+              role.name.toLowerCase() === "super_admin" ||
+              role.name.toLowerCase() === "superadmin"
+            );
+          return false;
+        })
+      : false;
 
   if (!isSuperAdmin && !authLoading && isAuthenticated) {
-    if (typeof window !== 'undefined') router.replace('/dashboard');
+    if (typeof window !== "undefined") router.replace("/dashboard");
     return null;
   }
 
@@ -75,11 +97,19 @@ export default function OnboardingPage() {
   // Render the onboarding flow directly for SUPER_ADMIN
   if (isSuperAdmin) {
     // Determine the branchId from accessibleBranches
-    const branchId = user?.userBranches && user.userBranches.length > 0 && user.userBranches[0].branch ? user.userBranches[0].branch.id ?? null : null;
+    const branchId =
+      user?.userBranches &&
+      user.userBranches.length > 0 &&
+      user.userBranches[0].branch
+        ? (user.userBranches[0].branch.id ?? null)
+        : null;
 
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <ModernOnboardingFlow branchId={branchId} onComplete={handleOnboardingComplete} />
+        <ModernOnboardingFlow
+          branchId={branchId}
+          onComplete={handleOnboardingComplete}
+        />
       </div>
     );
   }

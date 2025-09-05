@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_BUDGETS_QUERY = gql`
   query GetBudgets($organisationId: String!) {
@@ -102,7 +102,7 @@ export const CREATE_BUDGET_ITEM_MUTATION = gql`
       amount
       budgetId
       expenseCategoryId
-      
+
       expenseCategory {
         id
         name
@@ -119,7 +119,7 @@ export const UPDATE_BUDGET_ITEM_MUTATION = gql`
       description
       amount
       expenseCategoryId
-      
+
       expenseCategory {
         id
         name

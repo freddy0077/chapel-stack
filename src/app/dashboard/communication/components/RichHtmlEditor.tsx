@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 export type EmailTemplate = {
   category: string;
@@ -54,7 +54,7 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
     purpose: "Welcome new members to the church family.",
     subjectLines: [
       "Welcome to the {churchName} Family!",
-      "We're So Glad You're Here!"
+      "We're So Glad You're Here!",
     ],
     audience: "New members",
     tone: "Warm, welcoming, encouraging",
@@ -82,7 +82,7 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
     purpose: "Notify members of upcoming church meetings.",
     subjectLines: [
       "Notice: Annual Church Meeting",
-      "You're Invited: {churchName} Annual Meeting"
+      "You're Invited: {churchName} Annual Meeting",
     ],
     audience: "All members",
     tone: "Informative, respectful, transparent",
@@ -111,7 +111,7 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
     purpose: "Send annual giving statements to members.",
     subjectLines: [
       "Your 2024 Giving Statement",
-      "Annual Contribution Statement - {churchName}"
+      "Annual Contribution Statement - {churchName}",
     ],
     audience: "Contributing members",
     tone: "Professional, grateful, informative",
@@ -120,7 +120,7 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
       <div style="font-family:Arial,sans-serif;">
         <h2 style="color:#0f172a;">Annual Giving Statement</h2>
         <p>Dear <strong>{firstName}</strong>,</p>
-        <p>Thank you for your faithful generosity to <strong>{churchName}</strong> during {year}. Your contributions totaling <strong>${'$'}{totalAmount}</strong> have made a significant impact in advancing God's kingdom.</p>
+        <p>Thank you for your faithful generosity to <strong>{churchName}</strong> during {year}. Your contributions totaling <strong>${"$"}{totalAmount}</strong> have made a significant impact in advancing God's kingdom.</p>
         <p>Please find your detailed giving statement attached for your tax records. Your generosity enables us to continue our mission and ministry in the community.</p>
         <blockquote style="border-left:4px solid #0f172a;padding-left:12px;margin:16px 0;color:#555;font-style:italic;">
           "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."<br/>
@@ -145,107 +145,191 @@ interface RichHtmlEditorProps {
   setSelectedTemplate: (template: EmailTemplate | null) => void;
 }
 
-export function RichHtmlEditor({ 
-  value, 
-  onChange, 
-  onInsertTemplate, 
-  templates = EMAIL_TEMPLATES, 
-  selectedTemplate, 
-  setSelectedTemplate 
+export function RichHtmlEditor({
+  value,
+  onChange,
+  onInsertTemplate,
+  templates = EMAIL_TEMPLATES,
+  selectedTemplate,
+  setSelectedTemplate,
 }: RichHtmlEditorProps) {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
-  const [templateSearch, setTemplateSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Get available categories from templates
-  const categories = ['All', ...new Set(templates?.map(t => t.category) || [])];
-  
+  const categories = [
+    "All",
+    ...new Set(templates?.map((t) => t.category) || []),
+  ];
+
   // Filter templates based on search and category
-  const filteredTemplates = templates?.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
-                         template.purpose.toLowerCase().includes(templateSearch.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || template.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }) || [];
+  const filteredTemplates =
+    templates?.filter((template) => {
+      const matchesSearch =
+        template.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+        template.purpose.toLowerCase().includes(templateSearch.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "All" || template.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    }) || [];
 
   // Helper function to insert formatting at cursor position
-  const insertFormatting = (startTag: string, endTag: string = '') => {
+  const insertFormatting = (startTag: string, endTag: string = "") => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = value.substring(start, end);
-    
+
     let newText;
     if (selectedText) {
       // Wrap selected text
-      newText = value.substring(0, start) + startTag + selectedText + endTag + value.substring(end);
+      newText =
+        value.substring(0, start) +
+        startTag +
+        selectedText +
+        endTag +
+        value.substring(end);
     } else {
       // Insert tags at cursor position
-      newText = value.substring(0, start) + startTag + endTag + value.substring(start);
+      newText =
+        value.substring(0, start) + startTag + endTag + value.substring(start);
     }
-    
+
     onChange(newText);
-    
+
     // Set cursor position after the start tag
     setTimeout(() => {
-      const newCursorPos = selectedText ? start + startTag.length + selectedText.length + endTag.length : start + startTag.length;
+      const newCursorPos = selectedText
+        ? start + startTag.length + selectedText.length + endTag.length
+        : start + startTag.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
       textarea.focus();
     }, 0);
   };
 
   // Formatting functions
-  const formatBold = () => insertFormatting('<strong>', '</strong>');
-  const formatItalic = () => insertFormatting('<em>', '</em>');
-  const formatUnderline = () => insertFormatting('<u>', '</u>');
-  const formatH1 = () => insertFormatting('<h1>', '</h1>');
-  const formatH2 = () => insertFormatting('<h2>', '</h2>');
+  const formatBold = () => insertFormatting("<strong>", "</strong>");
+  const formatItalic = () => insertFormatting("<em>", "</em>");
+  const formatUnderline = () => insertFormatting("<u>", "</u>");
+  const formatH1 = () => insertFormatting("<h1>", "</h1>");
+  const formatH2 = () => insertFormatting("<h2>", "</h2>");
   const formatLink = () => {
-    const url = prompt('Enter URL:');
+    const url = prompt("Enter URL:");
     if (url) {
-      insertFormatting(`<a href="${url}">`, '</a>');
+      insertFormatting(`<a href="${url}">`, "</a>");
     }
   };
-  const formatBulletList = () => insertFormatting('<ul><li>', '</li></ul>');
-  const formatNumberedList = () => insertFormatting('<ol><li>', '</li></ol>');
-  const formatParagraph = () => insertFormatting('<p>', '</p>');
-  const formatLineBreak = () => insertFormatting('<br/>');
+  const formatBulletList = () => insertFormatting("<ul><li>", "</li></ul>");
+  const formatNumberedList = () => insertFormatting("<ol><li>", "</li></ol>");
+  const formatParagraph = () => insertFormatting("<p>", "</p>");
+  const formatLineBreak = () => insertFormatting("<br/>");
 
   return (
     <div className="rounded-xl bg-white/80 shadow-inner border border-gray-200 overflow-hidden">
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 p-4 pb-2 border-b border-gray-100">
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatBold} title="Bold">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatBold}
+          title="Bold"
+        >
           <b>B</b>
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatItalic} title="Italic">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatItalic}
+          title="Italic"
+        >
           <i>I</i>
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatUnderline} title="Underline">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatUnderline}
+          title="Underline"
+        >
           <u>U</u>
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatH1} title="Heading 1">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatH1}
+          title="Heading 1"
+        >
           H1
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatH2} title="Heading 2">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatH2}
+          title="Heading 2"
+        >
           H2
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatParagraph} title="Paragraph">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatParagraph}
+          title="Paragraph"
+        >
           P
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatLineBreak} title="Line Break">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatLineBreak}
+          title="Line Break"
+        >
           ↵
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatBulletList} title="Bullet List">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatBulletList}
+          title="Bullet List"
+        >
           •
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatNumberedList} title="Numbered List">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatNumberedList}
+          title="Numbered List"
+        >
           1.
         </Button>
-        <Button size="icon" variant="ghost" type="button" className="hover:bg-violet-100" onClick={formatLink} title="Insert Link">
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          className="hover:bg-violet-100"
+          onClick={formatLink}
+          title="Insert Link"
+        >
           🔗
         </Button>
       </div>
@@ -255,13 +339,27 @@ export function RichHtmlEditor({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Email Templates</h3>
-              <p className="text-xs text-gray-500">Choose from professionally crafted templates</p>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Email Templates
+              </h3>
+              <p className="text-xs text-gray-500">
+                Choose from professionally crafted templates
+              </p>
             </div>
           </div>
           <Button
@@ -272,15 +370,35 @@ export function RichHtmlEditor({
           >
             {showTemplatePanel ? (
               <>
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 Close
               </>
             ) : (
               <>
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
                 Browse Templates
               </>
@@ -296,15 +414,27 @@ export function RichHtmlEditor({
               size="sm"
               className="bg-white/60 hover:bg-white/80 border-blue-200 text-blue-700 text-xs"
               onClick={() => {
-                const welcomeTemplate = templates?.find(t => t.name.includes('Welcome'));
+                const welcomeTemplate = templates?.find((t) =>
+                  t.name.includes("Welcome"),
+                );
                 if (welcomeTemplate) {
                   setSelectedTemplate(welcomeTemplate);
                   onInsertTemplate(welcomeTemplate.bodyHtml);
                 }
               }}
             >
-              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v3.5M3 16.5h18" />
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v3.5M3 16.5h18"
+                />
               </svg>
               Welcome
             </Button>
@@ -313,15 +443,27 @@ export function RichHtmlEditor({
               size="sm"
               className="bg-white/60 hover:bg-white/80 border-green-200 text-green-700 text-xs"
               onClick={() => {
-                const eventTemplate = templates?.find(t => t.name.includes('Event'));
+                const eventTemplate = templates?.find((t) =>
+                  t.name.includes("Event"),
+                );
                 if (eventTemplate) {
                   setSelectedTemplate(eventTemplate);
                   onInsertTemplate(eventTemplate.bodyHtml);
                 }
               }}
             >
-              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
               Event
             </Button>
@@ -330,15 +472,27 @@ export function RichHtmlEditor({
               size="sm"
               className="bg-white/60 hover:bg-white/80 border-purple-200 text-purple-700 text-xs"
               onClick={() => {
-                const announcementTemplate = templates?.find(t => t.name.includes('Announcement'));
+                const announcementTemplate = templates?.find((t) =>
+                  t.name.includes("Announcement"),
+                );
                 if (announcementTemplate) {
                   setSelectedTemplate(announcementTemplate);
                   onInsertTemplate(announcementTemplate.bodyHtml);
                 }
               }}
             >
-              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                />
               </svg>
               Announcement
             </Button>
@@ -353,8 +507,18 @@ export function RichHtmlEditor({
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <div className="relative">
-                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                     <Input
                       placeholder="Search templates..."
@@ -370,8 +534,10 @@ export function RichHtmlEditor({
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   >
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -401,27 +567,47 @@ export function RichHtmlEditor({
                             {template.purpose}
                           </p>
                         </div>
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className="ml-2 text-xs bg-indigo-50 text-indigo-700 border-indigo-200"
                         >
-                          {template.category.split(' ')[0]}
+                          {template.category.split(" ")[0]}
                         </Badge>
                       </div>
-                      
+
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-2">
                           <div className="flex items-center text-xs text-gray-400">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.99 1.99 0 01-2-2V10a2 2 0 012-2h2" />
+                            <svg
+                              className="w-3 h-3 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.99 1.99 0 01-2-2V10a2 2 0 012-2h2"
+                              />
                             </svg>
                             {template.tone}
                           </div>
                           <div className="flex items-center text-xs text-gray-400">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                            <svg
+                              className="w-3 h-3 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                              />
                             </svg>
-                            {template.audience.split(',')[0]}
+                            {template.audience.split(",")[0]}
                           </div>
                         </div>
                         <Button
@@ -437,17 +623,29 @@ export function RichHtmlEditor({
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <svg className="mx-auto w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="mx-auto w-12 h-12 text-gray-300 mb-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
-                  <p className="text-gray-500 text-sm">No templates found matching your search</p>
+                  <p className="text-gray-500 text-sm">
+                    No templates found matching your search
+                  </p>
                   <Button
                     variant="outline"
                     size="sm"
                     className="mt-2"
                     onClick={() => {
-                      setTemplateSearch('');
-                      setSelectedCategory('All');
+                      setTemplateSearch("");
+                      setSelectedCategory("All");
                     }}
                   >
                     Clear Filters
@@ -465,7 +663,7 @@ export function RichHtmlEditor({
           ref={textareaRef}
           className="w-full min-h-[200px] border-0 focus:ring-0 resize-none bg-transparent"
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           placeholder="Write your message here..."
         />
       </div>

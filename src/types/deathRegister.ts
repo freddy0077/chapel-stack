@@ -1,7 +1,7 @@
 // Death Register Types
 export enum BurialType {
-  BURIAL = 'BURIAL',
-  CREMATION = 'CREMATION',
+  BURIAL = "BURIAL",
+  CREMATION = "CREMATION",
 }
 
 export interface DeathRegister {
@@ -12,38 +12,38 @@ export interface DeathRegister {
   placeOfDeath: string;
   causeOfDeath?: string;
   circumstances?: string;
-  
+
   // Funeral Information
   funeralDate?: Date;
   funeralLocation?: string;
   funeralOfficiant?: string;
   burialCremation: BurialType;
   cemeteryLocation?: string;
-  
+
   // Family & Contacts
   nextOfKin: string;
   nextOfKinPhone?: string;
   nextOfKinEmail?: string;
   familyNotified: boolean;
   notificationDate?: Date;
-  
+
   // Documentation
   deathCertificateUrl?: string;
   obituaryUrl?: string;
   photoUrls: string[];
   additionalDocuments: string[];
-  
+
   // Administrative
   recordedBy: string;
   recordedDate: Date;
   lastUpdatedBy?: string;
   lastUpdatedDate?: Date;
-  
+
   // Foreign Keys
   branchId?: string;
   organisationId: string;
   funeralEventId?: string;
-  
+
   // Relations
   member: {
     id: string;
@@ -103,34 +103,35 @@ export interface CreateDeathRegisterInput {
   placeOfDeath: string;
   causeOfDeath?: string;
   circumstances?: string;
-  
+
   // Funeral Information
   funeralDate?: Date;
   funeralLocation?: string;
   funeralOfficiant?: string;
   burialCremation: BurialType;
   cemeteryLocation?: string;
-  
+
   // Family & Contacts
   nextOfKin: string;
   nextOfKinPhone?: string;
   nextOfKinEmail?: string;
   familyNotified?: boolean;
   notificationDate?: Date;
-  
+
   // Documentation
   deathCertificateUrl?: string;
   obituaryUrl?: string;
   photoUrls?: string[];
   additionalDocuments?: string[];
-  
+
   // Foreign Keys
   branchId?: string;
   organisationId: string;
   funeralEventId?: string;
 }
 
-export interface UpdateDeathRegisterInput extends Partial<CreateDeathRegisterInput> {
+export interface UpdateDeathRegisterInput
+  extends Partial<CreateDeathRegisterInput> {
   id: string;
 }
 
@@ -147,13 +148,13 @@ export interface DeathRegisterFilterInput {
   skip?: number;
   take?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface UploadDeathDocumentInput {
   deathRegisterId: string;
   documentUrl: string;
-  documentType: 'DEATH_CERTIFICATE' | 'OBITUARY' | 'PHOTO' | 'OTHER';
+  documentType: "DEATH_CERTIFICATE" | "OBITUARY" | "PHOTO" | "OTHER";
   description?: string;
 }
 
@@ -166,34 +167,34 @@ export interface DeathRegisterFormData {
     lastName: string;
     profileImageUrl?: string;
   };
-  
+
   // Death Information
   dateOfDeath: string;
   timeOfDeath: string;
   placeOfDeath: string;
   causeOfDeath: string;
   circumstances: string;
-  
+
   // Funeral Information
   funeralDate: string;
   funeralLocation: string;
   funeralOfficiant: string;
   burialCremation: BurialType;
   cemeteryLocation: string;
-  
+
   // Family & Contacts
   nextOfKin: string;
   nextOfKinPhone: string;
   nextOfKinEmail: string;
   familyNotified: boolean;
   notificationDate: string;
-  
+
   // Documentation
   deathCertificateUrl: string;
   obituaryUrl: string;
   photoUrls: string[];
   additionalDocuments: string[];
-  
+
   // Administrative
   branchId: string;
   organisationId: string;
@@ -201,9 +202,9 @@ export interface DeathRegisterFormData {
 }
 
 export interface DeathRegisterViewMode {
-  mode: 'LIST' | 'CARD' | 'TABLE';
+  mode: "LIST" | "CARD" | "TABLE";
   sortBy: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: "asc" | "desc";
   filters: DeathRegisterFilterInput;
   searchTerm: string;
 }
@@ -279,8 +280,12 @@ export interface UseMemorialCalendarResult {
 }
 
 export interface UseDeathRegisterMutationsResult {
-  createDeathRegister: (input: CreateDeathRegisterInput) => Promise<DeathRegister>;
-  updateDeathRegister: (input: UpdateDeathRegisterInput) => Promise<DeathRegister>;
+  createDeathRegister: (
+    input: CreateDeathRegisterInput,
+  ) => Promise<DeathRegister>;
+  updateDeathRegister: (
+    input: UpdateDeathRegisterInput,
+  ) => Promise<DeathRegister>;
   deleteDeathRegister: (id: string) => Promise<boolean>;
   uploadDocument: (input: UploadDeathDocumentInput) => Promise<DeathRegister>;
   markFamilyNotified: (id: string) => Promise<DeathRegister>;

@@ -1,9 +1,9 @@
 import { useQuery } from "@apollo/client";
-import { 
+import {
   GET_FILTERED_BAPTISM_RECORDS,
   GET_FILTERED_COMMUNION_RECORDS,
   GET_FILTERED_CONFIRMATION_RECORDS,
-  GET_FILTERED_MARRIAGE_RECORDS
+  GET_FILTERED_MARRIAGE_RECORDS,
 } from "@/graphql/queries/sacramentalRecordsQueries";
 
 export interface SacramentalRecord {
@@ -30,24 +30,23 @@ export interface SacramentalRecordFilter {
 export function useFilteredBaptismRecords(filter: SacramentalRecordFilter) {
   // Prepare variables, omitting properties with empty values
   const variables: { branchId?: string; organisationId?: string } = {};
-  
+
   if (filter.branchId) {
     variables.branchId = filter.branchId;
   }
-  
+
   if (filter.organisationId) {
     variables.organisationId = filter.organisationId;
   }
-  
-  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
-    GET_FILTERED_BAPTISM_RECORDS,
-    {
-      variables,
-      skip: !filter.branchId && !filter.organisationId,
-      fetchPolicy: "cache-and-network",
-    }
-  );
-  
+
+  const { data, loading, error, refetch } = useQuery<{
+    sacramentalRecords: SacramentalRecord[];
+  }>(GET_FILTERED_BAPTISM_RECORDS, {
+    variables,
+    skip: !filter.branchId && !filter.organisationId,
+    fetchPolicy: "cache-and-network",
+  });
+
   return {
     records: data?.sacramentalRecords || [],
     loading,
@@ -59,24 +58,23 @@ export function useFilteredBaptismRecords(filter: SacramentalRecordFilter) {
 export function useFilteredCommunionRecords(filter: SacramentalRecordFilter) {
   // Prepare variables, omitting properties with empty values
   const variables: { branchId?: string; organisationId?: string } = {};
-  
+
   if (filter.branchId) {
     variables.branchId = filter.branchId;
   }
-  
+
   if (filter.organisationId) {
     variables.organisationId = filter.organisationId;
   }
-  
-  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
-    GET_FILTERED_COMMUNION_RECORDS,
-    {
-      variables,
-      skip: !filter.branchId && !filter.organisationId,
-      fetchPolicy: "cache-and-network",
-    }
-  );
-  
+
+  const { data, loading, error, refetch } = useQuery<{
+    sacramentalRecords: SacramentalRecord[];
+  }>(GET_FILTERED_COMMUNION_RECORDS, {
+    variables,
+    skip: !filter.branchId && !filter.organisationId,
+    fetchPolicy: "cache-and-network",
+  });
+
   return {
     records: data?.sacramentalRecords || [],
     loading,
@@ -85,27 +83,28 @@ export function useFilteredCommunionRecords(filter: SacramentalRecordFilter) {
   };
 }
 
-export function useFilteredConfirmationRecords(filter: SacramentalRecordFilter) {
+export function useFilteredConfirmationRecords(
+  filter: SacramentalRecordFilter,
+) {
   // Prepare variables, omitting properties with empty values
   const variables: { branchId?: string; organisationId?: string } = {};
-  
+
   if (filter.branchId) {
     variables.branchId = filter.branchId;
   }
-  
+
   if (filter.organisationId) {
     variables.organisationId = filter.organisationId;
   }
-  
-  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
-    GET_FILTERED_CONFIRMATION_RECORDS,
-    {
-      variables,
-      skip: !filter.branchId && !filter.organisationId,
-      fetchPolicy: "cache-and-network",
-    }
-  );
-  
+
+  const { data, loading, error, refetch } = useQuery<{
+    sacramentalRecords: SacramentalRecord[];
+  }>(GET_FILTERED_CONFIRMATION_RECORDS, {
+    variables,
+    skip: !filter.branchId && !filter.organisationId,
+    fetchPolicy: "cache-and-network",
+  });
+
   return {
     records: data?.sacramentalRecords || [],
     loading,
@@ -117,24 +116,23 @@ export function useFilteredConfirmationRecords(filter: SacramentalRecordFilter) 
 export function useFilteredMarriageRecords(filter: SacramentalRecordFilter) {
   // Prepare variables, omitting properties with empty values
   const variables: { branchId?: string; organisationId?: string } = {};
-  
+
   if (filter.branchId) {
     variables.branchId = filter.branchId;
   }
-  
+
   if (filter.organisationId) {
     variables.organisationId = filter.organisationId;
   }
-  
-  const { data, loading, error, refetch } = useQuery<{ sacramentalRecords: SacramentalRecord[] }>(
-    GET_FILTERED_MARRIAGE_RECORDS,
-    {
-      variables,
-      skip: !filter.branchId && !filter.organisationId,
-      fetchPolicy: "cache-and-network",
-    }
-  );
-  
+
+  const { data, loading, error, refetch } = useQuery<{
+    sacramentalRecords: SacramentalRecord[];
+  }>(GET_FILTERED_MARRIAGE_RECORDS, {
+    variables,
+    skip: !filter.branchId && !filter.organisationId,
+    fetchPolicy: "cache-and-network",
+  });
+
   return {
     records: data?.sacramentalRecords || [],
     loading,

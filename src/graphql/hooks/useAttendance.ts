@@ -1,15 +1,14 @@
 import { useQuery, useMutation } from "@apollo/client";
-import { 
-  GET_ATTENDANCE_RECORDS, 
+import {
+  GET_ATTENDANCE_RECORDS,
   GET_ATTENDANCE_RECORDS_FOR_SESSION,
   GET_ATTENDANCE_RECORDS_FOR_EVENT,
   GET_ALL_ATTENDANCE_RECORDS,
   GET_FILTERED_ATTENDANCE_SESSIONS,
   RECORD_ATTENDANCE,
-  RECORD_BULK_ATTENDANCE
+  RECORD_BULK_ATTENDANCE,
 } from "../queries/attendanceQueries";
 import { PROCESS_CARD_SCAN } from "../mutations/attendanceMutations";
-
 
 // Types for Attendance
 export interface AttendanceRecord {
@@ -110,11 +109,16 @@ export function useAttendanceRecords(options: UseAttendanceRecordsOptions) {
 }
 
 // Hook to fetch attendance records for a session with expanded fields
-export function useAttendanceRecordsForSession(options: UseAttendanceRecordsOptions) {
-  const { data, loading, error, refetch } = useQuery(GET_ATTENDANCE_RECORDS_FOR_SESSION, {
-    variables: options,
-    skip: !options.sessionId,
-  });
+export function useAttendanceRecordsForSession(
+  options: UseAttendanceRecordsOptions,
+) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_ATTENDANCE_RECORDS_FOR_SESSION,
+    {
+      variables: options,
+      skip: !options.sessionId,
+    },
+  );
 
   return {
     attendanceRecords: data?.attendanceRecords || [],
@@ -125,11 +129,16 @@ export function useAttendanceRecordsForSession(options: UseAttendanceRecordsOpti
 }
 
 // Hook to fetch attendance records for an event
-export function useAttendanceRecordsForEvent(options: UseEventAttendanceRecordsOptions) {
-  const { data, loading, error, refetch } = useQuery(GET_ATTENDANCE_RECORDS_FOR_EVENT, {
-    variables: options,
-    skip: !options.eventId,
-  });
+export function useAttendanceRecordsForEvent(
+  options: UseEventAttendanceRecordsOptions,
+) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_ATTENDANCE_RECORDS_FOR_EVENT,
+    {
+      variables: options,
+      skip: !options.eventId,
+    },
+  );
 
   return {
     attendanceRecords: data?.eventAttendanceRecords || [],
@@ -140,10 +149,15 @@ export function useAttendanceRecordsForEvent(options: UseEventAttendanceRecordsO
 }
 
 // Hook to fetch all attendance records with flexible filtering
-export function useAllAttendanceRecords(options: UseAllAttendanceRecordsOptions = {}) {
-  const { data, loading, error, refetch } = useQuery(GET_ALL_ATTENDANCE_RECORDS, {
-    variables: options,
-  });
+export function useAllAttendanceRecords(
+  options: UseAllAttendanceRecordsOptions = {},
+) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_ALL_ATTENDANCE_RECORDS,
+    {
+      variables: options,
+    },
+  );
 
   return {
     attendanceRecords: data?.allAttendanceRecords || [],
@@ -171,7 +185,9 @@ export function useRecordAttendance() {
 
 // Hook for bulk attendance recording (supports both session and event)
 export function useRecordBulkAttendance() {
-  const [recordBulkAttendance, { loading, error }] = useMutation(RECORD_BULK_ATTENDANCE);
+  const [recordBulkAttendance, { loading, error }] = useMutation(
+    RECORD_BULK_ATTENDANCE,
+  );
 
   return {
     recordBulkAttendance: async (input: RecordBulkAttendanceInput) => {
@@ -252,9 +268,11 @@ export function useProcessCardScan() {
 }
 
 // Helper to extract the current branch from the AuthUser object
-import type { AuthUser, Branch } from './useAuth';
+import type { AuthUser, Branch } from "./useAuth";
 
-export function getCurrentBranchFromAuthUser(user?: AuthUser): Branch | undefined {
+export function getCurrentBranchFromAuthUser(
+  user?: AuthUser,
+): Branch | undefined {
   if (!user?.userBranches?.length) return undefined;
   return user.userBranches[0]?.branch;
 }
@@ -266,14 +284,19 @@ export interface AttendanceFilterParams {
 }
 
 export function useFilteredAttendanceSessions(filter: AttendanceFilterParams) {
-  const { data, loading, error, refetch } = useQuery(GET_FILTERED_ATTENDANCE_SESSIONS, {
-    variables: {
-      filterInput: {
-        ...(filter.organisationId && { organisationId: filter.organisationId }),
-        ...(filter.branchId && { branchId: filter.branchId }),
+  const { data, loading, error, refetch } = useQuery(
+    GET_FILTERED_ATTENDANCE_SESSIONS,
+    {
+      variables: {
+        filterInput: {
+          ...(filter.organisationId && {
+            organisationId: filter.organisationId,
+          }),
+          ...(filter.branchId && { branchId: filter.branchId }),
+        },
       },
     },
-  });
+  );
 
   return {
     sessions: data?.attendanceSessions?.items || [],

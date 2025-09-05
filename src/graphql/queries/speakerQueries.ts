@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Get all speakers (optionally by branch)
 export const GET_SPEAKERS = gql`

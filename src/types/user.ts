@@ -1,9 +1,9 @@
 export enum Role {
-  ADMIN = 'ADMIN',
-  MEMBER = 'MEMBER',
-  LEADER = 'LEADER',
-  PASTOR = 'PASTOR',
-  STAFF = 'STAFF'
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
+  LEADER = "LEADER",
+  PASTOR = "PASTOR",
+  STAFF = "STAFF",
 }
 
 export interface User {
@@ -15,7 +15,7 @@ export interface User {
   role: Role;
   primaryBranchId?: string;
   isEmailVerified: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: "ACTIVE" | "INACTIVE";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,8 +24,8 @@ export interface Branch {
   id: string;
   name: string;
   location: string;
-  type: 'MAIN' | 'SATELLITE' | 'PLANT' | 'OUTREACH';
-  status: 'ACTIVE' | 'INACTIVE';
+  type: "MAIN" | "SATELLITE" | "PLANT" | "OUTREACH";
+  status: "ACTIVE" | "INACTIVE";
 }
 
 export interface AuthState {

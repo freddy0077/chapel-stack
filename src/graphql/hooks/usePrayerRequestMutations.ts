@@ -1,5 +1,9 @@
-import { useMutation } from '@apollo/client';
-import { CREATE_PRAYER_REQUEST, UPDATE_PRAYER_REQUEST, REMOVE_PRAYER_REQUEST } from '../mutations/prayer-requests';
+import { useMutation } from "@apollo/client";
+import {
+  CREATE_PRAYER_REQUEST,
+  UPDATE_PRAYER_REQUEST,
+  REMOVE_PRAYER_REQUEST,
+} from "../mutations/prayer-requests";
 
 export function usePrayerRequestMutations() {
   const [createPrayerRequest, createState] = useMutation(CREATE_PRAYER_REQUEST);

@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_MEMBER_DASHBOARD } from '../queries/memberQueries';
+import { useQuery } from "@apollo/client";
+import { GET_MEMBER_DASHBOARD } from "../queries/memberQueries";
 
 interface DashboardStat {
   groups: number;
@@ -47,13 +47,13 @@ interface MemberDashboardResponse {
 }
 
 export const useMemberDashboard = (memberId: string) => {
-  const { data, loading, error } = useQuery<MemberDashboardResponse, MemberDashboardVars>(
-    GET_MEMBER_DASHBOARD,
-    {
-      variables: { memberId },
-      skip: !memberId, // Do not run the query if memberId is not available
-    },
-  );
+  const { data, loading, error } = useQuery<
+    MemberDashboardResponse,
+    MemberDashboardVars
+  >(GET_MEMBER_DASHBOARD, {
+    variables: { memberId },
+    skip: !memberId, // Do not run the query if memberId is not available
+  });
 
   return {
     dashboardData: data?.memberDashboard,

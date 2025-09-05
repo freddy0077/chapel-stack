@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Title, Text, Grid, Button } from '@tremor/react';
-import { DocumentTextIcon, CameraIcon, PaperClipIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { Card, Title, Text, Grid, Button } from "@tremor/react";
+import {
+  DocumentTextIcon,
+  CameraIcon,
+  PaperClipIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 interface DocumentsSectionProps {
   deathCertificateUrl: string;
@@ -22,27 +27,27 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   errors,
 }) => {
   const handleAddPhoto = () => {
-    const newUrl = prompt('Enter photo URL:');
+    const newUrl = prompt("Enter photo URL:");
     if (newUrl) {
-      onFieldChange('photoUrls', [...photoUrls, newUrl]);
+      onFieldChange("photoUrls", [...photoUrls, newUrl]);
     }
   };
 
   const handleRemovePhoto = (index: number) => {
     const newPhotos = photoUrls.filter((_, i) => i !== index);
-    onFieldChange('photoUrls', newPhotos);
+    onFieldChange("photoUrls", newPhotos);
   };
 
   const handleAddDocument = () => {
-    const newUrl = prompt('Enter document URL:');
+    const newUrl = prompt("Enter document URL:");
     if (newUrl) {
-      onFieldChange('additionalDocuments', [...additionalDocuments, newUrl]);
+      onFieldChange("additionalDocuments", [...additionalDocuments, newUrl]);
     }
   };
 
   const handleRemoveDocument = (index: number) => {
     const newDocs = additionalDocuments.filter((_, i) => i !== index);
-    onFieldChange('additionalDocuments', newDocs);
+    onFieldChange("additionalDocuments", newDocs);
   };
 
   return (
@@ -51,7 +56,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
         <DocumentTextIcon className="h-5 w-5 mr-2" />
         Documents & Media
       </Title>
-      
+
       <Grid numItems={1} numItemsSm={2} className="gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -61,7 +66,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           <input
             type="url"
             value={deathCertificateUrl}
-            onChange={(e) => onFieldChange('deathCertificateUrl', e.target.value)}
+            onChange={(e) =>
+              onFieldChange("deathCertificateUrl", e.target.value)
+            }
             placeholder="https://..."
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
           />
@@ -75,7 +82,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           <input
             type="url"
             value={obituaryUrl}
-            onChange={(e) => onFieldChange('obituaryUrl', e.target.value)}
+            onChange={(e) => onFieldChange("obituaryUrl", e.target.value)}
             placeholder="https://..."
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
           />
@@ -99,11 +106,14 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             Add Photo
           </Button>
         </div>
-        
+
         {photoUrls.length > 0 ? (
           <div className="space-y-2">
             {photoUrls.map((url, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200"
+              >
                 <div className="flex items-center space-x-3">
                   <CameraIcon className="h-5 w-5 text-amber-600" />
                   <Text className="text-sm text-slate-700 truncate">{url}</Text>
@@ -145,11 +155,14 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             Add Document
           </Button>
         </div>
-        
+
         {additionalDocuments.length > 0 ? (
           <div className="space-y-2">
             {additionalDocuments.map((url, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200"
+              >
                 <div className="flex items-center space-x-3">
                   <PaperClipIcon className="h-5 w-5 text-amber-600" />
                   <Text className="text-sm text-slate-700 truncate">{url}</Text>
@@ -169,7 +182,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
         ) : (
           <div className="text-center py-4 border-2 border-dashed border-amber-200 rounded-lg">
             <PaperClipIcon className="h-8 w-8 text-amber-400 mx-auto mb-2" />
-            <Text className="text-amber-600">No additional documents added yet</Text>
+            <Text className="text-amber-600">
+              No additional documents added yet
+            </Text>
           </div>
         )}
       </div>

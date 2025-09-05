@@ -1,30 +1,33 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
-import { GENERATE_MEMBER_REPORT, GET_MEMBER_STATS } from '../queries/memberReports';
+import { useLazyQuery, useQuery } from "@apollo/client";
+import {
+  GENERATE_MEMBER_REPORT,
+  GET_MEMBER_STATS,
+} from "../queries/memberReports";
 
 // TypeScript interfaces
 export enum MemberReportType {
-  SUMMARY = 'SUMMARY',
-  DETAILED = 'DETAILED',
-  DEMOGRAPHICS = 'DEMOGRAPHICS',
-  GROWTH_TRENDS = 'GROWTH_TRENDS',
-  ENGAGEMENT = 'ENGAGEMENT',
-  RETENTION = 'RETENTION',
-  GEOGRAPHIC = 'GEOGRAPHIC'
+  SUMMARY = "SUMMARY",
+  DETAILED = "DETAILED",
+  DEMOGRAPHICS = "DEMOGRAPHICS",
+  GROWTH_TRENDS = "GROWTH_TRENDS",
+  ENGAGEMENT = "ENGAGEMENT",
+  RETENTION = "RETENTION",
+  GEOGRAPHIC = "GEOGRAPHIC",
 }
 
 export enum MemberReportGroupBy {
-  DAY = 'DAY',
-  WEEK = 'WEEK',
-  MONTH = 'MONTH',
-  QUARTER = 'QUARTER',
-  YEAR = 'YEAR'
+  DAY = "DAY",
+  WEEK = "WEEK",
+  MONTH = "MONTH",
+  QUARTER = "QUARTER",
+  YEAR = "YEAR",
 }
 
 export enum MemberReportFormat {
-  JSON = 'JSON',
-  CSV = 'CSV',
-  PDF = 'PDF',
-  EXCEL = 'EXCEL'
+  JSON = "JSON",
+  CSV = "CSV",
+  PDF = "PDF",
+  EXCEL = "EXCEL",
 }
 
 export interface MemberReportInput {
@@ -154,16 +157,18 @@ export const useGenerateMemberReport = () => {
     { generateMemberReport: MemberReport },
     { input: MemberReportInput }
   >(GENERATE_MEMBER_REPORT, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
-  const executeReport = async (input: MemberReportInput): Promise<MemberReport | null> => {
+  const executeReport = async (
+    input: MemberReportInput,
+  ): Promise<MemberReport | null> => {
     try {
       const result = await generateReport({ variables: { input } });
       return result.data?.generateMemberReport || null;
     } catch (error) {
-      console.error('Error generating member report:', error);
+      console.error("Error generating member report:", error);
       return null;
     }
   };
@@ -182,8 +187,8 @@ export const useMemberStats = (organisationId?: string, branchId?: string) => {
     { organisationId?: string; branchId?: string }
   >(GET_MEMBER_STATS, {
     variables: { organisationId, branchId },
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
     skip: !organisationId && !branchId,
   });
 
@@ -202,8 +207,8 @@ export const getDefaultMemberReportConfig = (): Partial<MemberReportInput> => {
   startDate.setMonth(startDate.getMonth() - 3); // Default to last 3 months
 
   return {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
     groupBy: MemberReportGroupBy.MONTH,
     includeInactive: true,
     includeVisitors: true,
@@ -215,34 +220,38 @@ export const getDefaultMemberReportConfig = (): Partial<MemberReportInput> => {
 
 export const getMemberReportTypeLabel = (type: MemberReportType): string => {
   const labels = {
-    [MemberReportType.SUMMARY]: 'Summary Report',
-    [MemberReportType.DETAILED]: 'Detailed Report',
-    [MemberReportType.DEMOGRAPHICS]: 'Demographics Report',
-    [MemberReportType.GROWTH_TRENDS]: 'Growth Trends Report',
-    [MemberReportType.ENGAGEMENT]: 'Engagement Report',
-    [MemberReportType.RETENTION]: 'Retention Report',
-    [MemberReportType.GEOGRAPHIC]: 'Geographic Report',
+    [MemberReportType.SUMMARY]: "Summary Report",
+    [MemberReportType.DETAILED]: "Detailed Report",
+    [MemberReportType.DEMOGRAPHICS]: "Demographics Report",
+    [MemberReportType.GROWTH_TRENDS]: "Growth Trends Report",
+    [MemberReportType.ENGAGEMENT]: "Engagement Report",
+    [MemberReportType.RETENTION]: "Retention Report",
+    [MemberReportType.GEOGRAPHIC]: "Geographic Report",
   };
   return labels[type] || type;
 };
 
-export const getMemberReportGroupByLabel = (groupBy: MemberReportGroupBy): string => {
+export const getMemberReportGroupByLabel = (
+  groupBy: MemberReportGroupBy,
+): string => {
   const labels = {
-    [MemberReportGroupBy.DAY]: 'Daily',
-    [MemberReportGroupBy.WEEK]: 'Weekly',
-    [MemberReportGroupBy.MONTH]: 'Monthly',
-    [MemberReportGroupBy.QUARTER]: 'Quarterly',
-    [MemberReportGroupBy.YEAR]: 'Yearly',
+    [MemberReportGroupBy.DAY]: "Daily",
+    [MemberReportGroupBy.WEEK]: "Weekly",
+    [MemberReportGroupBy.MONTH]: "Monthly",
+    [MemberReportGroupBy.QUARTER]: "Quarterly",
+    [MemberReportGroupBy.YEAR]: "Yearly",
   };
   return labels[groupBy] || groupBy;
 };
 
-export const getMemberReportFormatLabel = (format: MemberReportFormat): string => {
+export const getMemberReportFormatLabel = (
+  format: MemberReportFormat,
+): string => {
   const labels = {
-    [MemberReportFormat.JSON]: 'JSON',
-    [MemberReportFormat.CSV]: 'CSV',
-    [MemberReportFormat.PDF]: 'PDF',
-    [MemberReportFormat.EXCEL]: 'Excel',
+    [MemberReportFormat.JSON]: "JSON",
+    [MemberReportFormat.CSV]: "CSV",
+    [MemberReportFormat.PDF]: "PDF",
+    [MemberReportFormat.EXCEL]: "Excel",
   };
   return labels[format] || format;
 };

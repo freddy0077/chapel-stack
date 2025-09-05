@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useSpotify } from '@/lib/spotify/spotifyContext';
-import { searchSpotify } from '@/lib/spotify/spotifyApi';
-import { MagnifyingGlassIcon, PlusIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
-import { PlayIcon } from '@heroicons/react/24/solid';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { useSpotify } from "@/lib/spotify/spotifyContext";
+import { searchSpotify } from "@/lib/spotify/spotifyApi";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  MusicalNoteIcon,
+} from "@heroicons/react/24/outline";
+import { PlayIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
 
 interface SpotifyTrack {
   id: string;
@@ -24,12 +28,12 @@ interface SpotifySearchProps {
   onAddToLibrary?: (track: SpotifyTrack) => void;
 }
 
-export default function SpotifySearch({ 
-  onSelectTrack, 
-  onAddToLibrary 
+export default function SpotifySearch({
+  onSelectTrack,
+  onAddToLibrary,
 }: SpotifySearchProps) {
   const { isAuthenticated, getToken, login, spotifyApi } = useSpotify();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +60,7 @@ export default function SpotifySearch({
     try {
       const token = await getToken();
       if (!token) {
-        setError('No valid Spotify token available');
+        setError("No valid Spotify token available");
         setIsLoading(false);
         return;
       }
@@ -64,8 +68,8 @@ export default function SpotifySearch({
       const result = await searchSpotify(searchTerm, token);
       setSearchResults(result.tracks.items);
     } catch (error) {
-      console.error('Error searching Spotify:', error);
-      setError('Failed to search Spotify. Please try again.');
+      console.error("Error searching Spotify:", error);
+      setError("Failed to search Spotify. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -81,16 +85,19 @@ export default function SpotifySearch({
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   if (!isAuthenticated) {
     return (
       <div className="bg-white rounded-lg shadow p-6 text-center">
         <MusicalNoteIcon className="h-12 w-12 text-indigo-500 mx-auto" />
-        <h2 className="mt-2 text-lg font-medium text-gray-900">Connect to Spotify</h2>
+        <h2 className="mt-2 text-lg font-medium text-gray-900">
+          Connect to Spotify
+        </h2>
         <p className="mt-1 text-sm text-gray-500">
-          Connect to your Spotify account to search for worship songs, create playlists, and more.
+          Connect to your Spotify account to search for worship songs, create
+          playlists, and more.
         </p>
         <button
           onClick={login}
@@ -107,7 +114,10 @@ export default function SpotifySearch({
       <div className="p-4 border-b border-gray-200">
         <div className="relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -142,7 +152,9 @@ export default function SpotifySearch({
 
       {!isLoading && !error && searchResults.length === 0 && searchTerm && (
         <div className="p-4 text-center">
-          <p className="text-sm text-gray-500">No songs found for &quot;{searchTerm}&quot;</p>
+          <p className="text-sm text-gray-500">
+            No songs found for &quot;{searchTerm}&quot;
+          </p>
         </div>
       )}
 
@@ -150,25 +162,27 @@ export default function SpotifySearch({
         <div className="overflow-y-auto max-h-96">
           <ul className="divide-y divide-gray-200">
             {searchResults.map((track) => (
-              <li 
-                key={track.id} 
-                className={`p-4 hover:bg-gray-50 cursor-pointer ${selectedTrack?.id === track.id ? 'bg-indigo-50' : ''}`}
+              <li
+                key={track.id}
+                className={`p-4 hover:bg-gray-50 cursor-pointer ${selectedTrack?.id === track.id ? "bg-indigo-50" : ""}`}
                 onClick={() => handleTrackSelect(track)}
               >
                 <div className="flex items-center space-x-4">
                   {track.album.images[0] && (
-                    <Image 
-                      src={track.album.images[0]?.url} 
-                      alt={track.album.name} 
-                      width={64} 
-                      height={64} 
-                      className="rounded" 
+                    <Image
+                      src={track.album.images[0]?.url}
+                      alt={track.album.name}
+                      width={64}
+                      height={64}
+                      className="rounded"
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{track.name}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {track.name}
+                    </p>
                     <p className="text-sm text-gray-500 truncate">
-                      {track.artists.map(artist => artist.name).join(', ')}
+                      {track.artists.map((artist) => artist.name).join(", ")}
                     </p>
                     <p className="text-xs text-gray-400">{track.album.name}</p>
                   </div>

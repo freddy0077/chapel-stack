@@ -3,7 +3,11 @@ import { gql } from "@apollo/client";
 
 // GraphQL query to search for pastoral staff using the new backend endpoint
 const SEARCH_PASTORAL_STAFF = gql`
-  query SearchPastoralStaff($organisationId: ID!, $branchId: ID, $search: String) {
+  query SearchPastoralStaff(
+    $organisationId: ID!
+    $branchId: ID
+    $search: String
+  ) {
     searchPastoralStaff(
       organisationId: $organisationId
       branchId: $branchId
@@ -61,36 +65,31 @@ export function useSearchPastoralStaff(
   search: string,
   organisationId: string,
   branchId?: string,
-  specificRoles?: string[]
+  specificRoles?: string[],
 ) {
-  const { data, loading, error } = useQuery<{ 
-    searchPastoralStaff: { 
+  const { data, loading, error } = useQuery<{
+    searchPastoralStaff: {
       items: PastoralStaffUser[];
       totalCount: number;
       hasNextPage: boolean;
-    } 
-  }>(
-    SEARCH_PASTORAL_STAFF,
-    {
-      variables: {
-        organisationId,
-        branchId,
-        search: search.trim(),
-      },
-      skip: !organisationId || search.trim().length < 2,
-      fetchPolicy: "cache-and-network",
-    }
-  );
+    };
+  }>(SEARCH_PASTORAL_STAFF, {
+    variables: {
+      organisationId,
+      branchId,
+      search: search.trim(),
+    },
+    skip: !organisationId || search.trim().length < 2,
+    fetchPolicy: "cache-and-network",
+  });
 
   // Get the pastoral staff from the new backend endpoint
   const pastoralStaff = data?.searchPastoralStaff?.items || [];
 
   // If specific roles are requested, filter on frontend (for backward compatibility)
-  const filteredStaff = specificRoles 
-    ? pastoralStaff.filter(user => 
-        user.roles?.some(role => 
-          specificRoles.includes(role)
-        )
+  const filteredStaff = specificRoles
+    ? pastoralStaff.filter((user) =>
+        user.roles?.some((role) => specificRoles.includes(role)),
       )
     : pastoralStaff;
 
@@ -107,26 +106,23 @@ export function useSearchPastoralStaff(
 export function useSearchPastors(
   search: string,
   organisationId: string,
-  branchId?: string
+  branchId?: string,
 ) {
-  const { data, loading, error } = useQuery<{ 
-    searchPastors: { 
+  const { data, loading, error } = useQuery<{
+    searchPastors: {
       items: PastoralStaffUser[];
       totalCount: number;
       hasNextPage: boolean;
-    } 
-  }>(
-    SEARCH_PASTORS,
-    {
-      variables: {
-        organisationId,
-        branchId,
-        search: search.trim(),
-      },
-      skip: !organisationId || search.trim().length < 2,
-      fetchPolicy: "cache-and-network",
-    }
-  );
+    };
+  }>(SEARCH_PASTORS, {
+    variables: {
+      organisationId,
+      branchId,
+      search: search.trim(),
+    },
+    skip: !organisationId || search.trim().length < 2,
+    fetchPolicy: "cache-and-network",
+  });
 
   return {
     pastoralStaff: data?.searchPastors?.items || [],

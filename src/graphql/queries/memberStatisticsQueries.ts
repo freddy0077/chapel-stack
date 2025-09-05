@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Enhanced member statistics query with full backend capabilities
 export const GET_MEMBER_STATISTICS_ENHANCED = gql`

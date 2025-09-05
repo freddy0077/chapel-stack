@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { 
-  CalendarIcon, 
-  UsersIcon, 
+import {
+  CalendarIcon,
+  UsersIcon,
   ArrowDownTrayIcon,
   ListBulletIcon,
   Squares2X2Icon,
@@ -19,7 +19,7 @@ import {
   ClockIcon,
   MapPinIcon,
   TagIcon,
-  ChartBarIcon
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import AttendanceReportModal from "./components/AttendanceReportModal";
 import NewEventModal, { NewEventInput } from "./components/NewEventModal";
@@ -31,12 +31,15 @@ import EditAttendanceRecordModal from "./components/EditAttendanceRecordModal";
 import DeleteAttendanceRecordModal from "./components/DeleteAttendanceRecordModal";
 import CreateEventModal from "@/components/events/CreateEventModal";
 import EventDetailsModal from "./components/EventDetailsModal";
-import { useFilteredAttendanceSessions, useAllAttendanceRecords } from "@/graphql/hooks/useAttendance";
+import {
+  useFilteredAttendanceSessions,
+  useAllAttendanceRecords,
+} from "@/graphql/hooks/useAttendance";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useMutation, useQuery, gql } from "@apollo/client";
 import { CREATE_ATTENDANCE_SESSION } from "@/graphql/queries/attendanceQueries";
 import DashboardHeader from "@/components/DashboardHeader";
-import { useOrganizationBranchFilter } from '@/hooks';
+import { useOrganizationBranchFilter } from "@/hooks";
 import Pagination from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 
@@ -59,19 +62,24 @@ const GET_EVENTS = gql`
 
 export default function AttendanceDashboard() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
-  const [activeTab, setActiveTab] = useState<"sessions" | "events" | "all" | "records">("all");
+  const [activeTab, setActiveTab] = useState<
+    "sessions" | "events" | "all" | "records"
+  >("all");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'event' | 'session'>('event');
+  const [modalMode, setModalMode] = useState<"event" | "session">("event");
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [detailsModalSessionId, setDetailsModalSessionId] = useState<string | null>(null);
-  const [detailsModalSessionName, setDetailsModalSessionName] = useState<string>("");
+  const [detailsModalSessionId, setDetailsModalSessionId] = useState<
+    string | null
+  >(null);
+  const [detailsModalSessionName, setDetailsModalSessionName] =
+    useState<string>("");
   const [eventDetailsModalOpen, setEventDetailsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [creatingEvent, setCreatingEvent] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-  
+
   // Attendance record modal states
   const [recordDetailModalOpen, setRecordDetailModalOpen] = useState(false);
   const [editRecordModalOpen, setEditRecordModalOpen] = useState(false);
@@ -82,7 +90,7 @@ export default function AttendanceDashboard() {
   const [filterType, setFilterType] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({
     start: "",
-    end: ""
+    end: "",
   });
 
   // Get current branch from auth context
@@ -94,7 +102,12 @@ export default function AttendanceDashboard() {
   const [createAttendanceSession] = useMutation(CREATE_ATTENDANCE_SESSION);
 
   // Fetch attendance sessions and events
-  const { sessions, loading: loadingSessions, error: sessionsError, refetch } = useFilteredAttendanceSessions(orgBranchFilter);
+  const {
+    sessions,
+    loading: loadingSessions,
+    error: sessionsError,
+    refetch,
+  } = useFilteredAttendanceSessions(orgBranchFilter);
   const { data: eventsData, loading: loadingEvents } = useQuery(GET_EVENTS, {
     variables: {
       branchId: orgBranchFilter.branchId || null,
@@ -105,11 +118,12 @@ export default function AttendanceDashboard() {
   const events = eventsData?.events || [];
 
   // Fetch all attendance records for statistics
-  const { attendanceRecords, refetch: refetchAttendanceRecords } = useAllAttendanceRecords({
-    filter: {
-      branchId: orgBranchFilter.branchId,
-    }
-  });
+  const { attendanceRecords, refetch: refetchAttendanceRecords } =
+    useAllAttendanceRecords({
+      filter: {
+        branchId: orgBranchFilter.branchId,
+      },
+    });
 
   // Handler functions for attendance record actions
   const handleViewRecord = (record: any) => {
@@ -156,7 +170,8 @@ export default function AttendanceDashboard() {
 
     // Ensure we have proper branchId and organisationId
     const branchId = event.branchId || orgBranchFilter.branchId;
-    const organisationId = event.organisationId || orgBranchFilter.organisationId;
+    const organisationId =
+      event.organisationId || orgBranchFilter.organisationId;
 
     if (!branchId) {
       setCreatingEvent(false);
@@ -166,7 +181,9 @@ export default function AttendanceDashboard() {
 
     if (!organisationId) {
       setCreatingEvent(false);
-      setCreateError("No organization found. Cannot create attendance session.");
+      setCreateError(
+        "No organization found. Cannot create attendance session.",
+      );
       return;
     }
 
@@ -184,21 +201,23 @@ export default function AttendanceDashboard() {
         organisationId,
       };
 
-
       await createAttendanceSession({
         variables: { input },
       });
 
       setCreatingEvent(false);
       setIsNewEventModalOpen(false);
-      setModalMode('event'); // Reset mode
+      setModalMode("event"); // Reset mode
       if (refetch) refetch();
-      
+
       // Show success message
     } catch (err: any) {
-      console.error('Error creating attendance session:', err);
+      console.error("Error creating attendance session:", err);
       setCreatingEvent(false);
-      setCreateError(err?.message || `Failed to create ${modalMode === 'session' ? 'session' : 'event'}.`);
+      setCreateError(
+        err?.message ||
+          `Failed to create ${modalMode === "session" ? "session" : "event"}.`,
+      );
     }
   };
 
@@ -233,17 +252,22 @@ export default function AttendanceDashboard() {
       // Tab filtering
       if (activeTab === "sessions" && item.type !== "session") return false;
       if (activeTab === "events" && item.type !== "event") return false;
-      
+
       // Search filtering
-      if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-      
+      if (
+        searchTerm &&
+        !item.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+        return false;
+
       // Date range filtering
-      if (dateRange.start && item.date < new Date(dateRange.start)) return false;
+      if (dateRange.start && item.date < new Date(dateRange.start))
+        return false;
       if (dateRange.end && item.date > new Date(dateRange.end)) return false;
-      
+
       // Type filtering
       if (filterType && item.category !== filterType) return false;
-      
+
       return true;
     });
   }, [combinedItems, activeTab, searchTerm, dateRange, filterType]);
@@ -257,9 +281,11 @@ export default function AttendanceDashboard() {
   // Calculate statistics
   const stats = useMemo(() => {
     const totalAttendees = attendanceRecords.length;
-    const uniqueMembers = new Set(attendanceRecords.map(r => r.member?.id).filter(Boolean)).size;
-    const visitors = attendanceRecords.filter(r => r.visitorName).length;
-    const recentAttendance = attendanceRecords.filter(r => {
+    const uniqueMembers = new Set(
+      attendanceRecords.map((r) => r.member?.id).filter(Boolean),
+    ).size;
+    const visitors = attendanceRecords.filter((r) => r.visitorName).length;
+    const recentAttendance = attendanceRecords.filter((r) => {
       const recordDate = new Date(r.checkInTime);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -284,7 +310,9 @@ export default function AttendanceDashboard() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <span className="text-lg text-gray-500">Loading attendance data...</span>
+          <span className="text-lg text-gray-500">
+            Loading attendance data...
+          </span>
         </div>
       </div>
     );
@@ -295,11 +323,23 @@ export default function AttendanceDashboard() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="text-red-500 mb-4">
-            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-12 h-12 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
-          <span className="text-lg text-red-500">Error loading attendance data: {error.message}</span>
+          <span className="text-lg text-red-500">
+            Error loading attendance data: {error.message}
+          </span>
         </div>
       </div>
     );
@@ -307,8 +347,11 @@ export default function AttendanceDashboard() {
 
   return (
     <>
-      <DashboardHeader title="Attendance Dashboard" subtitle="Monitor attendance for sessions, events, and activities" />
-      
+      <DashboardHeader
+        title="Attendance Dashboard"
+        subtitle="Monitor attendance for sessions, events, and activities"
+      />
+
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Modern Stats Grid */}
@@ -316,7 +359,9 @@ export default function AttendanceDashboard() {
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm font-medium">Total Attendance</p>
+                  <p className="text-blue-100 text-sm font-medium">
+                    Total Attendance
+                  </p>
                   <p className="text-3xl font-bold">{stats.totalAttendees}</p>
                 </div>
                 <div className="bg-blue-400 bg-opacity-30 rounded-full p-3">
@@ -328,7 +373,9 @@ export default function AttendanceDashboard() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">Unique Members</p>
+                  <p className="text-green-100 text-sm font-medium">
+                    Unique Members
+                  </p>
                   <p className="text-3xl font-bold">{stats.uniqueMembers}</p>
                 </div>
                 <div className="bg-green-400 bg-opacity-30 rounded-full p-3">
@@ -340,7 +387,9 @@ export default function AttendanceDashboard() {
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">Visitors</p>
+                  <p className="text-purple-100 text-sm font-medium">
+                    Visitors
+                  </p>
                   <p className="text-3xl font-bold">{stats.visitors}</p>
                 </div>
                 <div className="bg-purple-400 bg-opacity-30 rounded-full p-3">
@@ -352,7 +401,9 @@ export default function AttendanceDashboard() {
             <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-amber-100 text-sm font-medium">Recent (30d)</p>
+                  <p className="text-amber-100 text-sm font-medium">
+                    Recent (30d)
+                  </p>
                   <p className="text-3xl font-bold">{stats.recentAttendance}</p>
                 </div>
                 <div className="bg-amber-400 bg-opacity-30 rounded-full p-3">
@@ -507,7 +558,9 @@ export default function AttendanceDashboard() {
               <div className="text-gray-400 mb-4">
                 <CalendarIcon className="h-16 w-16 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No attendance records found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No attendance records found
+              </h3>
               <p className="text-gray-500 mb-6">
                 {searchTerm || filterType || dateRange.start
                   ? "Try adjusting your search or filter criteria."
@@ -515,33 +568,40 @@ export default function AttendanceDashboard() {
               </p>
               <button
                 onClick={() => {
-                  if (activeTab === 'events') {
+                  if (activeTab === "events") {
                     setCreateEventModalOpen(true);
                   } else {
-                    setModalMode('session');
+                    setModalMode("session");
                     setIsNewEventModalOpen(true);
                   }
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 <PlusIcon className="h-5 w-5" />
-                {activeTab === 'events' ? 'Create New Event' : 'Create New Session'}
+                {activeTab === "events"
+                  ? "Create New Event"
+                  : "Create New Session"}
               </button>
             </div>
           ) : viewMode === "grid" ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {pagination.paginatedData.map((item) => (
-                  <div key={`${item.type}-${item.id}`} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                  <div
+                    key={`${item.type}-${item.id}`}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  >
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              item.type === "session" 
-                                ? "bg-blue-100 text-blue-800" 
-                                : "bg-purple-100 text-purple-800"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.type === "session"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-purple-100 text-purple-800"
+                              }`}
+                            >
                               {item.type === "session" ? "Session" : "Event"}
                             </span>
                             <span className="text-xs text-gray-500">
@@ -599,7 +659,7 @@ export default function AttendanceDashboard() {
                   </div>
                 ))}
               </div>
-              
+
               {/* Pagination for Grid View */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <Pagination
@@ -621,38 +681,63 @@ export default function AttendanceDashboard() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Name
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Type
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Date
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Location
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Attendees
                         </th>
-                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Actions
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {pagination.paginatedData.map((item) => (
-                        <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
+                        <tr
+                          key={`${item.type}-${item.id}`}
+                          className="hover:bg-gray-50"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{item.title}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {item.title}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              item.type === "session" 
-                                ? "bg-blue-100 text-blue-800" 
-                                : "bg-purple-100 text-purple-800"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.type === "session"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-purple-100 text-purple-800"
+                              }`}
+                            >
                               {item.type === "session" ? "Session" : "Event"}
                             </span>
                           </td>
@@ -698,7 +783,7 @@ export default function AttendanceDashboard() {
                   </table>
                 </div>
               </div>
-              
+
               {/* Pagination for Table View */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <Pagination

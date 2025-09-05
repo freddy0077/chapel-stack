@@ -1,9 +1,19 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Sermon Queries
 export const GET_SERMONS = gql`
-  query GetSermons($branchId: String, $speakerId: String, $seriesId: String, $status: String) {
-    sermons(branchId: $branchId, speakerId: $speakerId, seriesId: $seriesId, status: $status) {
+  query GetSermons(
+    $branchId: String
+    $speakerId: String
+    $seriesId: String
+    $status: String
+  ) {
+    sermons(
+      branchId: $branchId
+      speakerId: $speakerId
+      seriesId: $seriesId
+      status: $status
+    ) {
       id
       title
       description

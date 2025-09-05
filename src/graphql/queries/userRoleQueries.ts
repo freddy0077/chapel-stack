@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to search for users by specific roles (optimized for pastor search)
 export const SEARCH_USERS_BY_ROLE = gql`

@@ -16,8 +16,13 @@ export interface BaptismRecord {
 
 export function useBaptismRecords() {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { data, loading, error } = useQuery<{ sacramentalRecords: BaptismRecord[] }>(GET_BAPTISM_RECORDS, {
+  const branchId =
+    user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
+  const { data, loading, error } = useQuery<{
+    sacramentalRecords: BaptismRecord[];
+  }>(GET_BAPTISM_RECORDS, {
     variables: { branchId },
     fetchPolicy: "cache-and-network",
   });

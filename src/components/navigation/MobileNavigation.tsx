@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { getUserNavigation } from '@/utils/navigation.utils';
-import { NavigationCategory } from './NavigationCategory';
-import { useModulePreferences } from '@/hooks/useModulePreferences';
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { getUserNavigation } from "@/utils/navigation.utils";
+import { NavigationCategory } from "./NavigationCategory";
+import { useModulePreferences } from "@/hooks/useModulePreferences";
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ interface MobileNavigationProps {
 export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
   const { user, primaryRole } = useAuth();
   const { enabledModules } = useModulePreferences();
-  
+
   if (!user || !primaryRole) {
     return null;
   }
@@ -65,7 +65,10 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
                     onClick={onClose}
                   >
                     <span className="sr-only">Close sidebar</span>
-                    <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                    <XMarkIcon
+                      className="h-6 w-6 text-white"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </Transition.Child>
@@ -73,7 +76,9 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
               <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                 {/* Logo/Brand */}
                 <div className="flex items-center flex-shrink-0 px-4 mb-5">
-                  <h1 className="text-indigo-600 text-lg font-semibold">Chapel Stack</h1>
+                  <h1 className="text-indigo-600 text-lg font-semibold">
+                    Chapel Stack
+                  </h1>
                 </div>
 
                 {/* User Info */}
@@ -82,13 +87,17 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                         <span className="text-sm font-medium text-indigo-600">
-                          {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                          {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
                         </span>
                       </div>
                     </div>
                     <div className="ml-3">
-                      <p className="text-base font-medium text-gray-900">{user.name || user.email}</p>
-                      <p className="text-sm text-gray-500">{primaryRole.replace('_', ' ')}</p>
+                      <p className="text-base font-medium text-gray-900">
+                        {user.name || user.email}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {primaryRole.replace("_", " ")}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -117,7 +126,9 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
               </div>
             </Dialog.Panel>
           </Transition.Child>
-          <div className="flex-shrink-0 w-14">{/* Force sidebar to shrink to fit close icon */}</div>
+          <div className="flex-shrink-0 w-14">
+            {/* Force sidebar to shrink to fit close icon */}
+          </div>
         </div>
       </Dialog>
     </Transition.Root>

@@ -1,7 +1,6 @@
 """
 Ministry Management schema - handles church ministries, teams, and related functionality
 """
-
 enum MinistryType {
   WORSHIP
   CHILDREN
@@ -172,10 +171,10 @@ extend type Query {
     status: Status
     pagination: PaginationInput
   ): MinistryConnection! @auth(requires: [GUEST])
-  
+
   # Get a specific ministry
   ministry(id: ID!): Ministry @auth(requires: [GUEST])
-  
+
   # Get ministry members
   ministryMembers(
     ministryId: ID!
@@ -184,59 +183,57 @@ extend type Query {
     search: String
     pagination: PaginationInput
   ): MinistryMemberConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific ministry member
   ministryMember(id: ID!): MinistryMember @auth(requires: [STAFF])
-  
+
   # Get all ministries for a specific member
   memberMinistries(memberId: ID!): [Ministry!]! @auth(requires: [STAFF])
-  
+
   # Get all ministry requirements
   ministryRequirements(
-    ministryId: ID!,
+    ministryId: ID!
     isRequired: Boolean
   ): [MinistryRequirement!]! @auth(requires: [STAFF])
-  
+
   # Get all requirement completions for a member
   memberRequirementCompletions(
-    memberId: ID!,
+    memberId: ID!
     status: Status
   ): [RequirementCompletion!]! @auth(requires: [STAFF])
-  
+
   # Get all teams for a ministry
-  ministryTeams(
-    ministryId: ID!,
-    status: Status
-  ): [Team!]! @auth(requires: [STAFF])
-  
+  ministryTeams(ministryId: ID!, status: Status): [Team!]!
+    @auth(requires: [STAFF])
+
   # Get a specific team
   team(id: ID!): Team @auth(requires: [STAFF])
-  
+
   # Get schedule for a ministry or team
   schedule(
-    ministryId: ID,
-    teamId: ID,
-    startDate: Date!,
+    ministryId: ID
+    teamId: ID
+    startDate: Date!
     endDate: Date!
   ): [Schedule!]! @auth(requires: [STAFF])
-  
+
   # Get resources for a ministry
   ministryResources(
-    ministryId: ID!,
-    category: String,
+    ministryId: ID!
+    category: String
     pagination: PaginationInput
   ): ResourceConnection! @auth(requires: [MEMBER])
-  
+
   # Get a specific resource
   resource(id: ID!): Resource @auth(requires: [MEMBER])
-  
+
   # Get announcements
   announcements(
-    ministryId: ID,
-    branchId: ID,
-    startDate: Date,
-    endDate: Date,
-    status: Status,
+    ministryId: ID
+    branchId: ID
+    startDate: Date
+    endDate: Date
+    status: Status
     pagination: PaginationInput
   ): AnnouncementConnection! @auth(requires: [GUEST])
 }
@@ -283,77 +280,103 @@ type AnnouncementEdge {
 
 extend type Mutation {
   # Create a new ministry
-  createMinistry(input: CreateMinistryInput!): Ministry! @auth(requires: [BRANCH_ADMIN])
-  
+  createMinistry(input: CreateMinistryInput!): Ministry!
+    @auth(requires: [BRANCH_ADMIN])
+
   # Update a ministry
-  updateMinistry(id: ID!, input: UpdateMinistryInput!): Ministry! @auth(requires: [MINISTRY_LEADER])
-  
+  updateMinistry(id: ID!, input: UpdateMinistryInput!): Ministry!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Delete a ministry
   deleteMinistry(id: ID!): Boolean! @auth(requires: [BRANCH_ADMIN])
-  
+
   # Add a member to a ministry
-  addMinistryMember(input: AddMinistryMemberInput!): MinistryMember! @auth(requires: [MINISTRY_LEADER])
-  
+  addMinistryMember(input: AddMinistryMemberInput!): MinistryMember!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Update a ministry member
-  updateMinistryMember(id: ID!, input: UpdateMinistryMemberInput!): MinistryMember! @auth(requires: [MINISTRY_LEADER])
-  
+  updateMinistryMember(
+    id: ID!
+    input: UpdateMinistryMemberInput!
+  ): MinistryMember! @auth(requires: [MINISTRY_LEADER])
+
   # Remove a member from a ministry
   removeMinistryMember(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
-  
+
   # Create a ministry requirement
-  createMinistryRequirement(input: CreateRequirementInput!): MinistryRequirement! @auth(requires: [MINISTRY_LEADER])
-  
+  createMinistryRequirement(
+    input: CreateRequirementInput!
+  ): MinistryRequirement! @auth(requires: [MINISTRY_LEADER])
+
   # Update a ministry requirement
-  updateMinistryRequirement(id: ID!, input: UpdateRequirementInput!): MinistryRequirement! @auth(requires: [MINISTRY_LEADER])
-  
+  updateMinistryRequirement(
+    id: ID!
+    input: UpdateRequirementInput!
+  ): MinistryRequirement! @auth(requires: [MINISTRY_LEADER])
+
   # Delete a ministry requirement
-  deleteMinistryRequirement(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
-  
+  deleteMinistryRequirement(id: ID!): Boolean!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Record requirement completion
-  recordRequirementCompletion(input: RequirementCompletionInput!): RequirementCompletion! @auth(requires: [STAFF])
-  
+  recordRequirementCompletion(
+    input: RequirementCompletionInput!
+  ): RequirementCompletion! @auth(requires: [STAFF])
+
   # Update requirement completion
-  updateRequirementCompletion(id: ID!, input: UpdateRequirementCompletionInput!): RequirementCompletion! @auth(requires: [STAFF])
-  
+  updateRequirementCompletion(
+    id: ID!
+    input: UpdateRequirementCompletionInput!
+  ): RequirementCompletion! @auth(requires: [STAFF])
+
   # Create a team
   createTeam(input: CreateTeamInput!): Team! @auth(requires: [MINISTRY_LEADER])
-  
+
   # Update a team
-  updateTeam(id: ID!, input: UpdateTeamInput!): Team! @auth(requires: [MINISTRY_LEADER])
-  
+  updateTeam(id: ID!, input: UpdateTeamInput!): Team!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Delete a team
   deleteTeam(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
-  
+
   # Add members to a team
-  addTeamMembers(teamId: ID!, memberIds: [ID!]!): Team! @auth(requires: [MINISTRY_LEADER])
-  
+  addTeamMembers(teamId: ID!, memberIds: [ID!]!): Team!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Remove members from a team
-  removeTeamMembers(teamId: ID!, memberIds: [ID!]!): Team! @auth(requires: [MINISTRY_LEADER])
-  
+  removeTeamMembers(teamId: ID!, memberIds: [ID!]!): Team!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Create a schedule
-  createSchedule(input: CreateScheduleInput!): Schedule! @auth(requires: [MINISTRY_LEADER])
-  
+  createSchedule(input: CreateScheduleInput!): Schedule!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Update a schedule
-  updateSchedule(id: ID!, input: UpdateScheduleInput!): Schedule! @auth(requires: [MINISTRY_LEADER])
-  
+  updateSchedule(id: ID!, input: UpdateScheduleInput!): Schedule!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Delete a schedule
   deleteSchedule(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
-  
+
   # Upload a resource
-  uploadResource(input: UploadResourceInput!): Resource! @auth(requires: [MINISTRY_LEADER])
-  
+  uploadResource(input: UploadResourceInput!): Resource!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Update a resource
-  updateResource(id: ID!, input: UpdateResourceInput!): Resource! @auth(requires: [MINISTRY_LEADER])
-  
+  updateResource(id: ID!, input: UpdateResourceInput!): Resource!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Delete a resource
   deleteResource(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
-  
+
   # Create an announcement
-  createAnnouncement(input: CreateAnnouncementInput!): Announcement! @auth(requires: [MINISTRY_LEADER])
-  
+  createAnnouncement(input: CreateAnnouncementInput!): Announcement!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Update an announcement
-  updateAnnouncement(id: ID!, input: UpdateAnnouncementInput!): Announcement! @auth(requires: [MINISTRY_LEADER])
-  
+  updateAnnouncement(id: ID!, input: UpdateAnnouncementInput!): Announcement!
+    @auth(requires: [MINISTRY_LEADER])
+
   # Delete an announcement
   deleteAnnouncement(id: ID!): Boolean! @auth(requires: [MINISTRY_LEADER])
 }
@@ -527,22 +550,25 @@ input UpdateAnnouncementInput {
 extend type Subscription {
   # Get notified when a new ministry is created
   ministryCreated(branchId: ID): Ministry! @auth(requires: [STAFF])
-  
+
   # Get notified when a ministry is updated
   ministryUpdated(id: ID!): Ministry! @auth(requires: [STAFF])
-  
+
   # Get notified when a ministry member is added
   ministryMemberAdded(ministryId: ID!): MinistryMember! @auth(requires: [STAFF])
-  
+
   # Get notified when a ministry member is removed
-  ministryMemberRemoved(ministryId: ID!): MinistryMember! @auth(requires: [STAFF])
-  
+  ministryMemberRemoved(ministryId: ID!): MinistryMember!
+    @auth(requires: [STAFF])
+
   # Get notified when a new resource is uploaded
   resourceUploaded(ministryId: ID): Resource! @auth(requires: [MEMBER])
-  
+
   # Get notified when a new announcement is created
-  announcementCreated(ministryId: ID, branchId: ID): Announcement! @auth(requires: [MEMBER])
-  
+  announcementCreated(ministryId: ID, branchId: ID): Announcement!
+    @auth(requires: [MEMBER])
+
   # Get notified when a schedule is created or updated
-  scheduleUpdated(ministryId: ID, teamId: ID): Schedule! @auth(requires: [MEMBER])
+  scheduleUpdated(ministryId: ID, teamId: ID): Schedule!
+    @auth(requires: [MEMBER])
 }

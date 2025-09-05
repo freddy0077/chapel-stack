@@ -1,11 +1,11 @@
-import { Branch } from '@/types/branch';
-import { User } from '@/types/user';
+import { Branch } from "@/types/branch";
+import { User } from "@/types/user";
 
 // Media asset types
-export type AssetType = 'image' | 'video' | 'audio' | 'document' | 'other';
+export type AssetType = "image" | "video" | "audio" | "document" | "other";
 
 // Video/Audio quality options
-export type MediaQuality = 'HD' | 'SD' | 'Mobile' | 'Low';
+export type MediaQuality = "HD" | "SD" | "Mobile" | "Low";
 
 // Media file version (transcoded variant)
 export interface MediaVersion {
@@ -35,7 +35,7 @@ export interface MediaAsset {
   branchId?: string; // Branch that owns this asset, null for global assets
   permissions?: AssetPermissions;
   transcoded: boolean;
-  status: 'processing' | 'ready' | 'error';
+  status: "processing" | "ready" | "error";
   metadata?: Record<string, any>; // Flexible metadata for different asset types
 }
 
@@ -99,7 +99,7 @@ export interface AssetUploadStatus {
   assetId: string;
   fileName: string;
   progress: number; // 0-100
-  status: 'queued' | 'uploading' | 'processing' | 'complete' | 'error';
+  status: "queued" | "uploading" | "processing" | "complete" | "error";
   errorMessage?: string;
   createdAt: Date;
   completedAt?: Date;
@@ -109,7 +109,7 @@ export interface AssetUploadStatus {
 export interface TranscodingJob {
   id: string;
   assetId: string;
-  status: 'queued' | 'processing' | 'complete' | 'error';
+  status: "queued" | "processing" | "complete" | "error";
   progress: number; // 0-100
   targetFormats: string[];
   createdAt: Date;
@@ -139,7 +139,7 @@ export interface AssetSearchParams {
   dateFrom?: Date;
   dateTo?: Date;
   uploadedBy?: string;
-  sort?: 'newest' | 'oldest' | 'name' | 'size';
+  sort?: "newest" | "oldest" | "name" | "size";
   page?: number;
   limit?: number;
 }
@@ -156,4 +156,9 @@ export interface AssetStatistics {
 }
 
 // Union type for all asset types
-export type AnyMediaAsset = ImageAsset | VideoAsset | AudioAsset | DocumentAsset | MediaAsset;
+export type AnyMediaAsset =
+  | ImageAsset
+  | VideoAsset
+  | AudioAsset
+  | DocumentAsset
+  | MediaAsset;

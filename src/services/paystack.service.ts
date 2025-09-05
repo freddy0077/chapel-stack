@@ -29,7 +29,7 @@ export interface PaystackVerificationResponse {
   data: {
     id: number;
     domain: string;
-    status: 'success' | 'failed' | 'abandoned';
+    status: "success" | "failed" | "abandoned";
     reference: string;
     amount: number;
     message: string;
@@ -72,26 +72,28 @@ export interface PaystackVerificationResponse {
 }
 
 class PaystackService {
-  private baseUrl = 'https://api.paystack.co';
+  private baseUrl = "https://api.paystack.co";
   private publicKey: string;
 
   constructor() {
-    this.publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
+    this.publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
     if (!this.publicKey) {
-      console.warn('Paystack public key not found in environment variables');
+      console.warn("Paystack public key not found in environment variables");
     }
   }
 
   /**
    * Initialize a payment transaction
    */
-  async initializePayment(paymentData: PaystackPaymentData): Promise<PaystackResponse> {
+  async initializePayment(
+    paymentData: PaystackPaymentData,
+  ): Promise<PaystackResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.publicKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.publicKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...paymentData,
@@ -107,23 +109,28 @@ class PaystackService {
       const result: PaystackResponse = await response.json();
       return result;
     } catch (error) {
-      console.error('Paystack payment initialization failed:', error);
-      throw new Error('Failed to initialize payment. Please try again.');
+      console.error("Paystack payment initialization failed:", error);
+      throw new Error("Failed to initialize payment. Please try again.");
     }
   }
 
   /**
    * Verify a payment transaction
    */
-  async verifyPayment(reference: string): Promise<PaystackVerificationResponse> {
+  async verifyPayment(
+    reference: string,
+  ): Promise<PaystackVerificationResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/transaction/verify/${reference}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.publicKey}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${this.baseUrl}/transaction/verify/${reference}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.publicKey}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,8 +139,8 @@ class PaystackService {
       const result: PaystackVerificationResponse = await response.json();
       return result;
     } catch (error) {
-      console.error('Paystack payment verification failed:', error);
-      throw new Error('Failed to verify payment. Please try again.');
+      console.error("Paystack payment verification failed:", error);
+      throw new Error("Failed to verify payment. Please try again.");
     }
   }
 
@@ -159,8 +166,8 @@ class PaystackService {
    * Format currency for display
    */
   formatCurrency(amount: number, currency: string): string {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
       currency: currency.toUpperCase(),
       minimumFractionDigits: 2,
     }).format(amount);
@@ -169,27 +176,38 @@ class PaystackService {
   /**
    * Generate callback URL for payment completion
    */
-  generateCallbackUrl(organizationId: string, planId: string, contactName?: string, contactEmail?: string): string {
+  generateCallbackUrl(
+    organizationId: string,
+    planId: string,
+    contactName?: string,
+    contactEmail?: string,
+  ): string {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const params = new URLSearchParams({
       organizationId,
       planId,
     });
-    
-    if (contactName) params.append('contactName', contactName);
-    if (contactEmail) params.append('contactEmail', contactEmail);
-    
+
+    if (contactName) params.append("contactName", contactName);
+    if (contactEmail) params.append("contactEmail", contactEmail);
+
     return `${baseUrl}/payment-callback?${params.toString()}`;
   }
 
   /**
    * Open Paystack popup for payment
    */
-  openPaystackPopup(paymentData: PaystackPaymentData, onSuccess: (response: any) => void, onCancel: () => void): void {
+  openPaystackPopup(
+    paymentData: PaystackPaymentData,
+    onSuccess: (response: any) => void,
+    onCancel: () => void,
+  ): void {
     // Check if PaystackPop is available (loaded from CDN)
-    if (typeof (window as any).PaystackPop === 'undefined') {
-      console.error('Paystack popup script not loaded');
-      throw new Error('Payment system not available. Please refresh the page and try again.');
+    if (typeof (window as any).PaystackPop === "undefined") {
+      console.error("Paystack popup script not loaded");
+      throw new Error(
+        "Payment system not available. Please refresh the page and try again.",
+      );
     }
 
     const handler = (window as any).PaystackPop.setup({
@@ -197,14 +215,16 @@ class PaystackService {
       email: paymentData.email,
       amount: this.convertToKobo(paymentData.amount, paymentData.currency),
       currency: paymentData.currency,
-      ref: paymentData.reference || this.generateReference(paymentData.metadata?.organizationId || ''),
+      ref:
+        paymentData.reference ||
+        this.generateReference(paymentData.metadata?.organizationId || ""),
       metadata: paymentData.metadata,
-      callback: function(response: any) {
+      callback: function (response: any) {
         onSuccess(response);
       },
-      onClose: function() {
+      onClose: function () {
         onCancel();
-      }
+      },
     });
 
     handler.openIframe();

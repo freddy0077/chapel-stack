@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fetches dashboard data, including KPI cards (e.g., total members) for an organisation
 export const GET_SECURITY_OVERVIEW = gql`

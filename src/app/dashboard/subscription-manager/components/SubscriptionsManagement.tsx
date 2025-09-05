@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery } from '@apollo/client';
-import { 
+import { useState, useMemo } from "react";
+import { useQuery } from "@apollo/client";
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   PlusIcon,
@@ -10,40 +10,53 @@ import {
   PencilIcon,
   XMarkIcon,
   ArrowPathIcon,
-  CreditCardIcon
-} from '@heroicons/react/24/outline';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { getSubscriptionStatusBadgeColor, formatCurrency, formatDate } from '../utils/formatters';
-import { GET_RECENT_SUBSCRIPTIONS } from '@/graphql/subscription-management';
-import CreateSubscriptionModal from './CreateSubscriptionModal';
+  CreditCardIcon,
+} from "@heroicons/react/24/outline";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  getSubscriptionStatusBadgeColor,
+  formatCurrency,
+  formatDate,
+} from "../utils/formatters";
+import { GET_RECENT_SUBSCRIPTIONS } from "@/graphql/subscription-management";
+import CreateSubscriptionModal from "./CreateSubscriptionModal";
 
 export default function SubscriptionsManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Fetch subscriptions from backend
-  const { data: subscriptionsData, loading, error, refetch } = useQuery(GET_RECENT_SUBSCRIPTIONS, {
+  const {
+    data: subscriptionsData,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_RECENT_SUBSCRIPTIONS, {
     variables: {
       filter: {
-        take: 100 // Limit to 100 subscriptions for performance
-      }
+        take: 100, // Limit to 100 subscriptions for performance
+      },
     },
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   const subscriptions = subscriptionsData?.getSubscriptions || [];
 
   const filteredSubscriptions = useMemo(() => {
     return subscriptions.filter((sub: any) => {
-      const matchesSearch = sub.organisation?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           sub.plan?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           sub.customer?.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || sub.status === statusFilter;
+      const matchesSearch =
+        sub.organisation?.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        sub.plan?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sub.customer?.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || sub.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [subscriptions, searchTerm, statusFilter]);
@@ -64,7 +77,7 @@ export default function SubscriptionsManagement() {
               className="pl-10"
             />
           </div>
-          
+
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -85,7 +98,11 @@ export default function SubscriptionsManagement() {
             <FunnelIcon className="h-4 w-4 mr-2" />
             Advanced Filters
           </Button>
-          <Button variant="default" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             Create Subscription
           </Button>
@@ -134,17 +151,25 @@ export default function SubscriptionsManagement() {
                       <div className="text-sm font-medium text-gray-900">
                         {subscription.plan?.name}
                       </div>
-                      <Badge className={getSubscriptionStatusBadgeColor(subscription.status)}>
+                      <Badge
+                        className={getSubscriptionStatusBadgeColor(
+                          subscription.status,
+                        )}
+                      >
                         {subscription.status}
                       </Badge>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {formatCurrency(subscription.plan?.amount || 0, subscription.plan?.currency || 'GHS')}
+                      {formatCurrency(
+                        subscription.plan?.amount || 0,
+                        subscription.plan?.currency || "GHS",
+                      )}
                     </div>
                     <div className="text-sm text-gray-500">
-                      per {subscription.plan?.interval?.toLowerCase() || 'month'}
+                      per{" "}
+                      {subscription.plan?.interval?.toLowerCase() || "month"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -154,7 +179,9 @@ export default function SubscriptionsManagement() {
                     {formatDate(subscription.currentPeriodEnd)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {subscription.nextBillingDate ? formatDate(subscription.nextBillingDate) : 'N/A'}
+                    {subscription.nextBillingDate
+                      ? formatDate(subscription.nextBillingDate)
+                      : "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center space-x-2">
@@ -164,8 +191,12 @@ export default function SubscriptionsManagement() {
                       <Button variant="ghost" size="sm">
                         <PencilIcon className="h-4 w-4" />
                       </Button>
-                      {subscription.status === 'PAST_DUE' && (
-                        <Button variant="ghost" size="sm" className="text-red-600">
+                      {subscription.status === "PAST_DUE" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600"
+                        >
                           <XMarkIcon className="h-4 w-4" />
                         </Button>
                       )}
@@ -180,7 +211,9 @@ export default function SubscriptionsManagement() {
           {loading && (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-              <span className="ml-2 text-gray-600">Loading subscriptions...</span>
+              <span className="ml-2 text-gray-600">
+                Loading subscriptions...
+              </span>
             </div>
           )}
 
@@ -188,7 +221,9 @@ export default function SubscriptionsManagement() {
           {error && (
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
-                <p className="text-red-600 mb-2">Failed to load subscriptions</p>
+                <p className="text-red-600 mb-2">
+                  Failed to load subscriptions
+                </p>
                 <Button variant="outline" size="sm" onClick={() => refetch()}>
                   <ArrowPathIcon className="h-4 w-4 mr-2" />
                   Retry
@@ -204,10 +239,9 @@ export default function SubscriptionsManagement() {
                 <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">No subscriptions found</p>
                 <p className="text-sm text-gray-500">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters' 
-                    : 'Create your first subscription to get started'
-                  }
+                  {searchTerm || statusFilter !== "all"
+                    ? "Try adjusting your search or filters"
+                    : "Create your first subscription to get started"}
                 </p>
               </div>
             </div>
@@ -215,8 +249,8 @@ export default function SubscriptionsManagement() {
         </div>
       </Card>
 
-      <CreateSubscriptionModal 
-        isOpen={isCreateModalOpen} 
+      <CreateSubscriptionModal
+        isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => {
           refetch(); // Refresh subscriptions list

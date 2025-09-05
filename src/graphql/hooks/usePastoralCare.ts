@@ -1,5 +1,5 @@
-import { useQuery, useMutation } from '@apollo/client';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+import { useQuery, useMutation } from "@apollo/client";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import {
   GET_PASTORAL_CARE_STATS,
   GET_PASTORAL_CARE_DASHBOARD,
@@ -25,7 +25,7 @@ import {
   CREATE_FOLLOW_UP_REMINDER,
   UPDATE_FOLLOW_UP_REMINDER,
   DELETE_FOLLOW_UP_REMINDER,
-} from '../queries/pastoralCareQueries';
+} from "../queries/pastoralCareQueries";
 
 // Types based on actual backend schema
 export interface PastoralCareStats {
@@ -310,7 +310,7 @@ export interface UpdateFollowUpReminderInput {
 // Get pastoral care statistics
 export function usePastoralCareStats() {
   const { data, loading, error } = useQuery(GET_PASTORAL_CARE_STATS);
-  
+
   return {
     stats: data?.pastoralCareStats as PastoralCareStats | undefined,
     loading,
@@ -321,7 +321,7 @@ export function usePastoralCareStats() {
 // Get pastoral care dashboard
 export function usePastoralCareDashboard() {
   const { data, loading, error } = useQuery(GET_PASTORAL_CARE_DASHBOARD);
-  
+
   return {
     dashboard: data?.pastoralCareDashboard,
     loading,
@@ -334,33 +334,39 @@ export function usePastoralCareRecentActivity(days: number = 7) {
   const { data, loading, error } = useQuery(GET_PASTORAL_CARE_RECENT_ACTIVITY, {
     variables: { days },
   });
-  
+
   return {
-    activity: data?.pastoralCareRecentActivity as PastoralCareActivity[] | undefined,
+    activity: data?.pastoralCareRecentActivity as
+      | PastoralCareActivity[]
+      | undefined,
     loading,
     error,
   };
 }
 
 // Get care requests with filtering
-export function useCareRequests(filter?: Partial<CareRequestFilterInput>, skip?: number, take?: number) {
+export function useCareRequests(
+  filter?: Partial<CareRequestFilterInput>,
+  skip?: number,
+  take?: number,
+) {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const finalFilter: CareRequestFilterInput = {
-    organisationId: organisationId || '',
+    organisationId: organisationId || "",
     branchId,
     ...filter,
   };
 
   const { data, loading, error, refetch } = useQuery(GET_CARE_REQUESTS, {
-    variables: { 
+    variables: {
       filter: finalFilter,
       skip: skip || 0,
       take: take || 50,
     },
     skip: !organisationId,
   });
-  
+
   return {
     careRequests: data?.careRequests as CareRequest[] | undefined,
     loading,
@@ -375,7 +381,7 @@ export function useCareRequest(id: string) {
     variables: { id },
     skip: !id,
   });
-  
+
   return {
     careRequest: data?.careRequest as CareRequest | undefined,
     loading,
@@ -386,9 +392,9 @@ export function useCareRequest(id: string) {
 // Get care requests count
 export function useCareRequestsCount(filter?: Partial<CareRequestFilterInput>) {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const finalFilter: CareRequestFilterInput = {
-    organisationId: organisationId || '',
+    organisationId: organisationId || "",
     branchId,
     ...filter,
   };
@@ -397,7 +403,7 @@ export function useCareRequestsCount(filter?: Partial<CareRequestFilterInput>) {
     variables: { filter: finalFilter },
     skip: !organisationId,
   });
-  
+
   return {
     count: data?.careRequestsCount as number | undefined,
     loading,
@@ -410,7 +416,7 @@ export function useMyCareRequests(status?: string) {
   const { data, loading, error } = useQuery(GET_MY_CARE_REQUESTS, {
     variables: { status },
   });
-  
+
   return {
     myCareRequests: data?.myCareRequests as CareRequest[] | undefined,
     loading,
@@ -424,7 +430,7 @@ export function usePastorCareRequests(pastorId: string, status?: string) {
     variables: { pastorId, status },
     skip: !pastorId,
   });
-  
+
   return {
     pastorCareRequests: data?.pastorCareRequests as CareRequest[] | undefined,
     loading,
@@ -435,7 +441,7 @@ export function usePastorCareRequests(pastorId: string, status?: string) {
 // Get overdue care requests
 export function useOverdueCareRequests() {
   const { data, loading, error } = useQuery(GET_OVERDUE_CARE_REQUESTS);
-  
+
   return {
     overdueCareRequests: data?.overdueCareRequests as CareRequest[] | undefined,
     loading,
@@ -444,24 +450,28 @@ export function useOverdueCareRequests() {
 }
 
 // Get pastoral visits
-export function usePastoralVisits(filter?: Partial<PastoralVisitFilterInput>, skip?: number, take?: number) {
+export function usePastoralVisits(
+  filter?: Partial<PastoralVisitFilterInput>,
+  skip?: number,
+  take?: number,
+) {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const finalFilter: PastoralVisitFilterInput = {
-    organisationId: organisationId || '',
+    organisationId: organisationId || "",
     branchId,
     ...filter,
   };
 
   const { data, loading, error } = useQuery(GET_PASTORAL_VISITS, {
-    variables: { 
+    variables: {
       filter: finalFilter,
       skip: skip || 0,
       take: take || 50,
     },
     skip: !organisationId,
   });
-  
+
   return {
     pastoralVisits: data?.pastoralVisits as PastoralVisit[] | undefined,
     loading,
@@ -470,52 +480,64 @@ export function usePastoralVisits(filter?: Partial<PastoralVisitFilterInput>, sk
 }
 
 // Get counseling sessions
-export function useCounselingSessions(filter?: Partial<CounselingSessionFilterInput>, skip?: number, take?: number) {
+export function useCounselingSessions(
+  filter?: Partial<CounselingSessionFilterInput>,
+  skip?: number,
+  take?: number,
+) {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const finalFilter: CounselingSessionFilterInput = {
-    organisationId: organisationId || '',
+    organisationId: organisationId || "",
     branchId,
     ...filter,
   };
 
   const { data, loading, error } = useQuery(GET_COUNSELING_SESSIONS, {
-    variables: { 
+    variables: {
       filter: finalFilter,
       skip: skip || 0,
       take: take || 50,
     },
     skip: !organisationId,
   });
-  
+
   return {
-    counselingSessions: data?.counselingSessions as CounselingSession[] | undefined,
+    counselingSessions: data?.counselingSessions as
+      | CounselingSession[]
+      | undefined,
     loading,
     error,
   };
 }
 
 // Get follow-up reminders
-export function useFollowUpReminders(filter?: Partial<FollowUpReminderFilterInput>, skip?: number, take?: number) {
+export function useFollowUpReminders(
+  filter?: Partial<FollowUpReminderFilterInput>,
+  skip?: number,
+  take?: number,
+) {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const finalFilter: FollowUpReminderFilterInput = {
-    organisationId: organisationId || '',
+    organisationId: organisationId || "",
     branchId,
     ...filter,
   };
 
   const { data, loading, error } = useQuery(GET_FOLLOW_UP_REMINDERS, {
-    variables: { 
+    variables: {
       filter: finalFilter,
       skip: skip || 0,
       take: take || 50,
     },
     skip: !organisationId,
   });
-  
+
   return {
-    followUpReminders: data?.followUpReminders as FollowUpReminder[] | undefined,
+    followUpReminders: data?.followUpReminders as
+      | FollowUpReminder[]
+      | undefined,
     loading,
     error,
   };
@@ -525,8 +547,9 @@ export function useFollowUpReminders(filter?: Partial<FollowUpReminderFilterInpu
 
 // Create care request
 export function useCreateCareRequest() {
-  const [createCareRequest, { loading, error }] = useMutation(CREATE_CARE_REQUEST);
-  
+  const [createCareRequest, { loading, error }] =
+    useMutation(CREATE_CARE_REQUEST);
+
   return {
     createCareRequest: async (input: CreateCareRequestInput) => {
       const result = await createCareRequest({ variables: { input } });
@@ -539,10 +562,14 @@ export function useCreateCareRequest() {
 
 // Update care request
 export function useUpdateCareRequest() {
-  const [updateCareRequest, { loading, error }] = useMutation(UPDATE_CARE_REQUEST);
-  
+  const [updateCareRequest, { loading, error }] =
+    useMutation(UPDATE_CARE_REQUEST);
+
   return {
-    updateCareRequest: async (id: string, updates: Partial<UpdateCareRequestInput>) => {
+    updateCareRequest: async (
+      id: string,
+      updates: Partial<UpdateCareRequestInput>,
+    ) => {
       const input: UpdateCareRequestInput = { id, ...updates };
       const result = await updateCareRequest({ variables: { input } });
       return result.data?.updateCareRequest as CareRequest;
@@ -554,8 +581,9 @@ export function useUpdateCareRequest() {
 
 // Delete care request
 export function useDeleteCareRequest() {
-  const [deleteCareRequest, { loading, error }] = useMutation(DELETE_CARE_REQUEST);
-  
+  const [deleteCareRequest, { loading, error }] =
+    useMutation(DELETE_CARE_REQUEST);
+
   return {
     deleteCareRequest: async (id: string) => {
       const result = await deleteCareRequest({ variables: { id } });
@@ -568,8 +596,10 @@ export function useDeleteCareRequest() {
 
 // Create pastoral visit
 export function useCreatePastoralVisit() {
-  const [createPastoralVisit, { loading, error }] = useMutation(CREATE_PASTORAL_VISIT);
-  
+  const [createPastoralVisit, { loading, error }] = useMutation(
+    CREATE_PASTORAL_VISIT,
+  );
+
   return {
     createPastoralVisit: async (input: CreatePastoralVisitInput) => {
       const result = await createPastoralVisit({ variables: { input } });
@@ -582,8 +612,10 @@ export function useCreatePastoralVisit() {
 
 // Update pastoral visit
 export function useUpdatePastoralVisit() {
-  const [updatePastoralVisit, { loading, error }] = useMutation(UPDATE_PASTORAL_VISIT);
-  
+  const [updatePastoralVisit, { loading, error }] = useMutation(
+    UPDATE_PASTORAL_VISIT,
+  );
+
   return {
     updatePastoralVisit: async (input: UpdatePastoralVisitInput) => {
       const result = await updatePastoralVisit({ variables: { input } });
@@ -596,8 +628,10 @@ export function useUpdatePastoralVisit() {
 
 // Delete pastoral visit
 export function useDeletePastoralVisit() {
-  const [deletePastoralVisit, { loading, error }] = useMutation(DELETE_PASTORAL_VISIT);
-  
+  const [deletePastoralVisit, { loading, error }] = useMutation(
+    DELETE_PASTORAL_VISIT,
+  );
+
   return {
     deletePastoralVisit: async (id: string) => {
       const result = await deletePastoralVisit({ variables: { id } });
@@ -610,8 +644,10 @@ export function useDeletePastoralVisit() {
 
 // Create counseling session
 export function useCreateCounselingSession() {
-  const [createCounselingSession, { loading, error }] = useMutation(CREATE_COUNSELING_SESSION);
-  
+  const [createCounselingSession, { loading, error }] = useMutation(
+    CREATE_COUNSELING_SESSION,
+  );
+
   return {
     createCounselingSession: async (input: CreateCounselingSessionInput) => {
       const result = await createCounselingSession({ variables: { input } });
@@ -624,8 +660,10 @@ export function useCreateCounselingSession() {
 
 // Update counseling session
 export function useUpdateCounselingSession() {
-  const [updateCounselingSession, { loading, error }] = useMutation(UPDATE_COUNSELING_SESSION);
-  
+  const [updateCounselingSession, { loading, error }] = useMutation(
+    UPDATE_COUNSELING_SESSION,
+  );
+
   return {
     updateCounselingSession: async (input: UpdateCounselingSessionInput) => {
       const result = await updateCounselingSession({ variables: { input } });
@@ -638,8 +676,10 @@ export function useUpdateCounselingSession() {
 
 // Delete counseling session
 export function useDeleteCounselingSession() {
-  const [deleteCounselingSession, { loading, error }] = useMutation(DELETE_COUNSELING_SESSION);
-  
+  const [deleteCounselingSession, { loading, error }] = useMutation(
+    DELETE_COUNSELING_SESSION,
+  );
+
   return {
     deleteCounselingSession: async (id: string) => {
       const result = await deleteCounselingSession({ variables: { id } });
@@ -652,8 +692,10 @@ export function useDeleteCounselingSession() {
 
 // Create follow-up reminder
 export function useCreateFollowUpReminder() {
-  const [createFollowUpReminder, { loading, error }] = useMutation(CREATE_FOLLOW_UP_REMINDER);
-  
+  const [createFollowUpReminder, { loading, error }] = useMutation(
+    CREATE_FOLLOW_UP_REMINDER,
+  );
+
   return {
     createFollowUpReminder: async (input: CreateFollowUpReminderInput) => {
       const result = await createFollowUpReminder({ variables: { input } });
@@ -666,8 +708,10 @@ export function useCreateFollowUpReminder() {
 
 // Update follow-up reminder
 export function useUpdateFollowUpReminder() {
-  const [updateFollowUpReminder, { loading, error }] = useMutation(UPDATE_FOLLOW_UP_REMINDER);
-  
+  const [updateFollowUpReminder, { loading, error }] = useMutation(
+    UPDATE_FOLLOW_UP_REMINDER,
+  );
+
   return {
     updateFollowUpReminder: async (input: UpdateFollowUpReminderInput) => {
       const result = await updateFollowUpReminder({ variables: { input } });
@@ -680,8 +724,10 @@ export function useUpdateFollowUpReminder() {
 
 // Delete follow-up reminder
 export function useDeleteFollowUpReminder() {
-  const [deleteFollowUpReminder, { loading, error }] = useMutation(DELETE_FOLLOW_UP_REMINDER);
-  
+  const [deleteFollowUpReminder, { loading, error }] = useMutation(
+    DELETE_FOLLOW_UP_REMINDER,
+  );
+
   return {
     deleteFollowUpReminder: async (id: string) => {
       const result = await deleteFollowUpReminder({ variables: { id } });

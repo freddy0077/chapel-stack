@@ -14,8 +14,8 @@ const KpiCard = ({ card }: KpiCardProps) => {
     return card.changeType === "increase"
       ? "text-green-500"
       : card.changeType === "decrease"
-      ? "text-red-500"
-      : "text-gray-500";
+        ? "text-red-500"
+        : "text-gray-500";
   };
 
   const getChangeIcon = () => {
@@ -54,25 +54,30 @@ const KpiCard = ({ card }: KpiCardProps) => {
   };
 
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-200"
       style={card.color ? { borderLeft: `4px solid ${card.color}` } : {}}
     >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-sm text-gray-500 font-medium mb-1">{card.title}</h3>
+          <h3 className="text-sm text-gray-500 font-medium mb-1">
+            {card.title}
+          </h3>
           <p className="text-2xl font-bold">{card.value}</p>
         </div>
         {card.icon && (
-          <div 
+          <div
             className="rounded-full p-3 bg-gray-100 flex items-center justify-center"
             style={card.color ? { backgroundColor: `${card.color}20` } : {}}
           >
-            <span className="text-xl" dangerouslySetInnerHTML={{ __html: card.icon }}></span>
+            <span
+              className="text-xl"
+              dangerouslySetInnerHTML={{ __html: card.icon }}
+            ></span>
           </div>
         )}
       </div>
-      
+
       {card.change !== undefined && (
         <div className="flex items-center mt-4">
           <span className={`flex items-center ${getChangeColor()}`}>
@@ -81,10 +86,12 @@ const KpiCard = ({ card }: KpiCardProps) => {
               {Math.abs(card.change)}%
             </span>
           </span>
-          <span className="ml-2 text-xs text-gray-500">{card.description || 'vs previous period'}</span>
+          <span className="ml-2 text-xs text-gray-500">
+            {card.description || "vs previous period"}
+          </span>
         </div>
       )}
-      
+
       {card.trend && Array.isArray(card.trend) && card.trend.length > 0 && (
         <div className="mt-4 h-10">
           {/* Mini sparkline chart would go here - using a placeholder for now */}
@@ -93,9 +100,9 @@ const KpiCard = ({ card }: KpiCardProps) => {
               <div
                 key={i}
                 className="w-1 mx-0.5 rounded-t"
-                style={{ 
+                style={{
                   height: `${(value / Math.max(...card.trend)) * 100}%`,
-                  backgroundColor: card.color || '#6366F1'
+                  backgroundColor: card.color || "#6366F1",
                 }}
               ></div>
             ))}
@@ -107,15 +114,11 @@ const KpiCard = ({ card }: KpiCardProps) => {
 };
 
 // Grid of KPI cards
-export default function KpiCardGrid({ 
-  cards 
-}: { 
-  cards: KpiCardType[] 
-}) {
+export default function KpiCardGrid({ cards }: { cards: KpiCardType[] }) {
   if (!cards || cards.length === 0) {
     return null;
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {cards.map((card, index) => (

@@ -18,7 +18,7 @@ export interface Member {
   membershipType?: MembershipType;
   status?: MemberStatus;
   profileImageUrl?: string;
-  
+
   // Address Information
   address?: string;
   addressLine2?: string;
@@ -30,7 +30,7 @@ export interface Member {
   region?: string;
   digitalAddress?: string;
   landmark?: string;
-  
+
   // Personal Information
   placeOfBirth?: string;
   nationality?: string;
@@ -38,7 +38,7 @@ export interface Member {
   education?: string;
   occupation?: string;
   employerName?: string;
-  
+
   // Family Information
   fatherName?: string;
   motherName?: string;
@@ -47,7 +47,7 @@ export interface Member {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
-  
+
   // Church Information
   organisationId: string;
   branchId?: string;
@@ -58,26 +58,26 @@ export interface Member {
   confirmationDate?: Date;
   salvationDate?: Date;
   lastAttendanceDate?: Date;
-  
+
   // Family & Relationships
   spouseId?: string;
   parentId?: string;
   familyId?: string;
   headOfHousehold?: boolean;
-  
+
   // Technology
   rfidCardId?: string;
   nfcId?: string;
-  
+
   // Unified Member ID System (replaces RFID)
   memberId?: string;
   memberIdGeneratedAt?: string;
-  
+
   // Physical Card Information
   cardIssued?: boolean;
   cardIssuedAt?: string;
   cardType?: string; // 'NFC', 'RFID', 'BARCODE', etc.
-  
+
   // Status & Tracking
   isActive?: boolean;
   isRegularAttendee?: boolean;
@@ -88,10 +88,10 @@ export interface Member {
   statusChangeDate?: Date;
   statusChangeReason?: string;
   lastActivityDate?: Date;
-  
+
   // Documents & Files
   affidavitUrl?: string;
-  
+
   // GDPR & Communication
   consentDate?: Date;
   consentVersion?: string;
@@ -99,14 +99,14 @@ export interface Member {
   communicationPrefs?: CommunicationPreferences;
   privacyLevel?: PrivacyLevel;
   preferredLanguage?: string;
-  
+
   // Additional Data
   notes?: string;
   specialGifts?: string;
   groupIds?: string[];
   customFields?: any;
   privacySettings?: any;
-  
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -119,55 +119,55 @@ export interface Member {
 
 // Enums
 export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER',
-  NOT_SPECIFIED = 'NOT_SPECIFIED'
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  UNKNOWN = "UNKNOWN",
+  NOT_SPECIFIED = "NOT_SPECIFIED",
 }
 
 export enum MaritalStatus {
-  SINGLE = 'SINGLE',
-  MARRIED = 'MARRIED',
-  DIVORCED = 'DIVORCED',
-  WIDOWED = 'WIDOWED',
-  SEPARATED = 'SEPARATED',
-  UNKNOWN = 'UNKNOWN'
+  SINGLE = "SINGLE",
+  MARRIED = "MARRIED",
+  DIVORCED = "DIVORCED",
+  WIDOWED = "WIDOWED",
+  SEPARATED = "SEPARATED",
+  UNKNOWN = "UNKNOWN",
 }
 
 export enum MembershipStatus {
-  VISITOR = 'VISITOR',
-  REGULAR_ATTENDEE = 'REGULAR_ATTENDEE',
-  MEMBER = 'MEMBER',
-  ACTIVE_MEMBER = 'ACTIVE_MEMBER',
-  INACTIVE_MEMBER = 'INACTIVE_MEMBER',
-  TRANSFERRED = 'TRANSFERRED',
-  DECEASED = 'DECEASED'
+  VISITOR = "VISITOR",
+  REGULAR_ATTENDEE = "REGULAR_ATTENDEE",
+  MEMBER = "MEMBER",
+  ACTIVE_MEMBER = "ACTIVE_MEMBER",
+  INACTIVE_MEMBER = "INACTIVE_MEMBER",
+  TRANSFERRED = "TRANSFERRED",
+  DECEASED = "DECEASED",
 }
 
 export enum MemberStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  TRANSFERRED = 'TRANSFERRED',
-  DECEASED = 'DECEASED',
-  REMOVED = 'REMOVED'
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  SUSPENDED = "SUSPENDED",
+  TRANSFERRED = "TRANSFERRED",
+  DECEASED = "DECEASED",
+  REMOVED = "REMOVED",
 }
 
 export enum MembershipType {
-  REGULAR = 'REGULAR',
-  ASSOCIATE = 'ASSOCIATE',
-  HONORARY = 'HONORARY',
-  YOUTH = 'YOUTH',
-  CHILD = 'CHILD',
-  SENIOR = 'SENIOR',
-  CLERGY = 'CLERGY'
+  REGULAR = "REGULAR",
+  ASSOCIATE = "ASSOCIATE",
+  HONORARY = "HONORARY",
+  YOUTH = "YOUTH",
+  CHILD = "CHILD",
+  SENIOR = "SENIOR",
+  CLERGY = "CLERGY",
 }
 
 export enum PrivacyLevel {
-  PUBLIC = 'PUBLIC',
-  STANDARD = 'STANDARD',
-  RESTRICTED = 'RESTRICTED',
-  PRIVATE = 'PRIVATE'
+  PUBLIC = "PUBLIC",
+  STANDARD = "STANDARD",
+  RESTRICTED = "RESTRICTED",
+  PRIVATE = "PRIVATE",
 }
 
 // Enhanced filter interfaces
@@ -177,7 +177,7 @@ export interface MemberFilters {
   organisationId?: string;
   hasMemberId?: boolean; // Unified member ID system (replaces RFID)
   search?: string;
-  
+
   // Demographic filters (server-side)
   gender?: Gender[];
   maritalStatus?: MaritalStatus[];
@@ -191,7 +191,7 @@ export interface MemberFilters {
     joinedAfter?: string;
     joinedBefore?: string;
   };
-  
+
   // Profile completeness filters (server-side)
   hasProfileImage?: boolean;
   hasEmail?: boolean;
@@ -209,7 +209,7 @@ export interface FilterOption {
 export interface FilterGroup {
   title: string;
   key: keyof MemberFilters;
-  type: 'select' | 'multiselect' | 'range' | 'daterange' | 'boolean';
+  type: "select" | "multiselect" | "range" | "daterange" | "boolean";
   options?: FilterOption[];
   placeholder?: string;
 }
@@ -231,30 +231,30 @@ export interface CommunicationPreferences {
 }
 
 // View and Display Types
-export type ViewMode = 'list' | 'card' | 'table' | 'grid';
+export type ViewMode = "list" | "card" | "table" | "grid";
 
-export type BulkActionType = 
-  | 'updateStatus'
-  | 'transfer'
-  | 'assignRfid'
-  | 'export'
-  | 'deactivate'
-  | 'addToGroup'
-  | 'removeFromGroup'
-  | 'addToMinistry'
-  | 'removeFromMinistry'
-  | 'recordSacrament';
+export type BulkActionType =
+  | "updateStatus"
+  | "transfer"
+  | "assignRfid"
+  | "export"
+  | "deactivate"
+  | "addToGroup"
+  | "removeFromGroup"
+  | "addToMinistry"
+  | "removeFromMinistry"
+  | "recordSacrament";
 
-export type SortField = 
-  | 'firstName' 
-  | 'lastName' 
-  | 'email' 
-  | 'joinDate' 
-  | 'lastActivityDate' 
-  | 'membershipStatus'
-  | 'dateOfBirth';
+export type SortField =
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "joinDate"
+  | "lastActivityDate"
+  | "membershipStatus"
+  | "dateOfBirth";
 
-export type SortDirection = 'asc' | 'desc';
+export type SortDirection = "asc" | "desc";
 
 export interface SortConfig {
   field: SortField;
@@ -325,7 +325,7 @@ export interface CreateMemberInput {
   occupation?: string;
   membershipStatus: MembershipStatus;
   membershipType?: MembershipType;
-  
+
   // Address
   address?: string;
   addressLine2?: string;
@@ -337,14 +337,14 @@ export interface CreateMemberInput {
   region?: string;
   digitalAddress?: string;
   landmark?: string;
-  
+
   // Church Information
   organisationId: string;
   branchId?: string;
   membershipDate?: Date;
   baptismDate?: Date;
   confirmationDate?: Date;
-  
+
   // Family Info
   fatherName?: string;
   motherName?: string;
@@ -360,13 +360,13 @@ export interface CreateMemberInput {
   spouseId?: string;
   parentId?: string;
   familyId?: string;
-  
+
   // Additional
   isRegularAttendee?: boolean;
   headOfHousehold?: boolean;
   specialGifts?: string;
   groupIds?: string[];
-  
+
   // GDPR
   consentDate?: Date;
   consentVersion?: string;
@@ -446,6 +446,7 @@ export interface MemberListProps {
   onSelectAll: () => void;
   onViewMember?: (member: Member) => void;
   onEditMember?: (member: Member) => void;
+  onManageFamily?: (member: Member) => void;
   totalCount: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;

@@ -1,21 +1,27 @@
-import React, { useState, useCallback } from 'react';
-import { 
-  TrashIcon, 
-  DocumentArrowDownIcon, 
+import React, { useState, useCallback } from "react";
+import {
+  TrashIcon,
+  DocumentArrowDownIcon,
   CheckIcon,
   XMarkIcon,
-  ExclamationTriangleIcon 
-} from '@heroicons/react/24/outline';
-import { toast } from 'react-hot-toast';
-import { SACRAMENT_TYPES, type SacramentType } from '@/constants/sacramentTypes';
-import { formatSacramentType } from '@/utils/sacramentHelpers';
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
+import {
+  SACRAMENT_TYPES,
+  type SacramentType,
+} from "@/constants/sacramentTypes";
+import { formatSacramentType } from "@/utils/sacramentHelpers";
 
 interface BulkOperationsProps {
   selectedRecords: string[];
   sacramentType: SacramentType;
   onClearSelection: () => void;
   onBulkDelete: (recordIds: string[]) => Promise<void>;
-  onBulkExport: (recordIds: string[], format: 'csv' | 'pdf' | 'excel') => Promise<void>;
+  onBulkExport: (
+    recordIds: string[],
+    format: "csv" | "pdf" | "excel",
+  ) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -41,32 +47,39 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
     setIsDeleting(true);
     try {
       await onBulkDelete(selectedRecords);
-      toast.success(`${selectedRecords.length} ${formatSacramentType(sacramentType)} record(s) deleted successfully`);
+      toast.success(
+        `${selectedRecords.length} ${formatSacramentType(sacramentType)} record(s) deleted successfully`,
+      );
       onClearSelection();
       setShowDeleteConfirm(false);
     } catch (error: any) {
-      console.error('Bulk delete error:', error);
-      toast.error(error.message || 'Failed to delete selected records');
+      console.error("Bulk delete error:", error);
+      toast.error(error.message || "Failed to delete selected records");
     } finally {
       setIsDeleting(false);
     }
   }, [selectedRecords, sacramentType, onBulkDelete, onClearSelection]);
 
-  const handleBulkExport = useCallback(async (format: 'csv' | 'pdf' | 'excel') => {
-    if (selectedRecords.length === 0) return;
+  const handleBulkExport = useCallback(
+    async (format: "csv" | "pdf" | "excel") => {
+      if (selectedRecords.length === 0) return;
 
-    setIsExporting(true);
-    try {
-      await onBulkExport(selectedRecords, format);
-      toast.success(`${selectedRecords.length} record(s) exported as ${format.toUpperCase()}`);
-      setShowExportOptions(false);
-    } catch (error: any) {
-      console.error('Bulk export error:', error);
-      toast.error(error.message || 'Failed to export selected records');
-    } finally {
-      setIsExporting(false);
-    }
-  }, [selectedRecords, onBulkExport]);
+      setIsExporting(true);
+      try {
+        await onBulkExport(selectedRecords, format);
+        toast.success(
+          `${selectedRecords.length} record(s) exported as ${format.toUpperCase()}`,
+        );
+        setShowExportOptions(false);
+      } catch (error: any) {
+        console.error("Bulk export error:", error);
+        toast.error(error.message || "Failed to export selected records");
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [selectedRecords, onBulkExport],
+  );
 
   if (selectedRecords.length === 0) {
     return null;
@@ -83,7 +96,8 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
             </div>
             <div>
               <p className="text-sm font-medium text-indigo-900">
-                {selectedRecords.length} record{selectedRecords.length !== 1 ? 's' : ''} selected
+                {selectedRecords.length} record
+                {selectedRecords.length !== 1 ? "s" : ""} selected
               </p>
               <p className="text-xs text-indigo-600">
                 {formatSacramentType(sacramentType)} records
@@ -100,7 +114,7 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
                 className="inline-flex items-center px-3 py-2 border border-indigo-300 shadow-sm text-sm leading-4 font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                {isExporting ? 'Exporting...' : 'Export'}
+                {isExporting ? "Exporting..." : "Export"}
               </button>
 
               {/* Export Options Dropdown */}
@@ -108,19 +122,19 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                   <div className="py-1">
                     <button
-                      onClick={() => handleBulkExport('csv')}
+                      onClick={() => handleBulkExport("csv")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Export as CSV
                     </button>
                     <button
-                      onClick={() => handleBulkExport('excel')}
+                      onClick={() => handleBulkExport("excel")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Export as Excel
                     </button>
                     <button
-                      onClick={() => handleBulkExport('pdf')}
+                      onClick={() => handleBulkExport("pdf")}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Export as PDF
@@ -137,7 +151,7 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
               className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <TrashIcon className="w-4 h-4 mr-2" />
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? "Deleting..." : "Delete"}
             </button>
 
             {/* Clear Selection Button */}
@@ -160,16 +174,18 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
               <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
             </div>
-            
+
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Delete Selected Records
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Are you sure you want to delete {selectedRecords.length} {formatSacramentType(sacramentType)} record{selectedRecords.length !== 1 ? 's' : ''}? 
-                This action cannot be undone.
+                Are you sure you want to delete {selectedRecords.length}{" "}
+                {formatSacramentType(sacramentType)} record
+                {selectedRecords.length !== 1 ? "s" : ""}? This action cannot be
+                undone.
               </p>
-              
+
               <div className="flex justify-center space-x-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
@@ -189,7 +205,7 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
                       Deleting...
                     </>
                   ) : (
-                    'Delete Records'
+                    "Delete Records"
                   )}
                 </button>
               </div>
@@ -199,9 +215,9 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
       )}
 
       {/* Click outside to close dropdowns */}
-      {(showExportOptions) && (
-        <div 
-          className="fixed inset-0 z-0" 
+      {showExportOptions && (
+        <div
+          className="fixed inset-0 z-0"
           onClick={() => {
             setShowExportOptions(false);
           }}

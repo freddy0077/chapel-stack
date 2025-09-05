@@ -1,10 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { UserIcon, CalendarIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
-import { WizardStepProps, ValidationError } from '../types/WizardTypes';
-import { Gender, MaritalStatus } from '../../../types/member.types';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  UserIcon,
+  CalendarIcon,
+  GlobeAltIcon,
+} from "@heroicons/react/24/outline";
+import { WizardStepProps, ValidationError } from "../types/WizardTypes";
+import { Gender, MaritalStatus } from "../../../types/member.types";
 
 const PersonalInfoStep: React.FC<WizardStepProps> = ({
   formData,
@@ -14,7 +18,7 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
   onSubmit,
   isSubmitting,
   isFirstStep,
-  isLastStep
+  isLastStep,
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -22,10 +26,10 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
     const newErrors: ValidationError[] = [];
 
     if (!formData.firstName?.trim()) {
-      newErrors.push({ field: 'firstName', message: 'First name is required' });
+      newErrors.push({ field: "firstName", message: "First name is required" });
     }
     if (!formData.lastName?.trim()) {
-      newErrors.push({ field: 'lastName', message: 'Last name is required' });
+      newErrors.push({ field: "lastName", message: "Last name is required" });
     }
 
     setErrors(newErrors);
@@ -41,11 +45,11 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
   const handleInputChange = (field: string, value: any) => {
     updateFormData({ [field]: value });
     // Clear error for this field
-    setErrors(prev => prev.filter(error => error.field !== field));
+    setErrors((prev) => prev.filter((error) => error.field !== field));
   };
 
   const getFieldError = (field: string) => {
-    return errors.find(error => error.field === field)?.message;
+    return errors.find((error) => error.field === field)?.message;
   };
 
   return (
@@ -54,8 +58,12 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
         <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
           <UserIcon className="w-8 h-8 text-blue-600" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
-        <p className="text-gray-600 mt-2">Let's start with basic personal details</p>
+        <h3 className="text-xl font-semibold text-gray-900">
+          Personal Information
+        </h3>
+        <p className="text-gray-600 mt-2">
+          Let's start with basic personal details
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -66,15 +74,17 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.firstName || ''}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            value={formData.firstName || ""}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-              getFieldError('firstName') ? 'border-red-500' : 'border-gray-300'
+              getFieldError("firstName") ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="Enter first name"
           />
-          {getFieldError('firstName') && (
-            <p className="text-red-500 text-sm mt-1">{getFieldError('firstName')}</p>
+          {getFieldError("firstName") && (
+            <p className="text-red-500 text-sm mt-1">
+              {getFieldError("firstName")}
+            </p>
           )}
         </div>
 
@@ -85,8 +95,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.middleName || ''}
-            onChange={(e) => handleInputChange('middleName', e.target.value)}
+            value={formData.middleName || ""}
+            onChange={(e) => handleInputChange("middleName", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Enter middle name (optional)"
           />
@@ -99,15 +109,17 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.lastName || ''}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            value={formData.lastName || ""}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-              getFieldError('lastName') ? 'border-red-500' : 'border-gray-300'
+              getFieldError("lastName") ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="Enter last name"
           />
-          {getFieldError('lastName') && (
-            <p className="text-red-500 text-sm mt-1">{getFieldError('lastName')}</p>
+          {getFieldError("lastName") && (
+            <p className="text-red-500 text-sm mt-1">
+              {getFieldError("lastName")}
+            </p>
           )}
         </div>
 
@@ -118,8 +130,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.preferredName || ''}
-            onChange={(e) => handleInputChange('preferredName', e.target.value)}
+            value={formData.preferredName || ""}
+            onChange={(e) => handleInputChange("preferredName", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="How would you like to be called?"
           />
@@ -133,8 +145,17 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           <div className="relative">
             <input
               type="date"
-              value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''}
-              onChange={(e) => handleInputChange('dateOfBirth', e.target.value ? new Date(e.target.value) : undefined)}
+              value={
+                formData.dateOfBirth
+                  ? new Date(formData.dateOfBirth).toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                handleInputChange(
+                  "dateOfBirth",
+                  e.target.value ? new Date(e.target.value) : undefined,
+                )
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             />
             <CalendarIcon className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -148,13 +169,15 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <select
             value={formData.gender || Gender.NOT_SPECIFIED}
-            onChange={(e) => handleInputChange('gender', e.target.value as Gender)}
+            onChange={(e) =>
+              handleInputChange("gender", e.target.value as Gender)
+            }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             <option value={Gender.NOT_SPECIFIED}>Prefer not to specify</option>
             <option value={Gender.MALE}>Male</option>
             <option value={Gender.FEMALE}>Female</option>
-            <option value={Gender.OTHER}>Other</option>
+            <option value={Gender.UNKNOWN}>Other</option>
           </select>
         </div>
 
@@ -165,7 +188,12 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <select
             value={formData.maritalStatus || MaritalStatus.UNKNOWN}
-            onChange={(e) => handleInputChange('maritalStatus', e.target.value as MaritalStatus)}
+            onChange={(e) =>
+              handleInputChange(
+                "maritalStatus",
+                e.target.value as MaritalStatus,
+              )
+            }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             <option value={MaritalStatus.UNKNOWN}>Unknown</option>
@@ -184,8 +212,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.placeOfBirth || ''}
-            onChange={(e) => handleInputChange('placeOfBirth', e.target.value)}
+            value={formData.placeOfBirth || ""}
+            onChange={(e) => handleInputChange("placeOfBirth", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="City, Country"
           />
@@ -199,8 +227,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           <div className="relative">
             <input
               type="text"
-              value={formData.nationality || ''}
-              onChange={(e) => handleInputChange('nationality', e.target.value)}
+              value={formData.nationality || ""}
+              onChange={(e) => handleInputChange("nationality", e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               placeholder="e.g., Ghanaian, American"
             />
@@ -215,8 +243,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.occupation || ''}
-            onChange={(e) => handleInputChange('occupation', e.target.value)}
+            value={formData.occupation || ""}
+            onChange={(e) => handleInputChange("occupation", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Job title or profession"
           />
@@ -229,8 +257,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.employerName || ''}
-            onChange={(e) => handleInputChange('employerName', e.target.value)}
+            value={formData.employerName || ""}
+            onChange={(e) => handleInputChange("employerName", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Company or organization name"
           />
@@ -243,8 +271,8 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           </label>
           <input
             type="text"
-            value={formData.education || ''}
-            onChange={(e) => handleInputChange('education', e.target.value)}
+            value={formData.education || ""}
+            onChange={(e) => handleInputChange("education", e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Highest level of education or qualifications"
           />
@@ -258,13 +286,13 @@ const PersonalInfoStep: React.FC<WizardStepProps> = ({
           disabled={isFirstStep}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             isFirstStep
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
           Previous
         </button>
-        
+
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}

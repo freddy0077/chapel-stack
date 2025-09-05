@@ -1,19 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Tab } from '@headlessui/react';
-import { Cog6ToothIcon, UserIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
-import GeneralSettings from './components/GeneralSettings';
-import ProfileSettings from './components/ProfileSettings';
-import NotificationSettings from './components/NotificationSettings';
-import SecuritySettings from './components/SecuritySettings';
-import DashboardHeader from '@/components/DashboardHeader';
+import { useState } from "react";
+import { Tab } from "@headlessui/react";
+import {
+  Cog6ToothIcon,
+  UserIcon,
+  BellIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+import GeneralSettings from "./components/GeneralSettings";
+import ProfileSettings from "./components/ProfileSettings";
+import NotificationSettings from "./components/NotificationSettings";
+import SecuritySettings from "./components/SecuritySettings";
+import DashboardHeader from "@/components/DashboardHeader";
 
 const tabs = [
-  { name: 'General', icon: Cog6ToothIcon, component: GeneralSettings },
-  { name: 'Profile', icon: UserIcon, component: ProfileSettings },
-  { name: 'Notifications', icon: BellIcon, component: NotificationSettings },
-  { name: 'Security', icon: ShieldCheckIcon, component: SecuritySettings },
+  { name: "General", icon: Cog6ToothIcon, component: GeneralSettings },
+  { name: "Profile", icon: UserIcon, component: ProfileSettings },
+  { name: "Notifications", icon: BellIcon, component: NotificationSettings },
+  { name: "Security", icon: ShieldCheckIcon, component: SecuritySettings },
 ];
 
 export default function SettingsPage() {
@@ -31,26 +36,32 @@ export default function SettingsPage() {
             <div className="sm:flex">
               <Tab.List className="sm:w-72 bg-gradient-to-br from-white/80 via-indigo-50 to-blue-50 p-6 border-r border-gray-200 min-h-full flex flex-col gap-2">
                 <div className="space-y-1">
-                  {tabs.map(tab => (
+                  {tabs.map((tab) => (
                     <Tab
                       key={tab.name}
                       className={({ selected }) =>
                         `w-full text-left px-4 py-3 rounded-xl flex items-center gap-x-4 text-base font-semibold transition-all duration-150 cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-300 ${
                           selected
-                            ? 'bg-primary-100 text-primary-700 scale-[1.03] ring-2 ring-primary-200 shadow-md'
-                            : 'text-gray-700 hover:bg-indigo-100/60 hover:scale-[1.01]'
+                            ? "bg-primary-100 text-primary-700 scale-[1.03] ring-2 ring-primary-200 shadow-md"
+                            : "text-gray-700 hover:bg-indigo-100/60 hover:scale-[1.01]"
                         }`
                       }
                     >
-                      <tab.icon className="h-6 w-6 shrink-0 text-primary-400" aria-hidden="true" />
+                      <tab.icon
+                        className="h-6 w-6 shrink-0 text-primary-400"
+                        aria-hidden="true"
+                      />
                       {tab.name}
                     </Tab>
                   ))}
                 </div>
               </Tab.List>
               <Tab.Panels className="flex-1 p-8 bg-transparent">
-                {tabs.map(tab => (
-                  <Tab.Panel key={tab.name} className={`space-y-8 transition-opacity duration-300 ${tab === tabs[selectedIndex] ? 'opacity-100 animate-fadeIn' : 'opacity-0'}`}>
+                {tabs.map((tab) => (
+                  <Tab.Panel
+                    key={tab.name}
+                    className={`space-y-8 transition-opacity duration-300 ${tab === tabs[selectedIndex] ? "opacity-100 animate-fadeIn" : "opacity-0"}`}
+                  >
                     <tab.component />
                   </Tab.Panel>
                 ))}

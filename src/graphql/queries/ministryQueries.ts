@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const LIST_MINISTRIES = gql`
   query ListMinistries($filters: MinistryFilterInput) {
@@ -11,9 +11,20 @@ export const LIST_MINISTRIES = gql`
       parentId
       createdAt
       updatedAt
-      members { id memberId role status }
-      subMinistries { id name }
-      parent { id name }
+      members {
+        id
+        memberId
+        role
+        status
+      }
+      subMinistries {
+        id
+        name
+      }
+      parent {
+        id
+        name
+      }
     }
   }
 `;
@@ -29,9 +40,20 @@ export const GET_MINISTRY = gql`
       parentId
       createdAt
       updatedAt
-      members { id memberId role status }
-      subMinistries { id name }
-      parent { id name }
+      members {
+        id
+        memberId
+        role
+        status
+      }
+      subMinistries {
+        id
+        name
+      }
+      parent {
+        id
+        name
+      }
     }
   }
 `;

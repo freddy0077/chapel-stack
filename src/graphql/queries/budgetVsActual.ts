@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const BUDGET_VS_ACTUAL_QUERY = gql`
   query BudgetVsActual($input: BudgetVsActualInput!) {
@@ -10,7 +10,7 @@ export const BUDGET_VS_ACTUAL_QUERY = gql`
       periodType
       generatedAt
       notes
-      
+
       summary {
         totalBudgeted
         totalActual
@@ -19,7 +19,7 @@ export const BUDGET_VS_ACTUAL_QUERY = gql`
         budgetUtilization
         overallStatus
       }
-      
+
       revenueItems {
         category
         description
@@ -31,7 +31,7 @@ export const BUDGET_VS_ACTUAL_QUERY = gql`
         fundName
         period
       }
-      
+
       expenseItems {
         category
         description
@@ -54,7 +54,7 @@ export interface BudgetLineItem {
   actualAmount: number;
   variance: number;
   variancePercent: number;
-  status: 'over_budget' | 'under_budget' | 'on_target';
+  status: "over_budget" | "under_budget" | "on_target";
   fundName?: string;
   period?: string;
 }
@@ -73,7 +73,7 @@ export interface BudgetVsActual {
   branchId?: string;
   periodStart: string;
   periodEnd: string;
-  periodType: 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  periodType: "MONTHLY" | "QUARTERLY" | "YEARLY";
   generatedAt: string;
   notes?: string;
   summary: BudgetSummary;
@@ -88,6 +88,6 @@ export interface BudgetVsActualInput {
     startDate: string;
     endDate: string;
   };
-  periodType?: 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  periodType?: "MONTHLY" | "QUARTERLY" | "YEARLY";
   fundId?: string;
 }

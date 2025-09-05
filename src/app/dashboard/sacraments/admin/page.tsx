@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  ArrowLeftIcon, 
+import {
+  ArrowLeftIcon,
   LockClosedIcon,
   DocumentTextIcon,
   ChevronRightIcon,
-  PlusIcon
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import BranchAccessControls from "../components/BranchAccessControls";
 import CertificateGenerator from "../components/CertificateGenerator";
@@ -19,7 +19,7 @@ interface Branch {
   location: string;
   region: string;
   logoUrl: string;
-  letterheadImageUrl: string; 
+  letterheadImageUrl: string;
   primaryColor: string;
   secondaryColor: string;
   contactInfo: string;
@@ -53,7 +53,7 @@ const mockBranches: Branch[] = [
     primaryColor: "#1e40af",
     secondaryColor: "#3b82f6",
     contactInfo: "Phone: (555) 123-4567 | Email: info@maincampus.church",
-    website: "www.maincampus.church"
+    website: "www.maincampus.church",
   },
   {
     id: "b2",
@@ -65,7 +65,7 @@ const mockBranches: Branch[] = [
     primaryColor: "#065f46",
     secondaryColor: "#10b981",
     contactInfo: "Phone: (555) 234-5678 | Email: info@eastside.church",
-    website: "www.eastside.church" 
+    website: "www.eastside.church",
   },
   {
     id: "b3",
@@ -77,8 +77,8 @@ const mockBranches: Branch[] = [
     primaryColor: "#7c2d12",
     secondaryColor: "#ea580c",
     contactInfo: "Phone: (555) 345-6789 | Email: info@westend.church",
-    website: "www.westend.church"
-  }
+    website: "www.westend.church",
+  },
 ];
 
 // Mock certificate templates
@@ -93,7 +93,7 @@ const mockCertificates: CertificateData[] = [
     parents: ["Michael Wilson", "Sarah Wilson"],
     sponsors: ["John Davis", "Mary Smith"],
     recordNumber: "BAP-2023-001",
-    branchId: "b1"
+    branchId: "b1",
   },
   {
     id: "cert2",
@@ -103,7 +103,7 @@ const mockCertificates: CertificateData[] = [
     location: "East Side",
     ministerName: "Father Michael Rodriguez",
     recordNumber: "COM-2023-015",
-    branchId: "b2"
+    branchId: "b2",
   },
   {
     id: "cert3",
@@ -114,7 +114,7 @@ const mockCertificates: CertificateData[] = [
     ministerName: "Bishop Richard Thomas",
     sponsors: ["Elizabeth Davis"],
     recordNumber: "CON-2023-008",
-    branchId: "b3"
+    branchId: "b3",
   },
   {
     id: "cert4",
@@ -125,17 +125,22 @@ const mockCertificates: CertificateData[] = [
     ministerName: "Pastor Thomas Johnson",
     witnesses: ["Robert Brown", "Jennifer White"],
     recordNumber: "MAR-2023-005",
-    branchId: "b1"
-  }
+    branchId: "b1",
+  },
 ];
 
 // Component
 export default function SacramentsAdminPage() {
-  const [activeTab, setActiveTab] = useState<"access-controls" | "certificates">("access-controls");
-  const [selectedRecordType, setSelectedRecordType] = useState<"baptism" | "communion" | "confirmation" | "marriage" | "all">("all");
+  const [activeTab, setActiveTab] = useState<
+    "access-controls" | "certificates"
+  >("access-controls");
+  const [selectedRecordType, setSelectedRecordType] = useState<
+    "baptism" | "communion" | "confirmation" | "marriage" | "all"
+  >("all");
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
-  const [selectedCertificate, setSelectedCertificate] = useState<CertificateData | null>(null);
-  
+  const [selectedCertificate, setSelectedCertificate] =
+    useState<CertificateData | null>(null);
+
   const handleGenerateCertificate = (certificate: CertificateData) => {
     setSelectedCertificate(certificate);
     setIsCertificateModalOpen(true);
@@ -146,19 +151,21 @@ export default function SacramentsAdminPage() {
       {/* Header section */}
       <div className="mb-8">
         <div className="flex items-center">
-          <Link 
-            href="/dashboard/sacraments" 
+          <Link
+            href="/dashboard/sacraments"
             className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500"
           >
             <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Sacramental Records Administration</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Sacramental Records Administration
+          </h1>
         </div>
         <p className="mt-2 text-sm text-gray-500">
           Manage branch-specific access controls and certificate generation
         </p>
       </div>
-      
+
       {/* Tabs */}
       <div className="mb-6">
         <div className="sm:hidden">
@@ -170,7 +177,9 @@ export default function SacramentsAdminPage() {
             name="tabs"
             className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
             value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value as "access-controls" | "certificates")}
+            onChange={(e) =>
+              setActiveTab(e.target.value as "access-controls" | "certificates")
+            }
           >
             <option value="access-controls">Branch Access Controls</option>
             <option value="certificates">Certificate Management</option>
@@ -187,9 +196,13 @@ export default function SacramentsAdminPage() {
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
-                <LockClosedIcon className={`${
-                  activeTab === "access-controls" ? "text-indigo-500" : "text-gray-400"
-                } -ml-0.5 mr-2 h-5 w-5`} />
+                <LockClosedIcon
+                  className={`${
+                    activeTab === "access-controls"
+                      ? "text-indigo-500"
+                      : "text-gray-400"
+                  } -ml-0.5 mr-2 h-5 w-5`}
+                />
                 Branch Access Controls
               </button>
               <button
@@ -200,23 +213,29 @@ export default function SacramentsAdminPage() {
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
-                <DocumentTextIcon className={`${
-                  activeTab === "certificates" ? "text-indigo-500" : "text-gray-400"
-                } -ml-0.5 mr-2 h-5 w-5`} />
+                <DocumentTextIcon
+                  className={`${
+                    activeTab === "certificates"
+                      ? "text-indigo-500"
+                      : "text-gray-400"
+                  } -ml-0.5 mr-2 h-5 w-5`}
+                />
                 Certificate Management
               </button>
             </nav>
           </div>
         </div>
       </div>
-      
+
       {/* Tab content */}
       {activeTab === "access-controls" && (
         <div>
           <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="sm:flex sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-base font-semibold leading-6 text-gray-900">Record Type Filter</h3>
+                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                  Record Type Filter
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Set permissions for specific types of sacramental records
                 </p>
@@ -227,7 +246,16 @@ export default function SacramentsAdminPage() {
                   name="record-type"
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   value={selectedRecordType}
-                  onChange={(e) => setSelectedRecordType(e.target.value as "baptism" | "communion" | "confirmation" | "marriage" | "all")}
+                  onChange={(e) =>
+                    setSelectedRecordType(
+                      e.target.value as
+                        | "baptism"
+                        | "communion"
+                        | "confirmation"
+                        | "marriage"
+                        | "all",
+                    )
+                  }
                 >
                   <option value="all">All Record Types</option>
                   <option value="baptism">Baptism Records</option>
@@ -238,11 +266,11 @@ export default function SacramentsAdminPage() {
               </div>
             </div>
           </div>
-          
+
           <BranchAccessControls selectedRecordType={selectedRecordType} />
         </div>
       )}
-      
+
       {activeTab === "certificates" && (
         <div>
           <div className="bg-white rounded-lg shadow-sm mb-6">
@@ -265,19 +293,31 @@ export default function SacramentsAdminPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="px-6 py-5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {mockBranches.map((branch) => (
-                  <div key={branch.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-5 sm:px-6" style={{ backgroundColor: branch.primaryColor }}>
-                      <h3 className="text-lg font-medium text-white">{branch.name}</h3>
-                      <p className="mt-1 max-w-2xl text-sm text-white opacity-80">{branch.location}</p>
+                  <div
+                    key={branch.id}
+                    className="border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <div
+                      className="px-4 py-5 sm:px-6"
+                      style={{ backgroundColor: branch.primaryColor }}
+                    >
+                      <h3 className="text-lg font-medium text-white">
+                        {branch.name}
+                      </h3>
+                      <p className="mt-1 max-w-2xl text-sm text-white opacity-80">
+                        {branch.location}
+                      </p>
                     </div>
                     <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
                       <dl className="sm:divide-y sm:divide-gray-200">
                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                          <dt className="text-sm font-medium text-gray-500">Baptism Template</dt>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Baptism Template
+                          </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                             <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                               Active
@@ -285,7 +325,9 @@ export default function SacramentsAdminPage() {
                           </dd>
                         </div>
                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                          <dt className="text-sm font-medium text-gray-500">Communion Template</dt>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Communion Template
+                          </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                             <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                               Active
@@ -293,7 +335,9 @@ export default function SacramentsAdminPage() {
                           </dd>
                         </div>
                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                          <dt className="text-sm font-medium text-gray-500">Confirmation Template</dt>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Confirmation Template
+                          </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                             <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                               Active
@@ -301,7 +345,9 @@ export default function SacramentsAdminPage() {
                           </dd>
                         </div>
                         <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                          <dt className="text-sm font-medium text-gray-500">Marriage Template</dt>
+                          <dt className="text-sm font-medium text-gray-500">
+                            Marriage Template
+                          </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                             <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                               Active
@@ -323,7 +369,7 @@ export default function SacramentsAdminPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Sample certificates */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="px-6 py-5 border-b border-gray-200">
@@ -334,34 +380,48 @@ export default function SacramentsAdminPage() {
                 View and generate certificates for recent sacramental records
               </p>
             </div>
-            
+
             <ul className="divide-y divide-gray-200">
               {mockCertificates.map((certificate) => {
-                const branch = mockBranches.find(b => b.id === certificate.branchId);
+                const branch = mockBranches.find(
+                  (b) => b.id === certificate.branchId,
+                );
                 return (
-                  <li key={certificate.id} className="px-6 py-5 hover:bg-gray-50">
+                  <li
+                    key={certificate.id}
+                    className="px-6 py-5 hover:bg-gray-50"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ 
-                            backgroundColor: branch?.primaryColor || '#4f46e5',
-                            color: 'white'
-                          }}>
-                            {certificate.type === 'baptism' && 'B'}
-                            {certificate.type === 'communion' && 'C'}
-                            {certificate.type === 'confirmation' && 'Cf'}
-                            {certificate.type === 'marriage' && 'M'}
+                          <div
+                            className="h-10 w-10 rounded-full flex items-center justify-center"
+                            style={{
+                              backgroundColor:
+                                branch?.primaryColor || "#4f46e5",
+                              color: "white",
+                            }}
+                          >
+                            {certificate.type === "baptism" && "B"}
+                            {certificate.type === "communion" && "C"}
+                            {certificate.type === "confirmation" && "Cf"}
+                            {certificate.type === "marriage" && "M"}
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{certificate.recipientName}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {certificate.recipientName}
+                          </div>
                           <div className="text-sm text-gray-500">
-                            {certificate.recordNumber} • {new Date(certificate.date).toLocaleDateString()}
+                            {certificate.recordNumber} •{" "}
+                            {new Date(certificate.date).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <span className="mr-4 text-sm text-gray-500">{branch?.name}</span>
+                        <span className="mr-4 text-sm text-gray-500">
+                          {branch?.name}
+                        </span>
                         <button
                           type="button"
                           onClick={() => handleGenerateCertificate(certificate)}
@@ -376,7 +436,7 @@ export default function SacramentsAdminPage() {
                 );
               })}
             </ul>
-            
+
             <div className="px-6 py-4 border-t border-gray-200">
               <Link
                 href="/dashboard/sacraments/certificates"
@@ -388,7 +448,7 @@ export default function SacramentsAdminPage() {
           </div>
         </div>
       )}
-      
+
       {/* Certificate Generator Modal */}
       {selectedCertificate && (
         <CertificateGenerator

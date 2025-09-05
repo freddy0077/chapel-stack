@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from "@apollo/client";
 import {
   CREATE_SUBSCRIPTION,
   GET_SUBSCRIPTION_PLANS,
@@ -11,27 +11,29 @@ import {
   type PlanFilterInput,
   type MemberFilterInput,
   type SubscriptionFilterInput,
-} from '@/graphql/subscription-management';
+} from "@/graphql/subscription-management";
 
 export interface UseCreateSubscriptionOptions {
   onSuccess?: (subscription: Subscription) => void;
   onError?: (error: Error) => void;
 }
 
-export const useCreateSubscription = (options?: UseCreateSubscriptionOptions) => {
-  const [createSubscription, { loading, error, data }] = useMutation(CREATE_SUBSCRIPTION, {
-    onCompleted: (data) => {
-      options?.onSuccess?.(data.createSubscription);
+export const useCreateSubscription = (
+  options?: UseCreateSubscriptionOptions,
+) => {
+  const [createSubscription, { loading, error, data }] = useMutation(
+    CREATE_SUBSCRIPTION,
+    {
+      onCompleted: (data) => {
+        options?.onSuccess?.(data.createSubscription);
+      },
+      onError: (error) => {
+        options?.onError?.(error);
+      },
+      refetchQueries: [{ query: GET_SUBSCRIPTIONS }, "GetSubscriptions"],
+      awaitRefetchQueries: true,
     },
-    onError: (error) => {
-      options?.onError?.(error);
-    },
-    refetchQueries: [
-      { query: GET_SUBSCRIPTIONS },
-      'GetSubscriptions',
-    ],
-    awaitRefetchQueries: true,
-  });
+  );
 
   const handleCreateSubscription = async (input: CreateSubscriptionInput) => {
     try {
@@ -55,7 +57,7 @@ export const useCreateSubscription = (options?: UseCreateSubscriptionOptions) =>
 export const useSubscriptionPlans = (filter?: PlanFilterInput) => {
   const { data, loading, error, refetch } = useQuery(GET_SUBSCRIPTION_PLANS, {
     variables: { filter },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {
@@ -67,10 +69,13 @@ export const useSubscriptionPlans = (filter?: PlanFilterInput) => {
 };
 
 export const useMembersForSubscription = (filter?: MemberFilterInput) => {
-  const { data, loading, error, refetch } = useQuery(GET_MEMBERS_FOR_SUBSCRIPTION, {
-    variables: { filter },
-    errorPolicy: 'all',
-  });
+  const { data, loading, error, refetch } = useQuery(
+    GET_MEMBERS_FOR_SUBSCRIPTION,
+    {
+      variables: { filter },
+      errorPolicy: "all",
+    },
+  );
 
   return {
     members: data?.members || [],
@@ -83,7 +88,7 @@ export const useMembersForSubscription = (filter?: MemberFilterInput) => {
 export const useSubscriptions = (filter?: SubscriptionFilterInput) => {
   const { data, loading, error, refetch } = useQuery(GET_SUBSCRIPTIONS, {
     variables: { filter },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {

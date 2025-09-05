@@ -4,19 +4,19 @@
  * proper SSR hydration, and comprehensive state management
  */
 
-'use client';
+"use client";
 
-import React, { 
-  createContext, 
-  useContext, 
-  useReducer, 
-  useEffect, 
-  useCallback, 
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
   useRef,
-  ReactNode 
-} from 'react';
-import { useRouter } from 'next/navigation';
-import { useApolloClient } from '@apollo/client';
+  ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
+import { useApolloClient } from "@apollo/client";
 
 import {
   AuthContextType,
@@ -31,24 +31,28 @@ import {
   AuthConfig,
   DEFAULT_AUTH_CONFIG,
   AuthActionType,
-} from '@/types/auth-enhanced.types';
+} from "@/types/auth-enhanced.types";
 
-import { 
-  authReducer, 
-  initialAuthState, 
-  AuthUtils, 
-  AuthEventEmitter 
-} from '@/lib/auth/auth-reducer';
+import {
+  authReducer,
+  initialAuthState,
+  AuthUtils,
+  AuthEventEmitter,
+} from "@/lib/auth/auth-reducer";
 
-import { 
-  AuthStorage, 
-  MultiTabSync, 
-  authStorage, 
-  multiTabSync 
-} from '@/lib/auth/auth-storage';
+import {
+  AuthStorage,
+  MultiTabSync,
+  authStorage,
+  multiTabSync,
+} from "@/lib/auth/auth-storage";
 
-import { AuthApiService } from '@/lib/auth/auth-api';
-import { getRoleConfig, canAccessRoute, canAccessDashboard } from '@/config/role-dashboard.config';
+import { AuthApiService } from "@/lib/auth/auth-api";
+import {
+  getRoleConfig,
+  canAccessRoute,
+  canAccessDashboard,
+} from "@/config/role-dashboard.config";
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,17 +64,17 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
   const router = useRouter();
   const apolloClient = useApolloClient();
-  
+
   // Configuration
   const authConfig: AuthConfig = { ...DEFAULT_AUTH_CONFIG, ...config };
-  
+
   // Services
   const authApiRef = useRef<AuthApiService>();
   const storageRef = useRef<AuthStorage>();
   const multiTabSyncRef = useRef<MultiTabSync>();
   const refreshIntervalRef = useRef<NodeJS.Timeout>();
   const activityIntervalRef = useRef<NodeJS.Timeout>();
-  
+
   // Initialize services
   if (!authApiRef.current) {
     authApiRef.current = new AuthApiService(apolloClient, authConfig);
@@ -95,7 +99,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
 
       // Check if session is expired due to inactivity
       if (storage.isSessionExpired()) {
-        await handleLogout({ redirect: '/auth/login' });
+        await handleLogout({ redirect: "/auth/login" });
         return;
       }
 
@@ -104,10 +108,10 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       const sessionId = storage.getSessionId() || AuthUtils.generateSessionId();
 
       // Debug: Check localStorage directly
-      if (typeof window !== 'undefined') {
-        const accessToken = localStorage.getItem('chapel_access_token');
-        const refreshToken = localStorage.getItem('chapel_refresh_token');
-        const userData = localStorage.getItem('chapel_user_data');
+      if (typeof window !== "undefined") {
+        const accessToken = localStorage.getItem("chapel_access_token");
+        const refreshToken = localStorage.getItem("chapel_refresh_token");
+        const userData = localStorage.getItem("chapel_user_data");
       }
 
       // If no tokens, user is not authenticated
@@ -122,7 +126,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         const tokens = storage.getTokens();
         if (tokens) {
         }
-        
+
         storage.clear();
         dispatch({ type: AuthActionType.LOGOUT });
         dispatch({ type: AuthActionType.SET_HYDRATED });
@@ -145,7 +149,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       // Check if token needs refresh
       if (storage.needsTokenRefresh()) {
         const refreshResult = await handleTokenRefresh();
-        
+
         if (!refreshResult.success) {
           storage.clear();
           dispatch({ type: AuthActionType.LOGOUT });
@@ -158,7 +162,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       if (authConfig.enableAutoRefresh && storedTokens) {
         try {
           const { user: currentUser, error } = await authApi.getCurrentUser();
-          
+
           if (error) {
             if (!error.recoverable) {
               storage.clear();
@@ -171,20 +175,18 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
               storage.setUser(currentUser);
             }
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       }
 
       dispatch({ type: AuthActionType.SET_HYDRATED });
-
     } catch (error) {
-      dispatch({ 
-        type: AuthActionType.SET_ERROR, 
+      dispatch({
+        type: AuthActionType.SET_ERROR,
         payload: AuthUtils.createAuthError(
-          'INIT_ERROR',
-          'Failed to initialize authentication',
-          error
-        )
+          "INIT_ERROR",
+          "Failed to initialize authentication",
+          error,
+        ),
       });
       dispatch({ type: AuthActionType.SET_HYDRATED });
     }
@@ -196,36 +198,35 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
   const handleTokenRefresh = useCallback(async (): Promise<RefreshResult> => {
     try {
       dispatch({ type: AuthActionType.SET_REFRESHING, payload: true });
-      
+
       const result = await authApi.refreshToken();
-      
+
       if (result.success && result.tokens) {
         // Update stored tokens
         const rememberMe = storage.getRememberMe();
         storage.setTokens(result.tokens, rememberMe);
-        
+
         // Update state
         dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
-        
+
         // Reset API refresh attempts
         authApi.resetRefreshAttempts();
       } else {
         dispatch({ type: AuthActionType.SET_ERROR, payload: result.error });
       }
-      
+
       dispatch({ type: AuthActionType.SET_REFRESHING, payload: false });
       return result;
-      
     } catch (error) {
       const authError = AuthUtils.createAuthError(
-        'REFRESH_ERROR',
-        'Failed to refresh authentication token',
-        error
+        "REFRESH_ERROR",
+        "Failed to refresh authentication token",
+        error,
       );
-      
+
       dispatch({ type: AuthActionType.SET_ERROR, payload: authError });
       dispatch({ type: AuthActionType.SET_REFRESHING, payload: false });
-      
+
       return { success: false, error: authError };
     }
   }, [authApi, storage]);
@@ -233,109 +234,112 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
   /**
    * Handle login
    */
-  const handleLogin = useCallback(async (credentials: LoginCredentials): Promise<LoginResult> => {
-    try {
-      dispatch({ type: AuthActionType.SET_LOADING, payload: true });
-      dispatch({ type: AuthActionType.CLEAR_ERROR });
+  const handleLogin = useCallback(
+    async (credentials: LoginCredentials): Promise<LoginResult> => {
+      try {
+        dispatch({ type: AuthActionType.SET_LOADING, payload: true });
+        dispatch({ type: AuthActionType.CLEAR_ERROR });
 
-      const result = await authApi.login(credentials);
+        const result = await authApi.login(credentials);
 
-      if (result.success && result.user && result.tokens) {
-        // Store authentication data
-        const rememberMe = credentials.rememberMe || false;
-        storage.setTokens(result.tokens, rememberMe);
-        storage.setUser(result.user);
-        storage.setSessionId(AuthUtils.generateSessionId());
-        
-        // Update state
-        dispatch({ type: AuthActionType.SET_USER, payload: result.user });
-        dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
+        if (result.success && result.user && result.tokens) {
+          // Store authentication data
+          const rememberMe = credentials.rememberMe || false;
+          storage.setTokens(result.tokens, rememberMe);
+          storage.setUser(result.user);
+          storage.setSessionId(AuthUtils.generateSessionId());
 
-        // Broadcast login to other tabs
-        if (multiTab) {
-          multiTab.broadcastLogin(result.user);
+          // Update state
+          dispatch({ type: AuthActionType.SET_USER, payload: result.user });
+          dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
+
+          // Broadcast login to other tabs
+          if (multiTab) {
+            multiTab.broadcastLogin(result.user);
+          }
+
+          // Setup automatic token refresh
+          setupTokenRefresh();
+        } else if (result.requiresMFA) {
+          // MFA handling will be done by the calling component
+        } else {
+          dispatch({ type: AuthActionType.SET_ERROR, payload: result.error });
         }
 
-        // Setup automatic token refresh
-        setupTokenRefresh();
+        dispatch({ type: AuthActionType.SET_LOADING, payload: false });
+        return result;
+      } catch (error) {
+        const authError = AuthUtils.createAuthError(
+          "LOGIN_ERROR",
+          "Login failed due to an unexpected error",
+          error,
+        );
 
-      } else if (result.requiresMFA) {
-        // MFA handling will be done by the calling component
-      } else {
-        dispatch({ type: AuthActionType.SET_ERROR, payload: result.error });
+        dispatch({ type: AuthActionType.SET_ERROR, payload: authError });
+        dispatch({ type: AuthActionType.SET_LOADING, payload: false });
+
+        return { success: false, error: authError };
       }
-
-      dispatch({ type: AuthActionType.SET_LOADING, payload: false });
-      return result;
-
-    } catch (error) {
-      const authError = AuthUtils.createAuthError(
-        'LOGIN_ERROR',
-        'Login failed due to an unexpected error',
-        error
-      );
-      
-      dispatch({ type: AuthActionType.SET_ERROR, payload: authError });
-      dispatch({ type: AuthActionType.SET_LOADING, payload: false });
-      
-      return { success: false, error: authError };
-    }
-  }, [authApi, storage, multiTab]); 
+    },
+    [authApi, storage, multiTab],
+  );
 
   /**
    * Handle logout
    */
-  const handleLogout = useCallback(async (options: LogoutOptions = {}): Promise<void> => {
-    try {
-      dispatch({ type: AuthActionType.SET_LOADING, payload: true });
+  const handleLogout = useCallback(
+    async (options: LogoutOptions = {}): Promise<void> => {
+      try {
+        dispatch({ type: AuthActionType.SET_LOADING, payload: true });
 
-      // Call server logout
-      await authApi.logout(options.everywhere);
+        // Call server logout
+        await authApi.logout(options.everywhere);
 
-      // Clear local storage
-      storage.clear();
+        // Clear local storage
+        storage.clear();
 
-      // Clear state
-      dispatch({ type: AuthActionType.LOGOUT });
+        // Clear state
+        dispatch({ type: AuthActionType.LOGOUT });
 
-      // Broadcast logout to other tabs
-      if (multiTab) {
-        multiTab.broadcastLogout();
+        // Broadcast logout to other tabs
+        if (multiTab) {
+          multiTab.broadcastLogout();
+        }
+
+        // Clear refresh interval
+        if (refreshIntervalRef.current) {
+          clearInterval(refreshIntervalRef.current);
+          refreshIntervalRef.current = undefined;
+        }
+
+        // Clear activity interval
+        if (activityIntervalRef.current) {
+          clearInterval(activityIntervalRef.current);
+          activityIntervalRef.current = undefined;
+        }
+
+        // Redirect if specified
+        if (options.redirect) {
+          router.replace(options.redirect);
+        } else {
+          router.replace("/auth/login");
+        }
+      } catch (error) {
+        // Even if server logout fails, clear local data
+        storage.clear();
+        dispatch({ type: AuthActionType.LOGOUT });
+
+        if (options.redirect) {
+          router.replace(options.redirect);
+        } else {
+          router.replace("/auth/login");
+        }
+      } finally {
+        dispatch({ type: AuthActionType.SET_LOADING, payload: false });
       }
-
-      // Clear refresh interval
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-        refreshIntervalRef.current = undefined;
-      }
-
-      // Clear activity interval
-      if (activityIntervalRef.current) {
-        clearInterval(activityIntervalRef.current);
-        activityIntervalRef.current = undefined;
-      }
-
-      // Redirect if specified
-      if (options.redirect) {
-        router.replace(options.redirect);
-      } else {
-        router.replace('/auth/login');
-      }
-
-    } catch (error) {
-      // Even if server logout fails, clear local data
-      storage.clear();
-      dispatch({ type: AuthActionType.LOGOUT });
-      
-      if (options.redirect) {
-        router.replace(options.redirect);
-      } else {
-        router.replace('/auth/login');
-      }
-    } finally {
-      dispatch({ type: AuthActionType.SET_LOADING, payload: false });
-    }
-  }, [authApi, storage, multiTab, router]);
+    },
+    [authApi, storage, multiTab, router],
+  );
 
   /**
    * Setup automatic token refresh
@@ -354,8 +358,12 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         await handleTokenRefresh();
       }
     }, 60 * 1000); // Check every minute
-
-  }, [authConfig.enableAutoRefresh, storage, state.isRefreshing, handleTokenRefresh]);
+  }, [
+    authConfig.enableAutoRefresh,
+    storage,
+    state.isRefreshing,
+    handleTokenRefresh,
+  ]);
 
   /**
    * Setup activity tracking
@@ -383,18 +391,18 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     };
 
     // Add event listeners for user activity
-    if (typeof window !== 'undefined') {
-      window.addEventListener('mousedown', updateActivity);
-      window.addEventListener('keydown', updateActivity);
-      window.addEventListener('scroll', updateActivity);
-      window.addEventListener('touchstart', updateActivity);
+    if (typeof window !== "undefined") {
+      window.addEventListener("mousedown", updateActivity);
+      window.addEventListener("keydown", updateActivity);
+      window.addEventListener("scroll", updateActivity);
+      window.addEventListener("touchstart", updateActivity);
 
       // Cleanup function
       return () => {
-        window.removeEventListener('mousedown', updateActivity);
-        window.removeEventListener('keydown', updateActivity);
-        window.removeEventListener('scroll', updateActivity);
-        window.removeEventListener('touchstart', updateActivity);
+        window.removeEventListener("mousedown", updateActivity);
+        window.removeEventListener("keydown", updateActivity);
+        window.removeEventListener("scroll", updateActivity);
+        window.removeEventListener("touchstart", updateActivity);
       };
     }
   }, [authConfig.enableMultiTabSync, state.isAuthenticated, storage]);
@@ -419,12 +427,12 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
       }
     };
 
-    multiTab.on('token_changed', handleTokenChanged);
-    multiTab.on('user_changed', handleUserChanged);
+    multiTab.on("token_changed", handleTokenChanged);
+    multiTab.on("user_changed", handleUserChanged);
 
     return () => {
-      multiTab.off('token_changed', handleTokenChanged);
-      multiTab.off('user_changed', handleUserChanged);
+      multiTab.off("token_changed", handleTokenChanged);
+      multiTab.off("user_changed", handleUserChanged);
     };
   }, [multiTab, state.isAuthenticated]);
 
@@ -456,7 +464,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
   useEffect(() => {
     const cleanup = setupMultiTabSync();
     return cleanup;
-  }, [authApi, storage, multiTab]); 
+  }, [authApi, storage, multiTab]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -483,58 +491,79 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     refreshToken: handleTokenRefresh,
 
     // User Management
-    updateUser: useCallback(async (updates: Partial<AuthUser>) => {
-      if (state.user) {
-        const updatedUser = { ...state.user, ...updates };
-        dispatch({ type: AuthActionType.UPDATE_USER, payload: updates });
-        storage.setUser(updatedUser);
-      }
-    }, [state.user, storage]),
+    updateUser: useCallback(
+      async (updates: Partial<AuthUser>) => {
+        if (state.user) {
+          const updatedUser = { ...state.user, ...updates };
+          dispatch({ type: AuthActionType.UPDATE_USER, payload: updates });
+          storage.setUser(updatedUser);
+        }
+      },
+      [state.user, storage],
+    ),
 
-    verifyEmail: useCallback(async (token: string) => {
-      return await authApi.verifyEmail(token);
-    }, [authApi]),
+    verifyEmail: useCallback(
+      async (token: string) => {
+        return await authApi.verifyEmail(token);
+      },
+      [authApi],
+    ),
 
     // Password Management
-    requestPasswordReset: useCallback(async (email: string) => {
-      return await authApi.requestPasswordReset(email);
-    }, [authApi]),
+    requestPasswordReset: useCallback(
+      async (email: string) => {
+        return await authApi.requestPasswordReset(email);
+      },
+      [authApi],
+    ),
 
-    resetPassword: useCallback(async (token: string, newPassword: string) => {
-      return await authApi.resetPassword(token, newPassword);
-    }, [authApi]),
+    resetPassword: useCallback(
+      async (token: string, newPassword: string) => {
+        return await authApi.resetPassword(token, newPassword);
+      },
+      [authApi],
+    ),
 
-    changePassword: useCallback(async (currentPassword: string, newPassword: string) => {
-      return await authApi.changePassword(currentPassword, newPassword);
-    }, [authApi]),
+    changePassword: useCallback(
+      async (currentPassword: string, newPassword: string) => {
+        return await authApi.changePassword(currentPassword, newPassword);
+      },
+      [authApi],
+    ),
 
     // MFA Management
     enableMFA: useCallback(async () => {
       return await authApi.enableMFA();
     }, [authApi]),
 
-    disableMFA: useCallback(async (password: string) => {
-      return await authApi.disableMFA(password);
-    }, [authApi]),
+    disableMFA: useCallback(
+      async (password: string) => {
+        return await authApi.disableMFA(password);
+      },
+      [authApi],
+    ),
 
-    verifyMFA: useCallback(async (token: string, mfaCode: string) => {
-      const result = await authApi.verifyMFA(token, mfaCode);
-      
-      if (result.success && result.user && result.tokens) {
-        // Store authentication data
-        storage.setTokens(result.tokens, storage.getRememberMe());
-        storage.setUser(result.user);
-        
-        // Update state
-        dispatch({ type: AuthActionType.SET_USER, payload: result.user });
-        dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
-        
-        // Setup automatic token refresh
-        setupTokenRefresh();
-      }
-      
-      return result;
-    }, [authApi, storage, setupTokenRefresh]),
+    verifyMFA: useCallback(
+      async (token: string, mfaCode: string) => {
+        const result = await authApi.verifyMFA(token, mfaCode);
+
+        if (result.success && result.user && result.tokens) {
+          // Store authentication data
+          storage.setTokens(result.tokens, storage.getRememberMe());
+          storage.setUser(result.user);
+
+          // Update state
+          dispatch({ type: AuthActionType.SET_USER, payload: result.user });
+          dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
+
+          // Setup automatic token refresh
+          setupTokenRefresh();
+        }
+
+        return result;
+      },
+      [authApi, storage, setupTokenRefresh],
+    ),
 
     // Session Management
     clearError: useCallback(() => {
@@ -543,34 +572,46 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
 
     checkSession: useCallback(async () => {
       if (!state.isAuthenticated) return false;
-      
+
       // Check if session is expired
       if (storage.isSessionExpired()) {
         await handleLogout();
         return false;
       }
-      
+
       return true;
     }, [state.isAuthenticated, storage, handleLogout]),
 
     // Role & Permission Checks
-    hasRole: useCallback((role: string) => {
-      return AuthUtils.hasRole(state.user, role);
-    }, [state.user]),
+    hasRole: useCallback(
+      (role: string) => {
+        return AuthUtils.hasRole(state.user, role);
+      },
+      [state.user],
+    ),
 
-    hasPermission: useCallback((permission: string) => {
-      return AuthUtils.hasPermission(state.user, permission);
-    }, [state.user]),
+    hasPermission: useCallback(
+      (permission: string) => {
+        return AuthUtils.hasPermission(state.user, permission);
+      },
+      [state.user],
+    ),
 
-    canAccessRoute: useCallback((route: string) => {
-      if (!state.user) return false;
-      return canAccessRoute(route, state.user.primaryRole);
-    }, [state.user]),
+    canAccessRoute: useCallback(
+      (route: string) => {
+        if (!state.user) return false;
+        return canAccessRoute(route, state.user.primaryRole);
+      },
+      [state.user],
+    ),
 
-    canAccessDashboard: useCallback((dashboard: string) => {
-      if (!state.user) return false;
-      return canAccessDashboard(dashboard, state.user.primaryRole);
-    }, [state.user]),
+    canAccessDashboard: useCallback(
+      (dashboard: string) => {
+        if (!state.user) return false;
+        return canAccessDashboard(dashboard, state.user.primaryRole);
+      },
+      [state.user],
+    ),
 
     // Navigation Helpers
     getPrimaryRole: useCallback(() => {
@@ -590,16 +631,14 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
     }, [state.user]),
 
     getDefaultRoute: useCallback(() => {
-      if (!state.user) return '/auth/login';
+      if (!state.user) return "/auth/login";
       const roleConfig = getRoleConfig(state.user.primaryRole);
-      return roleConfig?.defaultRoute || '/dashboard';
+      return roleConfig?.defaultRoute || "/dashboard";
     }, [state.user]),
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
@@ -608,11 +647,11 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
  */
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  
+
   return context;
 }
 
@@ -644,8 +683,9 @@ export function useCurrentUser() {
  * Hook for role-based access control
  */
 export function useRoleAccess() {
-  const { hasRole, hasPermission, canAccessRoute, canAccessDashboard } = useAuth();
-  
+  const { hasRole, hasPermission, canAccessRoute, canAccessDashboard } =
+    useAuth();
+
   return {
     hasRole,
     hasPermission,

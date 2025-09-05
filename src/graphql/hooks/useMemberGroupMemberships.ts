@@ -1,6 +1,9 @@
-import { useQuery } from '@apollo/client';
-import { useMemo } from 'react';
-import { GET_MEMBER_GROUP_MEMBERSHIPS, GET_ALL_SACRAMENTAL_RECORDS } from '../queries/memberGroupMembershipsQueries';
+import { useQuery } from "@apollo/client";
+import { useMemo } from "react";
+import {
+  GET_MEMBER_GROUP_MEMBERSHIPS,
+  GET_ALL_SACRAMENTAL_RECORDS,
+} from "../queries/memberGroupMembershipsQueries";
 
 export interface MinistryMember {
   id: string;
@@ -80,16 +83,19 @@ export interface MemberGroupMembership {
 export const useMemberGroupMemberships = (
   memberId: string,
   branchId?: string,
-  organisationId?: string
+  organisationId?: string,
 ) => {
-  const { data, loading, error, refetch } = useQuery(GET_MEMBER_GROUP_MEMBERSHIPS, {
-    variables: { 
-      ministryFilters: { branchId, organisationId },
-      smallGroupFilters: { branchId, organisationId }
+  const { data, loading, error, refetch } = useQuery(
+    GET_MEMBER_GROUP_MEMBERSHIPS,
+    {
+      variables: {
+        ministryFilters: { branchId, organisationId },
+        smallGroupFilters: { branchId, organisationId },
+      },
+      skip: !memberId,
+      fetchPolicy: "cache-and-network",
     },
-    skip: !memberId,
-    fetchPolicy: 'cache-and-network',
-  });
+  );
 
   // Process the data to extract member-specific memberships
   const processGroupMemberships = (): MemberGroupMembership[] => {
@@ -101,9 +107,9 @@ export const useMemberGroupMemberships = (
     if (data.ministries) {
       data.ministries.forEach((ministry: Ministry) => {
         const memberInMinistry = ministry.members.find(
-          (member: MinistryMember) => member.memberId === memberId
+          (member: MinistryMember) => member.memberId === memberId,
         );
-        
+
         if (memberInMinistry) {
           memberships.push({
             id: memberInMinistry.id,
@@ -112,7 +118,7 @@ export const useMemberGroupMemberships = (
             ministryName: ministry.name,
             role: memberInMinistry.role,
             joinDate: memberInMinistry.joinDate,
-            isActive: memberInMinistry.status === 'ACTIVE',
+            isActive: memberInMinistry.status === "ACTIVE",
             responsibilities: [], // This would need to come from a different field if available
           });
         }
@@ -123,9 +129,9 @@ export const useMemberGroupMemberships = (
     if (data.smallGroups) {
       data.smallGroups.forEach((smallGroup: SmallGroup) => {
         const memberInGroup = smallGroup.members.find(
-          (member: SmallGroupMember) => member.memberId === memberId
+          (member: SmallGroupMember) => member.memberId === memberId,
         );
-        
+
         if (memberInGroup) {
           memberships.push({
             id: memberInGroup.id,
@@ -134,7 +140,7 @@ export const useMemberGroupMemberships = (
             smallGroupName: smallGroup.name,
             role: memberInGroup.role,
             joinDate: memberInGroup.joinDate,
-            isActive: memberInGroup.status === 'ACTIVE',
+            isActive: memberInGroup.status === "ACTIVE",
             responsibilities: [], // This would need to come from a different field if available
           });
         }
@@ -156,74 +162,82 @@ export const useMemberGroupMemberships = (
 export const useMemberSacramentalRecords = (
   memberId: string,
   branchId?: string,
-  organisationId?: string
+  organisationId?: string,
 ) => {
-  const { data, loading, error, refetch } = useQuery(GET_ALL_SACRAMENTAL_RECORDS, {
-    variables: {
-      baptismFilter: { 
-        sacramentType: 'BAPTISM', 
-        memberId, 
-        branchId, 
-        organisationId 
+  const { data, loading, error, refetch } = useQuery(
+    GET_ALL_SACRAMENTAL_RECORDS,
+    {
+      variables: {
+        baptismFilter: {
+          sacramentType: "BAPTISM",
+          memberId,
+          branchId,
+          organisationId,
+        },
+        confirmationFilter: {
+          sacramentType: "CONFIRMATION",
+          memberId,
+          branchId,
+          organisationId,
+        },
+        communionFilter: {
+          sacramentType: "EUCHARIST_FIRST_COMMUNION",
+          memberId,
+          branchId,
+          organisationId,
+        },
+        marriageFilter: {
+          sacramentType: "MATRIMONY",
+          memberId,
+          branchId,
+          organisationId,
+        },
       },
-      confirmationFilter: { 
-        sacramentType: 'CONFIRMATION', 
-        memberId, 
-        branchId, 
-        organisationId 
-      },
-      communionFilter: { 
-        sacramentType: 'EUCHARIST_FIRST_COMMUNION', 
-        memberId, 
-        branchId, 
-        organisationId 
-      },
-      marriageFilter: { 
-        sacramentType: 'MATRIMONY', 
-        memberId, 
-        branchId, 
-        organisationId 
-      }
+      skip: !memberId,
+      fetchPolicy: "cache-and-network",
     },
-    skip: !memberId,
-    fetchPolicy: 'cache-and-network',
-  });
+  );
 
   // Combine all sacramental records from different types
   const memberSacramentalRecords = useMemo(() => {
-    console.log('🔍 Sacramental Records Debug:', {
+    console.log("🔍 Sacramental Records Debug:", {
       memberId,
       data,
       hasData: !!data,
       baptismRecords: data?.baptismRecords?.length || 0,
       confirmationRecords: data?.confirmationRecords?.length || 0,
       communionRecords: data?.communionRecords?.length || 0,
-      marriageRecords: data?.marriageRecords?.length || 0
+      marriageRecords: data?.marriageRecords?.length || 0,
     });
 
     if (!data) return [];
-    
+
     const allRecords = [
       ...(data.baptismRecords || []),
       ...(data.confirmationRecords || []),
       ...(data.communionRecords || []),
-      ...(data.marriageRecords || [])
+      ...(data.marriageRecords || []),
     ];
-    
-    console.log('🔍 All Records (should already be filtered by backend):', allRecords);
-    console.log('🔍 Expected memberId:', memberId);
-    
+
+    console.log(
+      "🔍 All Records (should already be filtered by backend):",
+      allRecords,
+    );
+    console.log("🔍 Expected memberId:", memberId);
+
     // Since we're now filtering at the GraphQL level, these records should already be filtered
     // But let's add a safety check to ensure data integrity
     const filteredRecords = allRecords.filter((record: SacramentalRecord) => {
       const matches = record.memberId === memberId;
       if (!matches) {
-        console.warn(`🚨 Found record with wrong memberId: ${record.memberId}, expected: ${memberId}`);
+        console.warn(
+          `🚨 Found record with wrong memberId: ${record.memberId}, expected: ${memberId}`,
+        );
       }
       return matches;
     });
-    
-    console.log('🔍 Final Filtered Records:', filteredRecords);
+
+    console.log("🔍 Final Filtered Records:", filteredRecords);
     return filteredRecords;
   }, [data, memberId]);
 

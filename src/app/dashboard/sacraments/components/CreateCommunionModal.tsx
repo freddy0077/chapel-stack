@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect, Fragment, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { 
-  XMarkIcon, 
-  DocumentArrowUpIcon, 
-  UserIcon, 
+import {
+  XMarkIcon,
+  DocumentArrowUpIcon,
+  UserIcon,
   GiftIcon,
   CalendarIcon,
-  MapPinIcon
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { useCreateFirstCommunionRecord } from "@/graphql/hooks/useCreateFirstCommunionRecord";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
@@ -34,25 +34,34 @@ interface CreateCommunionModalProps {
   onSuccess?: () => void;
 }
 
-export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: CreateCommunionModalProps) {
+export default function CreateCommunionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateCommunionModalProps) {
   const { state } = useAuth();
   const user = state.user;
-  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } = useOrganizationBranchFilter();
+  const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
+    useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const isSuperAdmin = user?.primaryRole === "super_admin";
   const organisationId = user?.organisationId || orgIdFromFilter;
-  const { branches = [], loading: branchesLoading } = useFilteredBranches(isSuperAdmin ? { organisationId } : undefined);
-  
+  const { branches = [], loading: branchesLoading } = useFilteredBranches(
+    isSuperAdmin ? { organisationId } : undefined,
+  );
+
   // Improved branch selection logic
   const branchId = useMemo(() => {
     if (isSuperAdmin) {
       return selectedBranchId;
     } else {
       // For non-super admin users, try to get branch from filter, user's branches, or first available branch
-      return branchIdFromFilter || 
-             user?.userBranches?.[0]?.branch?.id || 
-             user?.branchId ||
-             branches?.[0]?.id;
+      return (
+        branchIdFromFilter ||
+        user?.userBranches?.[0]?.branch?.id ||
+        user?.branchId ||
+        branches?.[0]?.id
+      );
     }
   }, [isSuperAdmin, selectedBranchId, branchIdFromFilter, user, branches]);
 
@@ -64,7 +73,7 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
     officiant: "",
     sponsors: "",
     notes: "",
-    certificate: null as File | null
+    certificate: null as File | null,
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [memberSearch, setMemberSearch] = useState("");
@@ -73,13 +82,17 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
 
   // Debounced search term
   const debouncedSearch = useDebounce(memberSearch, 400);
-  const { members, loading: searchLoading, error: searchError } = useSearchMembers(
-    debouncedSearch,
-    organisationId,
-    branchId
-  );
+  const {
+    members,
+    loading: searchLoading,
+    error: searchError,
+  } = useSearchMembers(debouncedSearch, organisationId, branchId);
 
-  const { createFirstCommunionRecord, loading: mutationLoading, error: mutationError } = useCreateFirstCommunionRecord();
+  const {
+    createFirstCommunionRecord,
+    loading: mutationLoading,
+    error: mutationError,
+  } = useCreateFirstCommunionRecord();
 
   // Reset form when modal closes
   useEffect(() => {
@@ -91,7 +104,7 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
         officiant: "",
         sponsors: "",
         notes: "",
-        certificate: null
+        certificate: null,
       });
       setMemberSearch("");
       setErrorMessage(null);
@@ -99,20 +112,24 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
     }
   }, [isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     setErrorMessage(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        certificate: e.target.files![0]
+        certificate: e.target.files![0],
       }));
     }
   };
@@ -120,19 +137,22 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
   const handleMemberSelect = (member: any) => {
     // Ensure we're using the correct UUID field
     const memberId = member.id; // This should be the UUID from the database
-    
+
     // Validate that it's a proper UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
     if (!uuidRegex.test(memberId)) {
-      console.error('Invalid member ID format:', memberId);
-      setErrorMessage('Invalid member ID format. Please try selecting the member again.');
+      console.error("Invalid member ID format:", memberId);
+      setErrorMessage(
+        "Invalid member ID format. Please try selecting the member again.",
+      );
       return;
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      memberId: memberId
+      memberId: memberId,
     }));
     setMemberSearch(`${member.firstName} ${member.lastName}`);
     setShowDropdown(false);
@@ -179,9 +199,9 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
             certificateNumber: formData.certificate || null,
             notes: formData.notes || null,
             branchId,
-            organisationId
-          }
-        }
+            organisationId,
+          },
+        },
       });
 
       if (result.data?.createSacramentalRecord) {
@@ -229,10 +249,15 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
                     <div className="flex items-center space-x-3">
                       <GiftIcon className="h-6 w-6 text-white" />
                       <div>
-                        <Dialog.Title as="h3" className="text-lg font-semibold text-white">
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg font-semibold text-white"
+                        >
                           Create Communion Record
                         </Dialog.Title>
-                        <p className="text-amber-100 text-sm">First reception of the Holy Eucharist</p>
+                        <p className="text-amber-100 text-sm">
+                          First reception of the Holy Eucharist
+                        </p>
                       </div>
                     </div>
                     <button
@@ -296,12 +321,14 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
                           required
                         />
                       </div>
-                      
+
                       {/* Member Dropdown */}
                       {showDropdown && debouncedSearch && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                           {searchLoading ? (
-                            <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>
+                            <div className="px-4 py-2 text-sm text-gray-500">
+                              Searching...
+                            </div>
                           ) : members.length > 0 ? (
                             members.map((member: any) => (
                               <button
@@ -310,12 +337,18 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
                                 onClick={() => handleMemberSelect(member)}
                                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100"
                               >
-                                <div className="font-medium">{member.firstName} {member.lastName}</div>
-                                <div className="text-gray-500">{member.email}</div>
+                                <div className="font-medium">
+                                  {member.firstName} {member.lastName}
+                                </div>
+                                <div className="text-gray-500">
+                                  {member.email}
+                                </div>
                               </button>
                             ))
                           ) : (
-                            <div className="px-4 py-2 text-sm text-gray-500">No members found</div>
+                            <div className="px-4 py-2 text-sm text-gray-500">
+                              No members found
+                            </div>
                           )}
                         </div>
                       )}
@@ -413,7 +446,9 @@ export default function CreateCommunionModal({ isOpen, onClose, onSuccess }: Cre
                         <label className="flex items-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
                           <DocumentArrowUpIcon className="h-4 w-4 mr-2 text-gray-400" />
                           <span className="text-sm text-gray-700">
-                            {formData.certificate ? formData.certificate.name : "Upload Certificate"}
+                            {formData.certificate
+                              ? formData.certificate.name
+                              : "Upload Certificate"}
                           </span>
                           <input
                             type="file"

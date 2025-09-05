@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery } from "@apollo/client";
 
 const GET_TRANSACTIONS = gql`
   query GetTransactions(
@@ -89,16 +89,27 @@ export const useTransactionsQuery = (variables: {
   startDate?: string;
   endDate?: string;
 }) => {
-  const { organisationId, branchId, type, fundId, eventId, skip = 0, take = 10, startDate, endDate } = variables;
-  
+  const {
+    organisationId,
+    branchId,
+    type,
+    fundId,
+    eventId,
+    skip = 0,
+    take = 10,
+    startDate,
+    endDate,
+  } = variables;
+
   // Create dateRange object if dates are provided, converting string dates to Date objects
-  const dateRange = (startDate || endDate) 
-    ? { 
-        startDate: startDate ? new Date(startDate).toISOString() : null, 
-        endDate: endDate ? new Date(endDate).toISOString() : null 
-      } 
-    : undefined;
-  
+  const dateRange =
+    startDate || endDate
+      ? {
+          startDate: startDate ? new Date(startDate).toISOString() : null,
+          endDate: endDate ? new Date(endDate).toISOString() : null,
+        }
+      : undefined;
+
   return useQuery(GET_TRANSACTIONS, {
     variables: {
       organisationId,
@@ -121,15 +132,16 @@ export const useTransactionStatsQuery = (variables: {
   endDate?: string;
 }) => {
   const { organisationId, fundId, eventId, startDate, endDate } = variables;
-  
+
   // Create dateRange object if dates are provided, converting string dates to Date objects
-  const dateRange = (startDate || endDate) 
-    ? { 
-        startDate: startDate ? new Date(startDate).toISOString() : null, 
-        endDate: endDate ? new Date(endDate).toISOString() : null 
-      } 
-    : undefined;
-  
+  const dateRange =
+    startDate || endDate
+      ? {
+          startDate: startDate ? new Date(startDate).toISOString() : null,
+          endDate: endDate ? new Date(endDate).toISOString() : null,
+        }
+      : undefined;
+
   return useQuery(GET_TRANSACTION_STATS, {
     variables: {
       organisationId,

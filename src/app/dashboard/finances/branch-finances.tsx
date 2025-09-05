@@ -15,15 +15,19 @@ export default function BranchFinancesWithBranchFilter() {
   return (
     <div>
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Branch
+        </label>
         <select
           className="border border-gray-300 rounded-lg px-3 py-2 w-full max-w-xs"
           value={selectedBranch}
-          onChange={e => setSelectedBranch(e.target.value)}
+          onChange={(e) => setSelectedBranch(e.target.value)}
         >
           <option value="all">All Branches</option>
           {branches.map((branch: any) => (
-            <option key={branch.id} value={branch.id}>{branch.name}</option>
+            <option key={branch.id} value={branch.id}>
+              {branch.name}
+            </option>
           ))}
         </select>
       </div>

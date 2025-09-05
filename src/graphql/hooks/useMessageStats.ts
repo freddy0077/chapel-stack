@@ -1,6 +1,6 @@
-import { useQuery } from '@apollo/client';
-import { GET_MESSAGE_STATS } from '../queries/messageQueries';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useQuery } from "@apollo/client";
+import { GET_MESSAGE_STATS } from "../queries/messageQueries";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export function useMessageStats() {
   const { user } = useAuth();
@@ -12,9 +12,9 @@ export function useMessageStats() {
       filter: {
         organisationId,
         branchId,
-      }
+      },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: "network-only",
     skip: !organisationId,
   });
 

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
-import { usePermissions } from '@/hooks/usePermissions';
-import { useModulePreferences } from '@/hooks/useModulePreferences';
+import { usePermissions } from "@/hooks/usePermissions";
+import { useModulePreferences } from "@/hooks/useModulePreferences";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
@@ -29,48 +29,48 @@ import {
   UserMinusIcon,
 } from "@heroicons/react/24/outline";
 
-import { isModuleEnabled } from '../onboarding/ModulePreferences';
-import { getNavigationForRole } from '@/config/navigation.config';
-import { getUserNavigation } from '@/utils/navigation.utils';
+import { isModuleEnabled } from "../onboarding/ModulePreferences";
+import { getNavigationForRole } from "@/config/navigation.config";
+import { getUserNavigation } from "@/utils/navigation.utils";
 
 // The full navigation structure with module dependencies
 const fullNavigation = [
   {
     category: "Main",
     items: [
-      { 
-        name: "Dashboard", 
-        href: "/dashboard", 
-        icon: HomeIcon, 
+      {
+        name: "Dashboard",
+        href: "/dashboard",
+        icon: HomeIcon,
         badge: null,
-        moduleId: "dashboard" // Always visible (required module)
+        moduleId: "dashboard", // Always visible (required module)
       },
-    ]
+    ],
   },
   {
     category: "Community",
     items: [
-      { 
-        name: "Members", 
-        href: "/dashboard/members", 
-        icon: UsersIcon, 
+      {
+        name: "Members",
+        href: "/dashboard/members",
+        icon: UsersIcon,
         badge: null,
-        moduleId: "members" 
+        moduleId: "members",
       },
-      { 
-        name: "Groups", 
-        href: "/dashboard/groups", 
-        icon: UserGroupIcon, 
+      {
+        name: "Groups",
+        href: "/dashboard/groups",
+        icon: UserGroupIcon,
         badge: null,
-        moduleId: "groups" 
+        moduleId: "groups",
       },
       // HIDE Children menu item
-      // { 
-      //   name: "Children", 
-      //   href: "/dashboard/children", 
-      //   icon: UserCircleIcon, 
+      // {
+      //   name: "Children",
+      //   href: "/dashboard/children",
+      //   icon: UserCircleIcon,
       //   badge: null,
-      //   moduleId: "members" 
+      //   moduleId: "members"
       // },
       // {
       //   name: "Prayer Requests",
@@ -84,47 +84,47 @@ const fullNavigation = [
         href: "/dashboard/communication",
         icon: ChatBubbleLeftRightIcon,
         badge: null,
-        moduleId: "communication"
+        moduleId: "communication",
       },
       {
         name: "Pastoral Care",
         href: "/dashboard/pastoral-care",
         icon: HeartIcon,
         badge: null,
-        moduleId: "pastoral-care"
+        moduleId: "pastoral-care",
       },
       {
         name: "Death Register",
         href: "/dashboard/death-register",
         icon: UserMinusIcon,
         badge: null,
-        moduleId: "pastoral-care"
+        moduleId: "pastoral-care",
       },
-    ]
+    ],
   },
   {
     category: "Activities",
     items: [
-      { 
-        name: "Calendar", 
-        href: "/dashboard/calendar", 
-        icon: CalendarIcon, 
+      {
+        name: "Calendar",
+        href: "/dashboard/calendar",
+        icon: CalendarIcon,
         // badge: { count: 3, color: "bg-blue-500" },
-        moduleId: "events" 
+        moduleId: "events",
       },
-      { 
-        name: "Attendance", 
-        href: "/dashboard/attendance", 
-        icon: ChartBarIcon, 
+      {
+        name: "Attendance",
+        href: "/dashboard/attendance",
+        icon: ChartBarIcon,
         badge: null,
-        moduleId: "attendance" 
+        moduleId: "attendance",
       },
-      // { 
-      //   name: "Check-in", 
-      //   href: "/dashboard/attendance/check-in", 
-      //   icon: UserCircleIcon, 
+      // {
+      //   name: "Check-in",
+      //   href: "/dashboard/attendance/check-in",
+      //   icon: UserCircleIcon,
       //   badge: { count: 12, color: "bg-green-500" },
-      //   moduleId: "attendance" 
+      //   moduleId: "attendance"
       // },
       // {
       //   name: "Sacraments",
@@ -133,151 +133,151 @@ const fullNavigation = [
       //   // badge: { count: 3, color: "bg-purple-500" },
       //   moduleId: "members"
       // },
-      { 
-        name: "Ministries", 
-        href: "/dashboard/ministries", 
-        icon: UserGroupIcon, 
+      {
+        name: "Ministries",
+        href: "/dashboard/ministries",
+        icon: UserGroupIcon,
         badge: null,
-        moduleId: "groups" 
+        moduleId: "groups",
       },
-      // { 
-      //   name: "Worship", 
-      //   href: "/dashboard/worship", 
-      //   icon: MusicalNoteIcon, 
+      // {
+      //   name: "Worship",
+      //   href: "/dashboard/worship",
+      //   icon: MusicalNoteIcon,
       //   badge: null,
-      //   moduleId: "sermons" 
+      //   moduleId: "sermons"
       // },
       {
         name: "Sermons",
         href: "/dashboard/sermons",
         icon: DocumentTextIcon,
         badge: null,
-        moduleId: "sermons"
+        moduleId: "sermons",
       },
-    ]
+    ],
   },
   {
     category: "Operations",
     items: [
-      { 
+      {
         name: "Branches",
         href: "/dashboard/branches",
         icon: HomeIcon,
         badge: null,
-        moduleId: "multi-branch"
+        moduleId: "multi-branch",
       },
       {
         name: "Finances",
-        href: "/dashboard/finances", 
-        icon: CurrencyDollarIcon, 
+        href: "/dashboard/finances",
+        icon: CurrencyDollarIcon,
         badge: null,
-        moduleId: "finances" 
+        moduleId: "finances",
       },
       {
         name: "Branch Finances",
         href: "/dashboard/branch-finances",
         icon: CurrencyDollarIcon,
         badge: null,
-        moduleId: "branch-finances"
+        moduleId: "branch-finances",
       },
-      { 
-        name: "Communication", 
-        href: "/dashboard/communication", 
-        icon: ChatBubbleLeftRightIcon, 
+      {
+        name: "Communication",
+        href: "/dashboard/communication",
+        icon: ChatBubbleLeftRightIcon,
         badge: null,
-        moduleId: "communication" 
+        moduleId: "communication",
       },
-      { 
-        name: "Reports", 
-        href: "/dashboard/reports", 
-        icon: ChartBarIcon, 
+      {
+        name: "Reports",
+        href: "/dashboard/reports",
+        icon: ChartBarIcon,
         badge: null,
-        moduleId: "dashboard" // Basic reporting is included in core dashboard
+        moduleId: "dashboard", // Basic reporting is included in core dashboard
       },
-      { 
-        name: "Workflows", 
-        href: "/dashboard/workflows", 
-        icon: BoltIcon, 
+      {
+        name: "Workflows",
+        href: "/dashboard/workflows",
+        icon: BoltIcon,
         badge: null,
-        moduleId: "workflows" 
+        moduleId: "workflows",
       },
-      { 
-        name: "Subscription Manager", 
-        href: "/dashboard/subscription-manager", 
-        icon: CreditCardIcon, 
+      {
+        name: "Subscription Manager",
+        href: "/dashboard/subscription-manager",
+        icon: CreditCardIcon,
         badge: null,
-        moduleId: "subscription-manager" 
+        moduleId: "subscription-manager",
       },
-    ]
+    ],
   },
   {
     category: "Administration",
     items: [
-      { 
-        name: "Branches", 
-        href: "/dashboard/branches", 
-        icon: GlobeAltIcon, 
+      {
+        name: "Branches",
+        href: "/dashboard/branches",
+        icon: GlobeAltIcon,
         badge: null,
-        moduleId: "branches" 
+        moduleId: "branches",
       },
-      { 
-        name: "Staff", 
-        href: "/admin/staff", 
-        icon: ShieldCheckIcon, 
+      {
+        name: "Staff",
+        href: "/admin/staff",
+        icon: ShieldCheckIcon,
         badge: null,
-        moduleId: "staff" 
+        moduleId: "staff",
       },
-    ]
+    ],
   },
   {
     category: "Volunteers",
     items: [
-      // { 
-      //   name: "Volunteer Dashboard", 
-      //   href: "/dashboard/volunteers", 
-      //   icon: UsersIcon, 
+      // {
+      //   name: "Volunteer Dashboard",
+      //   href: "/dashboard/volunteers",
+      //   icon: UsersIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Scheduling", 
-      //   href: "/dashboard/volunteers/scheduling", 
-      //   icon: CalendarIcon, 
+      // {
+      //   name: "Scheduling",
+      //   href: "/dashboard/volunteers/scheduling",
+      //   icon: CalendarIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Background Checks", 
-      //   href: "/dashboard/volunteers/background-checks", 
-      //   icon: ShieldCheckIcon, 
+      // {
+      //   name: "Background Checks",
+      //   href: "/dashboard/volunteers/background-checks",
+      //   icon: ShieldCheckIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Teams", 
-      //   href: "/dashboard/volunteers/teams", 
-      //   icon: UserGroupIcon, 
+      // {
+      //   name: "Teams",
+      //   href: "/dashboard/volunteers/teams",
+      //   icon: UserGroupIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-      // { 
-      //   name: "Recognition", 
-      //   href: "/dashboard/volunteers/recognition", 
-      //   icon: BellIcon, 
+      // {
+      //   name: "Recognition",
+      //   href: "/dashboard/volunteers/recognition",
+      //   icon: BellIcon,
       //   badge: null,
-      //   moduleId: "volunteers" 
+      //   moduleId: "volunteers"
       // },
-    ]
+    ],
   },
   {
     category: "System",
     items: [
-      { 
-        name: "Admin", 
-        href: "/dashboard/admin", 
-        icon: Cog6ToothIcon, 
+      {
+        name: "Admin",
+        href: "/dashboard/admin",
+        icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard" 
+        moduleId: "dashboard",
       },
       // {
       //   name: "Security",
@@ -286,12 +286,12 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "security"
       // },
-      { 
-        name: "Settings", 
-        href: "/dashboard/settings", 
-        icon: Cog6ToothIcon, 
+      {
+        name: "Settings",
+        href: "/dashboard/settings",
+        icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard" 
+        moduleId: "dashboard",
       },
       // {
       //   name: "Website",
@@ -300,14 +300,18 @@ const fullNavigation = [
       //   badge: null,
       //   moduleId: "website"
       // },
-    ]
+    ],
   },
 ];
 
 // Remove Member Activity menu item from navigation due to dynamic segment
 // (No static menu item for /dashboard/members/[id]/activity)
 
-export default function DynamicNavigation({ children }: { children: React.ReactNode }) {
+export default function DynamicNavigation({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Get user data from authentication context
   const { state, logout } = useAuth();
   const user = state.user;
@@ -320,21 +324,21 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const userRole = user?.primaryRole?.toUpperCase() || 'MEMBER';
+    const userRole = user?.primaryRole?.toUpperCase() || "MEMBER";
 
     // Use our new role-based navigation configuration
     const roleBasedNavigation = getUserNavigation(userRole, enabledModules);
-    
+
     // Convert our new navigation format to the existing format expected by the UI
-    const convertedNavigation = roleBasedNavigation.map(category => ({
+    const convertedNavigation = roleBasedNavigation.map((category) => ({
       category: category.category,
-      items: category.items.map(item => ({
+      items: category.items.map((item) => ({
         name: item.name,
         href: item.href,
         icon: item.icon,
         badge: item.badge || null,
-        moduleId: item.moduleId
-      }))
+        moduleId: item.moduleId,
+      })),
     }));
 
     setFilteredNavigation(convertedNavigation);
@@ -343,53 +347,57 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      if (!target.closest('.profile-dropdown-btn')) {
+      if (!target.closest(".profile-dropdown-btn")) {
         setProfileDropdownOpen(false);
       }
     }
     if (profileDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileDropdownOpen]);
 
   // Helper functions to get user information
   const getUserInitials = () => {
-    if (!user?.name) return 'U';
-    
-    const nameParts = user.firstName.split(' ');
+    if (!user?.name) return "U";
+
+    const nameParts = user.firstName.split(" ");
     if (nameParts.length >= 2) {
       return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
     }
-    return nameParts[0][0] || 'U';
+    return nameParts[0][0] || "U";
   };
-  
+
   const getUserDisplayName = () => {
-    return user?.firstName || 'User';
+    return user?.firstName || "User";
   };
-  
+
   const getUserEmail = () => {
-    return user?.email || '';
+    return user?.email || "";
   };
-  
+
   const getUserRole = () => {
-    const role = user?.primaryRole || 'member';
+    const role = user?.primaryRole || "member";
     // Convert snake_case to Title Case, e.g. 'super_admin' → 'Super Admin'
     return role
-      .replace(/_/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .replace(/_/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
-  
+
   return (
     <div>
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
+        <Dialog
+          as="div"
+          className="relative z-50 lg:hidden"
+          onClose={setSidebarOpen}
+        >
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -429,7 +437,10 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                       onClick={() => setSidebarOpen(false)}
                     >
                       <span className="sr-only">Close sidebar</span>
-                      <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                      <XMarkIcon
+                        className="h-6 w-6 text-white"
+                        aria-hidden="true"
+                      />
                     </button>
                   </div>
                 </Transition.Child>
@@ -437,25 +448,34 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   <div className="flex h-16 items-center px-6 border-b border-indigo-700/50">
                     <div className="flex items-center">
                       <div className="h-8 w-8 rounded-lg bg-white/10 mr-3 flex items-center justify-center">
-                        <HomeIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                        <HomeIcon
+                          className="h-5 w-5 text-white"
+                          aria-hidden="true"
+                        />
                       </div>
                       <div className="text-white text-xl font-bold">
                         Church Manager
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Mobile user profile */}
                   <div className="flex items-center gap-2 py-4 px-6 border-b border-indigo-700/30">
                     <div className="relative h-9 w-9 rounded-full overflow-hidden bg-indigo-600 flex-shrink-0 ring-2 ring-white/20">
-                      <div className="absolute inset-0 flex items-center justify-center text-indigo-200 font-bold text-sm">AU</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-indigo-200 font-bold text-sm">
+                        AU
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">Admin User</p>
-                      <p className="text-xs text-indigo-200 truncate">admin@churchchurch.org</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        Admin User
+                      </p>
+                      <p className="text-xs text-indigo-200 truncate">
+                        admin@churchchurch.org
+                      </p>
                     </div>
                   </div>
-                  
+
                   <nav className="flex-1 px-3 py-3">
                     <div className="space-y-1">
                       {filteredNavigation.map((section) => (
@@ -465,7 +485,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                               {section.category}
                             </h3>
                           </div>
-                          
+
                           <ul className="space-y-1">
                             {section.items.map((item) => (
                               <li key={item.name}>
@@ -473,9 +493,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                                   href={item.href}
                                   className={`
                                     group flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium
-                                    ${pathname === item.href 
-                                      ? 'bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm' 
-                                      : 'text-indigo-100 hover:text-white hover:bg-indigo-700/40'}
+                                    ${
+                                      pathname === item.href
+                                        ? "bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm"
+                                        : "text-indigo-100 hover:text-white hover:bg-indigo-700/40"
+                                    }
                                   `}
                                 >
                                   <span className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-indigo-800/40 group-hover:bg-indigo-800/60">
@@ -486,7 +508,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                                   </span>
                                   <span className="flex-1">{item.name}</span>
                                   {item.badge && (
-                                    <span className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${item.badge.color} text-white`}>
+                                    <span
+                                      className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${item.badge.color} text-white`}
+                                    >
                                       {item.badge.count}
                                     </span>
                                   )}
@@ -524,12 +548,10 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               <div className="h-8 w-8 rounded-lg bg-white/10 mr-3 flex items-center justify-center">
                 <HomeIcon className="h-5 w-5 text-white" aria-hidden="true" />
               </div>
-              <div className="text-white text-xl font-bold">
-                Church Manager
-              </div>
+              <div className="text-white text-xl font-bold">Church Manager</div>
             </div>
           </div>
-          
+
           {/* User profile */}
           <div className="flex items-center gap-2 px-6 border-b border-indigo-700/30 pb-4">
             <div className="relative h-10 w-10 rounded-full overflow-hidden bg-indigo-600 flex-shrink-0 ring-2 ring-white/20">
@@ -538,8 +560,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{getUserDisplayName()}</p>
-              <p className="text-xs text-indigo-200 truncate">{getUserEmail()}</p>
+              <p className="text-sm font-medium text-white truncate">
+                {getUserDisplayName()}
+              </p>
+              <p className="text-xs text-indigo-200 truncate">
+                {getUserEmail()}
+              </p>
               <div className="mt-1">
                 <span className="text-[10px] font-medium bg-indigo-500 text-white px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
                   {getUserRole()}
@@ -547,7 +573,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               </div>
             </div>
           </div>
-          
+
           <nav className="flex flex-1 flex-col px-6">
             <ul className="flex flex-1 flex-col gap-y-7">
               {filteredNavigation.map((section) => (
@@ -562,9 +588,11 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           href={item.href}
                           className={`
                             group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-medium
-                            ${pathname === item.href 
-                              ? 'bg-indigo-700 text-white' 
-                              : 'text-indigo-200 hover:text-white hover:bg-indigo-700/40'}
+                            ${
+                              pathname === item.href
+                                ? "bg-indigo-700 text-white"
+                                : "text-indigo-200 hover:text-white hover:bg-indigo-700/40"
+                            }
                           `}
                         >
                           <item.icon
@@ -573,7 +601,9 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           />
                           {item.name}
                           {item.badge && (
-                            <span className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color} text-white leading-none`}>
+                            <span
+                              className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color} text-white leading-none`}
+                            >
                               {item.badge.count}
                             </span>
                           )}
@@ -595,7 +625,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
               {/*  </li>*/}
               {/*)}*/}
             </ul>
-            
+
             <div className="mt-auto pb-3 text-xs text-indigo-200 text-center">
               {/*<p>*/}
               {/*  <Link href="/dashboard/settings/modules" className="hover:text-white underline">*/}
@@ -639,8 +669,18 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                   <span className="hidden md:block text-base font-medium text-white pr-2">
                     {getUserDisplayName()}
                   </span>
-                  <svg className="h-4 w-4 text-white ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="h-4 w-4 text-white ml-1"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {profileDropdownOpen && (
@@ -651,8 +691,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           {getUserInitials()}
                         </span>
                         <div>
-                          <div className="font-semibold text-gray-900">{getUserDisplayName()}</div>
-                          <div className="text-xs text-gray-500">{getUserEmail()}</div>
+                          <div className="font-semibold text-gray-900">
+                            {getUserDisplayName()}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {getUserEmail()}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -675,12 +719,12 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
                           setProfileDropdownOpen(false);
                           try {
                             await logout();
-                            if (typeof window !== 'undefined') {
-                              window.location.href = '/auth/login';
+                            if (typeof window !== "undefined") {
+                              window.location.href = "/auth/login";
                             }
                           } catch {
-                            if (typeof window !== 'undefined') {
-                              window.location.href = '/auth/login';
+                            if (typeof window !== "undefined") {
+                              window.location.href = "/auth/login";
                             }
                           }
                         }}
@@ -696,9 +740,7 @@ export default function DynamicNavigation({ children }: { children: React.ReactN
           </div>
         </div>
 
-        <main className="pb-10">
-          {children}
-        </main>
+        <main className="pb-10">{children}</main>
       </div>
     </div>
   );

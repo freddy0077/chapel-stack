@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   XMarkIcon,
   CalendarDaysIcon,
@@ -11,20 +11,20 @@ import {
   MapPinIcon,
   ClockIcon,
   DocumentTextIcon,
-} from '@heroicons/react/24/outline';
-import { useCreatePastoralVisit } from '@/graphql/hooks/usePastoralCare';
+} from "@heroicons/react/24/outline";
+import { useCreatePastoralVisit } from "@/graphql/hooks/usePastoralCare";
 
 // Validation schema
 const createVisitSchema = z.object({
-  memberId: z.string().min(1, 'Member is required'),
-  pastorId: z.string().min(1, 'Pastor is required'),
-  title: z.string().min(1, 'Title is required'),
+  memberId: z.string().min(1, "Member is required"),
+  pastorId: z.string().min(1, "Pastor is required"),
+  title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  visitType: z.string().min(1, 'Visit type is required'),
-  scheduledDate: z.string().min(1, 'Scheduled date is required'),
+  visitType: z.string().min(1, "Visit type is required"),
+  scheduledDate: z.string().min(1, "Scheduled date is required"),
   location: z.string().optional(),
   notes: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
 });
 
 type CreateVisitFormData = z.infer<typeof createVisitSchema>;
@@ -37,20 +37,20 @@ interface CreateVisitFormProps {
 }
 
 const visitTypes = [
-  { value: 'PASTORAL_CARE', label: 'Pastoral Care' },
-  { value: 'COUNSELING', label: 'Counseling' },
-  { value: 'HOSPITAL_VISIT', label: 'Hospital Visit' },
-  { value: 'HOME_VISIT', label: 'Home Visit' },
-  { value: 'FOLLOW_UP', label: 'Follow Up' },
-  { value: 'EMERGENCY', label: 'Emergency' },
-  { value: 'OTHER', label: 'Other' },
+  { value: "PASTORAL_CARE", label: "Pastoral Care" },
+  { value: "COUNSELING", label: "Counseling" },
+  { value: "HOSPITAL_VISIT", label: "Hospital Visit" },
+  { value: "HOME_VISIT", label: "Home Visit" },
+  { value: "FOLLOW_UP", label: "Follow Up" },
+  { value: "EMERGENCY", label: "Emergency" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const priorities = [
-  { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-800' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-800' },
-  { value: 'HIGH', label: 'High', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-800' },
+  { value: "LOW", label: "Low", color: "bg-gray-100 text-gray-800" },
+  { value: "MEDIUM", label: "Medium", color: "bg-blue-100 text-blue-800" },
+  { value: "HIGH", label: "High", color: "bg-yellow-100 text-yellow-800" },
+  { value: "URGENT", label: "Urgent", color: "bg-red-100 text-red-800" },
 ];
 
 export default function CreateVisitForm({
@@ -71,17 +71,17 @@ export default function CreateVisitForm({
   } = useForm<CreateVisitFormData>({
     resolver: zodResolver(createVisitSchema),
     defaultValues: {
-      memberId: preselectedMemberId || '',
-      priority: 'MEDIUM',
+      memberId: preselectedMemberId || "",
+      priority: "MEDIUM",
     },
   });
 
-  const watchedPriority = watch('priority');
+  const watchedPriority = watch("priority");
 
   const onSubmit = async (data: CreateVisitFormData) => {
     try {
       setIsSubmitting(true);
-      
+
       await createPastoralVisit({
         ...data,
         scheduledDate: new Date(data.scheduledDate).toISOString(),
@@ -91,7 +91,7 @@ export default function CreateVisitForm({
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Failed to create pastoral visit:', error);
+      console.error("Failed to create pastoral visit:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +107,10 @@ export default function CreateVisitForm({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleClose} />
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          onClick={handleClose}
+        />
 
         <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -139,12 +142,15 @@ export default function CreateVisitForm({
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Member Selection */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="memberId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="memberId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <UserIcon className="inline h-4 w-4 mr-1" />
                     Member *
                   </label>
                   <select
-                    {...register('memberId')}
+                    {...register("memberId")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">Select a member...</option>
@@ -153,18 +159,23 @@ export default function CreateVisitForm({
                     <option value="member-2">Jane Smith</option>
                   </select>
                   {errors.memberId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.memberId.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.memberId.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Pastor Selection */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="pastorId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="pastorId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <UserIcon className="inline h-4 w-4 mr-1" />
                     Assigned Pastor *
                   </label>
                   <select
-                    {...register('pastorId')}
+                    {...register("pastorId")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">Select a pastor...</option>
@@ -173,34 +184,44 @@ export default function CreateVisitForm({
                     <option value="pastor-2">Pastor Williams</option>
                   </select>
                   {errors.pastorId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.pastorId.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.pastorId.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Title */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <DocumentTextIcon className="inline h-4 w-4 mr-1" />
                     Visit Title *
                   </label>
                   <input
                     type="text"
-                    {...register('title')}
+                    {...register("title")}
                     placeholder="e.g., Pastoral Care Visit, Hospital Visit"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                   {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Visit Type */}
                 <div>
-                  <label htmlFor="visitType" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="visitType"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Visit Type *
                   </label>
                   <select
-                    {...register('visitType')}
+                    {...register("visitType")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">Select type...</option>
@@ -211,17 +232,22 @@ export default function CreateVisitForm({
                     ))}
                   </select>
                   {errors.visitType && (
-                    <p className="mt-1 text-sm text-red-600">{errors.visitType.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.visitType.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Priority */}
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="priority"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Priority
                   </label>
                   <select
-                    {...register('priority')}
+                    {...register("priority")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     {priorities.map((priority) => (
@@ -231,39 +257,51 @@ export default function CreateVisitForm({
                     ))}
                   </select>
                   <div className="mt-1">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      priorities.find(p => p.value === watchedPriority)?.color || 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {priorities.find(p => p.value === watchedPriority)?.label || 'Medium'}
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        priorities.find((p) => p.value === watchedPriority)
+                          ?.color || "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {priorities.find((p) => p.value === watchedPriority)
+                        ?.label || "Medium"}
                     </span>
                   </div>
                 </div>
 
                 {/* Scheduled Date */}
                 <div>
-                  <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="scheduledDate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <ClockIcon className="inline h-4 w-4 mr-1" />
                     Scheduled Date & Time *
                   </label>
                   <input
                     type="datetime-local"
-                    {...register('scheduledDate')}
+                    {...register("scheduledDate")}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                   {errors.scheduledDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.scheduledDate.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.scheduledDate.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Location */}
                 <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="location"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     <MapPinIcon className="inline h-4 w-4 mr-1" />
                     Location
                   </label>
                   <input
                     type="text"
-                    {...register('location')}
+                    {...register("location")}
                     placeholder="e.g., Member's home, Hospital room 205"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
@@ -271,11 +309,14 @@ export default function CreateVisitForm({
 
                 {/* Description */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Description
                   </label>
                   <textarea
-                    {...register('description')}
+                    {...register("description")}
                     rows={3}
                     placeholder="Brief description of the visit purpose..."
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -284,11 +325,14 @@ export default function CreateVisitForm({
 
                 {/* Notes */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Additional Notes
                   </label>
                   <textarea
-                    {...register('notes')}
+                    {...register("notes")}
                     rows={2}
                     placeholder="Any additional notes or special instructions..."
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -306,14 +350,29 @@ export default function CreateVisitForm({
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Creating...
                   </>
                 ) : (
-                  'Create Visit'
+                  "Create Visit"
                 )}
               </button>
               <button

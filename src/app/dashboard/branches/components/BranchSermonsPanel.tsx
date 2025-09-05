@@ -1,11 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_SERMONS, GET_SPEAKERS, GET_SERIES } from '@/graphql/queries/sermonQueries';
-import { useSermonMutations, useSpeakerMutations, useSeriesMutations } from '@/graphql/hooks/useSermon';
-import { PlusIcon, PlayIcon, DocumentTextIcon, UserIcon, CalendarIcon } from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
+import React, { useState } from "react";
+import { useQuery } from "@apollo/client";
+import {
+  GET_SERMONS,
+  GET_SPEAKERS,
+  GET_SERIES,
+} from "@/graphql/queries/sermonQueries";
+import {
+  useSermonMutations,
+  useSpeakerMutations,
+  useSeriesMutations,
+} from "@/graphql/hooks/useSermon";
+import {
+  PlusIcon,
+  PlayIcon,
+  DocumentTextIcon,
+  UserIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+import { format } from "date-fns";
 
 interface BranchSermonsPanelProps {
   branchId: string;
@@ -36,24 +50,35 @@ interface Sermon {
   };
 }
 
-const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => {
-  const [activeTab, setActiveTab] = useState<'sermons' | 'speakers' | 'series'>('sermons');
+const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({
+  branchId,
+}) => {
+  const [activeTab, setActiveTab] = useState<"sermons" | "speakers" | "series">(
+    "sermons",
+  );
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Queries
-  const { data: sermonsData, loading: sermonsLoading, error: sermonsError } = useQuery(GET_SERMONS, {
+  const {
+    data: sermonsData,
+    loading: sermonsLoading,
+    error: sermonsError,
+  } = useQuery(GET_SERMONS, {
     variables: { branchId },
-    errorPolicy: 'all'
+    errorPolicy: "all",
   });
 
-  const { data: speakersData, loading: speakersLoading } = useQuery(GET_SPEAKERS, {
-    variables: { branchId },
-    errorPolicy: 'all'
-  });
+  const { data: speakersData, loading: speakersLoading } = useQuery(
+    GET_SPEAKERS,
+    {
+      variables: { branchId },
+      errorPolicy: "all",
+    },
+  );
 
   const { data: seriesData, loading: seriesLoading } = useQuery(GET_SERIES, {
     variables: { branchId },
-    errorPolicy: 'all'
+    errorPolicy: "all",
   });
 
   // Mutations
@@ -66,18 +91,22 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
   const series = seriesData?.series || [];
 
   const formatDuration = (seconds?: number) => {
-    if (!seconds) return 'N/A';
+    if (!seconds) return "N/A";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'published': return 'bg-green-100 text-green-800';
-      case 'draft': return 'bg-yellow-100 text-yellow-800';
-      case 'archived': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case "published":
+        return "bg-green-100 text-green-800";
+      case "draft":
+        return "bg-yellow-100 text-yellow-800";
+      case "archived":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-blue-100 text-blue-800";
     }
   };
 
@@ -94,8 +123,12 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Sermons</h2>
-          <p className="text-gray-600 dark:text-gray-400">Manage sermons, speakers, and series for this branch</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Sermons
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage sermons, speakers, and series for this branch
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -110,17 +143,17 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           {[
-            { key: 'sermons', label: 'Sermons', count: sermons.length },
-            { key: 'speakers', label: 'Speakers', count: speakers.length },
-            { key: 'series', label: 'Series', count: series.length }
+            { key: "sermons", label: "Sermons", count: sermons.length },
+            { key: "speakers", label: "Speakers", count: speakers.length },
+            { key: "series", label: "Series", count: series.length },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.key
-                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
               }`}
             >
               {tab.label} ({tab.count})
@@ -130,12 +163,14 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
       </div>
 
       {/* Content */}
-      {activeTab === 'sermons' && (
+      {activeTab === "sermons" && (
         <div className="space-y-4">
           {sermons.length === 0 ? (
             <div className="text-center py-12">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No sermons yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No sermons yet
+              </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 Start building your sermon library by adding your first sermon.
               </p>
@@ -160,11 +195,13 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {sermon.title}
                         </h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(sermon.status)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(sermon.status)}`}
+                        >
                           {sermon.status}
                         </span>
                       </div>
-                      
+
                       {sermon.description && (
                         <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                           {sermon.description}
@@ -178,14 +215,19 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
                             <span>{sermon.speaker.name}</span>
                           </div>
                         )}
-                        
+
                         {sermon.datePreached && (
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="h-4 w-4" />
-                            <span>{format(new Date(sermon.datePreached), 'MMM d, yyyy')}</span>
+                            <span>
+                              {format(
+                                new Date(sermon.datePreached),
+                                "MMM d, yyyy",
+                              )}
+                            </span>
                           </div>
                         )}
-                        
+
                         {sermon.duration && (
                           <div className="flex items-center gap-1">
                             <PlayIcon className="h-4 w-4" />
@@ -211,8 +253,18 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
                       )}
                       {sermon.videoUrl && (
                         <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
                           </svg>
                         </button>
                       )}
@@ -225,12 +277,14 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
         </div>
       )}
 
-      {activeTab === 'speakers' && (
+      {activeTab === "speakers" && (
         <div className="space-y-4">
           {speakers.length === 0 ? (
             <div className="text-center py-12">
               <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No speakers yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No speakers yet
+              </h3>
               <p className="text-gray-500 dark:text-gray-400">
                 Add speakers to organize your sermon library.
               </p>
@@ -253,9 +307,13 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
                       <UserIcon className="h-8 w-8 text-gray-400" />
                     </div>
                   )}
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{speaker.name}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {speaker.name}
+                  </h3>
                   {speaker.title && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{speaker.title}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {speaker.title}
+                    </p>
                   )}
                 </div>
               ))}
@@ -264,12 +322,14 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
         </div>
       )}
 
-      {activeTab === 'series' && (
+      {activeTab === "series" && (
         <div className="space-y-4">
           {series.length === 0 ? (
             <div className="text-center py-12">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No series yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No series yet
+              </h3>
               <p className="text-gray-500 dark:text-gray-400">
                 Create sermon series to organize related messages.
               </p>
@@ -290,15 +350,20 @@ const BranchSermonsPanel: React.FC<BranchSermonsPanelProps> = ({ branchId }) => 
                     </p>
                   )}
                   <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                      seriesItem.isActive 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                    }`}>
-                      {seriesItem.isActive ? 'Active' : 'Inactive'}
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                        seriesItem.isActive
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      {seriesItem.isActive ? "Active" : "Inactive"}
                     </span>
                     {seriesItem.startDate && (
-                      <span>Started {format(new Date(seriesItem.startDate), 'MMM yyyy')}</span>
+                      <span>
+                        Started{" "}
+                        {format(new Date(seriesItem.startDate), "MMM yyyy")}
+                      </span>
                     )}
                   </div>
                 </div>

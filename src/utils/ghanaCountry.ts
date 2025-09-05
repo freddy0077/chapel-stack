@@ -9,10 +9,10 @@ export interface Country {
 }
 
 export const GHANA_COUNTRY: Country = {
-  code: 'GH',
-  name: 'Ghana',
-  flag: '🇬🇭',
-  dialCode: '+233'
+  code: "GH",
+  name: "Ghana",
+  flag: "🇬🇭",
+  dialCode: "+233",
 };
 
 // Hook for easy use in React components
@@ -24,8 +24,8 @@ export const useGhanaCountry = () => {
       label: GHANA_COUNTRY.name,
       code: GHANA_COUNTRY.code,
       flag: GHANA_COUNTRY.flag,
-      dialCode: GHANA_COUNTRY.dialCode
-    })
+      dialCode: GHANA_COUNTRY.dialCode,
+    }),
   };
 };
 
@@ -33,7 +33,7 @@ export const useGhanaCountry = () => {
 export const getGhanaCountryOption = () => {
   return {
     value: GHANA_COUNTRY.name,
-    label: GHANA_COUNTRY.name
+    label: GHANA_COUNTRY.name,
   };
 };
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  MagnifyingGlassIcon, 
-  PencilIcon, 
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
   DocumentArrowDownIcon,
-  DocumentIcon
+  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ const mockCommunionRecords: CommunionRecord[] = [
     officiant: "Father Joseph Thomas",
     catechist: "Sister Mary Elizabeth",
     certificateUrl: "/certificates/communion-001.pdf",
-    notes: "Part of group communion ceremony"
+    notes: "Part of group communion ceremony",
   },
   {
     id: "com-002",
@@ -43,7 +43,7 @@ const mockCommunionRecords: CommunionRecord[] = [
     officiant: "Father Joseph Thomas",
     catechist: "Sister Mary Elizabeth",
     certificateUrl: "/certificates/communion-002.pdf",
-    notes: "Part of group communion ceremony"
+    notes: "Part of group communion ceremony",
   },
   {
     id: "com-003",
@@ -54,7 +54,7 @@ const mockCommunionRecords: CommunionRecord[] = [
     officiant: "Father Michael Rodriguez",
     catechist: "Brother James Francis",
     certificateUrl: "/certificates/communion-003.pdf",
-    notes: "Private ceremony"
+    notes: "Private ceremony",
   },
   {
     id: "com-004",
@@ -65,7 +65,7 @@ const mockCommunionRecords: CommunionRecord[] = [
     officiant: "Father Robert Anderson",
     catechist: "Sister Catherine Marie",
     certificateUrl: null,
-    notes: "Certificate pending"
+    notes: "Certificate pending",
   },
   {
     id: "com-005",
@@ -76,8 +76,8 @@ const mockCommunionRecords: CommunionRecord[] = [
     officiant: "Father David Wilson",
     catechist: "Sister Anna Grace",
     certificateUrl: "/certificates/communion-005.pdf",
-    notes: "Special needs accommodations provided"
-  }
+    notes: "Special needs accommodations provided",
+  },
 ];
 
 export function CommunionRecords() {
@@ -85,7 +85,7 @@ export function CommunionRecords() {
   const records: CommunionRecord[] = mockCommunionRecords;
 
   // Filter records based on search query
-  const filteredRecords = records.filter(record => {
+  const filteredRecords = records.filter((record) => {
     const searchTerms = searchQuery.toLowerCase();
     return (
       record.memberName.toLowerCase().includes(searchTerms) ||
@@ -97,20 +97,25 @@ export function CommunionRecords() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-lg font-medium text-gray-900">First Communion Records</h2>
+        <h2 className="text-lg font-medium text-gray-900">
+          First Communion Records
+        </h2>
         <div className="relative max-w-md w-full">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <MagnifyingGlassIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="text"
@@ -128,25 +133,46 @@ export function CommunionRecords() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Member
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Date
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Location
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Officiant
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Catechist
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Certificate
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -154,15 +180,22 @@ export function CommunionRecords() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No communion records found. Try a different search term or add a new record.
+                <td
+                  colSpan={7}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  No communion records found. Try a different search term or add
+                  a new record.
                 </td>
               </tr>
             ) : (
               filteredRecords.map((record) => (
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Link href={`/dashboard/members/${record.memberId}`} className="hover:text-indigo-600">
+                    <Link
+                      href={`/dashboard/members/${record.memberId}`}
+                      className="hover:text-indigo-600"
+                    >
                       {record.memberName}
                     </Link>
                   </td>
@@ -202,7 +235,9 @@ export function CommunionRecords() {
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       <PencilIcon className="h-5 w-5" aria-hidden="true" />
-                      <span className="sr-only">Edit {record.memberName}&apos;s communion record</span>
+                      <span className="sr-only">
+                        Edit {record.memberName}&apos;s communion record
+                      </span>
                     </Link>
                   </td>
                 </tr>

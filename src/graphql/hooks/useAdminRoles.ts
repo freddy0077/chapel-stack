@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_ADMIN_ROLES } from '../queries/adminRoleQueries';
+import { useQuery } from "@apollo/client";
+import { GET_ADMIN_ROLES } from "../queries/adminRoleQueries";
 
 export interface Permission {
   id: string;

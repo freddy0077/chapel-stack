@@ -1,4 +1,7 @@
-import { SACRAMENT_TYPES, type SacramentType } from '@/constants/sacramentTypes';
+import {
+  SACRAMENT_TYPES,
+  type SacramentType,
+} from "@/constants/sacramentTypes";
 
 /**
  * Base interface for all sacrament records
@@ -142,15 +145,15 @@ export interface RciaRecord extends SacramentRecord {
 /**
  * Union type for all sacrament record types
  */
-export type AnySacramentRecord = 
-  | BaptismRecord 
-  | CommunionRecord 
-  | ConfirmationRecord 
-  | MarriageRecord 
-  | ReconciliationRecord 
-  | AnointingRecord 
-  | DiaconateRecord 
-  | PriesthoodRecord 
+export type AnySacramentRecord =
+  | BaptismRecord
+  | CommunionRecord
+  | ConfirmationRecord
+  | MarriageRecord
+  | ReconciliationRecord
+  | AnointingRecord
+  | DiaconateRecord
+  | PriesthoodRecord
   | RciaRecord;
 
 /**
@@ -158,7 +161,7 @@ export type AnySacramentRecord =
  */
 export interface SacramentSearchFilters {
   searchTerm: string;
-  sacramentType: SacramentType | 'all';
+  sacramentType: SacramentType | "all";
   dateRange: {
     start: string;
     end: string;
@@ -167,8 +170,8 @@ export interface SacramentSearchFilters {
   officiant: string;
   hasNotes: boolean | null;
   hasCertificate: boolean | null;
-  sortBy: 'dateOfSacrament' | 'memberName' | 'createdAt' | 'updatedAt';
-  sortOrder: 'asc' | 'desc';
+  sortBy: "dateOfSacrament" | "memberName" | "createdAt" | "updatedAt";
+  sortOrder: "asc" | "desc";
 }
 
 /**
@@ -184,7 +187,9 @@ export interface SacramentPagination {
 /**
  * API response interfaces
  */
-export interface SacramentRecordsResponse<T extends AnySacramentRecord = AnySacramentRecord> {
+export interface SacramentRecordsResponse<
+  T extends AnySacramentRecord = AnySacramentRecord,
+> {
   records: T[];
   pagination: SacramentPagination;
   filters: SacramentSearchFilters;
@@ -265,7 +270,7 @@ export interface CertificateTemplate {
  * Export interfaces
  */
 export interface ExportOptions {
-  format: 'csv' | 'excel' | 'pdf';
+  format: "csv" | "excel" | "pdf";
   filters?: Partial<SacramentSearchFilters>;
   recordIds?: string[];
   includeFields?: string[];
@@ -309,7 +314,7 @@ export interface BulkUpdateOptions {
  */
 export interface SacramentModalState {
   isOpen: boolean;
-  mode: 'create' | 'edit' | 'view';
+  mode: "create" | "edit" | "view";
   record?: AnySacramentRecord;
   sacramentType?: SacramentType;
 }
@@ -353,11 +358,14 @@ export interface SacramentAnalytics {
     thisYear: number;
     growthRate: number;
   };
-  byType: Record<SacramentType, {
-    count: number;
-    percentage: number;
-    trend: 'up' | 'down' | 'stable';
-  }>;
+  byType: Record<
+    SacramentType,
+    {
+      count: number;
+      percentage: number;
+      trend: "up" | "down" | "stable";
+    }
+  >;
   monthly: {
     month: string;
     year: number;

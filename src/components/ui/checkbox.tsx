@@ -1,34 +1,43 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { CheckIcon } from "@heroicons/react/24/outline"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { CheckIcon } from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  description?: string
+  label?: string;
+  description?: string;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, description, ...props }, ref) => {
-    const id = React.useId()
-    const [checked, setChecked] = React.useState(props.checked || false)
+  ({ className, label, description, onCheckedChange, ...props }, ref) => {
+    const id = React.useId();
+    const [checked, setChecked] = React.useState(props.checked || false);
 
     React.useEffect(() => {
       if (props.checked !== undefined) {
-        setChecked(!!props.checked)
+        setChecked(!!props.checked);
       }
-    }, [props.checked])
+    }, [props.checked]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (props.onChange) {
-        props.onChange(e)
-      }
+      const isChecked = e.target.checked;
       
-      if (props.checked === undefined) {
-        setChecked(e.target.checked)
+      // Call the standard onChange handler
+      if (props.onChange) {
+        props.onChange(e);
       }
-    }
+
+      // Call the onCheckedChange handler if provided
+      if (onCheckedChange) {
+        onCheckedChange(isChecked);
+      }
+
+      if (props.checked === undefined) {
+        setChecked(isChecked);
+      }
+    };
 
     return (
       <div className="flex items-start gap-2">
@@ -49,7 +58,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 ? "bg-blue-600 border-blue-600"
                 : "border-gray-300 bg-white",
               props.disabled && "opacity-50 cursor-not-allowed",
-              className
+              className,
             )}
           >
             {checked && <CheckIcon className="h-3 w-3 text-white" />}
@@ -62,7 +71,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 htmlFor={props.id || id}
                 className={cn(
                   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-                  props.disabled && "cursor-not-allowed opacity-70"
+                  props.disabled && "cursor-not-allowed opacity-70",
                 )}
               >
                 {label}
@@ -74,9 +83,9 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           </div>
         )}
       </div>
-    )
-  }
-)
-Checkbox.displayName = "Checkbox"
+    );
+  },
+);
+Checkbox.displayName = "Checkbox";
 
-export { Checkbox }
+export { Checkbox };

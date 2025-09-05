@@ -2,7 +2,9 @@ import { gql } from "@apollo/client";
 
 export const GET_BAPTISM_RECORDS = gql`
   query GetBaptismRecords($branchId: String) {
-    sacramentalRecords(filter: { sacramentType: BAPTISM, branchId: $branchId }) {
+    sacramentalRecords(
+      filter: { sacramentType: BAPTISM, branchId: $branchId }
+    ) {
       id
       memberId
       sacramentType
@@ -35,7 +37,9 @@ export const GET_BAPTISM_RECORDS = gql`
 
 export const GET_COMMUNION_RECORDS = gql`
   query GetCommunionRecords($branchId: String) {
-    sacramentalRecords(filter: { sacramentType: EUCHARIST_FIRST_COMMUNION, branchId: $branchId }) {
+    sacramentalRecords(
+      filter: { sacramentType: EUCHARIST_FIRST_COMMUNION, branchId: $branchId }
+    ) {
       id
       memberId
       sacramentType
@@ -67,7 +71,9 @@ export const GET_COMMUNION_RECORDS = gql`
 
 export const GET_CONFIRMATION_RECORDS = gql`
   query GetConfirmationRecords($branchId: String) {
-    sacramentalRecords(filter: { sacramentType: CONFIRMATION, branchId: $branchId }) {
+    sacramentalRecords(
+      filter: { sacramentType: CONFIRMATION, branchId: $branchId }
+    ) {
       id
       memberId
       sacramentType
@@ -99,7 +105,9 @@ export const GET_CONFIRMATION_RECORDS = gql`
 
 export const GET_MARRIAGE_RECORDS = gql`
   query GetMarriageRecords($branchId: String) {
-    sacramentalRecords(filter: { sacramentType: MATRIMONY, branchId: $branchId }) {
+    sacramentalRecords(
+      filter: { sacramentType: MATRIMONY, branchId: $branchId }
+    ) {
       id
       memberId
       sacramentType
@@ -136,11 +144,13 @@ export const GET_MARRIAGE_RECORDS = gql`
 
 export const GET_FILTERED_BAPTISM_RECORDS = gql`
   query GetFilteredBaptismRecords($branchId: String, $organisationId: String) {
-    sacramentalRecords(filter: { 
-      sacramentType: BAPTISM, 
-      branchId: $branchId,
-      organisationId: $organisationId
-    }) {
+    sacramentalRecords(
+      filter: {
+        sacramentType: BAPTISM
+        branchId: $branchId
+        organisationId: $organisationId
+      }
+    ) {
       id
       memberId
       sacramentType
@@ -172,12 +182,17 @@ export const GET_FILTERED_BAPTISM_RECORDS = gql`
 `;
 
 export const GET_FILTERED_COMMUNION_RECORDS = gql`
-  query GetFilteredCommunionRecords($branchId: String, $organisationId: String) {
-    sacramentalRecords(filter: { 
-      sacramentType: EUCHARIST_FIRST_COMMUNION, 
-      branchId: $branchId,
-      organisationId: $organisationId
-    }) {
+  query GetFilteredCommunionRecords(
+    $branchId: String
+    $organisationId: String
+  ) {
+    sacramentalRecords(
+      filter: {
+        sacramentType: EUCHARIST_FIRST_COMMUNION
+        branchId: $branchId
+        organisationId: $organisationId
+      }
+    ) {
       id
       memberId
       sacramentType
@@ -208,12 +223,17 @@ export const GET_FILTERED_COMMUNION_RECORDS = gql`
 `;
 
 export const GET_FILTERED_CONFIRMATION_RECORDS = gql`
-  query GetFilteredConfirmationRecords($branchId: String, $organisationId: String) {
-    sacramentalRecords(filter: { 
-      sacramentType: CONFIRMATION, 
-      branchId: $branchId,
-      organisationId: $organisationId
-    }) {
+  query GetFilteredConfirmationRecords(
+    $branchId: String
+    $organisationId: String
+  ) {
+    sacramentalRecords(
+      filter: {
+        sacramentType: CONFIRMATION
+        branchId: $branchId
+        organisationId: $organisationId
+      }
+    ) {
       id
       memberId
       sacramentType
@@ -245,11 +265,13 @@ export const GET_FILTERED_CONFIRMATION_RECORDS = gql`
 
 export const GET_FILTERED_MARRIAGE_RECORDS = gql`
   query GetFilteredMarriageRecords($branchId: String, $organisationId: String) {
-    sacramentalRecords(filter: { 
-      sacramentType: MATRIMONY, 
-      branchId: $branchId,
-      organisationId: $organisationId
-    }) {
+    sacramentalRecords(
+      filter: {
+        sacramentType: MATRIMONY
+        branchId: $branchId
+        organisationId: $organisationId
+      }
+    ) {
       id
       memberId
       sacramentType

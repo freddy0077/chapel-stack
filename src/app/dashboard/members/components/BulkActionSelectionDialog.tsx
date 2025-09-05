@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Option {
   id: string;
@@ -15,15 +15,15 @@ interface BulkActionSelectionDialogProps {
   options: Option[];
 }
 
-const BulkActionSelectionDialog: React.FC<BulkActionSelectionDialogProps> = ({ 
+const BulkActionSelectionDialog: React.FC<BulkActionSelectionDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
   title,
   label,
-  options 
+  options,
 }) => {
-  const [selectedId, setSelectedId] = React.useState<string>('');
+  const [selectedId, setSelectedId] = React.useState<string>("");
 
   const handleConfirm = () => {
     if (selectedId) {
@@ -54,9 +54,14 @@ const BulkActionSelectionDialog: React.FC<BulkActionSelectionDialogProps> = ({
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {title}
+            </h3>
             <div className="mb-6">
-              <label htmlFor="action-select" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="action-select"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 {label}
               </label>
               <select

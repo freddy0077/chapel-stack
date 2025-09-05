@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
   UserIcon,
   EnvelopeIcon,
   PhoneIcon,
@@ -12,9 +12,10 @@ import {
   EyeIcon,
   PencilIcon,
   CreditCardIcon,
-  CheckCircleIcon
-} from '@heroicons/react/24/outline';
-import { Member, ViewMode, MembershipStatus } from '../types/member.types';
+  CheckCircleIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
+import { Member, ViewMode, MembershipStatus } from "../types/member.types";
 
 interface MemberCardProps {
   member: Member;
@@ -22,6 +23,7 @@ interface MemberCardProps {
   onSelect?: (memberId: string) => void;
   onEdit?: (member: Member) => void;
   onView?: (member: Member) => void;
+  onManageFamily?: (member: Member) => void;
   viewMode?: ViewMode;
   showActions?: boolean;
   compact?: boolean;
@@ -33,37 +35,63 @@ const MemberCard: React.FC<MemberCardProps> = ({
   onSelect,
   onEdit,
   onView,
-  viewMode = 'card',
+  onManageFamily,
+  viewMode = "card",
   showActions = true,
-  compact = false
+  compact = false,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   // Get member's full name
   const fullName = [member.lastName, member.middleName, member.firstName]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   // Base display name prefers preferredName over constructed full name
   const baseDisplayName = fullName;
   // If title exists, always prepend it to the display name
-  const displayName = member.title ? `${member.title}. ${baseDisplayName}` : baseDisplayName;
+  const displayName = member.title
+    ? `${member.title}. ${baseDisplayName}`
+    : baseDisplayName;
 
   // Get status color and label
   const getStatusInfo = (status: MembershipStatus) => {
     const statusMap = {
-      [MembershipStatus.VISITOR]: { color: 'bg-blue-100 text-blue-800', label: 'Visitor' },
-      [MembershipStatus.REGULAR_ATTENDEE]: { color: 'bg-green-100 text-green-800', label: 'Regular Attendee' },
-      [MembershipStatus.MEMBER]: { color: 'bg-purple-100 text-purple-800', label: 'Member' },
-      [MembershipStatus.ACTIVE_MEMBER]: { color: 'bg-green-100 text-green-800', label: 'Active Member' },
-      [MembershipStatus.INACTIVE_MEMBER]: { color: 'bg-gray-100 text-gray-800', label: 'Inactive Member' },
-      [MembershipStatus.TRANSFERRED]: { color: 'bg-orange-100 text-orange-800', label: 'Transferred' },
-      [MembershipStatus.DECEASED]: { color: 'bg-red-100 text-red-800', label: 'Deceased' }
+      [MembershipStatus.VISITOR]: {
+        color: "bg-blue-100 text-blue-800",
+        label: "Visitor",
+      },
+      [MembershipStatus.REGULAR_ATTENDEE]: {
+        color: "bg-green-100 text-green-800",
+        label: "Regular Attendee",
+      },
+      [MembershipStatus.MEMBER]: {
+        color: "bg-purple-100 text-purple-800",
+        label: "Member",
+      },
+      [MembershipStatus.ACTIVE_MEMBER]: {
+        color: "bg-green-100 text-green-800",
+        label: "Active Member",
+      },
+      [MembershipStatus.INACTIVE_MEMBER]: {
+        color: "bg-gray-100 text-gray-800",
+        label: "Inactive Member",
+      },
+      [MembershipStatus.TRANSFERRED]: {
+        color: "bg-orange-100 text-orange-800",
+        label: "Transferred",
+      },
+      [MembershipStatus.DECEASED]: {
+        color: "bg-red-100 text-red-800",
+        label: "Deceased",
+      },
     };
     return statusMap[status] || statusMap[MembershipStatus.VISITOR];
   };
 
-  const statusInfo = getStatusInfo(member.membershipStatus || MembershipStatus.VISITOR);
+  const statusInfo = getStatusInfo(
+    member.membershipStatus || MembershipStatus.VISITOR,
+  );
 
   // Calculate age if date of birth is available
   const getAge = (dateOfBirth?: Date) => {
@@ -72,7 +100,10 @@ const MemberCard: React.FC<MemberCardProps> = ({
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -104,13 +135,19 @@ const MemberCard: React.FC<MemberCardProps> = ({
     onView?.(member);
   };
 
+  const handleManageFamily = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMenu(false);
+    onManageFamily?.(member);
+  };
+
   // Different layouts based on view mode
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
       <motion.div
         whileHover={{ scale: 1.01 }}
         className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer ${
-          selected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+          selected ? "ring-2 ring-blue-500 bg-blue-50" : ""
         }`}
         onClick={handleCardClick}
       >
@@ -123,8 +160,8 @@ const MemberCard: React.FC<MemberCardProps> = ({
                   onClick={handleSelect}
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                     selected
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'border-gray-300 hover:border-blue-400'
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-gray-300 hover:border-blue-400"
                   }`}
                 >
                   {selected && <CheckCircleIcon className="w-3 h-3" />}
@@ -143,7 +180,8 @@ const MemberCard: React.FC<MemberCardProps> = ({
               ) : (
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-lg">
-                    {member.firstName.charAt(0)}{member.lastName?.charAt(0)}
+                    {member.firstName.charAt(0)}
+                    {member.lastName?.charAt(0)}
                   </span>
                 </div>
               )}
@@ -155,17 +193,26 @@ const MemberCard: React.FC<MemberCardProps> = ({
                 <h3 className="text-lg font-semibold text-gray-900 truncate">
                   {displayName}
                 </h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                >
                   {statusInfo.label}
                 </span>
                 {member.memberId && (
-                  <div className="flex items-center space-x-1" title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || 'Unknown'}` : ''}`}>
-                    <CreditCardIcon className={`w-4 h-4 ${member.cardIssued ? 'text-green-600' : 'text-blue-600'}`} />
-                    <span className="text-xs text-gray-600 font-mono">{member.memberId}</span>
+                  <div
+                    className="flex items-center space-x-1"
+                    title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || "Unknown"}` : ""}`}
+                  >
+                    <CreditCardIcon
+                      className={`w-4 h-4 ${member.cardIssued ? "text-green-600" : "text-blue-600"}`}
+                    />
+                    <span className="text-xs text-gray-600 font-mono">
+                      {member.memberId}
+                    </span>
                   </div>
                 )}
               </div>
-              
+
               <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
                 {member.email && (
                   <div className="flex items-center space-x-1">
@@ -186,9 +233,12 @@ const MemberCard: React.FC<MemberCardProps> = ({
                   </div>
                 )}
                 {member.memberId && member.cardIssued && (
-                  <div className="flex items-center space-x-1" title={`Card issued: ${member.cardIssuedAt ? new Date(member.cardIssuedAt).toLocaleDateString() : 'Unknown'}`}>
+                  <div
+                    className="flex items-center space-x-1"
+                    title={`Card issued: ${member.cardIssuedAt ? new Date(member.cardIssuedAt).toLocaleDateString() : "Unknown"}`}
+                  >
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                      {member.cardType || 'Card'} Issued
+                      {member.cardType || "Card"} Issued
                     </span>
                   </div>
                 )}
@@ -225,6 +275,15 @@ const MemberCard: React.FC<MemberCardProps> = ({
                         <PencilIcon className="w-4 h-4" />
                         <span>Edit Member</span>
                       </button>
+                      {onManageFamily && (
+                        <button
+                          onClick={handleManageFamily}
+                          className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <UserGroupIcon className="w-4 h-4" />
+                          <span>Family Relationships</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -241,7 +300,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
       className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${
-        selected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+        selected ? "ring-2 ring-blue-500 bg-blue-50" : ""
       }`}
       onClick={handleCardClick}
     >
@@ -253,8 +312,8 @@ const MemberCard: React.FC<MemberCardProps> = ({
               onClick={handleSelect}
               className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                 selected
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'border-gray-300 hover:border-blue-400'
+                  ? "bg-blue-600 border-blue-600 text-white"
+                  : "border-gray-300 hover:border-blue-400"
               }`}
             >
               {selected && <CheckCircleIcon className="w-3 h-3" />}
@@ -290,6 +349,15 @@ const MemberCard: React.FC<MemberCardProps> = ({
                       <PencilIcon className="w-4 h-4" />
                       <span>Edit Member</span>
                     </button>
+                    {onManageFamily && (
+                      <button
+                        onClick={handleManageFamily}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <UserGroupIcon className="w-4 h-4" />
+                        <span>Family Relationships</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -310,7 +378,8 @@ const MemberCard: React.FC<MemberCardProps> = ({
           ) : (
             <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mb-3">
               <span className="text-white font-semibold text-2xl">
-                {member.firstName.charAt(0)}{member.lastName?.charAt(0)}
+                {member.firstName.charAt(0)}
+                {member.lastName?.charAt(0)}
               </span>
             </div>
           )}
@@ -320,13 +389,22 @@ const MemberCard: React.FC<MemberCardProps> = ({
           </h3>
 
           <div className="flex items-center space-x-2 mb-3">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+            >
               {statusInfo.label}
             </span>
             {member.memberId && (
-              <div className="flex items-center space-x-1" title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || 'Unknown'}` : ''}`}>
-                <CreditCardIcon className={`w-4 h-4 ${member.cardIssued ? 'text-green-600' : 'text-blue-600'}`} />
-                <span className="text-xs text-gray-600 font-mono">{member.memberId}</span>
+              <div
+                className="flex items-center space-x-1"
+                title={`Member ID: ${member.memberId}${member.cardIssued ? ` | Card: ${member.cardType || "Unknown"}` : ""}`}
+              >
+                <CreditCardIcon
+                  className={`w-4 h-4 ${member.cardIssued ? "text-green-600" : "text-blue-600"}`}
+                />
+                <span className="text-xs text-gray-600 font-mono">
+                  {member.memberId}
+                </span>
               </div>
             )}
           </div>
@@ -355,14 +433,14 @@ const MemberCard: React.FC<MemberCardProps> = ({
               <div className="flex items-center space-x-2">
                 <MapPinIcon className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">
-                  {[member.city, member.state].filter(Boolean).join(', ')}
+                  {[member.city, member.state].filter(Boolean).join(", ")}
                 </span>
               </div>
             )}
             {member.memberId && member.cardIssued && (
               <div className="flex items-center space-x-2">
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                  {member.cardType || 'Card'} Issued
+                  {member.cardType || "Card"} Issued
                 </span>
               </div>
             )}

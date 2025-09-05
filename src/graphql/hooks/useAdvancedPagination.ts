@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useQuery } from '@apollo/client';
+import { useState, useCallback, useMemo } from "react";
+import { useQuery } from "@apollo/client";
 import {
   ADVANCED_MEMBERS_QUERY,
   SEARCH_MEMBERS_QUERY,
@@ -8,7 +8,7 @@ import {
   Member,
   MemberQueryResult,
   SearchMemberQueryResult,
-} from '../queries/advancedPaginationQueries';
+} from "../queries/advancedPaginationQueries";
 
 interface UseAdvancedPaginationProps {
   initialPageSize?: number;
@@ -58,14 +58,17 @@ export const useAdvancedPagination = ({
     organisationId,
     branchId,
   });
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Build query input
-  const queryInput = useMemo((): MemberQueryVariables => ({
-    ...currentFilters,
-    skip: 0,
-    take: pageSize,
-  }), [currentFilters, pageSize]);
+  const queryInput = useMemo(
+    (): MemberQueryVariables => ({
+      ...currentFilters,
+      skip: 0,
+      take: pageSize,
+    }),
+    [currentFilters, pageSize],
+  );
 
   // Execute query
   const { data, loading, error, refetch } = useQuery<
@@ -73,32 +76,42 @@ export const useAdvancedPagination = ({
     MemberQueryVariables
   >(ADVANCED_MEMBERS_QUERY, {
     variables: queryInput,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   // Execute search query
-  const searchQueryInput = useMemo((): SearchMemberQueryVariables => ({
-    query: searchQuery,
-    ...currentFilters,
-    skip: 0,
-    take: pageSize,
-  }), [searchQuery, currentFilters, pageSize]);
+  const searchQueryInput = useMemo(
+    (): SearchMemberQueryVariables => ({
+      query: searchQuery,
+      ...currentFilters,
+      skip: 0,
+      take: pageSize,
+    }),
+    [searchQuery, currentFilters, pageSize],
+  );
 
-  const { data: searchData, loading: searchLoading, error: searchError } = useQuery<
-    SearchMemberQueryResult,
-    SearchMemberQueryVariables
-  >(SEARCH_MEMBERS_QUERY, {
-    variables: searchQueryInput,
-    errorPolicy: 'all',
-    skip: !searchQuery,
-  });
+  const {
+    data: searchData,
+    loading: searchLoading,
+    error: searchError,
+  } = useQuery<SearchMemberQueryResult, SearchMemberQueryVariables>(
+    SEARCH_MEMBERS_QUERY,
+    {
+      variables: searchQueryInput,
+      errorPolicy: "all",
+      skip: !searchQuery,
+    },
+  );
 
   // Extract data
-  const members = searchQuery ? searchData?.searchMembers || [] : data?.members || [];
+  const members = searchQuery
+    ? searchData?.searchMembers || []
+    : data?.members || [];
   const totalCount = data?.membersCount || 0;
 
   // Calculate pagination info based on skip/take
-  const currentPage = Math.floor((queryInput.skip || 0) / (queryInput.take || 10)) + 1;
+  const currentPage =
+    Math.floor((queryInput.skip || 0) / (queryInput.take || 10)) + 1;
   const totalPages = Math.ceil(totalCount / (queryInput.take || 10));
   const hasNextPage = currentPage < totalPages;
   const hasPreviousPage = currentPage > 1;

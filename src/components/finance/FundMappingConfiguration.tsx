@@ -1,10 +1,5 @@
-import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,9 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,24 +20,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Plus, Settings, Trash2, Edit, MoreHorizontal, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
-import { useFundMappingManager } from '@/graphql/hooks/useFundMapping';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
-import { CreateFundMappingModal } from './CreateFundMappingModal';
-import { EditFundMappingModal } from './EditFundMappingModal';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus,
+  Settings,
+  Trash2,
+  Edit,
+  MoreHorizontal,
+  RefreshCw,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useFundMappingManager } from "@/graphql/hooks/useFundMapping";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import { CreateFundMappingModal } from "./CreateFundMappingModal";
+import { EditFundMappingModal } from "./EditFundMappingModal";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function FundMappingConfiguration() {
   const { organisationId, branchId } = useOrganisationBranch();
-  
+
   const {
     configuration,
     loading,
@@ -65,32 +67,37 @@ export function FundMappingConfiguration() {
     creatingDefaults,
   } = useFundMappingManager(branchId, organisationId);
 
-  const handleDeleteMapping = async (id: string, contributionTypeName: string) => {
+  const handleDeleteMapping = async (
+    id: string,
+    contributionTypeName: string,
+  ) => {
     try {
       await handleDelete(id);
-      toast.success(`Fund mapping for ${contributionTypeName} deleted successfully`);
+      toast.success(
+        `Fund mapping for ${contributionTypeName} deleted successfully`,
+      );
     } catch (error) {
-      toast.error('Failed to delete fund mapping');
-      console.error('Delete error:', error);
+      toast.error("Failed to delete fund mapping");
+      console.error("Delete error:", error);
     }
   };
 
   const handleCreateDefaultMappings = async () => {
     try {
       await handleCreateDefaults();
-      toast.success('Default fund mappings created successfully');
+      toast.success("Default fund mappings created successfully");
     } catch (error) {
-      toast.error('Failed to create default fund mappings');
-      console.error('Create defaults error:', error);
+      toast.error("Failed to create default fund mappings");
+      console.error("Create defaults error:", error);
     }
   };
 
   const handleRefresh = async () => {
     try {
       await refetch();
-      toast.success('Fund mappings refreshed');
+      toast.success("Fund mappings refreshed");
     } catch (error) {
-      toast.error('Failed to refresh fund mappings');
+      toast.error("Failed to refresh fund mappings");
     }
   };
 
@@ -129,13 +136,16 @@ export function FundMappingConfiguration() {
   }
 
   const mappings = configuration?.mappings || [];
-  const availableContributionTypes = configuration?.availableContributionTypes || [];
+  const availableContributionTypes =
+    configuration?.availableContributionTypes || [];
   const availableFunds = configuration?.availableFunds || [];
 
   // Find unmapped contribution types
-  const mappedContributionTypeIds = new Set(mappings.map(m => m.contributionTypeId));
+  const mappedContributionTypeIds = new Set(
+    mappings.map((m) => m.contributionTypeId),
+  );
   const unmappedContributionTypes = availableContributionTypes.filter(
-    ct => ct.isActive && !mappedContributionTypeIds.has(ct.id)
+    (ct) => ct.isActive && !mappedContributionTypeIds.has(ct.id),
   );
 
   return (
@@ -146,7 +156,8 @@ export function FundMappingConfiguration() {
             <div>
               <CardTitle>Fund Allocation Configuration</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Configure which funds each contribution type gets credited to automatically
+                Configure which funds each contribution type gets credited to
+                automatically
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -159,17 +170,18 @@ export function FundMappingConfiguration() {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </Button>
-              {mappings.length === 0 && availableContributionTypes.length > 0 && (
-                <Button
-                  onClick={handleCreateDefaultMappings}
-                  variant="outline"
-                  size="sm"
-                  disabled={creatingDefaults}
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  {creatingDefaults ? 'Creating...' : 'Create Defaults'}
-                </Button>
-              )}
+              {mappings.length === 0 &&
+                availableContributionTypes.length > 0 && (
+                  <Button
+                    onClick={handleCreateDefaultMappings}
+                    variant="outline"
+                    size="sm"
+                    disabled={creatingDefaults}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    {creatingDefaults ? "Creating..." : "Create Defaults"}
+                  </Button>
+                )}
               <Button onClick={openCreateModal} size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Mapping
@@ -182,16 +194,24 @@ export function FundMappingConfiguration() {
             <div className="text-center py-8">
               <div className="mb-4">
                 <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                <h3 className="text-lg font-medium">No Fund Mappings Configured</h3>
+                <h3 className="text-lg font-medium">
+                  No Fund Mappings Configured
+                </h3>
                 <p className="text-muted-foreground">
-                  Configure which funds each contribution type should be credited to
+                  Configure which funds each contribution type should be
+                  credited to
                 </p>
               </div>
               {availableContributionTypes.length > 0 ? (
                 <div className="space-y-2">
-                  <Button onClick={handleCreateDefaultMappings} disabled={creatingDefaults}>
+                  <Button
+                    onClick={handleCreateDefaultMappings}
+                    disabled={creatingDefaults}
+                  >
                     <Settings className="w-4 h-4 mr-2" />
-                    {creatingDefaults ? 'Creating...' : 'Create Default Mappings'}
+                    {creatingDefaults
+                      ? "Creating..."
+                      : "Create Default Mappings"}
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     Or create custom mappings manually
@@ -221,7 +241,7 @@ export function FundMappingConfiguration() {
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {mapping.contributionType?.name || 'Unknown'}
+                            {mapping.contributionType?.name || "Unknown"}
                           </div>
                           {mapping.contributionType?.description && (
                             <div className="text-sm text-muted-foreground">
@@ -233,7 +253,7 @@ export function FundMappingConfiguration() {
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {mapping.fund?.name || 'Unknown Fund'}
+                            {mapping.fund?.name || "Unknown Fund"}
                           </div>
                           {mapping.fund?.description && (
                             <div className="text-sm text-muted-foreground">
@@ -243,8 +263,10 @@ export function FundMappingConfiguration() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={mapping.isActive ? 'default' : 'secondary'}>
-                          {mapping.isActive ? 'Active' : 'Inactive'}
+                        <Badge
+                          variant={mapping.isActive ? "default" : "secondary"}
+                        >
+                          {mapping.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -260,7 +282,9 @@ export function FundMappingConfiguration() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditModal(mapping)}>
+                            <DropdownMenuItem
+                              onClick={() => openEditModal(mapping)}
+                            >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
@@ -276,11 +300,16 @@ export function FundMappingConfiguration() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Fund Mapping</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Delete Fund Mapping
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete the fund mapping for{' '}
-                                    <strong>{mapping.contributionType?.name}</strong>?
-                                    This action cannot be undone.
+                                    Are you sure you want to delete the fund
+                                    mapping for{" "}
+                                    <strong>
+                                      {mapping.contributionType?.name}
+                                    </strong>
+                                    ? This action cannot be undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -289,13 +318,14 @@ export function FundMappingConfiguration() {
                                     onClick={() =>
                                       handleDeleteMapping(
                                         mapping.id,
-                                        mapping.contributionType?.name || 'Unknown'
+                                        mapping.contributionType?.name ||
+                                          "Unknown",
                                       )
                                     }
                                     disabled={deleting}
                                     className="bg-red-600 hover:bg-red-700"
                                   >
-                                    {deleting ? 'Deleting...' : 'Delete'}
+                                    {deleting ? "Deleting..." : "Delete"}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -314,11 +344,16 @@ export function FundMappingConfiguration() {
                     Unmapped Contribution Types
                   </h4>
                   <p className="text-sm text-yellow-700 mb-3">
-                    The following contribution types don't have fund mappings configured:
+                    The following contribution types don't have fund mappings
+                    configured:
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {unmappedContributionTypes.map((ct) => (
-                      <Badge key={ct.id} variant="outline" className="text-yellow-700">
+                      <Badge
+                        key={ct.id}
+                        variant="outline"
+                        className="text-yellow-700"
+                      >
                         {ct.name}
                       </Badge>
                     ))}

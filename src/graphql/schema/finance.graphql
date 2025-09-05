@@ -1,7 +1,6 @@
 """
 Financial Management schema - handles tithes, offerings, donations, and financial transactions
 """
-
 enum TransactionType {
   TITHE
   OFFERING
@@ -239,10 +238,10 @@ extend type Query {
     sortField: String
     sortOrder: SortOrder
   ): TransactionConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific transaction
   transaction(id: ID!): Transaction @auth(requires: [STAFF])
-  
+
   # Get all funds
   funds(
     branchId: ID
@@ -250,10 +249,10 @@ extend type Query {
     isActive: Boolean
     pagination: PaginationInput
   ): FundConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific fund
   fund(id: ID!): Fund @auth(requires: [STAFF])
-  
+
   # Get all campaigns
   campaigns(
     branchId: ID
@@ -262,10 +261,10 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): CampaignConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific campaign
   campaign(id: ID!): Campaign @auth(requires: [STAFF])
-  
+
   # Get all pledges
   pledges(
     campaignId: ID
@@ -273,10 +272,10 @@ extend type Query {
     status: PledgeStatus
     pagination: PaginationInput
   ): PledgeConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific pledge
   pledge(id: ID!): Pledge @auth(requires: [STAFF])
-  
+
   # Get all batches
   batches(
     branchId: ID
@@ -284,10 +283,10 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): BatchConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific batch
   batch(id: ID!): Batch @auth(requires: [STAFF])
-  
+
   # Get all budgets
   budgets(
     branchId: ID
@@ -295,13 +294,13 @@ extend type Query {
     status: Status
     pagination: PaginationInput
   ): BudgetConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific budget
   budget(id: ID!): Budget @auth(requires: [STAFF])
-  
+
   # Get all budget categories for a budget
   budgetCategories(budgetId: ID!): [BudgetCategory!]! @auth(requires: [STAFF])
-  
+
   # Get financial statements
   financialStatements(
     branchId: ID!
@@ -311,7 +310,7 @@ extend type Query {
     month: Int
     pagination: PaginationInput
   ): FinancialStatementConnection! @auth(requires: [STAFF])
-  
+
   # Get contribution statements
   contributionStatements(
     branchId: ID!
@@ -319,7 +318,7 @@ extend type Query {
     year: String
     pagination: PaginationInput
   ): ContributionStatementConnection! @auth(requires: [STAFF])
-  
+
   # Get member contributions
   memberContributions(
     memberId: ID!
@@ -327,14 +326,14 @@ extend type Query {
     transactionType: TransactionType
     pagination: PaginationInput
   ): TransactionConnection! @auth(requires: [STAFF])
-  
+
   # Get my contributions (for authenticated members)
   myContributions(
     dateRange: DateRangeInput
     transactionType: TransactionType
     pagination: PaginationInput
   ): TransactionConnection! @auth(requires: [MEMBER])
-  
+
   # Get financial dashboard data
   financialDashboard(
     branchId: ID!
@@ -470,95 +469,116 @@ type CampaignProgress {
 
 extend type Mutation {
   # Create a new transaction
-  createTransaction(input: CreateTransactionInput!): Transaction! @auth(requires: [STAFF])
-  
+  createTransaction(input: CreateTransactionInput!): Transaction!
+    @auth(requires: [STAFF])
+
   # Update a transaction
-  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction! @auth(requires: [STAFF])
-  
+  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction!
+    @auth(requires: [STAFF])
+
   # Delete a transaction
   deleteTransaction(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Record a member contribution
-  recordContribution(input: ContributionInput!): Transaction! @auth(requires: [STAFF])
-  
+  recordContribution(input: ContributionInput!): Transaction!
+    @auth(requires: [STAFF])
+
   # Create a new fund
   createFund(input: CreateFundInput!): Fund! @auth(requires: [STAFF])
-  
+
   # Update a fund
   updateFund(id: ID!, input: UpdateFundInput!): Fund! @auth(requires: [STAFF])
-  
+
   # Delete a fund
   deleteFund(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a new campaign
-  createCampaign(input: CreateCampaignInput!): Campaign! @auth(requires: [STAFF])
-  
+  createCampaign(input: CreateCampaignInput!): Campaign!
+    @auth(requires: [STAFF])
+
   # Update a campaign
-  updateCampaign(id: ID!, input: UpdateCampaignInput!): Campaign! @auth(requires: [STAFF])
-  
+  updateCampaign(id: ID!, input: UpdateCampaignInput!): Campaign!
+    @auth(requires: [STAFF])
+
   # Delete a campaign
   deleteCampaign(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a new pledge
   createPledge(input: CreatePledgeInput!): Pledge! @auth(requires: [STAFF])
-  
+
   # Update a pledge
-  updatePledge(id: ID!, input: UpdatePledgeInput!): Pledge! @auth(requires: [STAFF])
-  
+  updatePledge(id: ID!, input: UpdatePledgeInput!): Pledge!
+    @auth(requires: [STAFF])
+
   # Delete a pledge
   deletePledge(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Record pledge payment
-  recordPledgePayment(input: PledgePaymentInput!): Transaction! @auth(requires: [STAFF])
-  
+  recordPledgePayment(input: PledgePaymentInput!): Transaction!
+    @auth(requires: [STAFF])
+
   # Create a new batch
   createBatch(input: CreateBatchInput!): Batch! @auth(requires: [STAFF])
-  
+
   # Update a batch
-  updateBatch(id: ID!, input: UpdateBatchInput!): Batch! @auth(requires: [STAFF])
-  
+  updateBatch(id: ID!, input: UpdateBatchInput!): Batch!
+    @auth(requires: [STAFF])
+
   # Close a batch
-  closeBatch(id: ID!, depositDate: Date!, bankReference: String): Batch! @auth(requires: [STAFF])
-  
+  closeBatch(id: ID!, depositDate: Date!, bankReference: String): Batch!
+    @auth(requires: [STAFF])
+
   # Add transactions to a batch
-  addTransactionsToBatch(batchId: ID!, transactionIds: [ID!]!): Batch! @auth(requires: [STAFF])
-  
+  addTransactionsToBatch(batchId: ID!, transactionIds: [ID!]!): Batch!
+    @auth(requires: [STAFF])
+
   # Remove transactions from a batch
-  removeTransactionsFromBatch(batchId: ID!, transactionIds: [ID!]!): Batch! @auth(requires: [STAFF])
-  
+  removeTransactionsFromBatch(batchId: ID!, transactionIds: [ID!]!): Batch!
+    @auth(requires: [STAFF])
+
   # Create a new budget
   createBudget(input: CreateBudgetInput!): Budget! @auth(requires: [STAFF])
-  
+
   # Update a budget
-  updateBudget(id: ID!, input: UpdateBudgetInput!): Budget! @auth(requires: [STAFF])
-  
+  updateBudget(id: ID!, input: UpdateBudgetInput!): Budget!
+    @auth(requires: [STAFF])
+
   # Delete a budget
   deleteBudget(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a budget category
-  createBudgetCategory(input: CreateBudgetCategoryInput!): BudgetCategory! @auth(requires: [STAFF])
-  
+  createBudgetCategory(input: CreateBudgetCategoryInput!): BudgetCategory!
+    @auth(requires: [STAFF])
+
   # Update a budget category
-  updateBudgetCategory(id: ID!, input: UpdateBudgetCategoryInput!): BudgetCategory! @auth(requires: [STAFF])
-  
+  updateBudgetCategory(
+    id: ID!
+    input: UpdateBudgetCategoryInput!
+  ): BudgetCategory! @auth(requires: [STAFF])
+
   # Delete a budget category
   deleteBudgetCategory(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Generate financial statement
-  generateFinancialStatement(input: GenerateStatementInput!): FinancialStatement! @auth(requires: [STAFF])
-  
+  generateFinancialStatement(
+    input: GenerateStatementInput!
+  ): FinancialStatement! @auth(requires: [STAFF])
+
   # Generate contribution statements
-  generateContributionStatements(input: GenerateContributionStatementsInput!): [ContributionStatement!]! @auth(requires: [STAFF])
-  
+  generateContributionStatements(
+    input: GenerateContributionStatementsInput!
+  ): [ContributionStatement!]! @auth(requires: [STAFF])
+
   # Send contribution statements
   sendContributionStatements(
     statementIds: [ID!]!
     sendMethod: String!
   ): Boolean! @auth(requires: [STAFF])
-  
+
   # Setup recurring contribution
-  setupRecurringContribution(input: RecurringContributionInput!): Transaction! @auth(requires: [MEMBER])
-  
+  setupRecurringContribution(input: RecurringContributionInput!): Transaction!
+    @auth(requires: [MEMBER])
+
   # Cancel recurring contribution
   cancelRecurringContribution(id: ID!): Boolean! @auth(requires: [MEMBER])
 }
@@ -805,16 +825,17 @@ input RecurringContributionInput {
 extend type Subscription {
   # Get notified when a new transaction is recorded
   transactionRecorded(branchId: ID): Transaction! @auth(requires: [STAFF])
-  
+
   # Get notified when a batch is closed
   batchClosed(branchId: ID): Batch! @auth(requires: [STAFF])
-  
+
   # Get notified when a new campaign is created
   campaignCreated(branchId: ID): Campaign! @auth(requires: [STAFF])
-  
+
   # Get notified when a new pledge is created
   pledgeCreated(campaignId: ID): Pledge! @auth(requires: [STAFF])
-  
+
   # Get notified when a contribution statement is generated
-  contributionStatementGenerated(memberId: ID): ContributionStatement! @auth(requires: [STAFF])
+  contributionStatementGenerated(memberId: ID): ContributionStatement!
+    @auth(requires: [STAFF])
 }

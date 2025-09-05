@@ -1,28 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { Plus, Target, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  Plus,
+  Target,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import {
   ContributionTypeInfo,
   FundInfo,
   ContributionTypeFundMapping,
   CreateContributionTypeFundMappingInput,
-} from '@/graphql/hooks/useFundMapping';
+} from "@/graphql/hooks/useFundMapping";
 
 interface CreateFundMappingModalProps {
   isOpen: boolean;
@@ -43,23 +49,27 @@ export function CreateFundMappingModal({
   existingMappings,
   loading,
 }: CreateFundMappingModalProps) {
-  const [contributionTypeId, setContributionTypeId] = useState('');
-  const [fundId, setFundId] = useState('');
+  const [contributionTypeId, setContributionTypeId] = useState("");
+  const [fundId, setFundId] = useState("");
 
   // Filter out contribution types that already have mappings
-  const mappedContributionTypeIds = new Set(existingMappings.map(m => m.contributionTypeId));
+  const mappedContributionTypeIds = new Set(
+    existingMappings.map((m) => m.contributionTypeId),
+  );
   const unmappedContributionTypes = availableContributionTypes.filter(
-    ct => !mappedContributionTypeIds.has(ct.id)
+    (ct) => !mappedContributionTypeIds.has(ct.id),
   );
 
-  const selectedContributionType = availableContributionTypes.find(ct => ct.id === contributionTypeId);
-  const selectedFund = availableFunds.find(f => f.id === fundId);
+  const selectedContributionType = availableContributionTypes.find(
+    (ct) => ct.id === contributionTypeId,
+  );
+  const selectedFund = availableFunds.find((f) => f.id === fundId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!contributionTypeId || !fundId) {
-      toast.error('Please select both a contribution type and fund');
+      toast.error("Please select both a contribution type and fund");
       return;
     }
 
@@ -69,21 +79,21 @@ export function CreateFundMappingModal({
         fundId,
         isActive: true,
       });
-      
+
       // Reset form
-      setContributionTypeId('');
-      setFundId('');
+      setContributionTypeId("");
+      setFundId("");
       onClose();
-      toast.success('Fund mapping created successfully');
+      toast.success("Fund mapping created successfully");
     } catch (error) {
-      console.error('Error creating fund mapping:', error);
-      toast.error('Failed to create fund mapping');
+      console.error("Error creating fund mapping:", error);
+      toast.error("Failed to create fund mapping");
     }
   };
 
   const handleClose = () => {
-    setContributionTypeId('');
-    setFundId('');
+    setContributionTypeId("");
+    setFundId("");
     onClose();
   };
 
@@ -108,11 +118,17 @@ export function CreateFundMappingModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Contribution Type Selection */}
           <div className="space-y-3">
-            <Label htmlFor="contributionType" className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <Label
+              htmlFor="contributionType"
+              className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+            >
               <Target className="h-4 w-4 text-indigo-600" />
               <span>Contribution Type</span>
             </Label>
-            <Select value={contributionTypeId} onValueChange={setContributionTypeId}>
+            <Select
+              value={contributionTypeId}
+              onValueChange={setContributionTypeId}
+            >
               <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
                 <SelectValue placeholder="Select a contribution type..." />
               </SelectTrigger>
@@ -120,15 +136,23 @@ export function CreateFundMappingModal({
                 {unmappedContributionTypes.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
                     <AlertCircle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm">All contribution types are already mapped</p>
+                    <p className="text-sm">
+                      All contribution types are already mapped
+                    </p>
                   </div>
                 ) : (
                   unmappedContributionTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id} className="py-3 hover:bg-gray-50 focus:bg-gray-50">
+                    <SelectItem
+                      key={type.id}
+                      value={type.id}
+                      className="py-3 hover:bg-gray-50 focus:bg-gray-50"
+                    >
                       <div>
                         <div className="font-medium">{type.name}</div>
                         {type.description && (
-                          <div className="text-sm text-gray-500">{type.description}</div>
+                          <div className="text-sm text-gray-500">
+                            {type.description}
+                          </div>
                         )}
                       </div>
                     </SelectItem>
@@ -166,7 +190,10 @@ export function CreateFundMappingModal({
 
           {/* Fund Selection */}
           <div className="space-y-3">
-            <Label htmlFor="fund" className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <Label
+              htmlFor="fund"
+              className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+            >
               <Target className="h-4 w-4 text-purple-600" />
               <span>Target Fund</span>
             </Label>
@@ -182,11 +209,17 @@ export function CreateFundMappingModal({
                   </div>
                 ) : (
                   availableFunds.map((fund) => (
-                    <SelectItem key={fund.id} value={fund.id} className="py-3 hover:bg-gray-50 focus:bg-gray-50">
+                    <SelectItem
+                      key={fund.id}
+                      value={fund.id}
+                      className="py-3 hover:bg-gray-50 focus:bg-gray-50"
+                    >
                       <div>
                         <div className="font-medium">{fund.name}</div>
                         {fund.description && (
-                          <div className="text-sm text-gray-500">{fund.description}</div>
+                          <div className="text-sm text-gray-500">
+                            {fund.description}
+                          </div>
                         )}
                       </div>
                     </SelectItem>
@@ -216,10 +249,14 @@ export function CreateFundMappingModal({
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-semibold text-green-800">Mapping Preview</span>
+                <span className="font-semibold text-green-800">
+                  Mapping Preview
+                </span>
               </div>
               <p className="text-sm text-green-700">
-                All <strong>{selectedContributionType?.name}</strong> contributions will be automatically allocated to the <strong>{selectedFund?.name}</strong> fund.
+                All <strong>{selectedContributionType?.name}</strong>{" "}
+                contributions will be automatically allocated to the{" "}
+                <strong>{selectedFund?.name}</strong> fund.
               </p>
             </div>
           )}

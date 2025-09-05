@@ -1,10 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ChatBubbleLeftRightIcon, ShieldCheckIcon, BellIcon } from '@heroicons/react/24/outline';
-import { WizardStepProps, ValidationError } from '../types/WizardTypes';
-import { PrivacyLevel } from '../../../types/member.types';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ChatBubbleLeftRightIcon,
+  ShieldCheckIcon,
+  BellIcon,
+} from "@heroicons/react/24/outline";
+import { WizardStepProps, ValidationError } from "../types/WizardTypes";
+import { PrivacyLevel } from "../../../types/member.types";
 
 const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
   formData,
@@ -12,7 +16,7 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
   onNext,
   onPrev,
   isFirstStep,
-  isLastStep
+  isLastStep,
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -21,7 +25,10 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
 
     // GDPR compliance - consent date is required
     if (!formData.consentDate) {
-      newErrors.push({ field: 'consentDate', message: 'Consent date is required for GDPR compliance' });
+      newErrors.push({
+        field: "consentDate",
+        message: "Consent date is required for GDPR compliance",
+      });
     }
 
     setErrors(newErrors);
@@ -37,11 +44,11 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
   const handleInputChange = (field: string, value: any) => {
     updateFormData({ [field]: value });
     // Clear error for this field
-    setErrors(prev => prev.filter(error => error.field !== field));
+    setErrors((prev) => prev.filter((error) => error.field !== field));
   };
 
   const getFieldError = (field: string) => {
-    return errors.find(error => error.field === field)?.message;
+    return errors.find((error) => error.field === field)?.message;
   };
 
   // Initialize communication preferences if not set
@@ -56,13 +63,13 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
     newsletterSubscription: true,
     emergencyContactOnly: false,
     doNotDisturb: false,
-    preferredContactTime: 'ANYTIME',
-    communicationFrequency: 'WEEKLY'
+    preferredContactTime: "ANYTIME",
+    communicationFrequency: "WEEKLY",
   };
 
   const updateCommunicationPref = (key: string, value: any) => {
     const updatedPrefs = { ...communicationPrefs, [key]: value };
-    handleInputChange('communicationPrefs', updatedPrefs);
+    handleInputChange("communicationPrefs", updatedPrefs);
   };
 
   return (
@@ -71,28 +78,40 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
         <div className="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
           <ChatBubbleLeftRightIcon className="w-8 h-8 text-indigo-600" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">Communication Preferences</h3>
-        <p className="text-gray-600 mt-2">How would you like us to communicate with you?</p>
+        <h3 className="text-xl font-semibold text-gray-900">
+          Communication Preferences
+        </h3>
+        <p className="text-gray-600 mt-2">
+          How would you like us to communicate with you?
+        </p>
       </div>
 
       {/* Communication Channels */}
       <div className="bg-indigo-50 rounded-lg p-6 mb-6">
         <div className="flex items-center mb-4">
           <BellIcon className="w-5 h-5 text-indigo-600 mr-2" />
-          <h4 className="text-lg font-medium text-gray-900">Communication Channels</h4>
+          <h4 className="text-lg font-medium text-gray-900">
+            Communication Channels
+          </h4>
         </div>
-        
+
         <div className="space-y-4">
           {/* Email Notifications */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Email Notifications</label>
-              <p className="text-xs text-gray-500">Receive church updates and announcements via email</p>
+              <label className="text-sm font-medium text-gray-700">
+                Email Notifications
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive church updates and announcements via email
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.emailNotifications}
-              onChange={(e) => updateCommunicationPref('emailNotifications', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("emailNotifications", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -100,13 +119,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* SMS Notifications */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">SMS Notifications</label>
-              <p className="text-xs text-gray-500">Receive text messages for urgent updates</p>
+              <label className="text-sm font-medium text-gray-700">
+                SMS Notifications
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive text messages for urgent updates
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.smsNotifications}
-              onChange={(e) => updateCommunicationPref('smsNotifications', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("smsNotifications", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -114,13 +139,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* Phone Calls */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Phone Calls Allowed</label>
-              <p className="text-xs text-gray-500">Allow church staff to contact you by phone</p>
+              <label className="text-sm font-medium text-gray-700">
+                Phone Calls Allowed
+              </label>
+              <p className="text-xs text-gray-500">
+                Allow church staff to contact you by phone
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.phoneCallsAllowed}
-              onChange={(e) => updateCommunicationPref('phoneCallsAllowed', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("phoneCallsAllowed", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -128,13 +159,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* Mail Notifications */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Physical Mail</label>
-              <p className="text-xs text-gray-500">Receive printed newsletters and invitations</p>
+              <label className="text-sm font-medium text-gray-700">
+                Physical Mail
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive printed newsletters and invitations
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.mailNotifications}
-              onChange={(e) => updateCommunicationPref('mailNotifications', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("mailNotifications", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -142,13 +179,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* Push Notifications */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Push Notifications</label>
-              <p className="text-xs text-gray-500">Receive notifications through church mobile app</p>
+              <label className="text-sm font-medium text-gray-700">
+                Push Notifications
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive notifications through church mobile app
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.pushNotifications}
-              onChange={(e) => updateCommunicationPref('pushNotifications', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("pushNotifications", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -157,19 +200,27 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
 
       {/* Content Preferences */}
       <div className="bg-green-50 rounded-lg p-6 mb-6">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Content Preferences</h4>
-        
+        <h4 className="text-lg font-medium text-gray-900 mb-4">
+          Content Preferences
+        </h4>
+
         <div className="space-y-4">
           {/* Event Reminders */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Event Reminders</label>
-              <p className="text-xs text-gray-500">Get reminders about upcoming church events</p>
+              <label className="text-sm font-medium text-gray-700">
+                Event Reminders
+              </label>
+              <p className="text-xs text-gray-500">
+                Get reminders about upcoming church events
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.eventReminders}
-              onChange={(e) => updateCommunicationPref('eventReminders', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("eventReminders", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -177,13 +228,22 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* Newsletter Subscription */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Newsletter Subscription</label>
-              <p className="text-xs text-gray-500">Receive regular church newsletters</p>
+              <label className="text-sm font-medium text-gray-700">
+                Newsletter Subscription
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive regular church newsletters
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.newsletterSubscription}
-              onChange={(e) => updateCommunicationPref('newsletterSubscription', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref(
+                  "newsletterSubscription",
+                  e.target.checked,
+                )
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -191,13 +251,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           {/* Marketing Emails */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium text-gray-700">Marketing Emails</label>
-              <p className="text-xs text-gray-500">Receive promotional content and special offers</p>
+              <label className="text-sm font-medium text-gray-700">
+                Marketing Emails
+              </label>
+              <p className="text-xs text-gray-500">
+                Receive promotional content and special offers
+              </p>
             </div>
             <input
               type="checkbox"
               checked={communicationPrefs.marketingEmails}
-              onChange={(e) => updateCommunicationPref('marketingEmails', e.target.checked)}
+              onChange={(e) =>
+                updateCommunicationPref("marketingEmails", e.target.checked)
+              }
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
           </div>
@@ -211,7 +277,12 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
             </label>
             <select
               value={communicationPrefs.communicationFrequency}
-              onChange={(e) => updateCommunicationPref('communicationFrequency', e.target.value)}
+              onChange={(e) =>
+                updateCommunicationPref(
+                  "communicationFrequency",
+                  e.target.value,
+                )
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
               <option value="DAILY">Daily</option>
@@ -228,7 +299,9 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
             </label>
             <select
               value={communicationPrefs.preferredContactTime}
-              onChange={(e) => updateCommunicationPref('preferredContactTime', e.target.value)}
+              onChange={(e) =>
+                updateCommunicationPref("preferredContactTime", e.target.value)
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
               <option value="ANYTIME">Anytime</option>
@@ -245,9 +318,11 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
       <div className="bg-yellow-50 rounded-lg p-6">
         <div className="flex items-center mb-4">
           <ShieldCheckIcon className="w-5 h-5 text-yellow-600 mr-2" />
-          <h4 className="text-lg font-medium text-gray-900">Privacy & Data Protection</h4>
+          <h4 className="text-lg font-medium text-gray-900">
+            Privacy & Data Protection
+          </h4>
         </div>
-        
+
         <div className="space-y-4">
           {/* Privacy Level */}
           <div>
@@ -256,13 +331,26 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
             </label>
             <select
               value={formData.privacyLevel || PrivacyLevel.STANDARD}
-              onChange={(e) => handleInputChange('privacyLevel', e.target.value as PrivacyLevel)}
+              onChange={(e) =>
+                handleInputChange(
+                  "privacyLevel",
+                  e.target.value as PrivacyLevel,
+                )
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
-              <option value={PrivacyLevel.PUBLIC}>Public - Information can be shared openly</option>
-              <option value={PrivacyLevel.STANDARD}>Standard - Normal privacy protection</option>
-              <option value={PrivacyLevel.PRIVATE}>Private - Restricted information sharing</option>
-              <option value={PrivacyLevel.CONFIDENTIAL}>Confidential - Highest privacy protection</option>
+              <option value={PrivacyLevel.PUBLIC}>
+                Public - Information can be shared openly
+              </option>
+              <option value={PrivacyLevel.STANDARD}>
+                Standard - Normal privacy protection
+              </option>
+              <option value={PrivacyLevel.PRIVATE}>
+                Private - Restricted information sharing
+              </option>
+              <option value={PrivacyLevel.CONFIDENTIAL}>
+                Confidential - Highest privacy protection
+              </option>
             </select>
           </div>
 
@@ -274,14 +362,27 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
               </label>
               <input
                 type="date"
-                value={formData.consentDate ? new Date(formData.consentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
-                onChange={(e) => handleInputChange('consentDate', e.target.value ? new Date(e.target.value) : new Date())}
+                value={
+                  formData.consentDate
+                    ? new Date(formData.consentDate).toISOString().split("T")[0]
+                    : new Date().toISOString().split("T")[0]
+                }
+                onChange={(e) =>
+                  handleInputChange(
+                    "consentDate",
+                    e.target.value ? new Date(e.target.value) : new Date(),
+                  )
+                }
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  getFieldError('consentDate') ? 'border-red-500' : 'border-gray-300'
+                  getFieldError("consentDate")
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
               />
-              {getFieldError('consentDate') && (
-                <p className="text-red-500 text-sm mt-1">{getFieldError('consentDate')}</p>
+              {getFieldError("consentDate") && (
+                <p className="text-red-500 text-sm mt-1">
+                  {getFieldError("consentDate")}
+                </p>
               )}
             </div>
 
@@ -291,8 +392,10 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
               </label>
               <input
                 type="text"
-                value={formData.consentVersion || 'v1.0'}
-                onChange={(e) => handleInputChange('consentVersion', e.target.value)}
+                value={formData.consentVersion || "v1.0"}
+                onChange={(e) =>
+                  handleInputChange("consentVersion", e.target.value)
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 placeholder="e.g., v1.0"
               />
@@ -306,8 +409,19 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
             </label>
             <input
               type="date"
-              value={formData.dataRetentionDate ? new Date(formData.dataRetentionDate).toISOString().split('T')[0] : ''}
-              onChange={(e) => handleInputChange('dataRetentionDate', e.target.value ? new Date(e.target.value) : undefined)}
+              value={
+                formData.dataRetentionDate
+                  ? new Date(formData.dataRetentionDate)
+                      .toISOString()
+                      .split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                handleInputChange(
+                  "dataRetentionDate",
+                  e.target.value ? new Date(e.target.value) : undefined,
+                )
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -322,10 +436,18 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
                 type="checkbox"
                 id="emergencyContactOnly"
                 checked={communicationPrefs.emergencyContactOnly}
-                onChange={(e) => updateCommunicationPref('emergencyContactOnly', e.target.checked)}
+                onChange={(e) =>
+                  updateCommunicationPref(
+                    "emergencyContactOnly",
+                    e.target.checked,
+                  )
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="emergencyContactOnly" className="ml-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="emergencyContactOnly"
+                className="ml-2 text-sm font-medium text-gray-700"
+              >
                 Emergency contact only
               </label>
             </div>
@@ -335,10 +457,15 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
                 type="checkbox"
                 id="doNotDisturb"
                 checked={communicationPrefs.doNotDisturb}
-                onChange={(e) => updateCommunicationPref('doNotDisturb', e.target.checked)}
+                onChange={(e) =>
+                  updateCommunicationPref("doNotDisturb", e.target.checked)
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="doNotDisturb" className="ml-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="doNotDisturb"
+                className="ml-2 text-sm font-medium text-gray-700"
+              >
                 Do not disturb (minimal contact)
               </label>
             </div>
@@ -353,13 +480,13 @@ const CommunicationPrefsStep: React.FC<WizardStepProps> = ({
           disabled={isFirstStep}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             isFirstStep
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
           Previous
         </button>
-        
+
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}

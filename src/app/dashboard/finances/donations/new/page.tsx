@@ -11,17 +11,23 @@ import {
   UserIcon,
   TagIcon,
   ArrowLeftIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const donorTypes = ["Individual", "Organization", "Anonymous"];
 
-
-
 export default function NewDonation() {
   const { user } = useAuth();
-  const branchId = user?.userBranches && user.userBranches.length > 0 ? user.userBranches[0].branch.id : undefined;
-  const { funds, paymentMethods, contributionTypes, loading: referenceLoading } = useFinanceReferenceData(branchId) as {
+  const branchId =
+    user?.userBranches && user.userBranches.length > 0
+      ? user.userBranches[0].branch.id
+      : undefined;
+  const {
+    funds,
+    paymentMethods,
+    contributionTypes,
+    loading: referenceLoading,
+  } = useFinanceReferenceData(branchId) as {
     funds: { id: string; name: string }[];
     paymentMethods: { id: string; name: string }[];
     contributionTypes: { id: string; name: string }[];
@@ -49,18 +55,25 @@ export default function NewDonation() {
     amount: "",
     category: "General Fund",
     paymentMethod: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     recurring: false,
     frequency: "monthly",
     anonymous: false,
     notes: "",
-    taxDeductible: true
+    taxDeductible: true,
   });
 
   // Set default payment method to first available when loaded
   useEffect(() => {
-    if (!referenceLoading && paymentMethods.length > 0 && !donationData.paymentMethod) {
-      setDonationData(prev => ({ ...prev, paymentMethod: paymentMethods[0].name }));
+    if (
+      !referenceLoading &&
+      paymentMethods.length > 0 &&
+      !donationData.paymentMethod
+    ) {
+      setDonationData((prev) => ({
+        ...prev,
+        paymentMethod: paymentMethods[0].name,
+      }));
     }
   }, [referenceLoading, paymentMethods, donationData.paymentMethod]);
 
@@ -68,13 +81,17 @@ export default function NewDonation() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setDonationData(prev => ({ ...prev, [name]: checked }));
+      setDonationData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setDonationData(prev => ({ ...prev, [name]: value }));
+      setDonationData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -86,18 +103,30 @@ export default function NewDonation() {
     setErrorMsg(null);
     try {
       // Map selected contribution type name to contributionTypeId
-      const selectedContributionType = contributionTypes.find((t: { name: string }) => t.name === donationData.category);
-      const selectedPaymentMethod = paymentMethods.find((m: { name: string }) => m.name === donationData.paymentMethod);
+      const selectedContributionType = contributionTypes.find(
+        (t: { name: string }) => t.name === donationData.category,
+      );
+      const selectedPaymentMethod = paymentMethods.find(
+        (m: { name: string }) => m.name === donationData.paymentMethod,
+      );
       const input = {
         amount: parseFloat(donationData.amount),
         date: donationData.date,
         notes: donationData.notes,
         isAnonymous: donationData.anonymous,
         donorName: donationData.anonymous ? undefined : donationData.donorName,
-        donorEmail: donationData.anonymous ? undefined : donationData.donorEmail,
-        donorPhone: donationData.anonymous ? undefined : donationData.donorPhone,
-        contributionTypeId: selectedContributionType ? selectedContributionType.id : undefined,
-        paymentMethodId: selectedPaymentMethod ? selectedPaymentMethod.id : undefined,
+        donorEmail: donationData.anonymous
+          ? undefined
+          : donationData.donorEmail,
+        donorPhone: donationData.anonymous
+          ? undefined
+          : donationData.donorPhone,
+        contributionTypeId: selectedContributionType
+          ? selectedContributionType.id
+          : undefined,
+        paymentMethodId: selectedPaymentMethod
+          ? selectedPaymentMethod.id
+          : undefined,
         taxDeductible: donationData.taxDeductible,
         recurring: donationData.recurring,
         frequency: donationData.recurring ? donationData.frequency : undefined,
@@ -106,31 +135,36 @@ export default function NewDonation() {
       await createContribution({ variables: { input } });
       setShowSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard/finances');
+        router.push("/dashboard/finances");
       }, 2000);
     } catch (error: unknown) {
-      console.error('Error submitting donation:', error);
+      console.error("Error submitting donation:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   if (showSuccess) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="bg-white shadow-md rounded-lg p-6 text-center">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-            <CheckCircleIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+            <CheckCircleIcon
+              className="h-6 w-6 text-green-600"
+              aria-hidden="true"
+            />
           </div>
-          <h2 className="mt-3 text-lg font-medium text-gray-900">Donation Recorded Successfully!</h2>
+          <h2 className="mt-3 text-lg font-medium text-gray-900">
+            Donation Recorded Successfully!
+          </h2>
           <p className="mt-2 text-sm text-gray-500">
-            Thank you for recording this donation. It has been added to the system.
+            Thank you for recording this donation. It has been added to the
+            system.
           </p>
           <div className="mt-5">
             <button
               type="button"
-              onClick={() => router.push('/dashboard/finances')}
+              onClick={() => router.push("/dashboard/finances")}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Return to Finance Dashboard
@@ -145,10 +179,15 @@ export default function NewDonation() {
     <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-3xl mx-auto">
       {/* Sticky header with navigation */}
       <div className="mb-8 sticky top-0 z-10 bg-gradient-to-br from-indigo-50 to-white/80 backdrop-blur border-b border-indigo-100 py-4 px-2 flex items-center gap-2 shadow-sm">
-        <Link href="/dashboard/finances" className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500">
+        <Link
+          href="/dashboard/finances"
+          className="mr-2 rounded-md bg-white p-1 text-gray-400 hover:text-gray-500"
+        >
           <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Record New Donation</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Record New Donation
+        </h1>
       </div>
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <form onSubmit={handleSubmit}>
@@ -156,12 +195,20 @@ export default function NewDonation() {
           <div className="px-6 py-8 grid grid-cols-1 gap-y-8 gap-x-8 sm:grid-cols-2">
             <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
               <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <CurrencyDollarIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+                <CurrencyDollarIcon
+                  className="w-5 h-5 text-indigo-400"
+                  aria-hidden="true"
+                />
                 Donation Details
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div>
-                  <label htmlFor="amount" className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
+                  <label
+                    htmlFor="amount"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Amount <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     name="amount"
@@ -176,7 +223,12 @@ export default function NewDonation() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="date" className="block text-sm font-medium text-indigo-800 mb-1">Date Received <span className="text-red-500">*</span></label>
+                  <label
+                    htmlFor="date"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Date Received <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
                     name="date"
@@ -189,7 +241,12 @@ export default function NewDonation() {
                 </div>
                 {/* Category (mapped to fundId for backend) */}
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-indigo-800 mb-1">Category <span className="text-red-500">*</span></label>
+                  <label
+                    htmlFor="category"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Category <span className="text-red-500">*</span>
+                  </label>
                   <select
                     id="category"
                     name="category"
@@ -201,14 +258,23 @@ export default function NewDonation() {
                     {contributionTypes.length === 0 ? (
                       <option value="">No contribution types available</option>
                     ) : (
-                      contributionTypes.map((type: { id: string; name: string }) => (
-                        <option key={type.id} value={type.name}>{type.name}</option>
-                      ))
+                      contributionTypes.map(
+                        (type: { id: string; name: string }) => (
+                          <option key={type.id} value={type.name}>
+                            {type.name}
+                          </option>
+                        ),
+                      )
                     )}
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="paymentMethod" className="block text-sm font-medium text-indigo-800 mb-1">Payment Method <span className="text-red-500">*</span></label>
+                  <label
+                    htmlFor="paymentMethod"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Payment Method <span className="text-red-500">*</span>
+                  </label>
                   <select
                     id="paymentMethod"
                     name="paymentMethod"
@@ -220,13 +286,15 @@ export default function NewDonation() {
                   >
                     {referenceLoading ? (
                       <option>Loading payment methods...</option>
+                    ) : paymentMethods.length === 0 ? (
+                      <option value="">No payment methods available</option>
                     ) : (
-                      paymentMethods.length === 0 ? (
-                        <option value="">No payment methods available</option>
-                      ) : (
-                        paymentMethods.map((method: { id: string; name: string }) => (
-                          <option key={method.id} value={method.name}>{method.name}</option>
-                        ))
+                      paymentMethods.map(
+                        (method: { id: string; name: string }) => (
+                          <option key={method.id} value={method.name}>
+                            {method.name}
+                          </option>
+                        ),
                       )
                     )}
                   </select>
@@ -240,14 +308,24 @@ export default function NewDonation() {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-2"
                   />
-                  <label htmlFor="recurring" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="recurring"
+                    className="font-medium text-gray-700"
+                  >
                     This is a recurring donation
                   </label>
-                  <span className="ml-2 text-gray-500 text-sm">Check if the donor has set up a recurring giving plan.</span>
+                  <span className="ml-2 text-gray-500 text-sm">
+                    Check if the donor has set up a recurring giving plan.
+                  </span>
                 </div>
                 {donationData.recurring && (
                   <div className="md:col-span-2">
-                    <label htmlFor="frequency" className="block text-sm font-medium text-indigo-800 mb-1">Frequency</label>
+                    <label
+                      htmlFor="frequency"
+                      className="block text-sm font-medium text-indigo-800 mb-1"
+                    >
+                      Frequency
+                    </label>
                     <select
                       id="frequency"
                       name="frequency"
@@ -268,7 +346,10 @@ export default function NewDonation() {
             {/* Donor Information Card */}
             <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
               <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <UserIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+                <UserIcon
+                  className="w-5 h-5 text-indigo-400"
+                  aria-hidden="true"
+                />
                 Donor Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -281,15 +362,25 @@ export default function NewDonation() {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-2"
                   />
-                  <label htmlFor="anonymous" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="anonymous"
+                    className="font-medium text-gray-700"
+                  >
                     Anonymous Donation
                   </label>
-                  <span className="ml-2 text-gray-500 text-sm">Check if the donor wishes to remain anonymous.</span>
+                  <span className="ml-2 text-gray-500 text-sm">
+                    Check if the donor wishes to remain anonymous.
+                  </span>
                 </div>
                 {!donationData.anonymous && (
                   <>
                     <div>
-                      <label htmlFor="donorType" className="block text-sm font-medium text-indigo-800 mb-1">Donor Type <span className="text-red-500">*</span></label>
+                      <label
+                        htmlFor="donorType"
+                        className="block text-sm font-medium text-indigo-800 mb-1"
+                      >
+                        Donor Type <span className="text-red-500">*</span>
+                      </label>
                       <select
                         id="donorType"
                         name="donorType"
@@ -299,12 +390,22 @@ export default function NewDonation() {
                         className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                       >
                         {donorTypes.map((type) => (
-                          <option key={type} value={type}>{type}</option>
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="donorName" className="block text-sm font-medium text-indigo-800 mb-1">{donationData.donorType === "Organization" ? "Organization Name" : "Donor Name"} <span className="text-red-500">*</span></label>
+                      <label
+                        htmlFor="donorName"
+                        className="block text-sm font-medium text-indigo-800 mb-1"
+                      >
+                        {donationData.donorType === "Organization"
+                          ? "Organization Name"
+                          : "Donor Name"}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         name="donorName"
@@ -316,7 +417,12 @@ export default function NewDonation() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="donorEmail" className="block text-sm font-medium text-indigo-800 mb-1">Email</label>
+                      <label
+                        htmlFor="donorEmail"
+                        className="block text-sm font-medium text-indigo-800 mb-1"
+                      >
+                        Email
+                      </label>
                       <input
                         type="email"
                         name="donorEmail"
@@ -327,7 +433,12 @@ export default function NewDonation() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="donorPhone" className="block text-sm font-medium text-indigo-800 mb-1">Phone</label>
+                      <label
+                        htmlFor="donorPhone"
+                        className="block text-sm font-medium text-indigo-800 mb-1"
+                      >
+                        Phone
+                      </label>
                       <input
                         type="tel"
                         name="donorPhone"
@@ -344,12 +455,20 @@ export default function NewDonation() {
             {/* Additional Information Card */}
             <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100">
               <h3 className="text-xl font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-                <TagIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+                <TagIcon
+                  className="w-5 h-5 text-indigo-400"
+                  aria-hidden="true"
+                />
                 Additional Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div className="md:col-span-2">
-                  <label htmlFor="notes" className="block text-sm font-medium text-indigo-800 mb-1">Notes</label>
+                  <label
+                    htmlFor="notes"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Notes
+                  </label>
                   <textarea
                     id="notes"
                     name="notes"
@@ -369,10 +488,16 @@ export default function NewDonation() {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-2"
                   />
-                  <label htmlFor="taxDeductible" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="taxDeductible"
+                    className="font-medium text-gray-700"
+                  >
                     Tax Deductible
                   </label>
-                  <span className="ml-2 text-gray-500 text-sm">Check if this donation is eligible for a tax deduction receipt.</span>
+                  <span className="ml-2 text-gray-500 text-sm">
+                    Check if this donation is eligible for a tax deduction
+                    receipt.
+                  </span>
                 </div>
               </div>
             </div>
@@ -391,9 +516,25 @@ export default function NewDonation() {
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Saving...
                 </>

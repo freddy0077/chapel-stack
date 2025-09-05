@@ -1,7 +1,6 @@
 """
 Reporting & Analytics schema - handles comprehensive reporting, insights, and data analysis
 """
-
 enum ReportType {
   ATTENDANCE
   MEMBERSHIP
@@ -245,25 +244,25 @@ extend type Query {
     isPublic: Boolean
     pagination: PaginationInput
   ): ReportConnection! @auth(requires: [STAFF])
-  
+
   report(id: ID!): Report @auth(requires: [STAFF])
-  
+
   # Report results
   reportResults(
     reportId: ID!
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): ReportResultConnection! @auth(requires: [STAFF])
-  
+
   reportResult(id: ID!): ReportResult @auth(requires: [STAFF])
-  
+
   # Generate a report on demand
   generateReport(
     reportId: ID!
     parameters: JSON
     format: ReportFormat
   ): ReportResult! @auth(requires: [STAFF])
-  
+
   # Dashboards
   dashboards(
     search: String
@@ -272,9 +271,9 @@ extend type Query {
     isPublic: Boolean
     pagination: PaginationInput
   ): DashboardConnection! @auth(requires: [STAFF])
-  
+
   dashboard(id: ID!): Dashboard @auth(requires: [STAFF])
-  
+
   # Visualizations
   visualizations(
     search: String
@@ -283,18 +282,18 @@ extend type Query {
     dashboardId: ID
     pagination: PaginationInput
   ): VisualizationConnection! @auth(requires: [STAFF])
-  
+
   visualization(id: ID!): Visualization @auth(requires: [STAFF])
-  
+
   # Report schedules
   reportSchedules(
     reportId: ID!
     active: Boolean
     pagination: PaginationInput
   ): ReportScheduleConnection! @auth(requires: [STAFF])
-  
+
   reportSchedule(id: ID!): ReportSchedule @auth(requires: [STAFF])
-  
+
   # Metrics
   metricDefinitions(
     search: String
@@ -303,9 +302,9 @@ extend type Query {
     isActive: Boolean
     pagination: PaginationInput
   ): MetricDefinitionConnection! @auth(requires: [STAFF])
-  
+
   metricDefinition(id: ID!): MetricDefinition @auth(requires: [STAFF])
-  
+
   # Segmentations
   segmentations(
     search: String
@@ -313,9 +312,9 @@ extend type Query {
     isActive: Boolean
     pagination: PaginationInput
   ): SegmentationConnection! @auth(requires: [STAFF])
-  
+
   segmentation(id: ID!): Segmentation @auth(requires: [STAFF])
-  
+
   # Branch comparisons
   branchComparisonReport(
     branchIds: [ID!]!
@@ -323,7 +322,7 @@ extend type Query {
     dateRange: DateRangeInput!
     segmentBy: String
   ): JSON! @auth(requires: [BRANCH_ADMIN])
-  
+
   # Growth metrics
   growthReport(
     branchId: ID
@@ -332,21 +331,21 @@ extend type Query {
     compareWithPreviousPeriod: Boolean
     dateRange: DateRangeInput!
   ): JSON! @auth(requires: [STAFF])
-  
+
   # Ministry effectiveness
   ministryEffectivenessReport(
     ministryIds: [ID!]!
     metrics: [String!]!
     dateRange: DateRangeInput!
   ): JSON! @auth(requires: [STAFF])
-  
+
   # Visitor conversion report
   visitorConversionReport(
     branchId: ID
     dateRange: DateRangeInput!
     segmentBy: String
   ): JSON! @auth(requires: [STAFF])
-  
+
   # Financial insights
   financialInsightsReport(
     branchId: ID
@@ -356,7 +355,7 @@ extend type Query {
     campaignIds: [ID!]
     compareWithBudget: Boolean
   ): JSON! @auth(requires: [STAFF])
-  
+
   # Attendance patterns
   attendancePatternsReport(
     branchId: ID
@@ -439,60 +438,102 @@ type SegmentationEdge {
 extend type Mutation {
   # Reports
   createReport(input: CreateReportInput!): Report! @auth(requires: [STAFF])
-  updateReport(id: ID!, input: UpdateReportInput!): Report! @auth(requires: [STAFF])
+  updateReport(id: ID!, input: UpdateReportInput!): Report!
+    @auth(requires: [STAFF])
   deleteReport(id: ID!): Boolean! @auth(requires: [STAFF])
   cloneReport(id: ID!, name: String!): Report! @auth(requires: [STAFF])
-  
+
   # Report comparisons
-  addReportComparison(reportId: ID!, input: AddComparisonInput!): ReportComparison! @auth(requires: [STAFF])
-  updateReportComparison(id: ID!, input: UpdateComparisonInput!): ReportComparison! @auth(requires: [STAFF])
+  addReportComparison(
+    reportId: ID!
+    input: AddComparisonInput!
+  ): ReportComparison! @auth(requires: [STAFF])
+  updateReportComparison(
+    id: ID!
+    input: UpdateComparisonInput!
+  ): ReportComparison! @auth(requires: [STAFF])
   removeReportComparison(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Visualizations
-  createVisualization(input: CreateVisualizationInput!): Visualization! @auth(requires: [STAFF])
-  updateVisualization(id: ID!, input: UpdateVisualizationInput!): Visualization! @auth(requires: [STAFF])
+  createVisualization(input: CreateVisualizationInput!): Visualization!
+    @auth(requires: [STAFF])
+  updateVisualization(
+    id: ID!
+    input: UpdateVisualizationInput!
+  ): Visualization! @auth(requires: [STAFF])
   deleteVisualization(id: ID!): Boolean! @auth(requires: [STAFF])
-  cloneVisualization(id: ID!, name: String!): Visualization! @auth(requires: [STAFF])
-  
+  cloneVisualization(id: ID!, name: String!): Visualization!
+    @auth(requires: [STAFF])
+
   # Dashboards
-  createDashboard(input: CreateDashboardInput!): Dashboard! @auth(requires: [STAFF])
-  updateDashboard(id: ID!, input: UpdateDashboardInput!): Dashboard! @auth(requires: [STAFF])
+  createDashboard(input: CreateDashboardInput!): Dashboard!
+    @auth(requires: [STAFF])
+  updateDashboard(id: ID!, input: UpdateDashboardInput!): Dashboard!
+    @auth(requires: [STAFF])
   deleteDashboard(id: ID!): Boolean! @auth(requires: [STAFF])
   cloneDashboard(id: ID!, name: String!): Dashboard! @auth(requires: [STAFF])
-  addVisualizationToDashboard(dashboardId: ID!, visualizationId: ID!, position: JSON!): Dashboard! @auth(requires: [STAFF])
-  removeVisualizationFromDashboard(dashboardId: ID!, visualizationId: ID!): Dashboard! @auth(requires: [STAFF])
-  updateDashboardLayout(dashboardId: ID!, layout: JSON!): Dashboard! @auth(requires: [STAFF])
-  
+  addVisualizationToDashboard(
+    dashboardId: ID!
+    visualizationId: ID!
+    position: JSON!
+  ): Dashboard! @auth(requires: [STAFF])
+  removeVisualizationFromDashboard(
+    dashboardId: ID!
+    visualizationId: ID!
+  ): Dashboard! @auth(requires: [STAFF])
+  updateDashboardLayout(dashboardId: ID!, layout: JSON!): Dashboard!
+    @auth(requires: [STAFF])
+
   # Report scheduling
-  createReportSchedule(reportId: ID!, input: CreateReportScheduleInput!): ReportSchedule! @auth(requires: [STAFF])
-  updateReportSchedule(id: ID!, input: UpdateReportScheduleInput!): ReportSchedule! @auth(requires: [STAFF])
+  createReportSchedule(
+    reportId: ID!
+    input: CreateReportScheduleInput!
+  ): ReportSchedule! @auth(requires: [STAFF])
+  updateReportSchedule(
+    id: ID!
+    input: UpdateReportScheduleInput!
+  ): ReportSchedule! @auth(requires: [STAFF])
   deleteReportSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
   activateReportSchedule(id: ID!): ReportSchedule! @auth(requires: [STAFF])
   deactivateReportSchedule(id: ID!): ReportSchedule! @auth(requires: [STAFF])
-  
+
   # Report recipients
-  addReportRecipient(scheduleId: ID!, input: AddReportRecipientInput!): ReportRecipient! @auth(requires: [STAFF])
+  addReportRecipient(
+    scheduleId: ID!
+    input: AddReportRecipientInput!
+  ): ReportRecipient! @auth(requires: [STAFF])
   removeReportRecipient(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Metric definitions
-  createMetricDefinition(input: CreateMetricDefinitionInput!): MetricDefinition! @auth(requires: [ADMIN])
-  updateMetricDefinition(id: ID!, input: UpdateMetricDefinitionInput!): MetricDefinition! @auth(requires: [ADMIN])
+  createMetricDefinition(
+    input: CreateMetricDefinitionInput!
+  ): MetricDefinition! @auth(requires: [ADMIN])
+  updateMetricDefinition(
+    id: ID!
+    input: UpdateMetricDefinitionInput!
+  ): MetricDefinition! @auth(requires: [ADMIN])
   deleteMetricDefinition(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Segmentations
-  createSegmentation(input: CreateSegmentationInput!): Segmentation! @auth(requires: [ADMIN])
-  updateSegmentation(id: ID!, input: UpdateSegmentationInput!): Segmentation! @auth(requires: [ADMIN])
+  createSegmentation(input: CreateSegmentationInput!): Segmentation!
+    @auth(requires: [ADMIN])
+  updateSegmentation(id: ID!, input: UpdateSegmentationInput!): Segmentation!
+    @auth(requires: [ADMIN])
   deleteSegmentation(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Segments
-  addSegment(segmentationId: ID!, input: AddSegmentInput!): Segment! @auth(requires: [ADMIN])
-  updateSegment(id: ID!, input: UpdateSegmentInput!): Segment! @auth(requires: [ADMIN])
+  addSegment(segmentationId: ID!, input: AddSegmentInput!): Segment!
+    @auth(requires: [ADMIN])
+  updateSegment(id: ID!, input: UpdateSegmentInput!): Segment!
+    @auth(requires: [ADMIN])
   removeSegment(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Report results
   deleteReportResult(id: ID!): Boolean! @auth(requires: [STAFF])
-  shareReportResult(id: ID!, input: ShareReportResultInput!): String! @auth(requires: [STAFF])
-  exportReportResult(id: ID!, format: ReportFormat!): String! @auth(requires: [STAFF])
+  shareReportResult(id: ID!, input: ShareReportResultInput!): String!
+    @auth(requires: [STAFF])
+  exportReportResult(id: ID!, format: ReportFormat!): String!
+    @auth(requires: [STAFF])
 }
 
 input CreateReportInput {
@@ -707,10 +748,10 @@ input ShareReportResultInput {
 extend type Subscription {
   # Get notified when a report schedule completes
   reportCompleted(reportId: ID): ReportResult! @auth(requires: [STAFF])
-  
+
   # Get notified when a dashboard is updated
   dashboardUpdated(dashboardId: ID!): Dashboard! @auth(requires: [STAFF])
-  
+
   # Get notified of new insights from reports
   newReportInsight(reportId: ID): ReportInsight! @auth(requires: [STAFF])
 }

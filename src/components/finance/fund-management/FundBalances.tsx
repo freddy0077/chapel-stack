@@ -1,9 +1,9 @@
 "use client";
 
-import React from 'react';
-import { useQuery, gql } from '@apollo/client';
-import { Fund } from '@/types/finance';
-import { formatCurrency } from '@/utils/financeHelpers';
+import React from "react";
+import { useQuery, gql } from "@apollo/client";
+import { Fund } from "@/types/finance";
+import { formatCurrency } from "@/utils/financeHelpers";
 
 const GET_FUND_BALANCE = gql`
   query GetFundBalance($organisationId: String!, $fundId: String!) {
@@ -64,14 +64,21 @@ interface FundBalancesProps {
   funds: Fund[];
 }
 
-export default function FundBalances({ organisationId, funds }: FundBalancesProps) {
+export default function FundBalances({
+  organisationId,
+  funds,
+}: FundBalancesProps) {
   if (!funds || funds.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Fund Balances</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Fund Balances
+        </h3>
         <div className="text-center py-8 text-gray-500">
           <p>No funds available.</p>
-          <p className="text-sm mt-1">Create a fund to start tracking balances.</p>
+          <p className="text-sm mt-1">
+            Create a fund to start tracking balances.
+          </p>
         </div>
       </div>
     );
@@ -87,7 +94,7 @@ export default function FundBalances({ organisationId, funds }: FundBalancesProp
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Fund Balances</h3>
         <span className="text-sm text-gray-500">
-          {funds.length} fund{funds.length !== 1 ? 's' : ''}
+          {funds.length} fund{funds.length !== 1 ? "s" : ""}
         </span>
       </div>
 

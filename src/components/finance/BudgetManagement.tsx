@@ -1,96 +1,121 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { 
-  GET_BUDGETS_QUERY, 
-  CREATE_BUDGET_MUTATION, 
-  UPDATE_BUDGET_MUTATION, 
+import React, { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_BUDGETS_QUERY,
+  CREATE_BUDGET_MUTATION,
+  UPDATE_BUDGET_MUTATION,
   DELETE_BUDGET_MUTATION,
   Budget,
   CreateBudgetInput,
-  UpdateBudgetInput 
-} from '@/graphql/queries/budget';
-import { 
-  PlusIcon, 
-  PencilIcon, 
+  UpdateBudgetInput,
+} from "@/graphql/queries/budget";
+import {
+  PlusIcon,
+  PencilIcon,
   TrashIcon,
   CalendarIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
-import CreateBudgetModal from './modals/CreateBudgetModal';
-import EditBudgetModal from './modals/EditBudgetModal';
-import BudgetDetailModal from './modals/BudgetDetailModal';
+  ClockIcon,
+} from "@heroicons/react/24/outline";
+import CreateBudgetModal from "./modals/CreateBudgetModal";
+import EditBudgetModal from "./modals/EditBudgetModal";
+import BudgetDetailModal from "./modals/BudgetDetailModal";
 
 interface BudgetManagementProps {
   organisationId: string;
   branchId?: string;
 }
 
-export default function BudgetManagement({ organisationId, branchId }: BudgetManagementProps) {
-  const [selectedFiscalYear, setSelectedFiscalYear] = useState<number>(new Date().getFullYear());
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+export default function BudgetManagement({
+  organisationId,
+  branchId,
+}: BudgetManagementProps) {
+  const [selectedFiscalYear, setSelectedFiscalYear] = useState<number>(
+    new Date().getFullYear(),
+  );
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
 
   // Fetch budgets
-  const { data: budgetsData, loading, error, refetch } = useQuery(GET_BUDGETS_QUERY, {
+  const {
+    data: budgetsData,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_BUDGETS_QUERY, {
     variables: { organisationId },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Filter budgets on the client side since the API doesn't support filtering
   const budgets = useMemo(() => {
     let filtered = budgetsData?.budgets || [];
-    
+
     // Filter by branch if branchId is provided
     if (branchId) {
-      filtered = filtered.filter((budget: Budget) => budget.branchId === branchId);
+      filtered = filtered.filter(
+        (budget: Budget) => budget.branchId === branchId,
+      );
     }
-    
+
     // Filter by fiscal year
     if (selectedFiscalYear) {
-      filtered = filtered.filter((budget: Budget) => budget.fiscalYear === selectedFiscalYear);
+      filtered = filtered.filter(
+        (budget: Budget) => budget.fiscalYear === selectedFiscalYear,
+      );
     }
-    
+
     // Filter by status
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter((budget: Budget) => budget.status === selectedStatus);
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter(
+        (budget: Budget) => budget.status === selectedStatus,
+      );
     }
-    
+
     return filtered;
   }, [budgetsData?.budgets, branchId, selectedFiscalYear, selectedStatus]);
 
-  const [createBudget, { loading: createLoading }] = useMutation(CREATE_BUDGET_MUTATION, {
-    onCompleted: () => {
-      setIsCreateModalOpen(false);
-      refetch();
+  const [createBudget, { loading: createLoading }] = useMutation(
+    CREATE_BUDGET_MUTATION,
+    {
+      onCompleted: () => {
+        setIsCreateModalOpen(false);
+        refetch();
+      },
     },
-  });
+  );
 
-  const [updateBudget, { loading: updateLoading }] = useMutation(UPDATE_BUDGET_MUTATION, {
-    onCompleted: () => {
-      setIsEditModalOpen(false);
-      refetch();
+  const [updateBudget, { loading: updateLoading }] = useMutation(
+    UPDATE_BUDGET_MUTATION,
+    {
+      onCompleted: () => {
+        setIsEditModalOpen(false);
+        refetch();
+      },
     },
-  });
+  );
 
-  const [deleteBudget, { loading: deleteLoading }] = useMutation(DELETE_BUDGET_MUTATION, {
-    onCompleted: () => {
-      refetch();
+  const [deleteBudget, { loading: deleteLoading }] = useMutation(
+    DELETE_BUDGET_MUTATION,
+    {
+      onCompleted: () => {
+        refetch();
+      },
     },
-  });
+  );
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -98,28 +123,28 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
-        return 'text-green-600 bg-green-100';
-      case 'draft':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'completed':
-        return 'text-blue-600 bg-blue-100';
-      case 'cancelled':
-        return 'text-red-600 bg-red-100';
+      case "active":
+        return "text-green-600 bg-green-100";
+      case "draft":
+        return "text-yellow-600 bg-yellow-100";
+      case "completed":
+        return "text-blue-600 bg-blue-100";
+      case "cancelled":
+        return "text-red-600 bg-red-100";
       default:
-        return 'text-gray-600 bg-gray-100';
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
+      case "active":
         return <CheckCircleIcon className="h-4 w-4" />;
-      case 'draft':
+      case "draft":
         return <ClockIcon className="h-4 w-4" />;
-      case 'completed':
+      case "completed":
         return <CheckCircleIcon className="h-4 w-4" />;
-      case 'cancelled':
+      case "cancelled":
         return <ExclamationTriangleIcon className="h-4 w-4" />;
       default:
         return <ClockIcon className="h-4 w-4" />;
@@ -129,10 +154,12 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
   const handleCreateBudget = async (input: CreateBudgetInput) => {
     try {
       await createBudget({
-        variables: { createBudgetInput: { ...input, organisationId, branchId } },
+        variables: {
+          createBudgetInput: { ...input, organisationId, branchId },
+        },
       });
     } catch (error) {
-      console.error('Error creating budget:', error);
+      console.error("Error creating budget:", error);
     }
   };
 
@@ -142,18 +169,22 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
         variables: { updateBudgetInput: { ...input, id } },
       });
     } catch (error) {
-      console.error('Error updating budget:', error);
+      console.error("Error updating budget:", error);
     }
   };
 
   const handleDeleteBudget = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this budget? This action cannot be undone.",
+      )
+    ) {
       try {
         await deleteBudget({
           variables: { id },
         });
       } catch (error) {
-        console.error('Error deleting budget:', error);
+        console.error("Error deleting budget:", error);
       }
     }
   };
@@ -163,7 +194,10 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
     return (budget.totalSpent / budget.totalAmount) * 100;
   };
 
-  const fiscalYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
+  const fiscalYears = Array.from(
+    { length: 5 },
+    (_, i) => new Date().getFullYear() - 2 + i,
+  );
 
   if (loading) {
     return (
@@ -171,7 +205,7 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="h-48 bg-gray-200 rounded"></div>
             ))}
           </div>
@@ -206,7 +240,7 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
               Create and manage budgets for your organization
             </p>
           </div>
-          
+
           <div className="mt-4 sm:mt-0 flex space-x-3">
             {/* Fiscal Year Filter */}
             <select
@@ -214,8 +248,10 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
               onChange={(e) => setSelectedFiscalYear(Number(e.target.value))}
               className="block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
-              {fiscalYears.map(year => (
-                <option key={year} value={year}>{year}</option>
+              {fiscalYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
               ))}
             </select>
 
@@ -249,9 +285,12 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
         {budgets.length === 0 ? (
           <div className="text-center py-12">
             <ChartBarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Budgets Found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Budgets Found
+            </h3>
             <p className="text-gray-500 mb-4">
-              Get started by creating your first budget for {selectedFiscalYear}.
+              Get started by creating your first budget for {selectedFiscalYear}
+              .
             </p>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -281,12 +320,16 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
                         <p className="text-sm text-gray-500 mb-2">
                           {budget.fund?.name}
                         </p>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(budget.status)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(budget.status)}`}
+                        >
                           {getStatusIcon(budget.status)}
-                          <span className="ml-1 capitalize">{budget.status.toLowerCase()}</span>
+                          <span className="ml-1 capitalize">
+                            {budget.status.toLowerCase()}
+                          </span>
                         </span>
                       </div>
-                      
+
                       <div className="flex space-x-1">
                         <button
                           onClick={(e) => {
@@ -314,7 +357,9 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
                     {/* Budget Amount */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Budget Amount</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Budget Amount
+                        </span>
                         <span className="text-lg font-bold text-gray-900">
                           {formatCurrency(budget.totalAmount)}
                         </span>
@@ -326,7 +371,11 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div
                           className={`h-2 rounded-full ${
-                            progress > 100 ? 'bg-red-500' : progress > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                            progress > 100
+                              ? "bg-red-500"
+                              : progress > 80
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
                           }`}
                           style={{ width: `${Math.min(progress, 100)}%` }}
                         ></div>
@@ -337,7 +386,8 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
                     <div className="flex items-center text-sm text-gray-500">
                       <CalendarIcon className="h-4 w-4 mr-1" />
                       <span>
-                        {new Date(budget.startDate).toLocaleDateString()} - {new Date(budget.endDate).toLocaleDateString()}
+                        {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                        {new Date(budget.endDate).toLocaleDateString()}
                       </span>
                     </div>
 
@@ -390,4 +440,4 @@ export default function BudgetManagement({ organisationId, branchId }: BudgetMan
       )}
     </div>
   );
-};
+}

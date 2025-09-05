@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const VERIFY_PAYMENT_AND_CREATE_SUBSCRIPTION = gql`
   mutation VerifyPaymentAndCreateSubscription($input: VerifyPaymentInput!) {

@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { RoleRoute } from '@/components/auth/RoleRoute';
-import { CreateOrganizationSubscriptionModal } from '@/components/subscriptions/CreateOrganizationSubscriptionModal';
-import { useOrganizations } from '@/hooks/subscription/useOrganizations';
-import { useOrganizationStats } from '@/hooks/subscription/useOrganizations';
-import { useOrganizationSubscriptionManagement } from '@/hooks/subscription/useOrganizationSubscription';
-import { 
+import React, { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RoleRoute } from "@/components/auth/RoleRoute";
+import { CreateOrganizationSubscriptionModal } from "@/components/subscriptions/CreateOrganizationSubscriptionModal";
+import { useOrganizations } from "@/hooks/subscription/useOrganizations";
+import { useOrganizationStats } from "@/hooks/subscription/useOrganizations";
+import { useOrganizationSubscriptionManagement } from "@/hooks/subscription/useOrganizationSubscription";
+import {
   BuildingOfficeIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -31,23 +37,25 @@ import {
   ExclamationTriangleIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 
 // Subscription Management Sidebar Component
 const SubscriptionSidebar = ({ activeTab, setActiveTab }) => {
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: ChartBarIcon },
-    { id: 'organizations', label: 'Organizations', icon: BuildingOfficeIcon },
-    { id: 'billing', label: 'Billing', icon: CurrencyDollarIcon },
-    { id: 'reports', label: 'Reports', icon: DocumentTextIcon },
-    { id: 'settings', label: 'Settings', icon: Cog6ToothIcon },
+    { id: "dashboard", label: "Dashboard", icon: ChartBarIcon },
+    { id: "organizations", label: "Organizations", icon: BuildingOfficeIcon },
+    { id: "billing", label: "Billing", icon: CurrencyDollarIcon },
+    { id: "reports", label: "Reports", icon: DocumentTextIcon },
+    { id: "settings", label: "Settings", icon: Cog6ToothIcon },
   ];
 
   return (
     <div className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen">
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Subscription Management</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">
+          Subscription Management
+        </h2>
         <nav className="space-y-2">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
@@ -57,8 +65,8 @@ const SubscriptionSidebar = ({ activeTab, setActiveTab }) => {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   activeTab === item.id
-                    ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-700"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
                 <Icon className="mr-3 h-5 w-5" />
@@ -91,33 +99,33 @@ const StatsCards = ({ stats, loading }) => {
 
   const statCards = [
     {
-      title: 'Total Organizations',
+      title: "Total Organizations",
       value: stats?.totalOrganizations || 0,
       icon: BuildingOfficeIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
     },
     {
-      title: 'Active Subscriptions',
+      title: "Active Subscriptions",
       value: stats?.activeSubscriptions || 0,
       icon: CheckCircleIcon,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      color: "text-green-600",
+      bgColor: "bg-green-50",
     },
     {
-      title: 'Monthly Revenue',
+      title: "Monthly Revenue",
       value: `$${stats?.monthlyRevenue || 0}`,
       icon: CurrencyDollarIcon,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50",
     },
     {
-      title: 'Trial Organizations',
+      title: "Trial Organizations",
       value: stats?.trialOrganizations || 0,
       icon: ClockIcon,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    }
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+    },
   ];
 
   return (
@@ -132,8 +140,12 @@ const StatsCards = ({ stats, loading }) => {
                   <Icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -145,7 +157,12 @@ const StatsCards = ({ stats, loading }) => {
 };
 
 // Organization Table Component
-const OrganizationTable = ({ organizations, onViewDetails, onToggleStatus, loading }) => {
+const OrganizationTable = ({
+  organizations,
+  onViewDetails,
+  onToggleStatus,
+  loading,
+}) => {
   if (loading) {
     return (
       <Card>
@@ -165,13 +182,15 @@ const OrganizationTable = ({ organizations, onViewDetails, onToggleStatus, loadi
 
   const getStatusBadge = (state: string) => {
     switch (state?.toLowerCase()) {
-      case 'active':
+      case "active":
         return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case 'suspended':
-        return <Badge className="bg-yellow-100 text-yellow-800">Suspended</Badge>;
-      case 'cancelled':
+      case "suspended":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Suspended</Badge>
+        );
+      case "cancelled":
         return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
-      case 'trialing':
+      case "trialing":
         return <Badge className="bg-blue-100 text-blue-800">Trial</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>;
@@ -216,7 +235,9 @@ const OrganizationTable = ({ organizations, onViewDetails, onToggleStatus, loadi
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{org.name}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {org.name}
+                        </div>
                         <div className="text-sm text-gray-500">{org.email}</div>
                       </div>
                     </div>
@@ -225,7 +246,7 @@ const OrganizationTable = ({ organizations, onViewDetails, onToggleStatus, loadi
                     {getStatusBadge(org.state)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {org.subscription?.plan?.name || 'No Plan'}
+                    {org.subscription?.plan?.name || "No Plan"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {org.memberCount || 0}
@@ -243,9 +264,13 @@ const OrganizationTable = ({ organizations, onViewDetails, onToggleStatus, loadi
                       variant="outline"
                       size="sm"
                       onClick={() => onToggleStatus(org)}
-                      className={org.state === 'active' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}
+                      className={
+                        org.state === "active"
+                          ? "text-red-600 hover:text-red-800"
+                          : "text-green-600 hover:text-green-800"
+                      }
                     >
-                      {org.state === 'active' ? (
+                      {org.state === "active" ? (
                         <>
                           <PauseIcon className="h-4 w-4 mr-1" />
                           Suspend
@@ -280,7 +305,7 @@ const OrganizationDetailsModal = ({ organization, isOpen, onClose }) => {
             {organization.name}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Organization Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,20 +315,30 @@ const OrganizationDetailsModal = ({ organization, isOpen, onClose }) => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Name
+                  </label>
                   <p className="text-gray-900">{organization.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Email
+                  </label>
                   <p className="text-gray-900">{organization.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">State</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    State
+                  </label>
                   <p className="text-gray-900">{organization.state}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Members</label>
-                  <p className="text-gray-900">{organization.memberCount || 0}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Members
+                  </label>
+                  <p className="text-gray-900">
+                    {organization.memberCount || 0}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -312,28 +347,45 @@ const OrganizationDetailsModal = ({ organization, isOpen, onClose }) => {
             {organization.subscription && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Subscription Details</CardTitle>
+                  <CardTitle className="text-lg">
+                    Subscription Details
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Plan</label>
-                    <p className="text-gray-900">{organization.subscription.plan?.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">State</label>
-                    <p className="text-gray-900">{organization.subscription.state}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Amount</label>
-                    <p className="text-gray-900">${organization.subscription.amount}/month</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Next Billing</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Plan
+                    </label>
                     <p className="text-gray-900">
-                      {organization.subscription.nextBillingDate 
-                        ? new Date(organization.subscription.nextBillingDate).toLocaleDateString()
-                        : 'N/A'
-                      }
+                      {organization.subscription.plan?.name}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      State
+                    </label>
+                    <p className="text-gray-900">
+                      {organization.subscription.state}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Amount
+                    </label>
+                    <p className="text-gray-900">
+                      ${organization.subscription.amount}/month
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Next Billing
+                    </label>
+                    <p className="text-gray-900">
+                      {organization.subscription.nextBillingDate
+                        ? new Date(
+                            organization.subscription.nextBillingDate,
+                          ).toLocaleDateString()
+                        : "N/A"}
                     </p>
                   </div>
                 </CardContent>
@@ -348,36 +400,38 @@ const OrganizationDetailsModal = ({ organization, isOpen, onClose }) => {
 
 // Main Organizations Page Component
 export default function SubscriptionOrganisationsPage() {
-  const [activeTab, setActiveTab] = useState('organizations');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [stateFilter, setStateFilter] = useState('ALL');
+  const [activeTab, setActiveTab] = useState("organizations");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [stateFilter, setStateFilter] = useState("ALL");
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [showCreateSubscriptionModal, setShowCreateSubscriptionModal] = useState(false);
+  const [showCreateSubscriptionModal, setShowCreateSubscriptionModal] =
+    useState(false);
 
   const { stats, loading: statsLoading } = useOrganizationStats();
-  const { 
-    organizations, 
-    loading, 
-    error, 
-    enableOrganization, 
+  const {
+    organizations,
+    loading,
+    error,
+    enableOrganization,
     disableOrganization,
-    refetch 
+    refetch,
   } = useOrganizations({
     search: searchTerm,
-    state: stateFilter === 'ALL' ? '' : stateFilter,
-    limit: 50
+    state: stateFilter === "ALL" ? "" : stateFilter,
+    limit: 50,
   });
 
   // Filter organizations based on search and state
   const filteredOrganizations = useMemo(() => {
-    return organizations.filter(org => {
-      const matchesSearch = !searchTerm || 
+    return organizations.filter((org) => {
+      const matchesSearch =
+        !searchTerm ||
         org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         org.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesState = stateFilter === 'ALL' || org.state === stateFilter;
-      
+
+      const matchesState = stateFilter === "ALL" || org.state === stateFilter;
+
       return matchesSearch && matchesState;
     });
   }, [organizations, searchTerm, stateFilter]);
@@ -389,25 +443,25 @@ export default function SubscriptionOrganisationsPage() {
 
   const handleToggleStatus = async (organization) => {
     try {
-      if (organization.state === 'active') {
+      if (organization.state === "active") {
         await disableOrganization({
           id: organization.id,
-          reason: 'Manual suspension'
+          reason: "Manual suspension",
         });
       } else {
         await enableOrganization(organization.id);
       }
       refetch();
-    } catch (error) {
-      console.error('Error toggling organization state:', error);
-    }
+    } catch (error) {}
   };
 
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Error Loading Organizations</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Error Loading Organizations
+          </h2>
           <p className="text-gray-600">{error.message}</p>
           <Button onClick={() => refetch()} className="mt-4">
             Try Again
@@ -418,11 +472,14 @@ export default function SubscriptionOrganisationsPage() {
   }
 
   return (
-    <RoleRoute requiredRole={['SUBSCRIPTION_MANAGER', 'SUPER_ADMIN']}>
+    <RoleRoute requiredRole={["SUBSCRIPTION_MANAGER", "SUPER_ADMIN"]}>
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
-        <SubscriptionSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        
+        <SubscriptionSidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
@@ -430,10 +487,17 @@ export default function SubscriptionOrganisationsPage() {
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
-                  <p className="text-gray-600">Manage subscription organizations and their state</p>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Organizations
+                  </h1>
+                  <p className="text-gray-600">
+                    Manage subscription organizations and their state
+                  </p>
                 </div>
-                <Button onClick={() => setShowCreateSubscriptionModal(true)} className="flex items-center space-x-2">
+                <Button
+                  onClick={() => setShowCreateSubscriptionModal(true)}
+                  className="flex items-center space-x-2"
+                >
                   <PlusIcon className="h-4 w-4" />
                   <span>Create Subscription</span>
                 </Button>

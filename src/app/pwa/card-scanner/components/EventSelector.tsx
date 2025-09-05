@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  CalendarIcon, 
-  MapPinIcon, 
-  ClockIcon, 
-  UsersIcon 
+import {
+  CalendarIcon,
+  MapPinIcon,
+  ClockIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { AttendanceEvent } from "../../../dashboard/attendance/types";
 
@@ -14,18 +14,22 @@ interface EventSelectorProps {
   onSelectEvent: (event: AttendanceEvent) => void;
 }
 
-export default function EventSelector({ events, onSelectEvent }: EventSelectorProps) {
+export default function EventSelector({
+  events,
+  onSelectEvent,
+}: EventSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  
-  const filteredEvents = events.filter(event => 
-    event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.type.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const filteredEvents = events.filter(
+    (event) =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.type.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -62,7 +66,9 @@ export default function EventSelector({ events, onSelectEvent }: EventSelectorPr
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Select Event to Scan Attendance</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
+          Select Event to Scan Attendance
+        </h2>
         <div className="relative rounded-md shadow-sm">
           <input
             type="text"
@@ -76,7 +82,7 @@ export default function EventSelector({ events, onSelectEvent }: EventSelectorPr
 
       <div className="space-y-4">
         {filteredEvents.length > 0 ? (
-          filteredEvents.map(event => (
+          filteredEvents.map((event) => (
             <button
               key={event.id}
               onClick={() => onSelectEvent(event)}
@@ -85,14 +91,17 @@ export default function EventSelector({ events, onSelectEvent }: EventSelectorPr
               <div className="p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start space-x-3">
-                    <div className="mt-0.5">
-                      {getEventIcon(event.type)}
-                    </div>
+                    <div className="mt-0.5">{getEventIcon(event.type)}</div>
                     <div>
-                      <h3 className="text-base font-medium text-gray-900">{event.name}</h3>
+                      <h3 className="text-base font-medium text-gray-900">
+                        {event.name}
+                      </h3>
                       <div className="mt-1 flex items-center text-sm text-gray-500">
                         <ClockIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                        <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
+                        <span>
+                          {formatTime(event.startTime)} -{" "}
+                          {formatTime(event.endTime)}
+                        </span>
                       </div>
                       <div className="mt-1 flex items-center text-sm text-gray-500">
                         <MapPinIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
@@ -100,16 +109,22 @@ export default function EventSelector({ events, onSelectEvent }: EventSelectorPr
                       </div>
                     </div>
                   </div>
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEventTypeColor(event.type)}`}>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEventTypeColor(event.type)}`}
+                  >
                     {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                   </span>
                 </div>
                 <div className="mt-2 flex justify-between items-center">
                   <div className="flex items-center text-sm text-gray-500">
                     <UsersIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                    <span>Expected: {event.expectedAttendees || "Unknown"}</span>
+                    <span>
+                      Expected: {event.expectedAttendees || "Unknown"}
+                    </span>
                   </div>
-                  <div className="text-sm text-indigo-600 font-medium">Tap to select</div>
+                  <div className="text-sm text-indigo-600 font-medium">
+                    Tap to select
+                  </div>
                 </div>
               </div>
             </button>
@@ -117,10 +132,12 @@ export default function EventSelector({ events, onSelectEvent }: EventSelectorPr
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm">
             <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-base font-medium text-gray-900">No events found</h3>
+            <h3 className="mt-2 text-base font-medium text-gray-900">
+              No events found
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {events.length === 0 
-                ? "There are no active events at this time" 
+              {events.length === 0
+                ? "There are no active events at this time"
                 : "Try adjusting your search term"}
             </p>
           </div>

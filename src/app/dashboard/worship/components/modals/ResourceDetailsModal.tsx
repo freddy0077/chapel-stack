@@ -1,9 +1,16 @@
 "use client";
 
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, DocumentIcon, FolderIcon, ArrowDownTrayIcon, UserIcon, CalendarIcon } from '@heroicons/react/24/outline';
-import type { Resource } from '../ResourceLibrary';
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  XMarkIcon,
+  DocumentIcon,
+  FolderIcon,
+  ArrowDownTrayIcon,
+  UserIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+import type { Resource } from "../ResourceLibrary";
 
 interface ResourceDetailsModalProps {
   resource: Resource;
@@ -11,23 +18,31 @@ interface ResourceDetailsModalProps {
   onClose: () => void;
 }
 
-export default function ResourceDetailsModal({ resource, isOpen, onClose }: ResourceDetailsModalProps) {
+export default function ResourceDetailsModal({
+  resource,
+  isOpen,
+  onClose,
+}: ResourceDetailsModalProps) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   // Get icon based on file type
   const getFileIcon = () => {
-    if (resource.type === 'folder') {
-      return <FolderIcon className="h-8 w-8 text-yellow-500" aria-hidden="true" />;
+    if (resource.type === "folder") {
+      return (
+        <FolderIcon className="h-8 w-8 text-yellow-500" aria-hidden="true" />
+      );
     } else {
-      return <DocumentIcon className="h-8 w-8 text-blue-500" aria-hidden="true" />;
+      return (
+        <DocumentIcon className="h-8 w-8 text-blue-500" aria-hidden="true" />
+      );
     }
   };
 
@@ -68,78 +83,115 @@ export default function ResourceDetailsModal({ resource, isOpen, onClose }: Reso
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center">
                     <div className="h-12 w-12 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center">
                       {getFileIcon()}
                     </div>
                     <div className="ml-4">
-                      <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-semibold leading-6 text-gray-900"
+                      >
                         {resource.title}
                       </Dialog.Title>
                       <p className="text-sm text-gray-500">
-                        {resource.type === 'folder' ? 'Folder' : resource.fileType.toUpperCase()}
-                        {' • '}
+                        {resource.type === "folder"
+                          ? "Folder"
+                          : resource.fileType.toUpperCase()}
+                        {" • "}
                         {resource.size}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-6">
-                    <h4 className="text-sm font-medium text-gray-500">Description</h4>
-                    <p className="mt-2 text-sm text-gray-700">{resource.description}</p>
+                    <h4 className="text-sm font-medium text-gray-500">
+                      Description
+                    </h4>
+                    <p className="mt-2 text-sm text-gray-700">
+                      {resource.description}
+                    </p>
                   </div>
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
                     <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500 flex items-center">
-                          <UserIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <UserIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Uploaded By
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900">{resource.uploadedBy}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {resource.uploadedBy}
+                        </dd>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500 flex items-center">
-                          <CalendarIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+                          <CalendarIcon
+                            className="mr-1 h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Upload Date
                         </dt>
-                        <dd className="mt-1 text-sm text-gray-900">{formatDate(resource.uploadDate)}</dd>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {formatDate(resource.uploadDate)}
+                        </dd>
                       </div>
                       <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">Category</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{resource.category}</dd>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Category
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {resource.category}
+                        </dd>
                       </div>
                     </dl>
                   </div>
 
-                  {resource.type === 'document' && (
+                  {resource.type === "document" && (
                     <div className="mt-6 border-t border-gray-100 pt-4">
-                      <h4 className="text-sm font-medium text-gray-500">Preview</h4>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Preview
+                      </h4>
                       <div className="mt-2 bg-gray-50 p-6 rounded-md flex items-center justify-center">
                         <p className="text-sm text-gray-500 italic">
-                          File preview would be displayed here in a full implementation.
+                          File preview would be displayed here in a full
+                          implementation.
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {resource.type === 'folder' && (
+                  {resource.type === "folder" && (
                     <div className="mt-6 border-t border-gray-100 pt-4">
-                      <h4 className="text-sm font-medium text-gray-500">Contents</h4>
+                      <h4 className="text-sm font-medium text-gray-500">
+                        Contents
+                      </h4>
                       <div className="mt-2">
                         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                           <table className="min-w-full divide-y divide-gray-300">
                             <thead className="bg-gray-50">
                               <tr>
-                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                                <th
+                                  scope="col"
+                                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                                >
                                   Name
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th
+                                  scope="col"
+                                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                >
                                   Type
                                 </th>
-                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <th
+                                  scope="col"
+                                  className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                >
                                   Size
                                 </th>
                               </tr>
@@ -149,7 +201,10 @@ export default function ResourceDetailsModal({ resource, isOpen, onClose }: Reso
                               <tr>
                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                                   <div className="flex items-center">
-                                    <DocumentIcon className="h-5 w-5 text-blue-500 mr-2" aria-hidden="true" />
+                                    <DocumentIcon
+                                      className="h-5 w-5 text-blue-500 mr-2"
+                                      aria-hidden="true"
+                                    />
                                     Example File 1.pdf
                                   </div>
                                 </td>
@@ -163,7 +218,10 @@ export default function ResourceDetailsModal({ resource, isOpen, onClose }: Reso
                               <tr>
                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                                   <div className="flex items-center">
-                                    <DocumentIcon className="h-5 w-5 text-blue-500 mr-2" aria-hidden="true" />
+                                    <DocumentIcon
+                                      className="h-5 w-5 text-blue-500 mr-2"
+                                      aria-hidden="true"
+                                    />
                                     Example File 2.docx
                                   </div>
                                 </td>
@@ -181,7 +239,7 @@ export default function ResourceDetailsModal({ resource, isOpen, onClose }: Reso
                     </div>
                   )}
                 </div>
-                
+
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
@@ -194,7 +252,10 @@ export default function ResourceDetailsModal({ resource, isOpen, onClose }: Reso
                     type="button"
                     className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
-                    <ArrowDownTrayIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+                    <ArrowDownTrayIcon
+                      className="-ml-0.5 mr-1.5 h-5 w-5"
+                      aria-hidden="true"
+                    />
                     Download
                   </button>
                 </div>

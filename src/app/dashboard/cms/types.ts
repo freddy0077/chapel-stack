@@ -4,7 +4,7 @@ export interface BaseContent {
   title: string;
   slug: string;
   description: string;
-  status: 'draft' | 'review' | 'published' | 'archived';
+  status: "draft" | "review" | "published" | "archived";
   authorId: string;
   branchId: string;
   createdAt: Date;
@@ -31,7 +31,7 @@ export interface ContentPermission {
 
 // Content Type: Sermon
 export interface SermonContent extends BaseContent {
-  contentType: 'sermon';
+  contentType: "sermon";
   videoUrl?: string;
   audioUrl?: string;
   notesUrl?: string;
@@ -44,7 +44,7 @@ export interface SermonContent extends BaseContent {
 
 // Content Type: Event
 export interface EventContent extends BaseContent {
-  contentType: 'event';
+  contentType: "event";
   startDate: Date;
   endDate: Date;
   location: string;
@@ -54,17 +54,17 @@ export interface EventContent extends BaseContent {
   maxAttendees?: number;
   cost?: number;
   contactPerson?: string;
-  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  recurrence?: "none" | "daily" | "weekly" | "monthly" | "custom";
   recurrenceRule?: string; // for custom recurrence patterns
 }
 
 // Content Type: Announcement
 export interface AnnouncementContent extends BaseContent {
-  contentType: 'announcement';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  contentType: "announcement";
+  priority: "low" | "medium" | "high" | "urgent";
   thumbnailUrl?: string;
   targetAudience?: string[]; // e.g., ['all', 'youth', 'seniors']
-  displayLocations: ('website' | 'app' | 'inhouse' | 'email')[];
+  displayLocations: ("website" | "app" | "inhouse" | "email")[];
   callToAction?: {
     text: string;
     url: string;
@@ -73,8 +73,8 @@ export interface AnnouncementContent extends BaseContent {
 
 // Content Type: Small Group Resource
 export interface SmallGroupResourceContent extends BaseContent {
-  contentType: 'small-group-resource';
-  resourceType: 'document' | 'video' | 'audio' | 'curriculum' | 'presentation';
+  contentType: "small-group-resource";
+  resourceType: "document" | "video" | "audio" | "curriculum" | "presentation";
   fileUrl: string;
   thumbnailUrl?: string;
   targetGroups?: string[]; // IDs of groups this resource is for
@@ -84,7 +84,7 @@ export interface SmallGroupResourceContent extends BaseContent {
 
 // Content Type: Ministry Information
 export interface MinistryInfoContent extends BaseContent {
-  contentType: 'ministry-info';
+  contentType: "ministry-info";
   ministryId: string;
   leaderIds: string[];
   meetingSchedule?: string;
@@ -98,12 +98,17 @@ export interface MinistryInfoContent extends BaseContent {
 
 // Content Type: Sacramental Record Template
 export interface SacramentalTemplateContent extends BaseContent {
-  contentType: 'sacramental-template';
-  sacramentType: 'baptism' | 'communion' | 'confirmation' | 'marriage' | 'anointing';
+  contentType: "sacramental-template";
+  sacramentType:
+    | "baptism"
+    | "communion"
+    | "confirmation"
+    | "marriage"
+    | "anointing";
   templateHtml: string;
   fieldDefinitions: {
     fieldName: string;
-    fieldType: 'text' | 'date' | 'select' | 'signature' | 'image';
+    fieldType: "text" | "date" | "select" | "signature" | "image";
     isRequired: boolean;
     options?: string[]; // For select fields
   }[];
@@ -111,8 +116,8 @@ export interface SacramentalTemplateContent extends BaseContent {
 
 // Content Type: Page
 export interface PageContent extends BaseContent {
-  contentType: 'page';
-  pageType: 'standard' | 'landing' | 'form' | 'redirect';
+  contentType: "page";
+  pageType: "standard" | "landing" | "form" | "redirect";
   content: string; // HTML content
   featuredImage?: string;
   metaTitle?: string;
@@ -121,7 +126,14 @@ export interface PageContent extends BaseContent {
   parentPageId?: string;
   formFields?: {
     fieldName: string;
-    fieldType: 'text' | 'email' | 'number' | 'select' | 'textarea' | 'checkbox' | 'date';
+    fieldType:
+      | "text"
+      | "email"
+      | "number"
+      | "select"
+      | "textarea"
+      | "checkbox"
+      | "date";
     isRequired: boolean;
     options?: string[]; // For select fields
   }[];
@@ -129,16 +141,16 @@ export interface PageContent extends BaseContent {
 
 // Content Type: Visitor Follow-up Sequence
 export interface FollowupSequenceContent extends BaseContent {
-  contentType: 'followup-sequence';
+  contentType: "followup-sequence";
   steps: {
     stepNumber: number;
-    stepType: 'email' | 'call' | 'visit' | 'letter' | 'text';
+    stepType: "email" | "call" | "visit" | "letter" | "text";
     delayDays: number; // Days after previous step
     template: string;
     assignedRoleId?: string; // Role responsible for this step
   }[];
   autoAssign: boolean;
-  targetVisitorType?: 'first-time' | 'returning' | 'member-family' | 'all';
+  targetVisitorType?: "first-time" | "returning" | "member-family" | "all";
 }
 
 // Media Asset
@@ -177,7 +189,7 @@ export interface ContentMetrics {
   avgTimeOnPage: number; // in seconds
   completionRate?: number; // % of video/audio played through
   interactions: {
-    type: 'click' | 'share' | 'download' | 'comment' | 'reaction';
+    type: "click" | "share" | "download" | "comment" | "reaction";
     count: number;
   }[];
   deviceBreakdown: {
@@ -196,19 +208,26 @@ export interface ContentActivity {
   id: string;
   contentId: string;
   userId: string;
-  actionType: 'created' | 'edited' | 'published' | 'unpublished' | 'deleted' | 'restored' | 'commented';
+  actionType:
+    | "created"
+    | "edited"
+    | "published"
+    | "unpublished"
+    | "deleted"
+    | "restored"
+    | "commented";
   timestamp: Date;
   details?: string;
   previousVersion?: string; // JSON of previous state for version tracking
 }
 
 // Union type for all content types
-export type Content = 
-  | SermonContent 
-  | EventContent 
-  | AnnouncementContent 
-  | SmallGroupResourceContent 
-  | MinistryInfoContent 
+export type Content =
+  | SermonContent
+  | EventContent
+  | AnnouncementContent
+  | SmallGroupResourceContent
+  | MinistryInfoContent
   | SacramentalTemplateContent
   | PageContent
   | FollowupSequenceContent;

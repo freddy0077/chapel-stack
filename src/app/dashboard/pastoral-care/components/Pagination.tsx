@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface PaginationProps {
   currentPage: number;
@@ -29,7 +29,7 @@ export default function Pagination({
   onPageChange,
   onItemsPerPageChange,
   loading = false,
-  className = '',
+  className = "",
 }: PaginationProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -50,7 +50,7 @@ export default function Pagination({
 
     // Add first page
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
+      rangeWithDots.push(1, "...");
     } else {
       rangeWithDots.push(1);
     }
@@ -60,7 +60,7 @@ export default function Pagination({
 
     // Add last page
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
+      rangeWithDots.push("...", totalPages);
     } else if (totalPages > 1) {
       rangeWithDots.push(totalPages);
     }
@@ -88,10 +88,13 @@ export default function Pagination({
 
   if (totalPages <= 1) {
     return (
-      <div className={`flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 ${className}`}>
+      <div
+        className={`flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 ${className}`}
+      >
         <div className="flex items-center text-sm text-gray-700">
           <span>
-            Showing {totalItems > 0 ? startItem : 0} to {endItem} of {totalItems} results
+            Showing {totalItems > 0 ? startItem : 0} to {endItem} of{" "}
+            {totalItems} results
           </span>
         </div>
         <div className="flex items-center">
@@ -119,11 +122,14 @@ export default function Pagination({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className={`flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 ${className}`}>
+    <div
+      className={`flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 ${className}`}
+    >
       {/* Results info */}
       <div className="flex items-center text-sm text-gray-700">
         <span>
-          Showing {totalItems > 0 ? startItem : 0} to {endItem} of {totalItems} results
+          Showing {totalItems > 0 ? startItem : 0} to {endItem} of {totalItems}{" "}
+          results
         </span>
         {loading && (
           <div className="ml-3 flex items-center">
@@ -180,7 +186,7 @@ export default function Pagination({
           {/* Page numbers */}
           <div className="flex items-center space-x-1">
             {visiblePages.map((page, index) => {
-              if (page === '...') {
+              if (page === "...") {
                 return (
                   <span
                     key={`dots-${index}`}
@@ -201,8 +207,8 @@ export default function Pagination({
                   disabled={loading}
                   className={`relative inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed rounded-md ${
                     isCurrentPage
-                      ? 'z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                      : 'text-gray-900 hover:bg-gray-50'
+                      ? "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      : "text-gray-900 hover:bg-gray-50"
                   }`}
                 >
                   {pageNumber}

@@ -1,5 +1,5 @@
-import { useQuery, useMutation } from '@apollo/client';
-import { useState, useMemo } from 'react';
+import { useQuery, useMutation } from "@apollo/client";
+import { useState, useMemo } from "react";
 import {
   GET_SUBSCRIPTION_ORGANIZATIONS,
   GET_ORGANIZATION_SUBSCRIPTION_DETAILS,
@@ -8,7 +8,7 @@ import {
   DISABLE_ORGANIZATION,
   OrganizationWithSubscription,
   OrganizationStats,
-} from '../../graphql/subscription-management';
+} from "../../graphql/subscription-management";
 
 interface OrganizationFilter {
   state?: string;
@@ -21,45 +21,38 @@ export const useOrganizations = (filter?: OrganizationFilter) => {
   // Clean the filter to remove empty/invalid values
   const cleanFilter = useMemo(() => {
     if (!filter) return undefined;
-    
+
     const cleaned: any = {};
-    
+
     // Only include state if it's a valid enum value
-    if (filter.state && filter.state !== '' && filter.state !== 'ALL') {
+    if (filter.state && filter.state !== "" && filter.state !== "ALL") {
       cleaned.state = filter.state;
     }
-    
+
     // Only include search if it's not empty
-    if (filter.search && filter.search.trim() !== '') {
+    if (filter.search && filter.search.trim() !== "") {
       cleaned.search = filter.search.trim();
     }
-    
+
     // Include pagination parameters
     if (filter.limit) {
       cleaned.limit = filter.limit;
     }
-    
+
     if (filter.offset) {
       cleaned.offset = filter.offset;
     }
-    
+
     // Return undefined if no valid filters
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   }, [filter]);
 
-  const {
-    data,
-    loading,
-    error,
-    refetch,
-    fetchMore,
-  } = useQuery<{ subscriptionOrganizations: OrganizationWithSubscription[] }>(
-    GET_SUBSCRIPTION_ORGANIZATIONS,
-    {
-      variables: { filter: cleanFilter },
-      errorPolicy: 'all',
-    }
-  );
+  const { data, loading, error, refetch, fetchMore } = useQuery<{
+    subscriptionOrganizations: OrganizationWithSubscription[];
+  }>(GET_SUBSCRIPTION_ORGANIZATIONS, {
+    variables: { filter: cleanFilter },
+    errorPolicy: "all",
+  });
 
   const [enableOrganization, { loading: enableLoading }] = useMutation(
     ENABLE_ORGANIZATION,
@@ -67,7 +60,7 @@ export const useOrganizations = (filter?: OrganizationFilter) => {
       onCompleted: () => {
         refetch();
       },
-    }
+    },
   );
 
   const [disableOrganization, { loading: disableLoading }] = useMutation(
@@ -76,7 +69,7 @@ export const useOrganizations = (filter?: OrganizationFilter) => {
       onCompleted: () => {
         refetch();
       },
-    }
+    },
   );
 
   const handleEnableOrganization = async (id: string) => {
@@ -86,19 +79,22 @@ export const useOrganizations = (filter?: OrganizationFilter) => {
       });
       return { success: true, data: result.data };
     } catch (error) {
-      console.error('Failed to enable organization:', error);
+      console.error("Failed to enable organization:", error);
       return { success: false, error };
     }
   };
 
-  const handleDisableOrganization = async (input: { id: string; reason: string }) => {
+  const handleDisableOrganization = async (input: {
+    id: string;
+    reason: string;
+  }) => {
     try {
       const result = await disableOrganization({
         variables: { input },
       });
       return { success: true, data: result.data };
     } catch (error) {
-      console.error('Failed to disable organization:', error);
+      console.error("Failed to disable organization:", error);
       return { success: false, error };
     }
   };
@@ -144,7 +140,7 @@ export const useOrganizationDetails = (id: string) => {
   }>(GET_ORGANIZATION_SUBSCRIPTION_DETAILS, {
     variables: { id },
     skip: !id,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {
@@ -159,7 +155,7 @@ export const useOrganizationStats = () => {
   const { data, loading, error, refetch } = useQuery<{
     organizationStats: OrganizationStats;
   }>(GET_ORGANIZATION_STATS, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {
@@ -177,7 +173,7 @@ export const useOrganizationFilters = () => {
   });
 
   const updateFilter = (key: keyof OrganizationFilter, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
       offset: 0, // Reset offset when filter changes

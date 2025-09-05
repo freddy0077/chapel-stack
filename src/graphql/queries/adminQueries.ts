@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const ADMIN_USERS_QUERY = gql`
   query AdminUsers($pagination: PaginationInput, $filter: UserFilterInput) {

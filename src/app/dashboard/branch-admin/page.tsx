@@ -32,27 +32,32 @@ export default function BranchAdminDashboard() {
     {
       label: "Members",
       value: 124,
-      icon: <UsersIcon className="h-7 w-7 text-indigo-600" />, badge: "bg-indigo-100 text-indigo-700",
+      icon: <UsersIcon className="h-7 w-7 text-indigo-600" />,
+      badge: "bg-indigo-100 text-indigo-700",
     },
     {
       label: "Attendance",
       value: "89%",
-      icon: <CalendarIcon className="h-7 w-7 text-green-600" />, badge: "bg-green-100 text-green-700",
+      icon: <CalendarIcon className="h-7 w-7 text-green-600" />,
+      badge: "bg-green-100 text-green-700",
     },
     {
       label: "Giving",
       value: "GHS 12,450",
-      icon: <CurrencyDollarIcon className="h-7 w-7 text-yellow-500" />, badge: "bg-yellow-100 text-yellow-700",
+      icon: <CurrencyDollarIcon className="h-7 w-7 text-yellow-500" />,
+      badge: "bg-yellow-100 text-yellow-700",
     },
     {
       label: "Prayer Requests",
       value: 17,
-      icon: <ChatBubbleLeftEllipsisIcon className="h-7 w-7 text-pink-500" />, badge: "bg-pink-100 text-pink-700",
+      icon: <ChatBubbleLeftEllipsisIcon className="h-7 w-7 text-pink-500" />,
+      badge: "bg-pink-100 text-pink-700",
     },
     {
       label: "Events",
       value: 6,
-      icon: <SparklesIcon className="h-7 w-7 text-purple-600" />, badge: "bg-purple-100 text-purple-700",
+      icon: <SparklesIcon className="h-7 w-7 text-purple-600" />,
+      badge: "bg-purple-100 text-purple-700",
     },
   ];
   const recentMembers = [
@@ -84,9 +89,15 @@ export default function BranchAdminDashboard() {
               key={stat.label}
               className={`rounded-2xl shadow-xl border border-indigo-100 p-6 flex flex-col items-center gap-2 text-center hover:scale-105 hover:shadow-2xl transition-all duration-200 bg-white/80 backdrop-blur-sm ${pastelBg[idx % pastelBg.length]}`}
             >
-              <div className={`mb-2 rounded-full p-2 ${stat.badge} shadow`}>{stat.icon}</div>
-              <div className="text-3xl font-extrabold text-indigo-900 tracking-tight">{stat.value}</div>
-              <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</div>
+              <div className={`mb-2 rounded-full p-2 ${stat.badge} shadow`}>
+                {stat.icon}
+              </div>
+              <div className="text-3xl font-extrabold text-indigo-900 tracking-tight">
+                {stat.value}
+              </div>
+              <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -96,7 +107,9 @@ export default function BranchAdminDashboard() {
           <div className="bg-white/80 backdrop-blur rounded-3xl shadow-xl border border-indigo-100 p-6 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <UsersIcon className="h-6 w-6 text-indigo-600" />
-              <span className="font-semibold text-indigo-800 text-lg">Recent Members</span>
+              <span className="font-semibold text-indigo-800 text-lg">
+                Recent Members
+              </span>
             </div>
             <ul className="divide-y divide-indigo-50">
               {recentMembers.map((m, idx) => (
@@ -105,8 +118,12 @@ export default function BranchAdminDashboard() {
                     <UserCircleIcon className="h-7 w-7 text-indigo-300 absolute opacity-30" />
                     <span className="relative z-10">{getInitials(m.name)}</span>
                   </span>
-                  <span className="flex-1 font-medium text-indigo-900">{m.name}</span>
-                  <span className="text-xs text-gray-400">Joined {new Date(m.joined).toLocaleDateString()}</span>
+                  <span className="flex-1 font-medium text-indigo-900">
+                    {m.name}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    Joined {new Date(m.joined).toLocaleDateString()}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -115,7 +132,9 @@ export default function BranchAdminDashboard() {
           <div className="bg-white/80 backdrop-blur rounded-3xl shadow-xl border border-green-100 p-6 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <CalendarIcon className="h-6 w-6 text-green-600" />
-              <span className="font-semibold text-green-700 text-lg">Upcoming Events</span>
+              <span className="font-semibold text-green-700 text-lg">
+                Upcoming Events
+              </span>
             </div>
             <ul className="divide-y divide-green-50">
               {upcomingEvents.map((e, idx) => (
@@ -123,8 +142,12 @@ export default function BranchAdminDashboard() {
                   <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-100 text-green-700 font-bold text-lg shadow">
                     <CalendarIcon className="h-5 w-5 text-green-400" />
                   </span>
-                  <span className="flex-1 font-medium text-green-900">{e.title}</span>
-                  <span className="text-xs text-gray-400">{new Date(e.date).toLocaleDateString()}</span>
+                  <span className="flex-1 font-medium text-green-900">
+                    {e.title}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(e.date).toLocaleDateString()}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -133,7 +156,9 @@ export default function BranchAdminDashboard() {
           <div className="bg-white/80 backdrop-blur rounded-3xl shadow-xl border border-pink-100 p-6 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
               <ChatBubbleLeftEllipsisIcon className="h-6 w-6 text-pink-500" />
-              <span className="font-semibold text-pink-700 text-lg">Recent Prayer Requests</span>
+              <span className="font-semibold text-pink-700 text-lg">
+                Recent Prayer Requests
+              </span>
             </div>
             <ul className="divide-y divide-pink-50">
               {recentPrayerRequests.map((p, idx) => (
@@ -141,7 +166,9 @@ export default function BranchAdminDashboard() {
                   <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-pink-100 text-pink-700 font-bold text-lg shadow">
                     <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-pink-400" />
                   </span>
-                  <span className="flex-1 font-medium text-pink-900">{p.member}</span>
+                  <span className="flex-1 font-medium text-pink-900">
+                    {p.member}
+                  </span>
                   <span className="text-gray-700">{p.text}</span>
                 </li>
               ))}

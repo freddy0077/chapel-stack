@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_EVENTS_BY_BRANCH = gql`
   query Events($branchId: String, $organisationId: String) {
@@ -413,8 +413,18 @@ export const GET_EVENTS_FILTERED = gql`
  * Query to fetch events within a specific date range
  */
 export const GET_EVENTS_BY_DATE_RANGE = gql`
-  query GetEventsByDateRange($startDate: DateTime!, $endDate: DateTime!, $branchId: String, $organisationId: String) {
-    events(branchId: $branchId, organisationId: $organisationId, startDate: $startDate, endDate: $endDate) {
+  query GetEventsByDateRange(
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $branchId: String
+    $organisationId: String
+  ) {
+    events(
+      branchId: $branchId
+      organisationId: $organisationId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
       id
       title
       description

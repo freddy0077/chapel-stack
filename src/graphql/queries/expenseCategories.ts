@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_EXPENSE_CATEGORIES_QUERY = gql`
   query GetExpenseCategories($organisationId: String) {

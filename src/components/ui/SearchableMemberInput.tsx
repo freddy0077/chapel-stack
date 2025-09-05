@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { SEARCH_MEMBERS } from "@/graphql/queries/memberQueries";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
-import { MagnifyingGlassIcon, UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  UserIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/20/solid";
 
 interface Member {
@@ -46,10 +50,10 @@ export default function SearchableMemberInput({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const orgBranchFilter = useOrganizationBranchFilter();
 
   // Query for searching members
@@ -59,7 +63,7 @@ export default function SearchableMemberInput({
       branchId: orgBranchFilter.branchId,
     },
     skip: !searchTerm || searchTerm.length < 2,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   const members: Member[] = data?.searchMembers || [];
@@ -79,11 +83,11 @@ export default function SearchableMemberInput({
     setSearchTerm(newValue);
     setIsOpen(true);
     setHighlightedIndex(-1);
-    
+
     // If input is cleared, reset selection
     if (!newValue) {
       setSelectedMember(null);
-      onChange('');
+      onChange("");
     }
   };
 
@@ -92,25 +96,25 @@ export default function SearchableMemberInput({
     if (!isOpen || members.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex(prev => 
-          prev < members.length - 1 ? prev + 1 : 0
+        setHighlightedIndex((prev) =>
+          prev < members.length - 1 ? prev + 1 : 0,
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex(prev => 
-          prev > 0 ? prev - 1 : members.length - 1
+        setHighlightedIndex((prev) =>
+          prev > 0 ? prev - 1 : members.length - 1,
         );
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (highlightedIndex >= 0 && highlightedIndex < members.length) {
           handleSelectMember(members[highlightedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setIsOpen(false);
         setHighlightedIndex(-1);
         inputRef.current?.blur();
@@ -121,9 +125,9 @@ export default function SearchableMemberInput({
   // Handle clear selection
   const handleClear = () => {
     setSelectedMember(null);
-    setSearchTerm('');
+    setSearchTerm("");
     setIsOpen(false);
-    onChange('');
+    onChange("");
     inputRef.current?.focus();
   };
 
@@ -141,8 +145,8 @@ export default function SearchableMemberInput({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Format member display name
@@ -156,7 +160,7 @@ export default function SearchableMemberInput({
     if (member.memberId) details.push(`ID: ${member.memberId}`);
     if (member.email) details.push(member.email);
     if (member.phoneNumber) details.push(member.phoneNumber);
-    return details.join(' • ');
+    return details.join(" • ");
   };
 
   return (
@@ -167,12 +171,12 @@ export default function SearchableMemberInput({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
         </div>
-        
+
         <input
           ref={inputRef}
           type="text"
@@ -188,12 +192,12 @@ export default function SearchableMemberInput({
           disabled={disabled}
           required={required}
           className={`block w-full pl-10 pr-10 py-2 border rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:border-blue-500 ${
-            error 
-              ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-              : 'border-gray-300 focus:ring-blue-500'
-          } ${disabled ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+            error
+              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+              : "border-gray-300 focus:ring-blue-500"
+          } ${disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
-        
+
         {selectedMember && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
             <button
@@ -207,9 +211,7 @@ export default function SearchableMemberInput({
         )}
       </div>
 
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
 
       {/* Selected member display */}
       {selectedMember && (
@@ -250,10 +252,9 @@ export default function SearchableMemberInput({
             </div>
           ) : members.length === 0 ? (
             <div className="px-4 py-2 text-sm text-gray-500">
-              {searchTerm.length < 2 
-                ? 'Type at least 2 characters to search'
-                : 'No members found'
-              }
+              {searchTerm.length < 2
+                ? "Type at least 2 characters to search"
+                : "No members found"}
             </div>
           ) : (
             members.map((member, index) => (
@@ -262,7 +263,7 @@ export default function SearchableMemberInput({
                 type="button"
                 onClick={() => handleSelectMember(member)}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                  index === highlightedIndex ? 'bg-gray-100' : ''
+                  index === highlightedIndex ? "bg-gray-100" : ""
                 }`}
               >
                 <div className="flex items-center">

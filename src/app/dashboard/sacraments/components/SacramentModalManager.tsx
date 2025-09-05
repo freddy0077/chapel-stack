@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // Import modal components
 import UniversalSacramentModal from "./UniversalSacramentModal";
-import MarriageAnalyticsDashboard from './MarriageAnalyticsDashboard';
-import MemberMarriageHistoryCard from './MemberMarriageHistoryCard';
+import MarriageAnalyticsDashboard from "./MarriageAnalyticsDashboard";
+import MemberMarriageHistoryCard from "./MemberMarriageHistoryCard";
 
 interface SacramentModalManagerProps {
   // Modal states for all sacrament types
@@ -22,7 +22,7 @@ interface SacramentModalManagerProps {
   isRciaModalOpen: boolean;
   isMarriageAnalyticsOpen: boolean;
   isMemberMarriageHistoryOpen: boolean;
-  
+
   // Modal setters for all sacrament types
   setIsBaptismModalOpen: (open: boolean) => void;
   setIsCommunionModalOpen: (open: boolean) => void;
@@ -35,7 +35,7 @@ interface SacramentModalManagerProps {
   setIsRciaModalOpen: (open: boolean) => void;
   setIsMarriageAnalyticsOpen: (open: boolean) => void;
   setIsMemberMarriageHistoryOpen: (open: boolean) => void;
-  
+
   // Refetch refs for all sacrament types
   baptismRefetchRef: React.MutableRefObject<(() => void) | null>;
   communionRefetchRef: React.MutableRefObject<(() => void) | null>;
@@ -62,7 +62,7 @@ export default function SacramentModalManager({
   isRciaModalOpen,
   isMarriageAnalyticsOpen,
   isMemberMarriageHistoryOpen,
-  
+
   // Modal setters
   setIsBaptismModalOpen,
   setIsCommunionModalOpen,
@@ -75,7 +75,7 @@ export default function SacramentModalManager({
   setIsRciaModalOpen,
   setIsMarriageAnalyticsOpen,
   setIsMemberMarriageHistoryOpen,
-  
+
   // Refetch refs
   baptismRefetchRef,
   communionRefetchRef,
@@ -88,8 +88,9 @@ export default function SacramentModalManager({
   rciaRefetchRef,
   selectedMemberId,
 }: SacramentModalManagerProps) {
-
-  const handleSuccess = (refetchRef: React.MutableRefObject<(() => void) | null>) => {
+  const handleSuccess = (
+    refetchRef: React.MutableRefObject<(() => void) | null>,
+  ) => {
     refetchRef.current?.();
     toast.success("Record created successfully!");
   };
@@ -161,7 +162,10 @@ export default function SacramentModalManager({
       />
 
       {/* Marriage analytics dashboard modal */}
-      <Dialog open={isMarriageAnalyticsOpen} onOpenChange={setIsMarriageAnalyticsOpen}>
+      <Dialog
+        open={isMarriageAnalyticsOpen}
+        onOpenChange={setIsMarriageAnalyticsOpen}
+      >
         <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <MarriageAnalyticsDashboard
             onClose={() => setIsMarriageAnalyticsOpen(false)}
@@ -170,10 +174,13 @@ export default function SacramentModalManager({
       </Dialog>
 
       {/* Member marriage history modal */}
-      <Dialog open={isMemberMarriageHistoryOpen} onOpenChange={setIsMemberMarriageHistoryOpen}>
+      <Dialog
+        open={isMemberMarriageHistoryOpen}
+        onOpenChange={setIsMemberMarriageHistoryOpen}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <MemberMarriageHistoryCard
-            memberId={selectedMemberId || ''}
+            memberId={selectedMemberId || ""}
             onClose={() => setIsMemberMarriageHistoryOpen(false)}
           />
         </DialogContent>

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get branches with statistics (using 'id' in filterInput as requested)
 export const GET_BRANCHES_WITH_STATISTICS = gql`
@@ -102,13 +102,9 @@ export const CREATE_MEMBER = gql`
 export const GET_MEMBERS = gql`
   query GetMembers(
     $skip: Int
-    $take: Int
-    # filter argument removed as it's not supported on Query.members
+    $take: Int # filter argument removed as it's not supported on Query.members
   ) {
-    members(
-      skip: $skip
-      take: $take
-    ) {
+    members(skip: $skip, take: $take) {
       id
       firstName
       middleName
@@ -259,10 +255,7 @@ export const GET_MEMBERS_LIST = gql`
         lastName
       }
     }
-    membersCount(
-      organisationId: $organisationId
-      branchId: $branchId
-    )
+    membersCount(organisationId: $organisationId, branchId: $branchId)
   }
 `;
 
@@ -377,7 +370,11 @@ export const GET_SKILLS = gql`
 
 // Query to get members count
 export const GET_MEMBERS_COUNT = gql`
-  query GetMembersCount($branchId: String, $organisationId: String, $search: String) {
+  query GetMembersCount(
+    $branchId: String
+    $organisationId: String
+    $search: String
+  ) {
     membersCount(branchId: $branchId, organisationId: $organisationId)
   }
 `;
@@ -563,7 +560,11 @@ export const PERMANENTLY_DELETE_MEMBER = gql`
 
 // Mutation to upload affidavit for name changes
 export const UPLOAD_AFFIDAVIT = gql`
-  mutation UploadAffidavit($memberId: String!, $file: Upload!, $reason: String!) {
+  mutation UploadAffidavit(
+    $memberId: String!
+    $file: Upload!
+    $reason: String!
+  ) {
     uploadAffidavit(memberId: $memberId, file: $file, reason: $reason) {
       id
       firstName
@@ -1031,7 +1032,11 @@ export const REMOVE_MEMBER_FROM_BRANCH = gql`
 
 // Update member status
 export const UPDATE_MEMBER_STATUS = gql`
-  mutation UpdateMemberStatus($id: String!, $status: MemberStatus!, $reason: String) {
+  mutation UpdateMemberStatus(
+    $id: String!
+    $status: MemberStatus!
+    $reason: String
+  ) {
     updateMemberStatus(id: $id, status: $status, reason: $reason) {
       id
       firstName
@@ -1057,7 +1062,10 @@ export const GET_TOTAL_MEMBERS_COUNT = gql`
 
 // Get member statistics
 export const GET_MEMBER_STATISTICS_DETAILED = gql`
-  query GetMemberStatisticsDetailed($branchId: String, $organisationId: String) {
+  query GetMemberStatisticsDetailed(
+    $branchId: String
+    $organisationId: String
+  ) {
     memberStatistics(branchId: $branchId, organisationId: $organisationId) {
       totalMembers
       activeMembers
@@ -1220,15 +1228,25 @@ export const UPDATE_COMMUNICATION_PREFS = gql`
 
 // Create member relationship
 export const CREATE_MEMBER_RELATIONSHIP = gql`
-  mutation CreateMemberRelationship($createMemberRelationshipInput: CreateMemberRelationshipInput!) {
-    createMemberRelationship(createMemberRelationshipInput: $createMemberRelationshipInput)
+  mutation CreateMemberRelationship(
+    $createMemberRelationshipInput: CreateMemberRelationshipInput!
+  ) {
+    createMemberRelationship(
+      createMemberRelationshipInput: $createMemberRelationshipInput
+    )
   }
 `;
 
 // Update member relationship
 export const UPDATE_MEMBER_RELATIONSHIP = gql`
-  mutation UpdateMemberRelationship($id: String!, $updateMemberRelationshipInput: UpdateMemberRelationshipInput!) {
-    updateMemberRelationship(id: $id, updateMemberRelationshipInput: $updateMemberRelationshipInput)
+  mutation UpdateMemberRelationship(
+    $id: String!
+    $updateMemberRelationshipInput: UpdateMemberRelationshipInput!
+  ) {
+    updateMemberRelationship(
+      id: $id
+      updateMemberRelationshipInput: $updateMemberRelationshipInput
+    )
   }
 `;
 
@@ -1241,8 +1259,12 @@ export const DELETE_MEMBER_RELATIONSHIP = gql`
 
 // Create membership history entry
 export const CREATE_MEMBERSHIP_HISTORY = gql`
-  mutation CreateMembershipHistoryEntry($createMembershipHistoryInput: CreateMembershipHistoryInput!) {
-    createMembershipHistoryEntry(createMembershipHistoryInput: $createMembershipHistoryInput)
+  mutation CreateMembershipHistoryEntry(
+    $createMembershipHistoryInput: CreateMembershipHistoryInput!
+  ) {
+    createMembershipHistoryEntry(
+      createMembershipHistoryInput: $createMembershipHistoryInput
+    )
   }
 `;
 
@@ -1336,7 +1358,9 @@ export const BULK_ADD_TO_GROUP = gql`
 `;
 
 export const BULK_REMOVE_FROM_GROUP = gql`
-  mutation BulkRemoveFromGroup($bulkRemoveFromGroupInput: BulkRemoveFromGroupInput!) {
+  mutation BulkRemoveFromGroup(
+    $bulkRemoveFromGroupInput: BulkRemoveFromGroupInput!
+  ) {
     bulkRemoveFromGroup(bulkRemoveFromGroupInput: $bulkRemoveFromGroupInput)
   }
 `;
@@ -1351,7 +1375,9 @@ export const BULK_REMOVE_FROM_MINISTRY = gql`
   mutation BulkRemoveFromMinistry(
     $bulkRemoveFromMinistryInput: BulkRemoveFromMinistryInput!
   ) {
-    bulkRemoveFromMinistry(bulkRemoveFromMinistryInput: $bulkRemoveFromMinistryInput)
+    bulkRemoveFromMinistry(
+      bulkRemoveFromMinistryInput: $bulkRemoveFromMinistryInput
+    )
   }
 `;
 

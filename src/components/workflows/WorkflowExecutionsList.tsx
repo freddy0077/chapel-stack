@@ -1,45 +1,72 @@
 "use client";
 
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { Eye, Clock, CheckCircle, XCircle, AlertCircle, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { WorkflowExecution } from '@/graphql/workflows';
+import { useState } from "react";
+import { format } from "date-fns";
+import {
+  Eye,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Play,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { WorkflowExecution } from "@/graphql/workflows";
 
 interface WorkflowExecutionsListProps {
   executions: WorkflowExecution[];
   loading: boolean;
 }
 
-export default function WorkflowExecutionsList({ executions, loading }: WorkflowExecutionsListProps) {
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+export default function WorkflowExecutionsList({
+  executions,
+  loading,
+}: WorkflowExecutionsListProps) {
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredExecutions = executions.filter(execution => {
-    const matchesStatus = statusFilter === 'all' || execution.status === statusFilter;
-    const matchesSearch = !searchTerm || 
-      execution.workflow?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredExecutions = executions.filter((execution) => {
+    const matchesStatus =
+      statusFilter === "all" || execution.status === statusFilter;
+    const matchesSearch =
+      !searchTerm ||
+      execution.workflow?.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       execution.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesStatus && matchesSearch;
   });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case "COMPLETED":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'FAILED':
+      case "FAILED":
         return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'RUNNING':
+      case "RUNNING":
         return <Play className="h-4 w-4 text-blue-600" />;
-      case 'PENDING':
+      case "PENDING":
         return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'CANCELLED':
+      case "CANCELLED":
         return <AlertCircle className="h-4 w-4 text-gray-600" />;
       default:
         return <Clock className="h-4 w-4 text-gray-600" />;
@@ -48,28 +75,28 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'FAILED':
-        return 'bg-red-100 text-red-800';
-      case 'RUNNING':
-        return 'bg-blue-100 text-blue-800';
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED':
-        return 'bg-gray-100 text-gray-800';
+      case "COMPLETED":
+        return "bg-green-100 text-green-800";
+      case "FAILED":
+        return "bg-red-100 text-red-800";
+      case "RUNNING":
+        return "bg-blue-100 text-blue-800";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800";
+      case "CANCELLED":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatDuration = (startedAt?: string, completedAt?: string) => {
-    if (!startedAt) return '-';
-    
+    if (!startedAt) return "-";
+
     const start = new Date(startedAt);
     const end = completedAt ? new Date(completedAt) : new Date();
     const duration = Math.round((end.getTime() - start.getTime()) / 1000);
-    
+
     if (duration < 60) return `${duration}s`;
     if (duration < 3600) return `${Math.round(duration / 60)}m`;
     return `${Math.round(duration / 3600)}h`;
@@ -119,7 +146,9 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
             <Clock className="h-8 w-8 mx-auto mb-2" />
             <p>No workflow executions found</p>
             {searchTerm && (
-              <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+              <p className="text-sm mt-1">
+                Try adjusting your search or filter criteria
+              </p>
             )}
           </div>
         ) : (
@@ -141,7 +170,7 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
                     <TableCell>
                       <div>
                         <div className="font-medium">
-                          {execution.workflow?.name || 'Unknown Workflow'}
+                          {execution.workflow?.name || "Unknown Workflow"}
                         </div>
                         <div className="text-sm text-gray-600">
                           ID: {execution.id.slice(0, 8)}...
@@ -149,23 +178,33 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={`${getStatusColor(execution.status)} flex items-center space-x-1 w-fit`}>
+                      <Badge
+                        className={`${getStatusColor(execution.status)} flex items-center space-x-1 w-fit`}
+                      >
                         {getStatusIcon(execution.status)}
                         <span>{execution.status}</span>
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {execution.triggeredBy || 'System'}
+                        {execution.triggeredBy || "System"}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
                         {execution.startedAt ? (
                           <>
-                            <div>{format(new Date(execution.startedAt), 'MMM dd, yyyy')}</div>
+                            <div>
+                              {format(
+                                new Date(execution.startedAt),
+                                "MMM dd, yyyy",
+                              )}
+                            </div>
                             <div className="text-gray-600">
-                              {format(new Date(execution.startedAt), 'HH:mm:ss')}
+                              {format(
+                                new Date(execution.startedAt),
+                                "HH:mm:ss",
+                              )}
                             </div>
                           </>
                         ) : (
@@ -175,7 +214,10 @@ export default function WorkflowExecutionsList({ executions, loading }: Workflow
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {formatDuration(execution.startedAt, execution.completedAt)}
+                        {formatDuration(
+                          execution.startedAt,
+                          execution.completedAt,
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

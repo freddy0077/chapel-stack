@@ -1,8 +1,8 @@
 // Utility for onboarding completed screens tracking
-export const COMPLETED_SCREENS_KEY = 'onboarding_completed_screens';
+export const COMPLETED_SCREENS_KEY = "onboarding_completed_screens";
 export function getCompletedScreens(): string[] {
   try {
-    return JSON.parse(localStorage.getItem(COMPLETED_SCREENS_KEY) || '[]');
+    return JSON.parse(localStorage.getItem(COMPLETED_SCREENS_KEY) || "[]");
   } catch {
     return [];
   }

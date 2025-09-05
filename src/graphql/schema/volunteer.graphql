@@ -1,7 +1,6 @@
 """
 Volunteer Management schema - handles volunteer records, scheduling, training, and recognition
 """
-
 enum VolunteerStatus {
   ACTIVE
   INACTIVE
@@ -301,123 +300,120 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): VolunteerConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific volunteer
   volunteer(id: ID!): Volunteer @auth(requires: [STAFF])
-  
+
   # Get volunteer profile (for authenticated volunteers)
   myVolunteerProfile: Volunteer @auth(requires: [VOLUNTEER])
-  
+
   # Get volunteer skills
-  volunteerSkills(
-    volunteerId: ID!
-  ): [Skill!]! @auth(requires: [STAFF])
-  
+  volunteerSkills(volunteerId: ID!): [Skill!]! @auth(requires: [STAFF])
+
   # Get volunteer ministries
   volunteerMinistries(
-    volunteerId: ID!,
+    volunteerId: ID!
     isActive: Boolean
   ): [VolunteerMinistry!]! @auth(requires: [STAFF])
-  
+
   # Get volunteer trainings
   volunteerTrainings(
-    volunteerId: ID!,
+    volunteerId: ID!
     isExpired: Boolean
   ): [VolunteerTraining!]! @auth(requires: [STAFF])
-  
+
   # Get volunteer schedule
   volunteerSchedule(
-    volunteerId: ID!,
+    volunteerId: ID!
     dateRange: DateRangeInput!
   ): [VolunteerSchedule!]! @auth(requires: [STAFF])
-  
+
   # Get volunteer hours
   volunteerHours(
-    volunteerId: ID!,
-    dateRange: DateRangeInput!,
+    volunteerId: ID!
+    dateRange: DateRangeInput!
     ministryId: ID
   ): [VolunteerHours!]! @auth(requires: [STAFF])
-  
+
   # Get volunteer recognitions
-  volunteerRecognitions(
-    volunteerId: ID!
-  ): [VolunteerRecognition!]! @auth(requires: [STAFF])
-  
+  volunteerRecognitions(volunteerId: ID!): [VolunteerRecognition!]!
+    @auth(requires: [STAFF])
+
   # Get recognition events
   recognitionEvents(
-    dateRange: DateRangeInput,
-    branchId: ID,
+    dateRange: DateRangeInput
+    branchId: ID
     pagination: PaginationInput
   ): RecognitionEventConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific recognition event
   recognitionEvent(id: ID!): RecognitionEvent @auth(requires: [STAFF])
-  
+
   # Get volunteer opportunities
   volunteerOpportunities(
-    isActive: Boolean,
-    ministryId: ID,
-    branchId: ID,
+    isActive: Boolean
+    ministryId: ID
+    branchId: ID
     pagination: PaginationInput
   ): VolunteerOpportunityConnection! @auth(requires: [MEMBER])
-  
+
   # Get a specific volunteer opportunity
   volunteerOpportunity(id: ID!): VolunteerOpportunity @auth(requires: [MEMBER])
-  
+
   # Get volunteer applications
   volunteerApplications(
-    opportunityId: ID,
-    status: String,
+    opportunityId: ID
+    status: String
     pagination: PaginationInput
   ): VolunteerApplicationConnection! @auth(requires: [STAFF])
-  
+
   # Get my volunteer applications (for authenticated members)
   myVolunteerApplications(
-    status: String,
+    status: String
     pagination: PaginationInput
   ): VolunteerApplicationConnection! @auth(requires: [MEMBER])
-  
+
   # Get volunteer teams
   volunteerTeams(
-    ministryId: ID,
-    isActive: Boolean,
+    ministryId: ID
+    isActive: Boolean
     pagination: PaginationInput
   ): VolunteerTeamConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific volunteer team
   volunteerTeam(id: ID!): VolunteerTeam @auth(requires: [STAFF])
-  
+
   # Get team communications
   teamCommunications(
-    teamId: ID!,
+    teamId: ID!
     pagination: PaginationInput
   ): TeamCommunicationConnection! @auth(requires: [VOLUNTEER])
-  
+
   # Get training types
   trainingTypes(
-    isRequired: Boolean,
-    ministryId: ID,
+    isRequired: Boolean
+    ministryId: ID
     pagination: PaginationInput
   ): TrainingTypeConnection! @auth(requires: [STAFF])
-  
+
   # Get volunteers needing training
   volunteersNeedingTraining(
-    trainingTypeId: ID!,
+    trainingTypeId: ID!
     pagination: PaginationInput
   ): VolunteerConnection! @auth(requires: [STAFF])
-  
+
   # Get volunteers available for schedule
   availableVolunteers(
-    ministryId: ID!,
-    startTime: DateTime!,
-    endTime: DateTime!,
-    requiredSkills: [ID!],
+    ministryId: ID!
+    startTime: DateTime!
+    endTime: DateTime!
+    requiredSkills: [ID!]
     pagination: PaginationInput
   ): VolunteerConnection! @auth(requires: [STAFF])
-  
+
   # Get volunteer statistics
   volunteerStatistics(
-    branchId: ID,
+    branchId: ID
     dateRange: DateRangeInput
   ): VolunteerStatistics! @auth(requires: [STAFF])
 }
@@ -518,142 +514,202 @@ type SkillCount {
 
 extend type Mutation {
   # Create a volunteer from a member
-  createVolunteer(input: CreateVolunteerInput!): Volunteer! @auth(requires: [STAFF])
-  
+  createVolunteer(input: CreateVolunteerInput!): Volunteer!
+    @auth(requires: [STAFF])
+
   # Update a volunteer
-  updateVolunteer(id: ID!, input: UpdateVolunteerInput!): Volunteer! @auth(requires: [STAFF])
-  
+  updateVolunteer(id: ID!, input: UpdateVolunteerInput!): Volunteer!
+    @auth(requires: [STAFF])
+
   # Add volunteer skill
-  addVolunteerSkill(volunteerId: ID!, input: AddSkillInput!): Skill! @auth(requires: [STAFF])
-  
+  addVolunteerSkill(volunteerId: ID!, input: AddSkillInput!): Skill!
+    @auth(requires: [STAFF])
+
   # Update volunteer skill
-  updateVolunteerSkill(id: ID!, input: UpdateSkillInput!): Skill! @auth(requires: [STAFF])
-  
+  updateVolunteerSkill(id: ID!, input: UpdateSkillInput!): Skill!
+    @auth(requires: [STAFF])
+
   # Remove volunteer skill
   removeVolunteerSkill(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Verify volunteer skill
   verifyVolunteerSkill(id: ID!): Skill! @auth(requires: [STAFF])
-  
+
   # Add volunteer to ministry
-  addVolunteerToMinistry(input: AddVolunteerToMinistryInput!): VolunteerMinistry! @auth(requires: [STAFF])
-  
+  addVolunteerToMinistry(
+    input: AddVolunteerToMinistryInput!
+  ): VolunteerMinistry! @auth(requires: [STAFF])
+
   # Update volunteer ministry
-  updateVolunteerMinistry(id: ID!, input: UpdateVolunteerMinistryInput!): VolunteerMinistry! @auth(requires: [STAFF])
-  
+  updateVolunteerMinistry(
+    id: ID!
+    input: UpdateVolunteerMinistryInput!
+  ): VolunteerMinistry! @auth(requires: [STAFF])
+
   # Remove volunteer from ministry
   removeVolunteerFromMinistry(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add volunteer agreement
-  addVolunteerAgreement(input: AddVolunteerAgreementInput!): VolunteerAgreement! @auth(requires: [STAFF])
-  
+  addVolunteerAgreement(
+    input: AddVolunteerAgreementInput!
+  ): VolunteerAgreement! @auth(requires: [STAFF])
+
   # Update volunteer agreement
-  updateVolunteerAgreement(id: ID!, input: UpdateVolunteerAgreementInput!): VolunteerAgreement! @auth(requires: [STAFF])
-  
+  updateVolunteerAgreement(
+    id: ID!
+    input: UpdateVolunteerAgreementInput!
+  ): VolunteerAgreement! @auth(requires: [STAFF])
+
   # Remove volunteer agreement
   removeVolunteerAgreement(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Record volunteer training
-  recordVolunteerTraining(input: RecordVolunteerTrainingInput!): VolunteerTraining! @auth(requires: [STAFF])
-  
+  recordVolunteerTraining(
+    input: RecordVolunteerTrainingInput!
+  ): VolunteerTraining! @auth(requires: [STAFF])
+
   # Update volunteer training
-  updateVolunteerTraining(id: ID!, input: UpdateVolunteerTrainingInput!): VolunteerTraining! @auth(requires: [STAFF])
-  
+  updateVolunteerTraining(
+    id: ID!
+    input: UpdateVolunteerTrainingInput!
+  ): VolunteerTraining! @auth(requires: [STAFF])
+
   # Remove volunteer training
   removeVolunteerTraining(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create training type
-  createTrainingType(input: CreateTrainingTypeInput!): TrainingType! @auth(requires: [STAFF])
-  
+  createTrainingType(input: CreateTrainingTypeInput!): TrainingType!
+    @auth(requires: [STAFF])
+
   # Update training type
-  updateTrainingType(id: ID!, input: UpdateTrainingTypeInput!): TrainingType! @auth(requires: [STAFF])
-  
+  updateTrainingType(id: ID!, input: UpdateTrainingTypeInput!): TrainingType!
+    @auth(requires: [STAFF])
+
   # Delete training type
   deleteTrainingType(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Award volunteer recognition
-  awardVolunteerRecognition(input: AwardVolunteerRecognitionInput!): VolunteerRecognition! @auth(requires: [STAFF])
-  
+  awardVolunteerRecognition(
+    input: AwardVolunteerRecognitionInput!
+  ): VolunteerRecognition! @auth(requires: [STAFF])
+
   # Update volunteer recognition
-  updateVolunteerRecognition(id: ID!, input: UpdateVolunteerRecognitionInput!): VolunteerRecognition! @auth(requires: [STAFF])
-  
+  updateVolunteerRecognition(
+    id: ID!
+    input: UpdateVolunteerRecognitionInput!
+  ): VolunteerRecognition! @auth(requires: [STAFF])
+
   # Remove volunteer recognition
   removeVolunteerRecognition(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create recognition event
-  createRecognitionEvent(input: CreateRecognitionEventInput!): RecognitionEvent! @auth(requires: [STAFF])
-  
+  createRecognitionEvent(
+    input: CreateRecognitionEventInput!
+  ): RecognitionEvent! @auth(requires: [STAFF])
+
   # Update recognition event
-  updateRecognitionEvent(id: ID!, input: UpdateRecognitionEventInput!): RecognitionEvent! @auth(requires: [STAFF])
-  
+  updateRecognitionEvent(
+    id: ID!
+    input: UpdateRecognitionEventInput!
+  ): RecognitionEvent! @auth(requires: [STAFF])
+
   # Delete recognition event
   deleteRecognitionEvent(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Schedule volunteer
-  scheduleVolunteer(input: ScheduleVolunteerInput!): VolunteerSchedule! @auth(requires: [STAFF])
-  
+  scheduleVolunteer(input: ScheduleVolunteerInput!): VolunteerSchedule!
+    @auth(requires: [STAFF])
+
   # Update volunteer schedule
-  updateVolunteerSchedule(id: ID!, input: UpdateVolunteerScheduleInput!): VolunteerSchedule! @auth(requires: [STAFF])
-  
+  updateVolunteerSchedule(
+    id: ID!
+    input: UpdateVolunteerScheduleInput!
+  ): VolunteerSchedule! @auth(requires: [STAFF])
+
   # Remove volunteer schedule
   removeVolunteerSchedule(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Check in scheduled volunteer
-  checkInScheduledVolunteer(id: ID!): VolunteerSchedule! @auth(requires: [STAFF])
-  
+  checkInScheduledVolunteer(id: ID!): VolunteerSchedule!
+    @auth(requires: [STAFF])
+
   # Log volunteer hours
-  logVolunteerHours(input: LogVolunteerHoursInput!): VolunteerHours! @auth(requires: [STAFF])
-  
+  logVolunteerHours(input: LogVolunteerHoursInput!): VolunteerHours!
+    @auth(requires: [STAFF])
+
   # Log my volunteer hours (for authenticated volunteers)
-  logMyVolunteerHours(input: LogMyVolunteerHoursInput!): VolunteerHours! @auth(requires: [VOLUNTEER])
-  
+  logMyVolunteerHours(input: LogMyVolunteerHoursInput!): VolunteerHours!
+    @auth(requires: [VOLUNTEER])
+
   # Approve volunteer hours
   approveVolunteerHours(id: ID!): VolunteerHours! @auth(requires: [STAFF])
-  
+
   # Reject volunteer hours
-  rejectVolunteerHours(id: ID!, reason: String!): VolunteerHours! @auth(requires: [STAFF])
-  
+  rejectVolunteerHours(id: ID!, reason: String!): VolunteerHours!
+    @auth(requires: [STAFF])
+
   # Create volunteer opportunity
-  createVolunteerOpportunity(input: CreateVolunteerOpportunityInput!): VolunteerOpportunity! @auth(requires: [STAFF])
-  
+  createVolunteerOpportunity(
+    input: CreateVolunteerOpportunityInput!
+  ): VolunteerOpportunity! @auth(requires: [STAFF])
+
   # Update volunteer opportunity
-  updateVolunteerOpportunity(id: ID!, input: UpdateVolunteerOpportunityInput!): VolunteerOpportunity! @auth(requires: [STAFF])
-  
+  updateVolunteerOpportunity(
+    id: ID!
+    input: UpdateVolunteerOpportunityInput!
+  ): VolunteerOpportunity! @auth(requires: [STAFF])
+
   # Delete volunteer opportunity
   deleteVolunteerOpportunity(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Submit volunteer application
-  submitVolunteerApplication(input: SubmitVolunteerApplicationInput!): VolunteerApplication! @auth(requires: [MEMBER])
-  
+  submitVolunteerApplication(
+    input: SubmitVolunteerApplicationInput!
+  ): VolunteerApplication! @auth(requires: [MEMBER])
+
   # Review volunteer application
-  reviewVolunteerApplication(id: ID!, input: ReviewVolunteerApplicationInput!): VolunteerApplication! @auth(requires: [STAFF])
-  
+  reviewVolunteerApplication(
+    id: ID!
+    input: ReviewVolunteerApplicationInput!
+  ): VolunteerApplication! @auth(requires: [STAFF])
+
   # Create volunteer team
-  createVolunteerTeam(input: CreateVolunteerTeamInput!): VolunteerTeam! @auth(requires: [STAFF])
-  
+  createVolunteerTeam(input: CreateVolunteerTeamInput!): VolunteerTeam!
+    @auth(requires: [STAFF])
+
   # Update volunteer team
-  updateVolunteerTeam(id: ID!, input: UpdateVolunteerTeamInput!): VolunteerTeam! @auth(requires: [STAFF])
-  
+  updateVolunteerTeam(
+    id: ID!
+    input: UpdateVolunteerTeamInput!
+  ): VolunteerTeam! @auth(requires: [STAFF])
+
   # Delete volunteer team
   deleteVolunteerTeam(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Add volunteer to team
-  addVolunteerToTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam! @auth(requires: [STAFF])
-  
+  addVolunteerToTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam!
+    @auth(requires: [STAFF])
+
   # Remove volunteer from team
-  removeVolunteerFromTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam! @auth(requires: [STAFF])
-  
+  removeVolunteerFromTeam(teamId: ID!, volunteerId: ID!): VolunteerTeam!
+    @auth(requires: [STAFF])
+
   # Send team communication
-  sendTeamCommunication(input: SendTeamCommunicationInput!): TeamCommunication! @auth(requires: [STAFF])
-  
+  sendTeamCommunication(input: SendTeamCommunicationInput!): TeamCommunication!
+    @auth(requires: [STAFF])
+
   # Update team communication
-  updateTeamCommunication(id: ID!, input: UpdateTeamCommunicationInput!): TeamCommunication! @auth(requires: [STAFF])
-  
+  updateTeamCommunication(
+    id: ID!
+    input: UpdateTeamCommunicationInput!
+  ): TeamCommunication! @auth(requires: [STAFF])
+
   # Delete team communication
   deleteTeamCommunication(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Mark team communication as read
-  markTeamCommunicationAsRead(id: ID!): TeamCommunication! @auth(requires: [VOLUNTEER])
+  markTeamCommunicationAsRead(id: ID!): TeamCommunication!
+    @auth(requires: [VOLUNTEER])
 }
 
 input CreateVolunteerInput {
@@ -972,17 +1028,22 @@ input UpdateTeamCommunicationInput {
 
 extend type Subscription {
   # Get notifications for volunteer schedule changes
-  volunteerScheduleUpdated(volunteerId: ID!): VolunteerSchedule! @auth(requires: [VOLUNTEER])
-  
+  volunteerScheduleUpdated(volunteerId: ID!): VolunteerSchedule!
+    @auth(requires: [VOLUNTEER])
+
   # Get notifications for new team communications
-  teamCommunicationReceived(teamId: ID!): TeamCommunication! @auth(requires: [VOLUNTEER])
-  
+  teamCommunicationReceived(teamId: ID!): TeamCommunication!
+    @auth(requires: [VOLUNTEER])
+
   # Get notifications when volunteer hours are approved/rejected
-  volunteerHoursStatusChanged(volunteerId: ID!): VolunteerHours! @auth(requires: [VOLUNTEER])
-  
+  volunteerHoursStatusChanged(volunteerId: ID!): VolunteerHours!
+    @auth(requires: [VOLUNTEER])
+
   # Get notifications for new volunteer applications
-  volunteerApplicationReceived(opportunityId: ID!): VolunteerApplication! @auth(requires: [STAFF])
-  
+  volunteerApplicationReceived(opportunityId: ID!): VolunteerApplication!
+    @auth(requires: [STAFF])
+
   # Get notifications for volunteer recognition
-  volunteerRecognitionAnnounced(branchId: ID): VolunteerRecognition! @auth(requires: [MEMBER])
+  volunteerRecognitionAnnounced(branchId: ID): VolunteerRecognition!
+    @auth(requires: [MEMBER])
 }

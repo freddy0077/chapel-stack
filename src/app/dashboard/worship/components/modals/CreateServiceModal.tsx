@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Fragment, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export interface ServiceFormData {
   title: string;
@@ -10,7 +10,7 @@ export interface ServiceFormData {
   theme: string;
   description: string;
   location: string;
-  status: 'Planning' | 'Confirmed' | 'Draft' | 'Completed';
+  status: "Planning" | "Confirmed" | "Draft" | "Completed";
   serviceType: string;
   leadPastor: string;
   worshipLeader: string;
@@ -25,23 +25,27 @@ interface CreateServiceModalProps {
   onSave: (serviceData: ServiceFormData) => void;
 }
 
-export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateServiceModalProps) {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [theme, setTheme] = useState('');
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('Main Sanctuary');
-  const [serviceType, setServiceType] = useState('Weekly Service');
-  const [leadPastor, setLeadPastor] = useState('');
-  const [worshipLeader, setWorshipLeader] = useState('');
-  
+export default function CreateServiceModal({
+  isOpen,
+  onClose,
+  onSave,
+}: CreateServiceModalProps) {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [theme, setTheme] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("Main Sanctuary");
+  const [serviceType, setServiceType] = useState("Weekly Service");
+  const [leadPastor, setLeadPastor] = useState("");
+  const [worshipLeader, setWorshipLeader] = useState("");
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Combine date and time into a single datetime string
     const dateTime = new Date(`${date}T${time}`).toISOString();
-    
+
     // Create service data object
     const serviceData: ServiceFormData = {
       title,
@@ -49,31 +53,31 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
       theme,
       description,
       location,
-      status: 'Planning',
+      status: "Planning",
       serviceType,
       leadPastor,
       worshipLeader,
       songs: [],
       team: [],
-      completed: false
+      completed: false,
     };
-    
+
     onSave(serviceData);
-    
+
     // Reset form
     resetForm();
   };
-  
+
   const resetForm = () => {
-    setTitle('');
-    setDate('');
-    setTime('');
-    setTheme('');
-    setDescription('');
-    setLocation('Main Sanctuary');
-    setServiceType('Weekly Service');
-    setLeadPastor('');
-    setWorshipLeader('');
+    setTitle("");
+    setDate("");
+    setTime("");
+    setTheme("");
+    setDescription("");
+    setLocation("Main Sanctuary");
+    setServiceType("Weekly Service");
+    setLeadPastor("");
+    setWorshipLeader("");
   };
 
   return (
@@ -116,11 +120,15 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
 
                 <div>
                   <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-base font-semibold leading-6 text-gray-900"
+                    >
                       Create New Service Plan
                     </Dialog.Title>
                     <p className="mt-2 text-sm text-gray-500">
-                      Fill out the form below to create a new worship service plan.
+                      Fill out the form below to create a new worship service
+                      plan.
                     </p>
                   </div>
                 </div>
@@ -128,7 +136,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                   <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
                     <div className="sm:col-span-6">
-                      <label htmlFor="title" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="title"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Service Title
                       </label>
                       <div className="mt-2">
@@ -146,7 +157,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="date" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="date"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Date
                       </label>
                       <div className="mt-2">
@@ -163,7 +177,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="time" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="time"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Time
                       </label>
                       <div className="mt-2">
@@ -180,7 +197,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-6">
-                      <label htmlFor="theme" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="theme"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Theme
                       </label>
                       <div className="mt-2">
@@ -197,7 +217,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-6">
-                      <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Description
                       </label>
                       <div className="mt-2">
@@ -214,7 +237,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="location" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="location"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Location
                       </label>
                       <div className="mt-2">
@@ -235,7 +261,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="serviceType" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="serviceType"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Service Type
                       </label>
                       <div className="mt-2">
@@ -256,7 +285,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="leadPastor" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="leadPastor"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Lead Pastor
                       </label>
                       <div className="mt-2">
@@ -273,7 +305,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label htmlFor="worshipLeader" className="block text-sm font-medium leading-6 text-gray-900">
+                      <label
+                        htmlFor="worshipLeader"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
                         Worship Leader
                       </label>
                       <div className="mt-2">
@@ -303,7 +338,10 @@ export default function CreateServiceModal({ isOpen, onClose, onSave }: CreateSe
                         type="submit"
                         className="inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                       >
-                        <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+                        <PlusIcon
+                          className="-ml-0.5 mr-1.5 h-5 w-5"
+                          aria-hidden="true"
+                        />
                         Create Service
                       </button>
                     </div>

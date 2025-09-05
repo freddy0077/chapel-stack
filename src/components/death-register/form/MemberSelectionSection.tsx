@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Title, Text, Button, Grid, Flex } from '@tremor/react';
-import { UserIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { Card, Title, Text, Button, Grid, Flex } from "@tremor/react";
+import {
+  UserIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 interface Member {
   id: string;
@@ -47,7 +51,7 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
         <UserIcon className="h-5 w-5 mr-2" />
         Member Selection
       </Title>
-      
+
       {selectedMember ? (
         <div className="bg-white rounded-lg p-4 border border-blue-200">
           <Flex justifyContent="between" alignItems="center">
@@ -65,10 +69,12 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
               </div>
               <div>
                 <Text className="font-semibold text-slate-900">
-                  {selectedMember.firstName} {selectedMember.middleName} {selectedMember.lastName}
+                  {selectedMember.firstName} {selectedMember.middleName}{" "}
+                  {selectedMember.lastName}
                 </Text>
                 <Text className="text-slate-600 text-sm">
-                  {selectedMember.phoneNumber && `📞 ${selectedMember.phoneNumber}`}
+                  {selectedMember.phoneNumber &&
+                    `📞 ${selectedMember.phoneNumber}`}
                   {selectedMember.email && ` • ✉️ ${selectedMember.email}`}
                 </Text>
               </div>
@@ -106,11 +112,13 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
                   className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              
+
               {membersLoading ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                  <Text className="mt-2 text-slate-600">Searching members...</Text>
+                  <Text className="mt-2 text-slate-600">
+                    Searching members...
+                  </Text>
                 </div>
               ) : members && members.length > 0 ? (
                 <div className="max-h-60 overflow-y-auto space-y-2">
@@ -133,10 +141,13 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
                       </div>
                       <div className="flex-1">
                         <Text className="font-medium text-slate-900">
-                          {member.firstName} {member.middleName} {member.lastName}
+                          {member.firstName} {member.middleName}{" "}
+                          {member.lastName}
                         </Text>
                         <Text className="text-sm text-slate-600">
-                          {member.phoneNumber || member.email || 'No contact info'}
+                          {member.phoneNumber ||
+                            member.email ||
+                            "No contact info"}
                         </Text>
                       </div>
                     </div>
@@ -144,10 +155,12 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
                 </div>
               ) : memberSearchTerm ? (
                 <div className="text-center py-4">
-                  <Text className="text-slate-600">No members found matching "{memberSearchTerm}"</Text>
+                  <Text className="text-slate-600">
+                    No members found matching "{memberSearchTerm}"
+                  </Text>
                 </div>
               ) : null}
-              
+
               <Button
                 variant="secondary"
                 onClick={onToggleSearch}
@@ -157,10 +170,8 @@ export const MemberSelectionSection: React.FC<MemberSelectionSectionProps> = ({
               </Button>
             </div>
           )}
-          
-          {error && (
-            <Text className="text-red-600 text-sm">{error}</Text>
-          )}
+
+          {error && <Text className="text-red-600 text-sm">{error}</Text>}
         </div>
       )}
     </Card>

@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   SparklesIcon,
   GiftIcon,
@@ -38,7 +33,10 @@ import SacramentPagination from "./SacramentPagination";
 import BulkOperations from "@/components/sacraments/BulkOperations";
 import { SacramentRecordSkeleton } from "@/components/ui/SkeletonLoader";
 import { SacramentErrorBoundary } from "@/components/ErrorBoundary";
-import { SACRAMENT_TYPES, type SacramentType } from "@/constants/sacramentTypes";
+import {
+  SACRAMENT_TYPES,
+  type SacramentType,
+} from "@/constants/sacramentTypes";
 import { formatSacramentType } from "@/utils/sacramentHelpers";
 import type { useSacramentLoading } from "@/hooks/useSacramentLoading";
 
@@ -59,13 +57,13 @@ interface SelectionState {
 }
 
 // Enhanced record display component with pagination and search
-const EnhancedRecordDisplay = ({ 
-  records, 
-  loading, 
-  error, 
-  icon: Icon, 
-  title, 
-  description, 
+const EnhancedRecordDisplay = ({
+  records,
+  loading,
+  error,
+  icon: Icon,
+  title,
+  description,
   color,
   sacramentType,
   onViewRecord,
@@ -93,12 +91,12 @@ const EnhancedRecordDisplay = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    searchTerm: '',
-    dateFrom: '',
-    dateTo: '',
-    officiant: '',
-    location: '',
-    sacramentType: '',
+    searchTerm: "",
+    dateFrom: "",
+    dateTo: "",
+    officiant: "",
+    location: "",
+    sacramentType: "",
   });
 
   // Filter records based on search criteria
@@ -106,24 +104,46 @@ const EnhancedRecordDisplay = ({
     if (!records || !Array.isArray(records)) {
       return [];
     }
-    
+
     return records.filter((record: any) => {
-      const matchesSearch = !searchFilters.searchTerm || 
-        record.memberId?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.officiantName?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.locationOfSacrament?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.groomName?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.brideName?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.godparent1Name?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.godparent2Name?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        record.sponsorName?.toLowerCase().includes(searchFilters.searchTerm.toLowerCase());
+      const matchesSearch =
+        !searchFilters.searchTerm ||
+        record.memberId
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.officiantName
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.locationOfSacrament
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.groomName
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.brideName
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.godparent1Name
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.godparent2Name
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        record.sponsorName
+          ?.toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase());
 
-      const matchesDateRange = !searchFilters.dateFrom || !searchFilters.dateTo ||
+      const matchesDateRange =
+        !searchFilters.dateFrom ||
+        !searchFilters.dateTo ||
         (new Date(record.dateOfSacrament) >= new Date(searchFilters.dateFrom) &&
-         new Date(record.dateOfSacrament) <= new Date(searchFilters.dateTo));
+          new Date(record.dateOfSacrament) <= new Date(searchFilters.dateTo));
 
-      const matchesOfficiant = !searchFilters.officiant || 
-        record.officiantName?.toLowerCase().includes(searchFilters.officiant.toLowerCase());
+      const matchesOfficiant =
+        !searchFilters.officiant ||
+        record.officiantName
+          ?.toLowerCase()
+          .includes(searchFilters.officiant.toLowerCase());
 
       return matchesSearch && matchesDateRange && matchesOfficiant;
     });
@@ -131,40 +151,47 @@ const EnhancedRecordDisplay = ({
 
   // Paginate filtered records
   const paginatedRecords = useMemo<any[]>(() => {
-    if (!filteredRecords || !Array.isArray(filteredRecords) || filteredRecords.length === 0) {
+    if (
+      !filteredRecords ||
+      !Array.isArray(filteredRecords) ||
+      filteredRecords.length === 0
+    ) {
       return [];
     }
-    
+
     try {
       const startIndex = (currentPage - 1) * recordsPerPage;
       const endIndex = startIndex + recordsPerPage;
       return filteredRecords.slice(startIndex, endIndex);
     } catch (error) {
-      console.error('Error paginating records:', error);
+      console.error("Error paginating records:", error);
       return filteredRecords; // Return all filtered records if pagination fails
     }
   }, [filteredRecords, currentPage, recordsPerPage]);
 
-  const totalPages = Math.max(1, Math.ceil((filteredRecords?.length || 0) / recordsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((filteredRecords?.length || 0) / recordsPerPage),
+  );
 
   // Handler functions for search filters
   const handleFiltersChange = (filters: Partial<SearchFilters>) => {
-    setSearchFilters(prev => ({ ...prev, ...filters }));
+    setSearchFilters((prev) => ({ ...prev, ...filters }));
   };
 
   const handleApplyFilters = () => {
     // Filters are applied automatically through useMemo
-    console.log('Filters applied:', searchFilters);
+    console.log("Filters applied:", searchFilters);
   };
 
   const handleClearFilters = () => {
     setSearchFilters({
-      searchTerm: '',
-      dateFrom: '',
-      dateTo: '',
-      officiant: '',
-      location: '',
-      sacramentType: '',
+      searchTerm: "",
+      dateFrom: "",
+      dateTo: "",
+      officiant: "",
+      location: "",
+      sacramentType: "",
     });
   };
 
@@ -172,14 +199,18 @@ const EnhancedRecordDisplay = ({
   if (loading) {
     return (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}>
+        <div
+          className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-white bg-opacity-20">
               <Icon className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">{title}</h3>
-              <p className="text-sm text-white text-opacity-90">{description}</p>
+              <p className="text-sm text-white text-opacity-90">
+                {description}
+              </p>
             </div>
           </div>
         </div>
@@ -197,22 +228,29 @@ const EnhancedRecordDisplay = ({
   if (error) {
     return (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}>
+        <div
+          className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-white bg-opacity-20">
               <Icon className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">{title}</h3>
-              <p className="text-sm text-white text-opacity-90">{description}</p>
+              <p className="text-sm text-white text-opacity-90">
+                {description}
+              </p>
             </div>
           </div>
         </div>
         <div className="p-6">
           <div className="text-center py-8">
-            <p className="text-red-600 mb-4">Error loading records: {error instanceof Error ? error.message : 'Unknown error'}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <p className="text-red-600 mb-4">
+              Error loading records:{" "}
+              {error instanceof Error ? error.message : "Unknown error"}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Retry
@@ -226,7 +264,9 @@ const EnhancedRecordDisplay = ({
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       {/* Header */}
-      <div className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}>
+      <div
+        className={`bg-gradient-to-r ${color} px-6 py-4 border-b border-gray-100`}
+      >
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg bg-gradient-to-r ${color}`}>
@@ -237,24 +277,34 @@ const EnhancedRecordDisplay = ({
               <p className="text-sm text-gray-600">{description}</p>
             </div>
           </div>
-          
+
           {/* Marriage Analytics Buttons - Only show for marriage records */}
-          {sacramentType === 'MATRIMONY' && (
+          {sacramentType === "MATRIMONY" && (
             <div className="flex items-center gap-2">
               {onViewMarriageAnalytics && (
                 <button
                   onClick={onViewMarriageAnalytics}
                   className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
                 >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg
+                    className="h-4 w-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
                   </svg>
                   Marriage Analytics
                 </button>
               )}
             </div>
           )}
-          
+
           <SacramentSearchFilters
             filters={searchFilters}
             onFiltersChange={handleFiltersChange}
@@ -265,20 +315,22 @@ const EnhancedRecordDisplay = ({
           />
         </div>
       </div>
-      
+
       {/* Records Content */}
       <div className="p-6">
         {filteredRecords.length === 0 ? (
           <div className="text-center py-12">
             <Icon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {searchFilters.searchTerm || Object.values(searchFilters).some(v => v) 
-                ? 'No records match your search criteria' 
+              {searchFilters.searchTerm ||
+              Object.values(searchFilters).some((v) => v)
+                ? "No records match your search criteria"
                 : `No ${title.toLowerCase()}`}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchFilters.searchTerm || Object.values(searchFilters).some(v => v)
-                ? 'Try adjusting your search filters.'
+              {searchFilters.searchTerm ||
+              Object.values(searchFilters).some((v) => v)
+                ? "Try adjusting your search filters."
                 : `Get started by creating a new ${title.toLowerCase().slice(0, -8)} record.`}
             </p>
           </div>
@@ -286,200 +338,326 @@ const EnhancedRecordDisplay = ({
           <>
             <div className="space-y-4">
               {paginatedRecords.map((record) => (
-                <div key={record.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div
+                  key={record.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center space-x-4">
-                    <div className={`w-10 h-10 ${color.includes('blue') ? 'bg-blue-100' : 
-                      color.includes('amber') ? 'bg-amber-100' :
-                      color.includes('purple') ? 'bg-purple-100' :
-                      'bg-rose-100'} rounded-full flex items-center justify-center`}>
-                      <Icon className={`h-5 w-5 ${color.includes('blue') ? 'text-blue-600' : 
-                        color.includes('amber') ? 'text-amber-600' :
-                        color.includes('purple') ? 'text-purple-600' :
-                        'text-rose-600'}`} />
+                    <div
+                      className={`w-10 h-10 ${
+                        color.includes("blue")
+                          ? "bg-blue-100"
+                          : color.includes("amber")
+                            ? "bg-amber-100"
+                            : color.includes("purple")
+                              ? "bg-purple-100"
+                              : "bg-rose-100"
+                      } rounded-full flex items-center justify-center`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 ${
+                          color.includes("blue")
+                            ? "text-blue-600"
+                            : color.includes("amber")
+                              ? "text-amber-600"
+                              : color.includes("purple")
+                                ? "text-purple-600"
+                                : "text-rose-600"
+                        }`}
+                      />
                     </div>
                     <div>
                       {/* Display relevant fields based on sacrament type */}
-                      {sacramentType === 'BAPTISM' && (
+                      {sacramentType === "BAPTISM" && (
                         <>
                           <div className="flex items-center space-x-3">
                             {record.member?.profileImageUrl && (
-                              <img 
-                                src={record.member.profileImageUrl} 
+                              <img
+                                src={record.member.profileImageUrl}
                                 alt={`${record.member.firstName} ${record.member.lastName}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
-                                {record.member ? 
-                                  `${record.member.firstName} ${record.member.middleName ? record.member.middleName + ' ' : ''}${record.member.lastName}` :
-                                  `Member ID: ${record.memberId}`
-                                }
+                                {record.member
+                                  ? `${record.member.firstName} ${record.member.middleName ? record.member.middleName + " " : ""}${record.member.lastName}`
+                                  : `Member ID: ${record.memberId}`}
                               </p>
                               {record.member?.dateOfBirth && (
                                 <p className="text-xs text-gray-400">
-                                  Age: {new Date().getFullYear() - new Date(record.member.dateOfBirth).getFullYear()} • {record.member.gender}
+                                  Age:{" "}
+                                  {new Date().getFullYear() -
+                                    new Date(
+                                      record.member.dateOfBirth,
+                                    ).getFullYear()}{" "}
+                                  • {record.member.gender}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 space-y-1 mt-2">
                             <p className="flex items-center">
-                              <span className="font-medium">Date:</span> {new Date(record.dateOfSacrament).toLocaleDateString()} • {record.locationOfSacrament}
+                              <span className="font-medium">Date:</span>{" "}
+                              {new Date(
+                                record.dateOfSacrament,
+                              ).toLocaleDateString()}{" "}
+                              • {record.locationOfSacrament}
                             </p>
-                            <p><span className="font-medium">Officiant:</span> {record.officiantName}</p>
-                            {(record.godparent1Name || record.godparent2Name) && (
-                              <p><span className="font-medium">Godparents:</span> {[record.godparent1Name, record.godparent2Name].filter(Boolean).join(', ')}</p>
+                            <p>
+                              <span className="font-medium">Officiant:</span>{" "}
+                              {record.officiantName}
+                            </p>
+                            {(record.godparent1Name ||
+                              record.godparent2Name) && (
+                              <p>
+                                <span className="font-medium">Godparents:</span>{" "}
+                                {[record.godparent1Name, record.godparent2Name]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </p>
                             )}
                             {record.member?.email && (
-                              <p className="text-xs"><span className="font-medium">Contact:</span> {record.member.email}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">Contact:</span>{" "}
+                                {record.member.email}
+                              </p>
                             )}
                             {record.certificateNumber && (
-                              <p className="text-xs"><span className="font-medium">Certificate:</span> #{record.certificateNumber}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">
+                                  Certificate:
+                                </span>{" "}
+                                #{record.certificateNumber}
+                              </p>
                             )}
                           </div>
                         </>
                       )}
-                      
-                      {sacramentType === 'EUCHARIST_FIRST_COMMUNION' && (
+
+                      {sacramentType === "EUCHARIST_FIRST_COMMUNION" && (
                         <>
                           <div className="flex items-center space-x-3">
                             {record.member?.profileImageUrl && (
-                              <img 
-                                src={record.member.profileImageUrl} 
+                              <img
+                                src={record.member.profileImageUrl}
                                 alt={`${record.member.firstName} ${record.member.lastName}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
-                                {record.member ? 
-                                  `${record.member.firstName} ${record.member.middleName ? record.member.middleName + ' ' : ''}${record.member.lastName}` :
-                                  `Member ID: ${record.memberId}`
-                                }
+                                {record.member
+                                  ? `${record.member.firstName} ${record.member.middleName ? record.member.middleName + " " : ""}${record.member.lastName}`
+                                  : `Member ID: ${record.memberId}`}
                               </p>
                               {record.member?.dateOfBirth && (
                                 <p className="text-xs text-gray-400">
-                                  Age: {new Date().getFullYear() - new Date(record.member.dateOfBirth).getFullYear()} • {record.member.gender}
+                                  Age:{" "}
+                                  {new Date().getFullYear() -
+                                    new Date(
+                                      record.member.dateOfBirth,
+                                    ).getFullYear()}{" "}
+                                  • {record.member.gender}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 space-y-1 mt-2">
-                            <p><span className="font-medium">Date:</span> {new Date(record.dateOfSacrament).toLocaleDateString()} • {record.locationOfSacrament}</p>
-                            <p><span className="font-medium">Officiant:</span> {record.officiantName}</p>
-                            {record.sponsorName && <p><span className="font-medium">Sponsor:</span> {record.sponsorName}</p>}
+                            <p>
+                              <span className="font-medium">Date:</span>{" "}
+                              {new Date(
+                                record.dateOfSacrament,
+                              ).toLocaleDateString()}{" "}
+                              • {record.locationOfSacrament}
+                            </p>
+                            <p>
+                              <span className="font-medium">Officiant:</span>{" "}
+                              {record.officiantName}
+                            </p>
+                            {record.sponsorName && (
+                              <p>
+                                <span className="font-medium">Sponsor:</span>{" "}
+                                {record.sponsorName}
+                              </p>
+                            )}
                             {record.member?.email && (
-                              <p className="text-xs"><span className="font-medium">Contact:</span> {record.member.email}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">Contact:</span>{" "}
+                                {record.member.email}
+                              </p>
                             )}
                           </div>
                         </>
                       )}
-                      
-                      {sacramentType === 'CONFIRMATION' && (
+
+                      {sacramentType === "CONFIRMATION" && (
                         <>
                           <div className="flex items-center space-x-3">
                             {record.member?.profileImageUrl && (
-                              <img 
-                                src={record.member.profileImageUrl} 
+                              <img
+                                src={record.member.profileImageUrl}
                                 alt={`${record.member.firstName} ${record.member.lastName}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
-                                {record.member ? 
-                                  `${record.member.firstName} ${record.member.middleName ? record.member.middleName + ' ' : ''}${record.member.lastName}` :
-                                  `Member ID: ${record.memberId}`
-                                }
+                                {record.member
+                                  ? `${record.member.firstName} ${record.member.middleName ? record.member.middleName + " " : ""}${record.member.lastName}`
+                                  : `Member ID: ${record.memberId}`}
                               </p>
                               {record.member?.dateOfBirth && (
                                 <p className="text-xs text-gray-400">
-                                  Age: {new Date().getFullYear() - new Date(record.member.dateOfBirth).getFullYear()} • {record.member.gender}
+                                  Age:{" "}
+                                  {new Date().getFullYear() -
+                                    new Date(
+                                      record.member.dateOfBirth,
+                                    ).getFullYear()}{" "}
+                                  • {record.member.gender}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 space-y-1 mt-2">
-                            <p><span className="font-medium">Date:</span> {new Date(record.dateOfSacrament).toLocaleDateString()} • {record.locationOfSacrament}</p>
-                            <p><span className="font-medium">Officiant:</span> {record.officiantName}</p>
-                            {record.sponsorName && <p><span className="font-medium">Sponsor:</span> {record.sponsorName}</p>}
+                            <p>
+                              <span className="font-medium">Date:</span>{" "}
+                              {new Date(
+                                record.dateOfSacrament,
+                              ).toLocaleDateString()}{" "}
+                              • {record.locationOfSacrament}
+                            </p>
+                            <p>
+                              <span className="font-medium">Officiant:</span>{" "}
+                              {record.officiantName}
+                            </p>
+                            {record.sponsorName && (
+                              <p>
+                                <span className="font-medium">Sponsor:</span>{" "}
+                                {record.sponsorName}
+                              </p>
+                            )}
                             {record.member?.email && (
-                              <p className="text-xs"><span className="font-medium">Contact:</span> {record.member.email}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">Contact:</span>{" "}
+                                {record.member.email}
+                              </p>
                             )}
                           </div>
                         </>
                       )}
-                      
-                      {sacramentType === 'MATRIMONY' && (
+
+                      {sacramentType === "MATRIMONY" && (
                         <>
                           <div className="flex items-center space-x-3">
                             {record.member?.profileImageUrl && (
-                              <img 
-                                src={record.member.profileImageUrl} 
+                              <img
+                                src={record.member.profileImageUrl}
                                 alt={`${record.member.firstName} ${record.member.lastName}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
-                                {record.groomName && record.brideName 
+                                {record.groomName && record.brideName
                                   ? `${record.groomName} & ${record.brideName}`
-                                  : record.member ? 
-                                    `${record.member.firstName} ${record.member.middleName ? record.member.middleName + ' ' : ''}${record.member.lastName}` :
-                                    `Member ID: ${record.memberId}`
-                                }
+                                  : record.member
+                                    ? `${record.member.firstName} ${record.member.middleName ? record.member.middleName + " " : ""}${record.member.lastName}`
+                                    : `Member ID: ${record.memberId}`}
                               </p>
                               {record.member?.dateOfBirth && (
                                 <p className="text-xs text-gray-400">
-                                  Age: {new Date().getFullYear() - new Date(record.member.dateOfBirth).getFullYear()} • {record.member.gender}
+                                  Age:{" "}
+                                  {new Date().getFullYear() -
+                                    new Date(
+                                      record.member.dateOfBirth,
+                                    ).getFullYear()}{" "}
+                                  • {record.member.gender}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 space-y-1 mt-2">
-                            <p><span className="font-medium">Date:</span> {new Date(record.dateOfSacrament).toLocaleDateString()} • {record.locationOfSacrament}</p>
-                            <p><span className="font-medium">Officiant:</span> {record.officiantName}</p>
+                            <p>
+                              <span className="font-medium">Date:</span>{" "}
+                              {new Date(
+                                record.dateOfSacrament,
+                              ).toLocaleDateString()}{" "}
+                              • {record.locationOfSacrament}
+                            </p>
+                            <p>
+                              <span className="font-medium">Officiant:</span>{" "}
+                              {record.officiantName}
+                            </p>
                             {(record.witness1Name || record.witness2Name) && (
-                              <p><span className="font-medium">Witnesses:</span> {[record.witness1Name, record.witness2Name].filter(Boolean).join(', ')}</p>
+                              <p>
+                                <span className="font-medium">Witnesses:</span>{" "}
+                                {[record.witness1Name, record.witness2Name]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </p>
                             )}
                             {record.member?.email && (
-                              <p className="text-xs"><span className="font-medium">Contact:</span> {record.member.email}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">Contact:</span>{" "}
+                                {record.member.email}
+                              </p>
                             )}
                           </div>
                         </>
                       )}
-                      
+
                       {/* Default display for other sacrament types */}
-                      {!['BAPTISM', 'EUCHARIST_FIRST_COMMUNION', 'CONFIRMATION', 'MATRIMONY'].includes(sacramentType) && (
+                      {![
+                        "BAPTISM",
+                        "EUCHARIST_FIRST_COMMUNION",
+                        "CONFIRMATION",
+                        "MATRIMONY",
+                      ].includes(sacramentType) && (
                         <>
                           <div className="flex items-center space-x-3">
                             {record.member?.profileImageUrl && (
-                              <img 
-                                src={record.member.profileImageUrl} 
+                              <img
+                                src={record.member.profileImageUrl}
                                 alt={`${record.member.firstName} ${record.member.lastName}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             )}
                             <div>
                               <p className="font-medium text-gray-900">
-                                {record.member ? 
-                                  `${record.member.firstName} ${record.member.middleName ? record.member.middleName + ' ' : ''}${record.member.lastName}` :
-                                  `Member ID: ${record.memberId}`
-                                }
+                                {record.member
+                                  ? `${record.member.firstName} ${record.member.middleName ? record.member.middleName + " " : ""}${record.member.lastName}`
+                                  : `Member ID: ${record.memberId}`}
                               </p>
                               {record.member?.dateOfBirth && (
                                 <p className="text-xs text-gray-400">
-                                  Age: {new Date().getFullYear() - new Date(record.member.dateOfBirth).getFullYear()} • {record.member.gender}
+                                  Age:{" "}
+                                  {new Date().getFullYear() -
+                                    new Date(
+                                      record.member.dateOfBirth,
+                                    ).getFullYear()}{" "}
+                                  • {record.member.gender}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 space-y-1 mt-2">
-                            <p><span className="font-medium">Date:</span> {new Date(record.dateOfSacrament).toLocaleDateString()} • {record.locationOfSacrament}</p>
-                            <p><span className="font-medium">Officiant:</span> {record.officiantName}</p>
+                            <p>
+                              <span className="font-medium">Date:</span>{" "}
+                              {new Date(
+                                record.dateOfSacrament,
+                              ).toLocaleDateString()}{" "}
+                              • {record.locationOfSacrament}
+                            </p>
+                            <p>
+                              <span className="font-medium">Officiant:</span>{" "}
+                              {record.officiantName}
+                            </p>
                             {record.member?.email && (
-                              <p className="text-xs"><span className="font-medium">Contact:</span> {record.member.email}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">Contact:</span>{" "}
+                                {record.member.email}
+                              </p>
                             )}
                           </div>
                         </>
@@ -515,22 +693,26 @@ const EnhancedRecordDisplay = ({
                     >
                       <DocumentArrowDownIcon className="h-4 w-4" />
                     </button>
-                    
+
                     {/* Marriage-specific actions */}
-                    {sacramentType === 'MATRIMONY' && onViewMemberMarriageHistory && record.memberId && (
-                      <button
-                        onClick={() => onViewMemberMarriageHistory(record.memberId)}
-                        className="p-2 text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
-                        title="View Marriage History"
-                      >
-                        <HeartIcon className="h-4 w-4" />
-                      </button>
-                    )}
+                    {sacramentType === "MATRIMONY" &&
+                      onViewMemberMarriageHistory &&
+                      record.memberId && (
+                        <button
+                          onClick={() =>
+                            onViewMemberMarriageHistory(record.memberId)
+                          }
+                          className="p-2 text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                          title="View Marriage History"
+                        >
+                          <HeartIcon className="h-4 w-4" />
+                        </button>
+                      )}
                   </div>
                 </div>
               ))}
             </div>
-            
+
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-6">
@@ -552,21 +734,26 @@ const EnhancedRecordDisplay = ({
 };
 
 // Individual tab content components with enhanced functionality
-const BaptismRecords = ({ 
-  refetch, 
-  onViewRecord, 
-  onEditRecord, 
-  onDeleteRecord, 
-  onGenerateCertificate 
-}: { 
-  refetch?: React.MutableRefObject<(() => void) | null>; 
-  onViewRecord?: (record: any) => void; 
-  onEditRecord?: (record: any) => void; 
-  onDeleteRecord?: (recordId: string) => void; 
-  onGenerateCertificate?: (record: any) => void; 
+const BaptismRecords = ({
+  refetch,
+  onViewRecord,
+  onEditRecord,
+  onDeleteRecord,
+  onGenerateCertificate,
+}: {
+  refetch?: React.MutableRefObject<(() => void) | null>;
+  onViewRecord?: (record: any) => void;
+  onEditRecord?: (record: any) => void;
+  onDeleteRecord?: (recordId: string) => void;
+  onGenerateCertificate?: (record: any) => void;
 }) => (
   <BaptismRecordsLoader>
-    {(records: BaptismRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+    {(
+      records: BaptismRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => {
       // Store refetch function
       if (refetch && loaderRefetch) {
         refetch.current = loaderRefetch;
@@ -592,21 +779,26 @@ const BaptismRecords = ({
   </BaptismRecordsLoader>
 );
 
-const CommunionRecords = ({ 
-  refetch, 
-  onViewRecord, 
-  onEditRecord, 
-  onDeleteRecord, 
-  onGenerateCertificate 
-}: { 
-  refetch?: React.MutableRefObject<(() => void) | null>; 
-  onViewRecord?: (record: any) => void; 
-  onEditRecord?: (record: any) => void; 
-  onDeleteRecord?: (recordId: string) => void; 
-  onGenerateCertificate?: (record: any) => void; 
+const CommunionRecords = ({
+  refetch,
+  onViewRecord,
+  onEditRecord,
+  onDeleteRecord,
+  onGenerateCertificate,
+}: {
+  refetch?: React.MutableRefObject<(() => void) | null>;
+  onViewRecord?: (record: any) => void;
+  onEditRecord?: (record: any) => void;
+  onDeleteRecord?: (recordId: string) => void;
+  onGenerateCertificate?: (record: any) => void;
 }) => (
   <CommunionRecordsLoader>
-    {(records: CommunionRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+    {(
+      records: CommunionRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => {
       // Store refetch function
       if (refetch && loaderRefetch) {
         refetch.current = loaderRefetch;
@@ -632,21 +824,26 @@ const CommunionRecords = ({
   </CommunionRecordsLoader>
 );
 
-const ConfirmationRecords = ({ 
-  refetch, 
-  onViewRecord, 
-  onEditRecord, 
-  onDeleteRecord, 
-  onGenerateCertificate 
-}: { 
-  refetch?: React.MutableRefObject<(() => void) | null>; 
-  onViewRecord?: (record: any) => void; 
-  onEditRecord?: (record: any) => void; 
-  onDeleteRecord?: (recordId: string) => void; 
-  onGenerateCertificate?: (record: any) => void; 
+const ConfirmationRecords = ({
+  refetch,
+  onViewRecord,
+  onEditRecord,
+  onDeleteRecord,
+  onGenerateCertificate,
+}: {
+  refetch?: React.MutableRefObject<(() => void) | null>;
+  onViewRecord?: (record: any) => void;
+  onEditRecord?: (record: any) => void;
+  onDeleteRecord?: (recordId: string) => void;
+  onGenerateCertificate?: (record: any) => void;
 }) => (
   <ConfirmationRecordsLoader>
-    {(records: ConfirmationRecord[], loading: boolean, error: unknown, loaderRefetch: () => void) => {
+    {(
+      records: ConfirmationRecord[],
+      loading: boolean,
+      error: unknown,
+      loaderRefetch: () => void,
+    ) => {
       // Store refetch function
       if (refetch && loaderRefetch) {
         refetch.current = loaderRefetch;
@@ -672,20 +869,20 @@ const ConfirmationRecords = ({
   </ConfirmationRecordsLoader>
 );
 
-const MarriageRecords = ({ 
-  refetch, 
-  onViewRecord, 
-  onEditRecord, 
-  onDeleteRecord, 
+const MarriageRecords = ({
+  refetch,
+  onViewRecord,
+  onEditRecord,
+  onDeleteRecord,
   onGenerateCertificate,
   onViewMarriageAnalytics,
   onViewMemberMarriageHistory,
-}: { 
-  refetch?: React.MutableRefObject<(() => void) | null>; 
-  onViewRecord?: (record: any) => void; 
-  onEditRecord?: (record: any) => void; 
-  onDeleteRecord?: (recordId: string) => void; 
-  onGenerateCertificate?: (record: any) => void; 
+}: {
+  refetch?: React.MutableRefObject<(() => void) | null>;
+  onViewRecord?: (record: any) => void;
+  onEditRecord?: (record: any) => void;
+  onDeleteRecord?: (recordId: string) => void;
+  onGenerateCertificate?: (record: any) => void;
   onViewMarriageAnalytics?: () => void;
   onViewMemberMarriageHistory?: (memberId: string) => void;
 }) => (
@@ -729,17 +926,23 @@ const AnniversaryTracker = () => (
                 <CalendarIcon className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Upcoming Anniversaries</h3>
-                <p className="text-sm text-gray-600">Celebrating spiritual milestones</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Upcoming Anniversaries
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Celebrating spiritual milestones
+                </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-green-600">{anniversaries.length}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {anniversaries.length}
+              </p>
               <p className="text-xs text-gray-500">This month</p>
             </div>
           </div>
         </div>
-        
+
         <div className="p-6">
           {loading ? (
             <div className="space-y-4">
@@ -762,20 +965,31 @@ const AnniversaryTracker = () => (
           ) : anniversaries.length === 0 ? (
             <div className="text-center py-12">
               <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No upcoming anniversaries</h3>
-              <p className="mt-1 text-sm text-gray-500">Check back later for milestone celebrations.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No upcoming anniversaries
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Check back later for milestone celebrations.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               {anniversaries.slice(0, 10).map((anniversary, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <CalendarIcon className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Anniversary #{index + 1}</p>
-                      <p className="text-sm text-gray-500">Details coming soon</p>
+                      <p className="font-medium text-gray-900">
+                        Anniversary #{index + 1}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Details coming soon
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -816,36 +1030,36 @@ export default function SacramentTabContentEnhanced({
   return (
     <Tabs defaultValue="baptism" className="w-full">
       <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-1">
-        <TabsTrigger 
-          value="baptism" 
+        <TabsTrigger
+          value="baptism"
           className="flex items-center space-x-2 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 rounded-lg transition-all"
         >
           <SparklesIcon className="h-4 w-4" />
           <span className="hidden sm:inline">Baptism</span>
         </TabsTrigger>
-        <TabsTrigger 
-          value="communion" 
+        <TabsTrigger
+          value="communion"
           className="flex items-center space-x-2 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700 rounded-lg transition-all"
         >
           <GiftIcon className="h-4 w-4" />
           <span className="hidden sm:inline">Communion</span>
         </TabsTrigger>
-        <TabsTrigger 
-          value="confirmation" 
+        <TabsTrigger
+          value="confirmation"
           className="flex items-center space-x-2 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 rounded-lg transition-all"
         >
           <HeartIcon className="h-4 w-4" />
           <span className="hidden sm:inline">Confirmation</span>
         </TabsTrigger>
-        <TabsTrigger 
-          value="marriage" 
+        <TabsTrigger
+          value="marriage"
           className="flex items-center space-x-2 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700 rounded-lg transition-all"
         >
           <UserGroupIcon className="h-4 w-4" />
           <span className="hidden sm:inline">Marriage</span>
         </TabsTrigger>
-        <TabsTrigger 
-          value="anniversaries" 
+        <TabsTrigger
+          value="anniversaries"
           className="flex items-center space-x-2 data-[state=active]:bg-green-100 data-[state=active]:text-green-700 rounded-lg transition-colors"
         >
           <CalendarIcon className="h-4 w-4" />
@@ -855,7 +1069,7 @@ export default function SacramentTabContentEnhanced({
 
       <div className="mt-6">
         <TabsContent value="baptism" className="mt-0">
-          <BaptismRecords 
+          <BaptismRecords
             refetch={baptismRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
@@ -865,7 +1079,7 @@ export default function SacramentTabContentEnhanced({
         </TabsContent>
 
         <TabsContent value="communion" className="mt-0">
-          <CommunionRecords 
+          <CommunionRecords
             refetch={communionRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
@@ -875,7 +1089,7 @@ export default function SacramentTabContentEnhanced({
         </TabsContent>
 
         <TabsContent value="confirmation" className="mt-0">
-          <ConfirmationRecords 
+          <ConfirmationRecords
             refetch={confirmationRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}
@@ -885,7 +1099,7 @@ export default function SacramentTabContentEnhanced({
         </TabsContent>
 
         <TabsContent value="marriage" className="mt-0">
-          <MarriageRecords 
+          <MarriageRecords
             refetch={marriageRefetchRef}
             onViewRecord={onViewRecord}
             onEditRecord={onEditRecord}

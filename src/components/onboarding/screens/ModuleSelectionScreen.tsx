@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Title, Button } from '@tremor/react';
-import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import ModuleSelection from '../ModuleSelection';
-import { markScreenCompleted } from '../utils/completedScreens';
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
+import { Title, Button } from "@tremor/react";
+import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import ModuleSelection from "../ModuleSelection";
+import { markScreenCompleted } from "../utils/completedScreens";
 
 interface ModuleSelectionScreenProps {
   onNext: () => void;
@@ -19,21 +19,21 @@ interface ModuleSelectionScreenProps {
  * Module selection screen component for the onboarding flow
  * Allows users to select which modules they want to enable
  */
-const ModuleSelectionScreen = ({ 
-  onNext, 
+const ModuleSelectionScreen = ({
+  onNext,
   onBack,
   onModulesSelected,
   isLoading,
-  success
+  success,
 }: ModuleSelectionScreenProps) => {
   useEffect(() => {
     if (success) {
-      markScreenCompleted('ModuleSelection');
+      markScreenCompleted("ModuleSelection");
     }
   }, [success]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -100 }}
@@ -42,13 +42,11 @@ const ModuleSelectionScreen = ({
       <Title className="text-2xl font-bold text-gray-900 mb-6">
         Select Modules to Enable
       </Title>
-      
-      <ModuleSelection 
-        onModulesSelected={onModulesSelected} 
-      />
-      
+
+      <ModuleSelection onModulesSelected={onModulesSelected} />
+
       <div className="flex justify-between mt-8">
-        <Button 
+        <Button
           color="gray"
           icon={ArrowLeftIcon}
           onClick={onBack}
@@ -56,7 +54,7 @@ const ModuleSelectionScreen = ({
         >
           Back
         </Button>
-        <Button 
+        <Button
           color="indigo"
           icon={ArrowRightIcon}
           iconPosition="right"

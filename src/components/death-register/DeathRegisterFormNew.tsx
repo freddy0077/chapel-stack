@@ -1,29 +1,31 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Flex } from '@tremor/react';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useQuery } from '@apollo/client';
-import { GET_MEMBERS } from '../../graphql/queries/memberQueries';
-import { 
-  DeathRegister, 
-  CreateDeathRegisterInput, 
-  UpdateDeathRegisterInput, 
+import React, { useState, useEffect, useCallback } from "react";
+import { Button, Flex } from "@tremor/react";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useQuery } from "@apollo/client";
+import { GET_MEMBERS } from "../../graphql/queries/memberQueries";
+import {
+  DeathRegister,
+  CreateDeathRegisterInput,
+  UpdateDeathRegisterInput,
   BurialType,
-  DeathRegisterFormData 
-} from '../../types/deathRegister';
-import { formatDateForInput } from '../../utils/dateUtils';
+  DeathRegisterFormData,
+} from "../../types/deathRegister";
+import { formatDateForInput } from "../../utils/dateUtils";
 
 // Import form sections
-import { MemberSelectionSection } from './form/MemberSelectionSection';
-import { DeathDetailsSection } from './form/DeathDetailsSection';
-import { FuneralDetailsSection } from './form/FuneralDetailsSection';
-import { FamilyContactSection } from './form/FamilyContactSection';
-import { DocumentsSection } from './form/DocumentsSection';
+import { MemberSelectionSection } from "./form/MemberSelectionSection";
+import { DeathDetailsSection } from "./form/DeathDetailsSection";
+import { FuneralDetailsSection } from "./form/FuneralDetailsSection";
+import { FamilyContactSection } from "./form/FamilyContactSection";
+import { DocumentsSection } from "./form/DocumentsSection";
 
 interface DeathRegisterFormProps {
   initialData?: DeathRegister;
-  onSubmit: (data: CreateDeathRegisterInput | UpdateDeathRegisterInput) => Promise<void>;
+  onSubmit: (
+    data: CreateDeathRegisterInput | UpdateDeathRegisterInput,
+  ) => Promise<void>;
   onCancel: () => void;
   organisationId: string;
   branchId?: string;
@@ -50,32 +52,32 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<DeathRegisterFormData>({
     selectedMember: undefined,
-    dateOfDeath: '',
-    timeOfDeath: '',
-    placeOfDeath: '',
-    causeOfDeath: '',
-    circumstances: '',
-    funeralDate: '',
-    funeralLocation: '',
-    funeralOfficiant: '',
+    dateOfDeath: "",
+    timeOfDeath: "",
+    placeOfDeath: "",
+    causeOfDeath: "",
+    circumstances: "",
+    funeralDate: "",
+    funeralLocation: "",
+    funeralOfficiant: "",
     burialCremation: BurialType.BURIAL,
-    cemeteryLocation: '',
-    nextOfKin: '',
-    nextOfKinPhone: '',
-    nextOfKinEmail: '',
+    cemeteryLocation: "",
+    nextOfKin: "",
+    nextOfKinPhone: "",
+    nextOfKinEmail: "",
     familyNotified: false,
-    notificationDate: '',
-    deathCertificateUrl: '',
-    obituaryUrl: '',
+    notificationDate: "",
+    deathCertificateUrl: "",
+    obituaryUrl: "",
     photoUrls: [],
     additionalDocuments: [],
-    branchId: branchId || '',
+    branchId: branchId || "",
     organisationId,
-    funeralEventId: '',
+    funeralEventId: "",
   });
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
-  const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [memberSearchTerm, setMemberSearchTerm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -85,7 +87,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
       filter: {
         organisationId,
         branchId,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         searchTerm: memberSearchTerm,
         take: 20,
       },
@@ -99,65 +101,72 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
       setFormData({
         selectedMember: initialData.member,
         dateOfDeath: formatDateForInput(initialData.dateOfDeath),
-        timeOfDeath: initialData.timeOfDeath || '',
-        placeOfDeath: initialData.placeOfDeath || '',
-        causeOfDeath: initialData.causeOfDeath || '',
-        circumstances: initialData.circumstances || '',
-        funeralDate: initialData.funeralDate ? formatDateForInput(initialData.funeralDate) : '',
-        funeralLocation: initialData.funeralLocation || '',
-        funeralOfficiant: initialData.funeralOfficiant || '',
+        timeOfDeath: initialData.timeOfDeath || "",
+        placeOfDeath: initialData.placeOfDeath || "",
+        causeOfDeath: initialData.causeOfDeath || "",
+        circumstances: initialData.circumstances || "",
+        funeralDate: initialData.funeralDate
+          ? formatDateForInput(initialData.funeralDate)
+          : "",
+        funeralLocation: initialData.funeralLocation || "",
+        funeralOfficiant: initialData.funeralOfficiant || "",
         burialCremation: initialData.burialCremation || BurialType.BURIAL,
-        cemeteryLocation: initialData.cemeteryLocation || '',
-        nextOfKin: initialData.nextOfKin || '',
-        nextOfKinPhone: initialData.nextOfKinPhone || '',
-        nextOfKinEmail: initialData.nextOfKinEmail || '',
+        cemeteryLocation: initialData.cemeteryLocation || "",
+        nextOfKin: initialData.nextOfKin || "",
+        nextOfKinPhone: initialData.nextOfKinPhone || "",
+        nextOfKinEmail: initialData.nextOfKinEmail || "",
         familyNotified: initialData.familyNotified || false,
-        notificationDate: initialData.notificationDate ? formatDateForInput(initialData.notificationDate) : '',
-        deathCertificateUrl: initialData.deathCertificateUrl || '',
-        obituaryUrl: initialData.obituaryUrl || '',
+        notificationDate: initialData.notificationDate
+          ? formatDateForInput(initialData.notificationDate)
+          : "",
+        deathCertificateUrl: initialData.deathCertificateUrl || "",
+        obituaryUrl: initialData.obituaryUrl || "",
         photoUrls: initialData.photoUrls || [],
         additionalDocuments: initialData.additionalDocuments || [],
-        branchId: initialData.branchId || branchId || '',
+        branchId: initialData.branchId || branchId || "",
         organisationId: initialData.organisationId || organisationId,
-        funeralEventId: initialData.funeralEventId || '',
+        funeralEventId: initialData.funeralEventId || "",
       });
     }
   }, [initialData, branchId, organisationId]);
 
   // Handle field changes
-  const handleFieldChange = useCallback((field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-    
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  }, [errors]);
+  const handleFieldChange = useCallback(
+    (field: string, value: any) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+
+      // Clear error for this field
+      if (errors[field]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    },
+    [errors],
+  );
 
   // Member selection handlers
   const handleToggleMemberSearch = useCallback(() => {
     setShowMemberSearch(!showMemberSearch);
-    setMemberSearchTerm('');
+    setMemberSearchTerm("");
   }, [showMemberSearch]);
 
   const handleMemberSelect = useCallback((member: Member) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       selectedMember: member,
     }));
     setShowMemberSearch(false);
-    setMemberSearchTerm('');
+    setMemberSearchTerm("");
   }, []);
 
   const handleClearMemberSelection = useCallback(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       selectedMember: undefined,
     }));
@@ -168,19 +177,19 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.selectedMember) {
-      newErrors.selectedMember = 'Please select a member';
+      newErrors.selectedMember = "Please select a member";
     }
     if (!formData.dateOfDeath) {
-      newErrors.dateOfDeath = 'Date of death is required';
+      newErrors.dateOfDeath = "Date of death is required";
     }
     if (!formData.placeOfDeath.trim()) {
-      newErrors.placeOfDeath = 'Place of death is required';
+      newErrors.placeOfDeath = "Place of death is required";
     }
     if (!formData.causeOfDeath.trim()) {
-      newErrors.causeOfDeath = 'Cause of death is required';
+      newErrors.causeOfDeath = "Cause of death is required";
     }
     if (!formData.nextOfKin.trim()) {
-      newErrors.nextOfKin = 'Next of kin is required';
+      newErrors.nextOfKin = "Next of kin is required";
     }
 
     setErrors(newErrors);
@@ -190,13 +199,13 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const submitData: CreateDeathRegisterInput | UpdateDeathRegisterInput = {
         memberId: formData.selectedMember!.id,
@@ -205,10 +214,16 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
         placeOfDeath: formData.placeOfDeath,
         causeOfDeath: formData.causeOfDeath,
         circumstances: formData.circumstances || undefined,
-        ageAtDeath: formData.selectedMember?.dateOfBirth 
-          ? Math.floor((new Date(formData.dateOfDeath).getTime() - new Date(formData.selectedMember.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        ageAtDeath: formData.selectedMember?.dateOfBirth
+          ? Math.floor(
+              (new Date(formData.dateOfDeath).getTime() -
+                new Date(formData.selectedMember.dateOfBirth).getTime()) /
+                (365.25 * 24 * 60 * 60 * 1000),
+            )
           : undefined,
-        funeralDate: formData.funeralDate ? new Date(formData.funeralDate) : undefined,
+        funeralDate: formData.funeralDate
+          ? new Date(formData.funeralDate)
+          : undefined,
         funeralLocation: formData.funeralLocation || undefined,
         funeralOfficiant: formData.funeralOfficiant || undefined,
         burialCremation: formData.burialCremation,
@@ -217,7 +232,9 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
         nextOfKinPhone: formData.nextOfKinPhone || undefined,
         nextOfKinEmail: formData.nextOfKinEmail || undefined,
         familyNotified: formData.familyNotified,
-        notificationDate: formData.notificationDate ? new Date(formData.notificationDate) : undefined,
+        notificationDate: formData.notificationDate
+          ? new Date(formData.notificationDate)
+          : undefined,
         deathCertificateUrl: formData.deathCertificateUrl || undefined,
         obituaryUrl: formData.obituaryUrl || undefined,
         photoUrls: formData.photoUrls,
@@ -229,7 +246,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
 
       await onSubmit(submitData);
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error("Form submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -313,7 +330,7 @@ export const DeathRegisterForm: React.FC<DeathRegisterFormProps> = ({
           loading={isSubmitting}
           className="bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {initialData ? 'Update Record' : 'Create Record'}
+          {initialData ? "Update Record" : "Create Record"}
         </Button>
       </div>
     </form>

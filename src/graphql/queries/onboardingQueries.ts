@@ -1,5 +1,5 @@
 // src/graphql/queries/onboardingQueries.ts
-import { gql } from '@apollo/client'; // Assuming Apollo Client
+import { gql } from "@apollo/client"; // Assuming Apollo Client
 
 export const GET_ONBOARDING_PROGRESS = gql`
   query OnboardingProgress($branchId: ID!) {

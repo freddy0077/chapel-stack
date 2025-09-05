@@ -1,17 +1,17 @@
 "use client";
 
-import React from 'react';
-import { 
-  HomeIcon, 
-  ChatBubbleLeftRightIcon, 
-  ExclamationTriangleIcon, 
+import React from "react";
+import {
+  HomeIcon,
+  ChatBubbleLeftRightIcon,
+  ExclamationTriangleIcon,
   BellIcon,
   CheckCircleIcon,
   ClockIcon,
   UserGroupIcon,
-  CalendarDaysIcon
-} from '@heroicons/react/24/outline';
-import { PastoralCareStats as StatsType } from '@/graphql/hooks/usePastoralCare';
+  CalendarDaysIcon,
+} from "@heroicons/react/24/outline";
+import { PastoralCareStats as StatsType } from "@/graphql/hooks/usePastoralCare";
 
 interface PastoralCareStatsProps {
   stats?: StatsType;
@@ -30,15 +30,11 @@ function StatCard({ title, value, icon, color, subtitle }: StatCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center">
-        <div className={`flex-shrink-0 ${color}`}>
-          {icon}
-        </div>
+        <div className={`flex-shrink-0 ${color}`}>{icon}</div>
         <div className="ml-4">
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-2xl font-semibold text-gray-900">{value}</p>
-          {subtitle && (
-            <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
         </div>
       </div>
     </div>
@@ -61,7 +57,10 @@ function StatCardSkeleton() {
   );
 }
 
-export default function PastoralCareStats({ stats, loading }: PastoralCareStatsProps) {
+export default function PastoralCareStats({
+  stats,
+  loading,
+}: PastoralCareStatsProps) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -85,8 +84,10 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
 
   return (
     <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Pastoral Care Overview</h2>
-      
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        Pastoral Care Overview
+      </h2>
+
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {/* Pastoral Visits */}
@@ -97,7 +98,7 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
           color="text-blue-600"
           subtitle={`${stats.completedVisits} completed, ${stats.upcomingVisits} upcoming`}
         />
-        
+
         {/* Counseling Sessions */}
         <StatCard
           title="Counseling Sessions"
@@ -106,7 +107,7 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
           color="text-green-600"
           subtitle={`${stats.completedSessions} completed, ${stats.upcomingSessions} upcoming`}
         />
-        
+
         {/* Care Requests */}
         <StatCard
           title="Care Requests"
@@ -115,7 +116,7 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
           color="text-orange-600"
           subtitle={`${stats.openCareRequests} open, ${stats.resolvedCareRequests} resolved`}
         />
-        
+
         {/* Follow-up Reminders */}
         <StatCard
           title="Reminders"
@@ -140,14 +141,18 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Completed
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.completedVisits}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.completedVisits}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 flex items-center">
                 <CalendarDaysIcon className="h-4 w-4 text-blue-500 mr-2" />
                 Upcoming
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.upcomingVisits}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.upcomingVisits}
+              </span>
             </div>
           </div>
         </div>
@@ -164,14 +169,18 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
                 <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
                 Completed
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.completedSessions}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.completedSessions}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 flex items-center">
                 <CalendarDaysIcon className="h-4 w-4 text-blue-500 mr-2" />
                 Upcoming
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.upcomingSessions}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.upcomingSessions}
+              </span>
             </div>
           </div>
         </div>
@@ -188,14 +197,18 @@ export default function PastoralCareStats({ stats, loading }: PastoralCareStatsP
                 <ExclamationTriangleIcon className="h-4 w-4 text-orange-500 mr-2" />
                 Open Requests
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.openCareRequests}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.openCareRequests}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 flex items-center">
                 <ClockIcon className="h-4 w-4 text-red-500 mr-2" />
                 Overdue Reminders
               </span>
-              <span className="text-sm font-medium text-gray-900">{stats.overdueReminders}</span>
+              <span className="text-sm font-medium text-gray-900">
+                {stats.overdueReminders}
+              </span>
             </div>
           </div>
         </div>

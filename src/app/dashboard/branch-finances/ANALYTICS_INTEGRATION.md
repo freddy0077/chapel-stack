@@ -1,11 +1,13 @@
 # Financial Analytics Integration Guide
 
 ## Overview
+
 This guide provides instructions for integrating the new Priority 2 financial analytics components into the branch finances page.
 
 ## Components Created
 
 ### 1. Core Analytics Components
+
 - `CashFlowAnalysis.tsx` - Cash flow visualization and analysis
 - `ComparativePeriodAnalysis.tsx` - Period-over-period comparison charts
 - `FinancialStatements.tsx` - Income statement and balance sheet views
@@ -15,14 +17,20 @@ This guide provides instructions for integrating the new Priority 2 financial an
 ### 2. Integration Steps
 
 #### Step 1: Add Main View State
+
 Add the following state variables to the BranchFinancesPage component:
 
 ```typescript
-const [mainView, setMainView] = useState<'transactions' | 'analytics'>('transactions');
-const [analyticsTab, setAnalyticsTab] = useState<'cash-flow' | 'comparative' | 'statements' | 'budget' | 'donors'>('cash-flow');
+const [mainView, setMainView] = useState<"transactions" | "analytics">(
+  "transactions",
+);
+const [analyticsTab, setAnalyticsTab] = useState<
+  "cash-flow" | "comparative" | "statements" | "budget" | "donors"
+>("cash-flow");
 ```
 
 #### Step 2: Add Main View Navigation
+
 Add this navigation component after the DashboardHeader and before the existing filter bar:
 
 ```typescript
@@ -58,14 +66,15 @@ Add this navigation component after the DashboardHeader and before the existing 
 ```
 
 #### Step 3: Add Analytics Section
+
 Add the analytics section before the existing transactions content:
 
 ```typescript
 {/* Analytics View */}
 {mainView === 'analytics' && (
-  <FinancialAnalyticsSection 
-    organisationId={organisationId} 
-    branchId={branchId} 
+  <FinancialAnalyticsSection
+    organisationId={organisationId}
+    branchId={branchId}
   />
 )}
 
@@ -78,11 +87,13 @@ Add the analytics section before the existing transactions content:
 ```
 
 #### Step 4: Wrap Existing Content
+
 Wrap all existing transaction-related content (filter bar, summary cards, transaction list, etc.) inside the transactions view conditional block.
 
 ## Data Integration
 
 ### Current Status
+
 - All components currently use mock data generators
 - Components are designed to accept real data through props
 - GraphQL queries need to be created for real data fetching
@@ -90,9 +101,18 @@ Wrap all existing transaction-related content (filter bar, summary cards, transa
 ### Required GraphQL Queries
 
 #### 1. Cash Flow Data
+
 ```graphql
-query GetCashFlowData($organisationId: String!, $branchId: String!, $period: String!) {
-  cashFlowData(organisationId: $organisationId, branchId: $branchId, period: $period) {
+query GetCashFlowData(
+  $organisationId: String!
+  $branchId: String!
+  $period: String!
+) {
+  cashFlowData(
+    organisationId: $organisationId
+    branchId: $branchId
+    period: $period
+  ) {
     period
     income
     expenses
@@ -103,9 +123,18 @@ query GetCashFlowData($organisationId: String!, $branchId: String!, $period: Str
 ```
 
 #### 2. Comparative Period Data
+
 ```graphql
-query GetComparativeData($organisationId: String!, $branchId: String!, $comparisonType: String!) {
-  comparativeData(organisationId: $organisationId, branchId: $branchId, comparisonType: $comparisonType) {
+query GetComparativeData(
+  $organisationId: String!
+  $branchId: String!
+  $comparisonType: String!
+) {
+  comparativeData(
+    organisationId: $organisationId
+    branchId: $branchId
+    comparisonType: $comparisonType
+  ) {
     period
     currentIncome
     previousIncome
@@ -118,6 +147,7 @@ query GetComparativeData($organisationId: String!, $branchId: String!, $comparis
 ```
 
 #### 3. Financial Statements Data
+
 ```graphql
 query GetFinancialStatements($organisationId: String!, $branchId: String!, $period: String!) {
   financialStatements(organisationId: $organisationId, branchId: $branchId, period: $period) {
@@ -131,6 +161,7 @@ query GetFinancialStatements($organisationId: String!, $branchId: String!, $peri
 ```
 
 #### 4. Donor Data
+
 ```graphql
 query GetDonorData($organisationId: String!, $branchId: String!) {
   donors(organisationId: $organisationId, branchId: $branchId) {
@@ -151,23 +182,36 @@ query GetDonorData($organisationId: String!, $branchId: String!) {
 ## Backend Services Required
 
 ### 1. Financial Analytics Service
+
 Create a new service to handle analytics calculations:
 
 ```typescript
 @Injectable()
 export class FinancialAnalyticsService {
-  async getCashFlowData(organisationId: string, branchId: string, period: string) {
+  async getCashFlowData(
+    organisationId: string,
+    branchId: string,
+    period: string,
+  ) {
     // Implementation
   }
-  
-  async getComparativeData(organisationId: string, branchId: string, comparisonType: string) {
+
+  async getComparativeData(
+    organisationId: string,
+    branchId: string,
+    comparisonType: string,
+  ) {
     // Implementation
   }
-  
-  async getFinancialStatements(organisationId: string, branchId: string, period: string) {
+
+  async getFinancialStatements(
+    organisationId: string,
+    branchId: string,
+    period: string,
+  ) {
     // Implementation
   }
-  
+
   async getDonorData(organisationId: string, branchId: string) {
     // Implementation
   }
@@ -175,6 +219,7 @@ export class FinancialAnalyticsService {
 ```
 
 ### 2. Export Services
+
 Implement PDF and Excel export functionality:
 
 ```typescript
@@ -183,7 +228,7 @@ export class ReportExportService {
   async generatePDF(data: any, template: string): Promise<string> {
     // PDF generation logic
   }
-  
+
   async generateExcel(data: any, template: string): Promise<string> {
     // Excel generation logic
   }
@@ -193,6 +238,7 @@ export class ReportExportService {
 ## Features Implemented
 
 ### ✅ Completed Components
+
 1. **Cash Flow Analysis**
    - Interactive charts showing income, expenses, net flow
    - Multiple view types (flow, cumulative, comparison)
@@ -224,6 +270,7 @@ export class ReportExportService {
    - Professional UI consistent with Chapel Stack design
 
 ### 🔄 Next Steps
+
 1. Integrate into main branch finances page
 2. Create real GraphQL queries
 3. Implement backend analytics services
@@ -233,12 +280,14 @@ export class ReportExportService {
 7. Test with production data
 
 ## Testing
+
 - All components include loading states
 - Mock data generators provide realistic test data
 - Components are responsive and mobile-friendly
 - Professional UI matches existing Chapel Stack design patterns
 
 ## Deployment Notes
+
 - Components are ready for production use
 - Mock data should be replaced with real queries before deployment
 - Export functionality requires backend implementation

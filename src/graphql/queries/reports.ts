@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_BUDGET_VS_ACTUAL_REPORT = gql`
   query GetBudgetVsActualReport(

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Budget, UpdateBudgetInput } from '@/graphql/queries/budget';
+import React, { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Budget, UpdateBudgetInput } from "@/graphql/queries/budget";
 
 interface EditBudgetModalProps {
   isOpen: boolean;
@@ -17,26 +17,26 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
   onClose,
   onSubmit,
   loading,
-  budget
+  budget,
 }) => {
   const [formData, setFormData] = useState<UpdateBudgetInput>({
-    id: budget?.id || '',
-    name: budget?.name || '',
-    description: budget?.description || '',
+    id: budget?.id || "",
+    name: budget?.name || "",
+    description: budget?.description || "",
     fiscalYear: budget?.fiscalYear || new Date().getFullYear(),
-    startDate: budget?.startDate || '',
-    endDate: budget?.endDate || '',
+    startDate: budget?.startDate || "",
+    endDate: budget?.endDate || "",
     totalAmount: budget?.totalAmount || 0,
-    status: budget?.status || 'DRAFT',
-    notes: budget?.notes || '',
-    fundId: budget?.fundId || '',
-    ministryId: budget?.ministryId || '',
-    branchId: budget?.branchId || '',
-    organisationId: budget?.organisationId || '',
+    status: budget?.status || "DRAFT",
+    notes: budget?.notes || "",
+    fundId: budget?.fundId || "",
+    ministryId: budget?.ministryId || "",
+    branchId: budget?.branchId || "",
+    organisationId: budget?.organisationId || "",
   });
 
   const handleInputChange = (field: keyof UpdateBudgetInput, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,15 +50,20 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         ></div>
-        
+
         {/* Modal positioning */}
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
+          &#8203;
+        </span>
+
         {/* Modal content */}
         <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <form onSubmit={handleSubmit}>
@@ -84,8 +89,8 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                   </label>
                   <input
                     type="text"
-                    value={formData.name || ''}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={formData.name || ""}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -95,8 +100,10 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                     Status
                   </label>
                   <select
-                    value={formData.status || ''}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    value={formData.status || ""}
+                    onChange={(e) =>
+                      handleInputChange("status", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="ACTIVE">Active</option>
@@ -112,8 +119,10 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={formData.startDate || ''}
-                    onChange={(e) => handleInputChange('startDate', e.target.value)}
+                    value={formData.startDate || ""}
+                    onChange={(e) =>
+                      handleInputChange("startDate", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -124,8 +133,10 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={formData.endDate || ''}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
+                    value={formData.endDate || ""}
+                    onChange={(e) =>
+                      handleInputChange("endDate", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -136,8 +147,10 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                   Description
                 </label>
                 <textarea
-                  value={formData.description || ''}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  value={formData.description || ""}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -148,8 +161,8 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                   Notes
                 </label>
                 <textarea
-                  value={formData.notes || ''}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  value={formData.notes || ""}
+                  onChange={(e) => handleInputChange("notes", e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -171,7 +184,7 @@ const EditBudgetModal: React.FC<EditBudgetModalProps> = ({
                 disabled={loading}
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
               >
-                {loading ? 'Updating...' : 'Update Budget'}
+                {loading ? "Updating..." : "Update Budget"}
               </button>
             </div>
           </form>

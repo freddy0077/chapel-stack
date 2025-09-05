@@ -1,7 +1,6 @@
 """
 Communication schema - handles email, SMS, notifications, and message management
 """
-
 enum MessageType {
   EMAIL
   SMS
@@ -189,10 +188,10 @@ extend type Query {
     campaignId: ID
     pagination: PaginationInput
   ): MessageConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific message
   message(id: ID!): Message @auth(requires: [STAFF])
-  
+
   # Get all templates
   templates(
     messageType: MessageType
@@ -202,10 +201,10 @@ extend type Query {
     isActive: Boolean
     pagination: PaginationInput
   ): TemplateConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific template
   template(id: ID!): Template @auth(requires: [STAFF])
-  
+
   # Get all message campaigns
   messageCampaigns(
     status: Status
@@ -213,56 +212,55 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): MessageCampaignConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific message campaign
   messageCampaign(id: ID!): MessageCampaign @auth(requires: [STAFF])
-  
+
   # Get all target audiences
   targetAudiences(
     search: String
     pagination: PaginationInput
   ): TargetAudienceConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific target audience
   targetAudience(id: ID!): TargetAudience @auth(requires: [STAFF])
-  
+
   # Get member notification settings
-  notificationSettings(memberId: ID!): NotificationSettings! @auth(requires: [STAFF])
-  
+  notificationSettings(memberId: ID!): NotificationSettings!
+    @auth(requires: [STAFF])
+
   # Get my notification settings (for authenticated members)
   myNotificationSettings: NotificationSettings! @auth(requires: [MEMBER])
-  
+
   # Get member notifications
   memberNotifications(
     memberId: ID!
     isRead: Boolean
     pagination: PaginationInput
   ): NotificationConnection! @auth(requires: [STAFF])
-  
+
   # Get my notifications (for authenticated members)
   myNotifications(
     isRead: Boolean
     pagination: PaginationInput
   ): NotificationConnection! @auth(requires: [MEMBER])
-  
+
   # Get unread notification count for a member
   unreadNotificationCount(memberId: ID!): Int! @auth(requires: [STAFF])
-  
+
   # Get my unread notification count (for authenticated members)
   myUnreadNotificationCount: Int! @auth(requires: [MEMBER])
-  
+
   # Preview a message with template and variables
-  previewMessage(
-    templateId: ID!
-    variables: JSON!
-  ): String! @auth(requires: [STAFF])
-  
+  previewMessage(templateId: ID!, variables: JSON!): String!
+    @auth(requires: [STAFF])
+
   # Test messaging configuration
   testMessagingConfiguration(
     channel: CommunicationChannel!
     recipient: String!
   ): Boolean! @auth(requires: [ADMIN])
-  
+
   # Calculate estimated audience size
   calculateAudienceSize(filterCriteria: JSON!): Int! @auth(requires: [STAFF])
 }
@@ -320,89 +318,105 @@ type NotificationEdge {
 extend type Mutation {
   # Send a message
   sendMessage(input: SendMessageInput!): Message! @auth(requires: [STAFF])
-  
+
   # Schedule a message
-  scheduleMessage(input: ScheduleMessageInput!): Message! @auth(requires: [STAFF])
-  
+  scheduleMessage(input: ScheduleMessageInput!): Message!
+    @auth(requires: [STAFF])
+
   # Cancel a scheduled message
   cancelScheduledMessage(id: ID!): Message! @auth(requires: [STAFF])
-  
+
   # Create a draft message
-  createDraftMessage(input: CreateDraftMessageInput!): Message! @auth(requires: [STAFF])
-  
+  createDraftMessage(input: CreateDraftMessageInput!): Message!
+    @auth(requires: [STAFF])
+
   # Update a draft message
-  updateDraftMessage(id: ID!, input: UpdateDraftMessageInput!): Message! @auth(requires: [STAFF])
-  
+  updateDraftMessage(id: ID!, input: UpdateDraftMessageInput!): Message!
+    @auth(requires: [STAFF])
+
   # Delete a draft message
   deleteDraftMessage(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Send a draft message
-  sendDraftMessage(id: ID!, scheduledFor: DateTime): Message! @auth(requires: [STAFF])
-  
+  sendDraftMessage(id: ID!, scheduledFor: DateTime): Message!
+    @auth(requires: [STAFF])
+
   # Create a template
-  createTemplate(input: CreateTemplateInput!): Template! @auth(requires: [STAFF])
-  
+  createTemplate(input: CreateTemplateInput!): Template!
+    @auth(requires: [STAFF])
+
   # Update a template
-  updateTemplate(id: ID!, input: UpdateTemplateInput!): Template! @auth(requires: [STAFF])
-  
+  updateTemplate(id: ID!, input: UpdateTemplateInput!): Template!
+    @auth(requires: [STAFF])
+
   # Delete a template
   deleteTemplate(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a message campaign
-  createMessageCampaign(input: CreateMessageCampaignInput!): MessageCampaign! @auth(requires: [STAFF])
-  
+  createMessageCampaign(input: CreateMessageCampaignInput!): MessageCampaign!
+    @auth(requires: [STAFF])
+
   # Update a message campaign
-  updateMessageCampaign(id: ID!, input: UpdateMessageCampaignInput!): MessageCampaign! @auth(requires: [STAFF])
-  
+  updateMessageCampaign(
+    id: ID!
+    input: UpdateMessageCampaignInput!
+  ): MessageCampaign! @auth(requires: [STAFF])
+
   # Delete a message campaign
   deleteMessageCampaign(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Start a message campaign
   startMessageCampaign(id: ID!): MessageCampaign! @auth(requires: [STAFF])
-  
+
   # Pause a message campaign
   pauseMessageCampaign(id: ID!): MessageCampaign! @auth(requires: [STAFF])
-  
+
   # Stop a message campaign
   stopMessageCampaign(id: ID!): MessageCampaign! @auth(requires: [STAFF])
-  
+
   # Create a target audience
-  createTargetAudience(input: CreateTargetAudienceInput!): TargetAudience! @auth(requires: [STAFF])
-  
+  createTargetAudience(input: CreateTargetAudienceInput!): TargetAudience!
+    @auth(requires: [STAFF])
+
   # Update a target audience
-  updateTargetAudience(id: ID!, input: UpdateTargetAudienceInput!): TargetAudience! @auth(requires: [STAFF])
-  
+  updateTargetAudience(
+    id: ID!
+    input: UpdateTargetAudienceInput!
+  ): TargetAudience! @auth(requires: [STAFF])
+
   # Delete a target audience
   deleteTargetAudience(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update notification settings
   updateNotificationSettings(
-    memberId: ID!,
+    memberId: ID!
     input: UpdateNotificationSettingsInput!
   ): NotificationSettings! @auth(requires: [STAFF])
-  
+
   # Update my notification settings (for authenticated members)
   updateMyNotificationSettings(
     input: UpdateNotificationSettingsInput!
   ): NotificationSettings! @auth(requires: [MEMBER])
-  
+
   # Send a notification
-  sendNotification(input: SendNotificationInput!): Notification! @auth(requires: [STAFF])
-  
+  sendNotification(input: SendNotificationInput!): Notification!
+    @auth(requires: [STAFF])
+
   # Mark notification as read
   markNotificationAsRead(id: ID!): Notification! @auth(requires: [MEMBER])
-  
+
   # Mark all notifications as read
   markAllNotificationsAsRead(memberId: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Mark my notifications as read (for authenticated members)
   markMyNotificationsAsRead: Boolean! @auth(requires: [MEMBER])
-  
+
   # Delete a notification
   deleteNotification(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Send a bulk notification
-  sendBulkNotification(input: SendBulkNotificationInput!): Int! @auth(requires: [STAFF])
+  sendBulkNotification(input: SendBulkNotificationInput!): Int!
+    @auth(requires: [STAFF])
 }
 
 input SendMessageInput {
@@ -574,10 +588,11 @@ input SendBulkNotificationInput {
 extend type Subscription {
   # Get notified when a new message is sent
   messageSent(branchId: ID): Message! @auth(requires: [STAFF])
-  
+
   # Get notified when a new notification is received
   notificationReceived(memberId: ID!): Notification! @auth(requires: [MEMBER])
-  
+
   # Get notified when a campaign status changes
-  campaignStatusChanged(campaignId: ID!): MessageCampaign! @auth(requires: [STAFF])
+  campaignStatusChanged(campaignId: ID!): MessageCampaign!
+    @auth(requires: [STAFF])
 }

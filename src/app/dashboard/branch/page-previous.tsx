@@ -11,17 +11,17 @@ import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import BranchFinanceStats from "@/components/BranchFinanceStats";
-import { 
-  ChartBarIcon, 
-  UsersIcon, 
-  CurrencyDollarIcon, 
+import {
+  ChartBarIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
   CalendarDaysIcon,
   BellIcon,
   Cog6ToothIcon,
   ArrowTrendingUpIcon,
   EyeIcon,
   ClockIcon,
-  SparklesIcon
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 const BRANCH_DASHBOARD_QUERY = gql`
@@ -32,11 +32,14 @@ const BRANCH_DASHBOARD_QUERY = gql`
         name
         organisation
         isActive
-        admins { id name }
+        admins {
+          id
+          name
+        }
       }
-      memberStats { 
-        total 
-        newMembersThisMonth 
+      memberStats {
+        total
+        newMembersThisMonth
         growthRate
         monthlyTrends {
           month
@@ -46,12 +49,12 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       financeStats {
-        totalContributions 
+        totalContributions
         totalExpenses
-        tithes 
-        pledge 
-        offering 
-        donation 
+        tithes
+        pledge
+        offering
+        donation
         specialContribution
         growthRate
         netIncome
@@ -63,8 +66,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           netIncome
         }
       }
-      attendanceStats { 
-        totalAttendance 
+      attendanceStats {
+        totalAttendance
         uniqueAttendeesThisMonth
         averageAttendance
         growthRate
@@ -75,8 +78,8 @@ const BRANCH_DASHBOARD_QUERY = gql`
           uniqueAttendees
         }
       }
-      sacramentStats { 
-        totalSacraments 
+      sacramentStats {
+        totalSacraments
         breakdown {
           type
           count
@@ -87,8 +90,16 @@ const BRANCH_DASHBOARD_QUERY = gql`
         }
       }
       activityStats {
-        recentEvents { id title startDate }
-        upcomingEvents { id title startDate }
+        recentEvents {
+          id
+          title
+          startDate
+        }
+        upcomingEvents {
+          id
+          title
+          startDate
+        }
         recentMembers {
           id
           name
@@ -116,16 +127,35 @@ const BRANCH_DASHBOARD_QUERY = gql`
       }
       systemStatus {
         timestamp
-        database { status latency }
+        database {
+          status
+          latency
+        }
         system {
-          totalMemory freeMemory
-          memoryUsage { rss heapTotal heapUsed external }
-          cpuUsage { user system }
-          systemUptime processUptime platform nodeVersion
+          totalMemory
+          freeMemory
+          memoryUsage {
+            rss
+            heapTotal
+            heapUsed
+            external
+          }
+          cpuUsage {
+            user
+            system
+          }
+          systemUptime
+          processUptime
+          platform
+          nodeVersion
         }
       }
       branchAnnouncements {
-        announcements { id title startDate }
+        announcements {
+          id
+          title
+          startDate
+        }
       }
     }
   }
@@ -143,19 +173,26 @@ export default function ModernBranchDashboardPage() {
   });
 
   // Fetch funds for this branch for the finance stats component
-  const { data: fundsData, loading: fundsLoading, error: fundsError } = useQuery(gql`
-    query GetFunds($organisationId: String!, $branchId: String) {
-      funds(organisationId: $organisationId, branchId: $branchId) {
-        id
-        name
-        description
-        branchId
+  const {
+    data: fundsData,
+    loading: fundsLoading,
+    error: fundsError,
+  } = useQuery(
+    gql`
+      query GetFunds($organisationId: String!, $branchId: String) {
+        funds(organisationId: $organisationId, branchId: $branchId) {
+          id
+          name
+          description
+          branchId
+        }
       }
-    }
-  `, {
-    variables: { organisationId, branchId },
-    skip: !organisationId || !branchId,
-  });
+    `,
+    {
+      variables: { organisationId, branchId },
+      skip: !organisationId || !branchId,
+    },
+  );
 
   if (loading) {
     return (
@@ -190,7 +227,9 @@ export default function ModernBranchDashboardPage() {
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <ChartBarIcon className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-lg text-gray-600">No data available for this branch</p>
+          <p className="text-lg text-gray-600">
+            No data available for this branch
+          </p>
         </div>
       </div>
     );
@@ -215,11 +254,12 @@ export default function ModernBranchDashboardPage() {
                   </h1>
                   <p className="text-sm text-gray-500 flex items-center">
                     <SparklesIcon className="w-4 h-4 mr-1" />
-                    Welcome back, {userName} • {new Date().toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    Welcome back, {userName} •{" "}
+                    {new Date().toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })}
                   </p>
                 </div>
@@ -282,9 +322,15 @@ export default function ModernBranchDashboardPage() {
                 </h2>
               </div>
               <BranchActivityFeed
-                recentMembers={branchDashboard.activityStats.recentMembers || []}
-                recentContributions={branchDashboard.activityStats.recentContributions || []}
-                recentSacraments={branchDashboard.activityStats.recentSacraments || []}
+                recentMembers={
+                  branchDashboard.activityStats.recentMembers || []
+                }
+                recentContributions={
+                  branchDashboard.activityStats.recentContributions || []
+                }
+                recentSacraments={
+                  branchDashboard.activityStats.recentSacraments || []
+                }
                 activitySummary={branchDashboard.activityStats.activitySummary}
               />
             </div>
@@ -303,7 +349,9 @@ export default function ModernBranchDashboardPage() {
                   branchId={branchId}
                   funds={fundsData?.funds || []}
                 />
-                <FinancialBreakdown financeStats={branchDashboard.financeStats} />
+                <FinancialBreakdown
+                  financeStats={branchDashboard.financeStats}
+                />
               </div>
             </div>
           </section>
@@ -318,7 +366,9 @@ export default function ModernBranchDashboardPage() {
                   Upcoming Events
                 </h2>
               </div>
-              <UpcomingEvents events={branchDashboard.activityStats.upcomingEvents} />
+              <UpcomingEvents
+                events={branchDashboard.activityStats.upcomingEvents}
+              />
             </div>
 
             {/* Announcements */}
@@ -329,7 +379,9 @@ export default function ModernBranchDashboardPage() {
                   Announcements
                 </h2>
               </div>
-              <BranchAnnouncements branchAnnouncements={branchDashboard.branchAnnouncements} />
+              <BranchAnnouncements
+                branchAnnouncements={branchDashboard.branchAnnouncements}
+              />
             </div>
 
             {/* Admin Tools */}

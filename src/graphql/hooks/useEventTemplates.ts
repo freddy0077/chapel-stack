@@ -1,13 +1,13 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { EventType } from '../types/event';
-import { 
-  GET_EVENT_TEMPLATES, 
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { EventType } from "../types/event";
+import {
+  GET_EVENT_TEMPLATES,
   GET_EVENT_TEMPLATE,
   CREATE_EVENT_TEMPLATE,
   UPDATE_EVENT_TEMPLATE,
   DELETE_EVENT_TEMPLATE,
-  CREATE_EVENT_FROM_TEMPLATE
-} from '../queries/eventTemplateQueries';
+  CREATE_EVENT_FROM_TEMPLATE,
+} from "../queries/eventTemplateQueries";
 
 // Type definitions for templates
 export interface VolunteerRoleRequirement {
@@ -42,7 +42,6 @@ export interface EventTemplate {
 }
 
 // GraphQL response types
-
 
 interface EventTemplatesData {
   eventTemplates: EventTemplate[];
@@ -156,9 +155,12 @@ export interface TemplateFilters {
  * Hook to fetch event templates with optional filtering
  */
 export const useEventTemplates = () => {
-  const { data, loading, error, refetch } = useQuery<EventTemplatesData>(GET_EVENT_TEMPLATES, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data, loading, error, refetch } = useQuery<EventTemplatesData>(
+    GET_EVENT_TEMPLATES,
+    {
+      fetchPolicy: "cache-and-network",
+    },
+  );
 
   return {
     templates: data?.eventTemplates || [],
@@ -172,15 +174,22 @@ export const useEventTemplates = () => {
  * Hook to fetch a single event template by ID
  */
 export const useEventTemplate = (id?: string) => {
-  const [getTemplate, { data, loading, error }] = useLazyQuery<EventTemplateData, { id: string }>(GET_EVENT_TEMPLATE, {
-    variables: { id: id || '' },
-    fetchPolicy: 'cache-and-network'
+  const [getTemplate, { data, loading, error }] = useLazyQuery<
+    EventTemplateData,
+    { id: string }
+  >(GET_EVENT_TEMPLATE, {
+    variables: { id: id || "" },
+    fetchPolicy: "cache-and-network",
   });
 
-  const { data: queryData, loading: queryLoading, error: queryError } = useQuery<EventTemplateData, { id: string }>(GET_EVENT_TEMPLATE, {
-    variables: { id: id || '' },
+  const {
+    data: queryData,
+    loading: queryLoading,
+    error: queryError,
+  } = useQuery<EventTemplateData, { id: string }>(GET_EVENT_TEMPLATE, {
+    variables: { id: id || "" },
     skip: !id,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   return {
@@ -196,20 +205,38 @@ export const useEventTemplate = (id?: string) => {
  */
 export const useEventTemplateMutations = () => {
   // Create template mutation
-  const [createTemplateMutation, { loading: createLoading, error: createError }] = 
-    useMutation<CreateEventTemplateData, { input: CreateEventTemplateInput }>(CREATE_EVENT_TEMPLATE);
+  const [
+    createTemplateMutation,
+    { loading: createLoading, error: createError },
+  ] = useMutation<CreateEventTemplateData, { input: CreateEventTemplateInput }>(
+    CREATE_EVENT_TEMPLATE,
+  );
 
   // Update template mutation
-  const [updateTemplateMutation, { loading: updateLoading, error: updateError }] = 
-    useMutation<UpdateEventTemplateData, { id: string, input: UpdateEventTemplateInput }>(UPDATE_EVENT_TEMPLATE);
+  const [
+    updateTemplateMutation,
+    { loading: updateLoading, error: updateError },
+  ] = useMutation<
+    UpdateEventTemplateData,
+    { id: string; input: UpdateEventTemplateInput }
+  >(UPDATE_EVENT_TEMPLATE);
 
   // Delete template mutation
-  const [deleteTemplateMutation, { loading: deleteLoading, error: deleteError }] = 
-    useMutation<DeleteEventTemplateData, { id: string }>(DELETE_EVENT_TEMPLATE);
+  const [
+    deleteTemplateMutation,
+    { loading: deleteLoading, error: deleteError },
+  ] = useMutation<DeleteEventTemplateData, { id: string }>(
+    DELETE_EVENT_TEMPLATE,
+  );
 
   // Create event from template mutation
-  const [createEventFromTemplateMutation, { loading: createEventLoading, error: createEventError }] = 
-    useMutation<CreateEventFromTemplateData, { templateId: string, input: CreateEventFromTemplateInput }>(CREATE_EVENT_FROM_TEMPLATE);
+  const [
+    createEventFromTemplateMutation,
+    { loading: createEventLoading, error: createEventError },
+  ] = useMutation<
+    CreateEventFromTemplateData,
+    { templateId: string; input: CreateEventFromTemplateInput }
+  >(CREATE_EVENT_FROM_TEMPLATE);
 
   const createTemplate = async (input: CreateEventTemplateInput) => {
     try {
@@ -219,12 +246,15 @@ export const useEventTemplateMutations = () => {
       });
       return data?.createEventTemplate;
     } catch (error) {
-      console.error('Error creating event template:', error);
+      console.error("Error creating event template:", error);
       throw error;
     }
   };
 
-  const updateTemplate = async (id: string, input: UpdateEventTemplateInput) => {
+  const updateTemplate = async (
+    id: string,
+    input: UpdateEventTemplateInput,
+  ) => {
     try {
       const { data } = await updateTemplateMutation({
         variables: { id, input },
@@ -235,7 +265,7 @@ export const useEventTemplateMutations = () => {
       });
       return data?.updateEventTemplate;
     } catch (error) {
-      console.error('Error updating event template:', error);
+      console.error("Error updating event template:", error);
       throw error;
     }
   };
@@ -248,19 +278,22 @@ export const useEventTemplateMutations = () => {
       });
       return data?.deleteEventTemplate;
     } catch (error) {
-      console.error('Error deleting event template:', error);
+      console.error("Error deleting event template:", error);
       throw error;
     }
   };
 
-  const createEventFromTemplate = async (templateId: string, input: CreateEventFromTemplateInput) => {
+  const createEventFromTemplate = async (
+    templateId: string,
+    input: CreateEventFromTemplateInput,
+  ) => {
     try {
       const { data } = await createEventFromTemplateMutation({
         variables: { templateId, input },
       });
       return data?.createEventFromTemplate;
     } catch (error) {
-      console.error('Error creating event from template:', error);
+      console.error("Error creating event from template:", error);
       throw error;
     }
   };

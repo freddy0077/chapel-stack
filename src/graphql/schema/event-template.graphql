@@ -1,7 +1,6 @@
 """
 Event Template schema - handles reusable templates for creating church events
 """
-
 type EventTemplate {
   id: ID!
   title: String!
@@ -39,23 +38,30 @@ extend type Query {
     includeInactive: Boolean = false
     pagination: PaginationInput
   ): EventTemplateConnection! @auth(requires: [STAFF])
-  
+
   # Get a specific event template by ID
   eventTemplate(id: ID!): EventTemplate @auth(requires: [STAFF])
 }
 
 extend type Mutation {
   # Create a new event template
-  createEventTemplate(input: CreateEventTemplateInput!): EventTemplate! @auth(requires: [STAFF])
-  
+  createEventTemplate(input: CreateEventTemplateInput!): EventTemplate!
+    @auth(requires: [STAFF])
+
   # Update an existing event template
-  updateEventTemplate(id: ID!, input: UpdateEventTemplateInput!): EventTemplate! @auth(requires: [STAFF])
-  
+  updateEventTemplate(
+    id: ID!
+    input: UpdateEventTemplateInput!
+  ): EventTemplate! @auth(requires: [STAFF])
+
   # Delete an event template
   deleteEventTemplate(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create an event from a template
-  createEventFromTemplate(templateId: ID!, input: CreateEventFromTemplateInput!): Event! @auth(requires: [STAFF])
+  createEventFromTemplate(
+    templateId: ID!
+    input: CreateEventFromTemplateInput!
+  ): Event! @auth(requires: [STAFF])
 }
 
 type EventTemplateConnection {

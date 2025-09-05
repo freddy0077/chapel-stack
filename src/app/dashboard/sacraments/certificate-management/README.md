@@ -38,11 +38,15 @@ interface CertificateManagerProps {
   isOpen: boolean;
   onClose: () => void;
   record: SacramentRecord | null;
-  onCertificateGenerated?: (certificateUrl: string, certificateNumber: string) => void;
+  onCertificateGenerated?: (
+    certificateUrl: string,
+    certificateNumber: string,
+  ) => void;
 }
 ```
 
 **Key Features**:
+
 - Template selection interface
 - Certificate data customization
 - Real-time generation progress
@@ -50,6 +54,7 @@ interface CertificateManagerProps {
 - Integration with sacrament records
 
 **Generation Steps**:
+
 1. **Template Selection**: Choose from sacrament-specific templates
 2. **Data Customization**: Edit certificate details and special notes
 3. **Generation**: PDF creation with selected template and data
@@ -69,11 +74,13 @@ interface CertificateGeneratorProps {
 ```
 
 **Multi-Step Wizard**:
+
 1. **Branch Letterhead Selection**: Choose branch-specific branding
 2. **Template Selection**: Pick from available certificate templates
 3. **Certificate Generation**: Automated PDF creation and storage
 
 **Branch Integration**:
+
 ```typescript
 interface Branch {
   id: string;
@@ -91,12 +98,14 @@ interface Branch {
 ### 3. Template System
 
 **Template Types**:
+
 - **Baptism**: Classic, Modern
 - **First Communion**: Traditional, Contemporary
 - **Confirmation**: Elegant, Simple
 - **Marriage**: Ornate, Classic
 
 **Template Structure**:
+
 ```typescript
 interface CertificateTemplate {
   id: string;
@@ -133,6 +142,7 @@ interface CertificateData {
 The Chapel Stack Certificate Management System includes an extensive library of **professionally designed templates for all major Christian denominations**:
 
 #### **Supported Denominations**:
+
 - **Roman Catholic** - Traditional liturgical designs with papal elements
 - **Eastern Orthodox** - Byzantine iconography and traditional styling
 - **Anglican/Episcopal** - Book of Common Prayer inspired designs
@@ -153,24 +163,29 @@ The Chapel Stack Certificate Management System includes an extensive library of 
 #### **Template Categories by Sacrament**:
 
 **Baptism Templates**:
+
 - `BAPTISM` - General baptism certificates
 - `INFANT_BAPTISM` - Specifically for infant baptisms
 - `ADULT_BAPTISM` - Believer's baptism emphasis
 - `IMMERSION_BAPTISM` - Full immersion baptism focus
 
 **Communion Templates**:
+
 - `EUCHARIST_FIRST_COMMUNION` - First Holy Communion
 - Traditional and contemporary designs available
 
 **Confirmation Templates**:
+
 - `CONFIRMATION` - Confirmation/Chrismation certificates
 - Age-appropriate designs for youth and adults
 
 **Marriage Templates**:
+
 - `MATRIMONY` - Wedding certificates
 - Traditional, modern, and ornate styles
 
 **Additional Sacraments**:
+
 - `ORDINATION` - Clergy ordination certificates
 - `RECONCILIATION` - Reconciliation/confession certificates
 - `ANOINTING_OF_THE_SICK` - Last rites certificates
@@ -181,6 +196,7 @@ The Chapel Stack Certificate Management System includes an extensive library of 
 ### Standard Template Features
 
 #### **Enhanced Template Structure**:
+
 ```typescript
 interface StandardCertificateTemplate {
   id: string;
@@ -200,16 +216,18 @@ interface StandardCertificateTemplate {
 ```
 
 #### **Liturgical Elements Integration**:
+
 ```typescript
 interface LiturgicalElement {
-  type: 'SCRIPTURE' | 'PRAYER' | 'BLESSING' | 'CREED' | 'HYMN';
+  type: "SCRIPTURE" | "PRAYER" | "BLESSING" | "CREED" | "HYMN";
   content: string;
-  position: 'HEADER' | 'BODY' | 'FOOTER';
+  position: "HEADER" | "BODY" | "FOOTER";
   optional: boolean;
 }
 ```
 
 **Examples**:
+
 - **Catholic Baptism**: Latin prayers, papal blessings, Scripture verses
 - **Orthodox Baptism**: Byzantine prayers, patron saint references
 - **Baptist Baptism**: Romans 6:4, believer's testimony elements
@@ -217,21 +235,23 @@ interface LiturgicalElement {
 - **Presbyterian Baptism**: Reformed theology, covenant child emphasis
 
 #### **Denomination-Specific Styling**:
+
 ```typescript
 interface TemplateStyle {
-  primaryColor: string;        // Denomination traditional colors
-  secondaryColor: string;      // Accent colors
-  accentColor: string;         // Highlight colors
-  fontFamily: string;          // Traditional fonts (Times, Arial, etc.)
-  headerFont: string;          // Special fonts (Trajan Pro, Fraktur, etc.)
-  bodyFont: string;            // Body text fonts
-  borderStyle: 'CLASSIC' | 'MODERN' | 'ORNATE' | 'SIMPLE';
-  backgroundPattern?: string;   // Denomination symbols
-  logoPosition: 'TOP_CENTER' | 'TOP_LEFT' | 'TOP_RIGHT' | 'BOTTOM_CENTER';
+  primaryColor: string; // Denomination traditional colors
+  secondaryColor: string; // Accent colors
+  accentColor: string; // Highlight colors
+  fontFamily: string; // Traditional fonts (Times, Arial, etc.)
+  headerFont: string; // Special fonts (Trajan Pro, Fraktur, etc.)
+  bodyFont: string; // Body text fonts
+  borderStyle: "CLASSIC" | "MODERN" | "ORNATE" | "SIMPLE";
+  backgroundPattern?: string; // Denomination symbols
+  logoPosition: "TOP_CENTER" | "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_CENTER";
 }
 ```
 
 **Styling Examples**:
+
 - **Catholic**: Deep red/gold, ornate borders, cross patterns
 - **Orthodox**: Navy/gold, Byzantine crosses, icon-style borders
 - **Lutheran**: Brown/gold, Luther Rose, Reformation themes
@@ -243,6 +263,7 @@ interface TemplateStyle {
 **File**: `components/StandardTemplateSelector.tsx`
 
 #### **Key Features**:
+
 - **Comprehensive Search**: Search by name, description, or denomination
 - **Advanced Filtering**: Filter by denomination, sacrament type, default status
 - **Visual Preview**: High-quality template previews with hover effects
@@ -251,44 +272,49 @@ interface TemplateStyle {
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 
 #### **Search & Filter Capabilities**:
+
 ```typescript
 // Filter by denomination
-const catholicTemplates = getTemplatesByDenomination('CATHOLIC');
+const catholicTemplates = getTemplatesByDenomination("CATHOLIC");
 
 // Filter by sacrament type
-const baptismTemplates = getTemplatesBySacrament('BAPTISM');
+const baptismTemplates = getTemplatesBySacrament("BAPTISM");
 
 // Get default template for specific denomination and sacrament
-const defaultTemplate = getDefaultTemplate('BAPTIST', 'IMMERSION_BAPTISM');
+const defaultTemplate = getDefaultTemplate("BAPTIST", "IMMERSION_BAPTISM");
 ```
 
 #### **Template Customization**:
+
 ```typescript
 // Customize template for specific branch
 const customizedTemplate = customizeTemplateForBranch(template, {
-  name: 'St. Mary\'s Parish',
-  denomination: 'CATHOLIC',
-  primaryColor: '#8B0000',
-  secondaryColor: '#DAA520',
-  logoUrl: '/images/st-marys-logo.png'
+  name: "St. Mary's Parish",
+  denomination: "CATHOLIC",
+  primaryColor: "#8B0000",
+  secondaryColor: "#DAA520",
+  logoUrl: "/images/st-marys-logo.png",
 });
 ```
 
 ### Template Management Features
 
 #### **Branch-Specific Customization**:
+
 - **Automatic Branding**: Templates adapt to branch colors and logos
 - **Denomination Matching**: Templates filter based on church denomination
 - **Language Support**: Multi-language template support (future enhancement)
 - **Regional Variations**: Templates can vary by geographic region
 
 #### **Quality Assurance**:
+
 - **Professional Design**: All templates designed by liturgical experts
 - **Theological Accuracy**: Content reviewed for denominational correctness
 - **Print Quality**: High-resolution templates suitable for official documents
 - **Accessibility**: Templates meet accessibility standards for all users
 
 #### **Template Library Management**:
+
 - **Version Control**: Templates versioned for updates and improvements
 - **Usage Analytics**: Track which templates are most popular
 - **Custom Template Support**: Branches can create custom templates
@@ -297,6 +323,7 @@ const customizedTemplate = customizeTemplateForBranch(template, {
 ### Integration with Certificate Generation
 
 #### **Seamless Workflow**:
+
 1. **Denomination Detection**: System detects church denomination from branch settings
 2. **Template Filtering**: Shows relevant templates for denomination and sacrament
 3. **Default Selection**: Automatically suggests best template match
@@ -304,6 +331,7 @@ const customizedTemplate = customizeTemplateForBranch(template, {
 5. **Generation**: Creates professional certificate with selected template
 
 #### **Template Preview System**:
+
 - **Real-time Preview**: See how certificate will look with actual data
 - **Field Highlighting**: Shows where custom data will be placed
 - **Print Preview**: Accurate representation of final printed certificate
@@ -314,6 +342,7 @@ const customizedTemplate = customizeTemplateForBranch(template, {
 ### Database Schema
 
 **SacramentalRecord Fields**:
+
 ```sql
 -- Certificate-related fields
 certificateNumber VARCHAR(255) NULL,
@@ -334,13 +363,16 @@ certificateUrl VARCHAR(500) NULL,
 ```typescript
 const generateCertificateNumber = () => {
   const year = new Date().getFullYear();
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
   const typeCode = record.sacramentType.charAt(0);
   return `${typeCode}${year}${random}`;
 };
 ```
 
 **Format**: `[TYPE][YEAR][RANDOM]`
+
 - Example: `B20242847` (Baptism, 2024, sequence 2847)
 
 ## 🎨 UI/UX Features
@@ -348,18 +380,21 @@ const generateCertificateNumber = () => {
 ### Certificate Manager Interface
 
 **Template Selection**:
+
 - Grid layout with template previews
 - Sacrament-specific filtering
 - Default template highlighting
 - Template descriptions and features
 
 **Customization Panel**:
+
 - Editable certificate fields
 - Special notes section
 - Real-time preview (future enhancement)
 - Validation and error handling
 
 **Generation Progress**:
+
 - Step-by-step progress indicator
 - Loading states with animations
 - Success confirmation with actions
@@ -378,12 +413,14 @@ const generateCertificateNumber = () => {
 ### Sacrament Records Integration
 
 **Record Display**:
+
 - Certificate status indicators
 - Download links for existing certificates
 - Generate button for records without certificates
 - Certificate number display
 
 **Modal Integration**:
+
 ```typescript
 const handleGenerateCertificate = (record: SacramentRecord) => {
   setSelectedRecord(record);
@@ -394,6 +431,7 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ### Marriage Analytics Integration
 
 **Certificate Links**:
+
 - Direct certificate access from marriage history
 - Anniversary certificate generation
 - Bulk certificate management for events
@@ -401,6 +439,7 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ### Admin Interface Integration
 
 **Certificate Management Dashboard**:
+
 - Bulk certificate generation
 - Template management
 - Certificate audit trails
@@ -411,16 +450,19 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ### Certificate Security
 
 **Unique Identifiers**:
+
 - Cryptographically secure certificate numbers
 - Tamper-evident PDF generation
 - Digital signatures (future enhancement)
 
 **Access Control**:
+
 - Role-based certificate generation permissions
 - Audit trails for all certificate operations
 - Secure cloud storage with access controls
 
 **Data Privacy**:
+
 - GDPR-compliant data handling
 - Secure certificate URLs with expiration
 - Member consent tracking for certificate generation
@@ -428,18 +470,21 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ## 🚀 Future Enhancements
 
 ### Phase 1: Advanced Features
+
 - **Real-time Preview**: Live certificate preview during customization
 - **Batch Generation**: Bulk certificate creation for events
 - **Custom Templates**: Branch-specific template creation tools
 - **Digital Signatures**: Cryptographic certificate validation
 
 ### Phase 2: Advanced Integration
+
 - **Email Integration**: Automatic certificate delivery
 - **QR Code Validation**: Scannable certificate verification
 - **Blockchain Verification**: Immutable certificate records
 - **API Integration**: External certificate validation services
 
 ### Phase 3: Analytics & Reporting
+
 - **Certificate Analytics**: Generation statistics and trends
 - **Template Usage**: Popular template tracking
 - **Performance Metrics**: Generation time and success rates
@@ -450,33 +495,37 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ### Dependencies
 
 **Frontend**:
+
 ```json
 {
   "@headlessui/react": "^1.7.0",
   "@heroicons/react": "^2.0.0",
   "react-hot-toast": "^2.4.0",
-  "jspdf": "^2.5.0",          // PDF generation
-  "html2canvas": "^1.4.0"     // Template rendering
+  "jspdf": "^2.5.0", // PDF generation
+  "html2canvas": "^1.4.0" // Template rendering
 }
 ```
 
 **Backend**:
+
 ```json
 {
-  "puppeteer": "^21.0.0",     // PDF generation
-  "aws-sdk": "^2.1400.0",    // Cloud storage
-  "uuid": "^9.0.0"           // Unique identifiers
+  "puppeteer": "^21.0.0", // PDF generation
+  "aws-sdk": "^2.1400.0", // Cloud storage
+  "uuid": "^9.0.0" // Unique identifiers
 }
 ```
 
 ### Performance Considerations
 
 **PDF Generation**:
+
 - Asynchronous processing for large certificates
 - Template caching for improved performance
 - Optimized image compression for faster downloads
 
 **Storage**:
+
 - CDN integration for global certificate access
 - Automatic cleanup of expired certificates
 - Backup and disaster recovery procedures
@@ -484,12 +533,14 @@ const handleGenerateCertificate = (record: SacramentRecord) => {
 ### Browser Compatibility
 
 **Supported Browsers**:
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
 **Mobile Support**:
+
 - Responsive certificate generation interface
 - Touch-optimized template selection
 - Mobile-friendly PDF viewing
@@ -522,18 +573,21 @@ src/app/dashboard/sacraments/
 ### Testing Strategy
 
 **Unit Tests**:
+
 - Certificate number generation
 - Template selection logic
 - Data validation functions
 - PDF generation utilities
 
 **Integration Tests**:
+
 - End-to-end certificate generation
 - Database integration
 - Cloud storage integration
 - UI component interactions
 
 **Performance Tests**:
+
 - PDF generation speed
 - Template loading performance
 - Concurrent generation handling
@@ -553,9 +607,9 @@ const handleGenerateCertificate = async (record: SacramentRecord) => {
     location: record.locationOfSacrament,
     ministerName: record.officiantName,
     recordNumber: record.id,
-    branchId: record.branchId
+    branchId: record.branchId,
   };
-  
+
   // Open certificate manager
   setCertificateData(certificateData);
   setShowCertificateManager(true);
@@ -573,10 +627,10 @@ const handleTemplateCustomization = (template: CertificateTemplate) => {
     specialNotes: "Special recognition for outstanding faith",
     customFields: {
       additionalWitnesses: ["John Doe", "Jane Smith"],
-      ceremonialNotes: "Celebrated during Easter Vigil"
-    }
+      ceremonialNotes: "Celebrated during Easter Vigil",
+    },
   };
-  
+
   generateCertificate(customizedData);
 };
 ```
@@ -587,10 +641,10 @@ const handleTemplateCustomization = (template: CertificateTemplate) => {
 // Generate certificates for multiple records
 const handleBulkGeneration = async (records: SacramentRecord[]) => {
   const results = await Promise.all(
-    records.map(record => generateCertificateForRecord(record))
+    records.map((record) => generateCertificateForRecord(record)),
   );
-  
-  const successful = results.filter(r => r.success).length;
+
+  const successful = results.filter((r) => r.success).length;
   toast.success(`Generated ${successful} certificates successfully`);
 };
 ```
@@ -600,11 +654,13 @@ const handleBulkGeneration = async (records: SacramentRecord[]) => {
 ### Troubleshooting
 
 **Common Issues**:
+
 - Template loading failures → Check image URLs and permissions
 - PDF generation errors → Verify data completeness and template validity
 - Storage upload failures → Check cloud storage credentials and quotas
 
 **Error Handling**:
+
 - Graceful degradation for missing templates
 - Retry mechanisms for network failures
 - User-friendly error messages with actionable steps
@@ -612,12 +668,14 @@ const handleBulkGeneration = async (records: SacramentRecord[]) => {
 ### Monitoring
 
 **Key Metrics**:
+
 - Certificate generation success rate
 - Average generation time
 - Template usage statistics
 - Storage utilization
 
 **Alerts**:
+
 - Failed certificate generations
 - Storage quota warnings
 - Template loading errors

@@ -3,8 +3,12 @@
  * CSRF protection, secure cookies, session management, and security utilities
  */
 
-import { AuthUser, AuthTokens, COOKIE_NAMES } from '@/types/auth-enhanced.types';
-import { AuthUtils } from './auth-reducer';
+import {
+  AuthUser,
+  AuthTokens,
+  COOKIE_NAMES,
+} from "@/types/auth-enhanced.types";
+import { AuthUtils } from "./auth-reducer";
 
 /**
  * CSRF Protection Manager
@@ -26,15 +30,15 @@ export class CSRFProtection {
    */
   generateToken(): string {
     const token = this.createSecureToken();
-    const expiry = Date.now() + (30 * 60 * 1000); // 30 minutes
+    const expiry = Date.now() + 30 * 60 * 1000; // 30 minutes
 
     this.csrfToken = token;
     this.tokenExpiry = expiry;
 
     // Store in sessionStorage for client-side access
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('csrf_token', token);
-      sessionStorage.setItem('csrf_expiry', expiry.toString());
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("csrf_token", token);
+      sessionStorage.setItem("csrf_expiry", expiry.toString());
     }
 
     return token;
@@ -50,9 +54,9 @@ export class CSRFProtection {
     }
 
     // Try to get from sessionStorage
-    if (typeof window !== 'undefined') {
-      const storedToken = sessionStorage.getItem('csrf_token');
-      const storedExpiry = sessionStorage.getItem('csrf_expiry');
+    if (typeof window !== "undefined") {
+      const storedToken = sessionStorage.getItem("csrf_token");
+      const storedExpiry = sessionStorage.getItem("csrf_expiry");
 
       if (storedToken && storedExpiry) {
         const expiry = parseInt(storedExpiry, 10);
@@ -83,9 +87,9 @@ export class CSRFProtection {
     this.csrfToken = null;
     this.tokenExpiry = 0;
 
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('csrf_token');
-      sessionStorage.removeItem('csrf_expiry');
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("csrf_token");
+      sessionStorage.removeItem("csrf_expiry");
     }
   }
 
@@ -93,14 +97,22 @@ export class CSRFProtection {
    * Create secure random token
    */
   private createSecureToken(): string {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    if (
+      typeof window !== "undefined" &&
+      window.crypto &&
+      window.crypto.getRandomValues
+    ) {
       const array = new Uint8Array(32);
       window.crypto.getRandomValues(array);
-      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+      return Array.from(array, (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join("");
     }
 
     // Fallback for environments without crypto API
-    return Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    return Array.from({ length: 64 }, () =>
+      Math.floor(Math.random() * 16).toString(16),
+    ).join("");
   }
 
   /**
@@ -109,7 +121,7 @@ export class CSRFProtection {
   addToHeaders(headers: Record<string, string> = {}): Record<string, string> {
     const token = this.getToken();
     if (token) {
-      headers['X-CSRF-Token'] = token;
+      headers["X-CSRF-Token"] = token;
     }
     return headers;
   }
@@ -120,7 +132,7 @@ export class CSRFProtection {
   addToFormData(formData: FormData): FormData {
     const token = this.getToken();
     if (token) {
-      formData.append('_csrf', token);
+      formData.append("_csrf", token);
     }
     return formData;
   }
@@ -142,25 +154,29 @@ export class SecureCookieManager {
   /**
    * Set secure authentication cookie
    */
-  setAuthCookie(name: string, value: string, options: {
-    maxAge?: number;
-    expires?: Date;
-    httpOnly?: boolean;
-    secure?: boolean;
-    sameSite?: 'strict' | 'lax' | 'none';
-    domain?: string;
-    path?: string;
-  } = {}): void {
-    if (typeof document === 'undefined') return;
+  setAuthCookie(
+    name: string,
+    value: string,
+    options: {
+      maxAge?: number;
+      expires?: Date;
+      httpOnly?: boolean;
+      secure?: boolean;
+      sameSite?: "strict" | "lax" | "none";
+      domain?: string;
+      path?: string;
+    } = {},
+  ): void {
+    if (typeof document === "undefined") return;
 
     const {
       maxAge,
       expires,
       httpOnly = false, // Can't set HttpOnly from client-side
-      secure = process.env.NODE_ENV === 'production',
-      sameSite = 'strict',
+      secure = process.env.NODE_ENV === "production",
+      sameSite = "strict",
       domain,
-      path = '/',
+      path = "/",
     } = options;
 
     let cookieString = `${name}=${encodeURIComponent(value)}`;
@@ -174,7 +190,7 @@ export class SecureCookieManager {
     }
 
     if (secure) {
-      cookieString += '; Secure';
+      cookieString += "; Secure";
     }
 
     cookieString += `; SameSite=${sameSite}`;
@@ -188,7 +204,7 @@ export class SecureCookieManager {
     try {
       document.cookie = cookieString;
     } catch (error) {
-      console.error('Failed to set secure cookie:', error);
+      console.error("Failed to set secure cookie:", error);
     }
   }
 
@@ -196,10 +212,10 @@ export class SecureCookieManager {
    * Get cookie value
    */
   getCookie(name: string): string | null {
-    if (typeof document === 'undefined') return null;
+    if (typeof document === "undefined") return null;
 
-    const nameEQ = name + '=';
-    const cookies = document.cookie.split(';');
+    const nameEQ = name + "=";
+    const cookies = document.cookie.split(";");
 
     for (let cookie of cookies) {
       let c = cookie.trim();
@@ -214,8 +230,8 @@ export class SecureCookieManager {
   /**
    * Delete cookie
    */
-  deleteCookie(name: string, path: string = '/', domain?: string): void {
-    if (typeof document === 'undefined') return;
+  deleteCookie(name: string, path: string = "/", domain?: string): void {
+    if (typeof document === "undefined") return;
 
     let cookieString = `${name}=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=${path}`;
 
@@ -226,7 +242,7 @@ export class SecureCookieManager {
     try {
       document.cookie = cookieString;
     } catch (error) {
-      console.error('Failed to delete cookie:', error);
+      console.error("Failed to delete cookie:", error);
     }
   }
 
@@ -239,16 +255,16 @@ export class SecureCookieManager {
     // Set access token (needs to be accessible by JavaScript for GraphQL)
     this.setAuthCookie(COOKIE_NAMES.ACCESS_TOKEN, tokens.accessToken, {
       maxAge,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     });
 
     // Set refresh token (more secure, but still accessible for refresh logic)
     if (tokens.refreshToken) {
       this.setAuthCookie(COOKIE_NAMES.REFRESH_TOKEN, tokens.refreshToken, {
         maxAge: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60, // 30 days or 1 day
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
     }
   }
@@ -257,7 +273,7 @@ export class SecureCookieManager {
    * Clear all authentication cookies
    */
   clearAuthCookies(): void {
-    Object.values(COOKIE_NAMES).forEach(cookieName => {
+    Object.values(COOKIE_NAMES).forEach((cookieName) => {
       this.deleteCookie(cookieName);
     });
   }
@@ -266,16 +282,16 @@ export class SecureCookieManager {
    * Check if cookies are enabled
    */
   areCookiesEnabled(): boolean {
-    if (typeof document === 'undefined') return false;
+    if (typeof document === "undefined") return false;
 
     try {
-      const testCookie = 'test_cookie_enabled';
+      const testCookie = "test_cookie_enabled";
       document.cookie = `${testCookie}=test; path=/`;
       const enabled = document.cookie.indexOf(testCookie) !== -1;
-      
+
       // Clean up test cookie
       this.deleteCookie(testCookie);
-      
+
       return enabled;
     } catch {
       return false;
@@ -302,20 +318,20 @@ export class SessionSecurityManager {
    * Generate browser fingerprint for session validation
    */
   generateFingerprint(): string {
-    if (typeof window === 'undefined') return 'server';
+    if (typeof window === "undefined") return "server";
 
     const components = [
       navigator.userAgent,
       navigator.language,
-      screen.width + 'x' + screen.height,
+      screen.width + "x" + screen.height,
       screen.colorDepth,
       new Date().getTimezoneOffset(),
       navigator.platform,
-      navigator.cookieEnabled ? '1' : '0',
+      navigator.cookieEnabled ? "1" : "0",
     ];
 
     // Create hash of components
-    const fingerprint = this.simpleHash(components.join('|'));
+    const fingerprint = this.simpleHash(components.join("|"));
     this.sessionFingerprint = fingerprint;
 
     return fingerprint;
@@ -335,16 +351,16 @@ export class SessionSecurityManager {
   detectSuspiciousActivity(user: AuthUser): {
     isSuspicious: boolean;
     reasons: string[];
-    riskLevel: 'low' | 'medium' | 'high';
+    riskLevel: "low" | "medium" | "high";
   } {
     const reasons: string[] = [];
-    let riskLevel: 'low' | 'medium' | 'high' = 'low';
+    let riskLevel: "low" | "medium" | "high" = "low";
 
     // Check fingerprint mismatch
-    const storedFingerprint = localStorage.getItem('session_fingerprint');
+    const storedFingerprint = localStorage.getItem("session_fingerprint");
     if (storedFingerprint && !this.validateFingerprint(storedFingerprint)) {
-      reasons.push('Browser fingerprint mismatch');
-      riskLevel = 'high';
+      reasons.push("Browser fingerprint mismatch");
+      riskLevel = "high";
     }
 
     // Check for rapid location changes (if geolocation available)
@@ -358,9 +374,9 @@ export class SessionSecurityManager {
 
     // Determine overall risk level
     if (reasons.length >= 3) {
-      riskLevel = 'high';
+      riskLevel = "high";
     } else if (reasons.length >= 2) {
-      riskLevel = 'medium';
+      riskLevel = "medium";
     }
 
     return {
@@ -376,20 +392,20 @@ export class SessionSecurityManager {
   private checkLocationChanges(reasons: string[]): void {
     // This would integrate with geolocation API or IP-based location
     // For now, we'll implement a basic check
-    
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      const lastLocation = localStorage.getItem('last_location');
-      const lastLocationTime = localStorage.getItem('last_location_time');
-      
+
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      const lastLocation = localStorage.getItem("last_location");
+      const lastLocationTime = localStorage.getItem("last_location_time");
+
       if (lastLocation && lastLocationTime) {
         const timeDiff = Date.now() - parseInt(lastLocationTime, 10);
         const oneHour = 60 * 60 * 1000;
-        
+
         // If location was recorded less than an hour ago, it might be suspicious
         // to have a completely different location now
         if (timeDiff < oneHour) {
           // This is a simplified check - in reality, you'd compare actual coordinates
-          reasons.push('Rapid location change detected');
+          reasons.push("Rapid location change detected");
         }
       }
     }
@@ -401,19 +417,22 @@ export class SessionSecurityManager {
   private checkAccessPatterns(user: AuthUser, reasons: string[]): void {
     const now = Date.now();
     const userId = user.id;
-    
+
     // Check login frequency
     const loginCount = this.securityChecks.get(`login_${userId}`) || 0;
-    if (loginCount > 10) { // More than 10 logins in the tracking period
-      reasons.push('Unusual login frequency');
+    if (loginCount > 10) {
+      // More than 10 logins in the tracking period
+      reasons.push("Unusual login frequency");
     }
 
     // Check for access outside normal hours (if we have historical data)
     const hour = new Date().getHours();
-    if (hour < 6 || hour > 22) { // Outside 6 AM - 10 PM
-      const nightAccessCount = this.securityChecks.get(`night_access_${userId}`) || 0;
+    if (hour < 6 || hour > 22) {
+      // Outside 6 AM - 10 PM
+      const nightAccessCount =
+        this.securityChecks.get(`night_access_${userId}`) || 0;
       if (nightAccessCount > 3) {
-        reasons.push('Unusual access hours');
+        reasons.push("Unusual access hours");
       }
       this.securityChecks.set(`night_access_${userId}`, nightAccessCount + 1);
     }
@@ -425,12 +444,15 @@ export class SessionSecurityManager {
   private checkConcurrentSessions(reasons: string[]): void {
     // This would require server-side session tracking
     // For now, we'll implement a basic client-side check
-    
-    const sessionId = localStorage.getItem('chapel_session_id');
-    const allSessions = JSON.parse(localStorage.getItem('all_sessions') || '[]');
-    
-    if (allSessions.length > 3) { // More than 3 concurrent sessions
-      reasons.push('Multiple concurrent sessions detected');
+
+    const sessionId = localStorage.getItem("chapel_session_id");
+    const allSessions = JSON.parse(
+      localStorage.getItem("all_sessions") || "[]",
+    );
+
+    if (allSessions.length > 3) {
+      // More than 3 concurrent sessions
+      reasons.push("Multiple concurrent sessions detected");
     }
   }
 
@@ -440,13 +462,13 @@ export class SessionSecurityManager {
   private simpleHash(str: string): string {
     let hash = 0;
     if (str.length === 0) return hash.toString();
-    
+
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     return Math.abs(hash).toString(16);
   }
 
@@ -456,12 +478,12 @@ export class SessionSecurityManager {
   clearSecurityData(): void {
     this.sessionFingerprint = null;
     this.securityChecks.clear();
-    
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('session_fingerprint');
-      localStorage.removeItem('last_location');
-      localStorage.removeItem('last_location_time');
-      localStorage.removeItem('all_sessions');
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("session_fingerprint");
+      localStorage.removeItem("last_location");
+      localStorage.removeItem("last_location_time");
+      localStorage.removeItem("all_sessions");
     }
   }
 
@@ -471,28 +493,30 @@ export class SessionSecurityManager {
   initializeSession(user: AuthUser): void {
     // Generate and store fingerprint
     const fingerprint = this.generateFingerprint();
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('session_fingerprint', fingerprint);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("session_fingerprint", fingerprint);
     }
 
     // Record session start
-    this.securityChecks.set(`login_${user.id}`, (this.securityChecks.get(`login_${user.id}`) || 0) + 1);
+    this.securityChecks.set(
+      `login_${user.id}`,
+      (this.securityChecks.get(`login_${user.id}`) || 0) + 1,
+    );
 
     // Store location if available
-    if (typeof window !== 'undefined' && navigator.geolocation) {
+    if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const location = `${position.coords.latitude},${position.coords.longitude}`;
-          localStorage.setItem('last_location', location);
-          localStorage.setItem('last_location_time', Date.now().toString());
+          localStorage.setItem("last_location", location);
+          localStorage.setItem("last_location_time", Date.now().toString());
         },
         () => {
           // Geolocation failed, that's okay
         },
-        { timeout: 5000, maximumAge: 300000 } // 5 second timeout, 5 minute cache
+        { timeout: 5000, maximumAge: 300000 }, // 5 second timeout, 5 minute cache
       );
     }
-
   }
 }
 
@@ -513,34 +537,42 @@ export const SecurityUtils = {
 
     // Length check
     if (password.length >= 8) score += 1;
-    else feedback.push('Use at least 8 characters');
+    else feedback.push("Use at least 8 characters");
 
     if (password.length >= 12) score += 1;
 
     // Character variety checks
     if (/[a-z]/.test(password)) score += 1;
-    else feedback.push('Include lowercase letters');
+    else feedback.push("Include lowercase letters");
 
     if (/[A-Z]/.test(password)) score += 1;
-    else feedback.push('Include uppercase letters');
+    else feedback.push("Include uppercase letters");
 
     if (/\d/.test(password)) score += 1;
-    else feedback.push('Include numbers');
+    else feedback.push("Include numbers");
 
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
-    else feedback.push('Include special characters');
+    else feedback.push("Include special characters");
 
     // Common password checks
-    const commonPasswords = ['password', '123456', 'qwerty', 'abc123', 'password123'];
-    if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
+    const commonPasswords = [
+      "password",
+      "123456",
+      "qwerty",
+      "abc123",
+      "password123",
+    ];
+    if (
+      commonPasswords.some((common) => password.toLowerCase().includes(common))
+    ) {
       score -= 2;
-      feedback.push('Avoid common passwords');
+      feedback.push("Avoid common passwords");
     }
 
     // Sequential characters check
     if (/123|abc|qwe/i.test(password)) {
       score -= 1;
-      feedback.push('Avoid sequential characters');
+      feedback.push("Avoid sequential characters");
     }
 
     return {
@@ -554,13 +586,18 @@ export const SecurityUtils = {
    * Generate secure random password
    */
   generateSecurePassword(length: number = 16): string {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    let password = '';
+    const charset =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+    let password = "";
 
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    if (
+      typeof window !== "undefined" &&
+      window.crypto &&
+      window.crypto.getRandomValues
+    ) {
       const array = new Uint8Array(length);
       window.crypto.getRandomValues(array);
-      
+
       for (let i = 0; i < length; i++) {
         password += charset[array[i] % charset.length];
       }
@@ -578,15 +615,15 @@ export const SecurityUtils = {
    * Sanitize user input to prevent XSS
    */
   sanitizeInput(input: string): string {
-    if (typeof input !== 'string') return '';
+    if (typeof input !== "string") return "";
 
     return input
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;")
+      .replace(/\//g, "&#x2F;");
   },
 
   /**
@@ -600,34 +637,41 @@ export const SecurityUtils = {
 
     // Basic format check
     if (!AuthUtils.isValidEmail(email)) {
-      issues.push('Invalid email format');
+      issues.push("Invalid email format");
       return { isValid: false, issues };
     }
 
     // Length checks
     if (email.length > 254) {
-      issues.push('Email too long');
+      issues.push("Email too long");
     }
 
-    const [localPart, domain] = email.split('@');
+    const [localPart, domain] = email.split("@");
 
     if (localPart.length > 64) {
-      issues.push('Email local part too long');
+      issues.push("Email local part too long");
     }
 
     // Check for suspicious patterns
     if (/[<>]/.test(email)) {
-      issues.push('Email contains suspicious characters');
+      issues.push("Email contains suspicious characters");
     }
 
     // Check for common disposable email domains
     const disposableDomains = [
-      '10minutemail.com', 'tempmail.org', 'guerrillamail.com',
-      'mailinator.com', 'throwaway.email'
+      "10minutemail.com",
+      "tempmail.org",
+      "guerrillamail.com",
+      "mailinator.com",
+      "throwaway.email",
     ];
 
-    if (disposableDomains.some(disposable => domain.toLowerCase().includes(disposable))) {
-      issues.push('Disposable email addresses not allowed');
+    if (
+      disposableDomains.some((disposable) =>
+        domain.toLowerCase().includes(disposable),
+      )
+    ) {
+      issues.push("Disposable email addresses not allowed");
     }
 
     return {
@@ -640,16 +684,20 @@ export const SecurityUtils = {
    * Check if request is from secure context
    */
   isSecureContext(): boolean {
-    if (typeof window === 'undefined') return true; // Assume secure on server
+    if (typeof window === "undefined") return true; // Assume secure on server
 
-    return window.isSecureContext || window.location.protocol === 'https:';
+    return window.isSecureContext || window.location.protocol === "https:";
   },
 
   /**
    * Generate content security policy nonce
    */
   generateCSPNonce(): string {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    if (
+      typeof window !== "undefined" &&
+      window.crypto &&
+      window.crypto.getRandomValues
+    ) {
       const array = new Uint8Array(16);
       window.crypto.getRandomValues(array);
       return btoa(String.fromCharCode(...array));

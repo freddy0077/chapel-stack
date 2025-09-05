@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   FunnelIcon,
   MagnifyingGlassIcon,
@@ -9,7 +9,7 @@ import {
   UserIcon,
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface FilterOption {
   value: string;
@@ -23,7 +23,7 @@ interface DateRange {
 }
 
 interface AdvancedFiltersProps {
-  entityType: 'visits' | 'sessions' | 'requests' | 'reminders';
+  entityType: "visits" | "sessions" | "requests" | "reminders";
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   onFiltersChange?: (filters: FilterState) => void;
@@ -45,7 +45,7 @@ export interface FilterState {
 }
 
 const defaultFilters: FilterState = {
-  searchTerm: '',
+  searchTerm: "",
   status: [],
   type: [],
   priority: [],
@@ -58,27 +58,27 @@ const defaultFilters: FilterState = {
 // Filter options for different entity types
 const getStatusOptions = (entityType: string): FilterOption[] => {
   switch (entityType) {
-    case 'visits':
-    case 'sessions':
+    case "visits":
+    case "sessions":
       return [
-        { value: 'SCHEDULED', label: 'Scheduled' },
-        { value: 'COMPLETED', label: 'Completed' },
-        { value: 'CANCELLED', label: 'Cancelled' },
-        { value: 'RESCHEDULED', label: 'Rescheduled' },
+        { value: "SCHEDULED", label: "Scheduled" },
+        { value: "COMPLETED", label: "Completed" },
+        { value: "CANCELLED", label: "Cancelled" },
+        { value: "RESCHEDULED", label: "Rescheduled" },
       ];
-    case 'requests':
+    case "requests":
       return [
-        { value: 'OPEN', label: 'Open' },
-        { value: 'IN_PROGRESS', label: 'In Progress' },
-        { value: 'RESOLVED', label: 'Resolved' },
-        { value: 'CLOSED', label: 'Closed' },
+        { value: "OPEN", label: "Open" },
+        { value: "IN_PROGRESS", label: "In Progress" },
+        { value: "RESOLVED", label: "Resolved" },
+        { value: "CLOSED", label: "Closed" },
       ];
-    case 'reminders':
+    case "reminders":
       return [
-        { value: 'PENDING', label: 'Pending' },
-        { value: 'IN_PROGRESS', label: 'In Progress' },
-        { value: 'COMPLETED', label: 'Completed' },
-        { value: 'OVERDUE', label: 'Overdue' },
+        { value: "PENDING", label: "Pending" },
+        { value: "IN_PROGRESS", label: "In Progress" },
+        { value: "COMPLETED", label: "Completed" },
+        { value: "OVERDUE", label: "Overdue" },
       ];
     default:
       return [];
@@ -87,41 +87,41 @@ const getStatusOptions = (entityType: string): FilterOption[] => {
 
 const getTypeOptions = (entityType: string): FilterOption[] => {
   switch (entityType) {
-    case 'visits':
+    case "visits":
       return [
-        { value: 'HOME_VISIT', label: 'Home Visit' },
-        { value: 'HOSPITAL_VISIT', label: 'Hospital Visit' },
-        { value: 'OFFICE_VISIT', label: 'Office Visit' },
-        { value: 'PHONE_CALL', label: 'Phone Call' },
-        { value: 'OTHER', label: 'Other' },
+        { value: "HOME_VISIT", label: "Home Visit" },
+        { value: "HOSPITAL_VISIT", label: "Hospital Visit" },
+        { value: "OFFICE_VISIT", label: "Office Visit" },
+        { value: "PHONE_CALL", label: "Phone Call" },
+        { value: "OTHER", label: "Other" },
       ];
-    case 'sessions':
+    case "sessions":
       return [
-        { value: 'INDIVIDUAL', label: 'Individual' },
-        { value: 'COUPLE', label: 'Couple' },
-        { value: 'FAMILY', label: 'Family' },
-        { value: 'GROUP', label: 'Group' },
-        { value: 'CRISIS', label: 'Crisis' },
-        { value: 'FOLLOW_UP', label: 'Follow-up' },
+        { value: "INDIVIDUAL", label: "Individual" },
+        { value: "COUPLE", label: "Couple" },
+        { value: "FAMILY", label: "Family" },
+        { value: "GROUP", label: "Group" },
+        { value: "CRISIS", label: "Crisis" },
+        { value: "FOLLOW_UP", label: "Follow-up" },
       ];
-    case 'requests':
+    case "requests":
       return [
-        { value: 'PASTORAL_CARE', label: 'Pastoral Care' },
-        { value: 'COUNSELING', label: 'Counseling' },
-        { value: 'PRAYER_REQUEST', label: 'Prayer Request' },
-        { value: 'HOSPITAL_VISIT', label: 'Hospital Visit' },
-        { value: 'BEREAVEMENT', label: 'Bereavement' },
-        { value: 'OTHER', label: 'Other' },
+        { value: "PASTORAL_CARE", label: "Pastoral Care" },
+        { value: "COUNSELING", label: "Counseling" },
+        { value: "PRAYER_REQUEST", label: "Prayer Request" },
+        { value: "HOSPITAL_VISIT", label: "Hospital Visit" },
+        { value: "BEREAVEMENT", label: "Bereavement" },
+        { value: "OTHER", label: "Other" },
       ];
-    case 'reminders':
+    case "reminders":
       return [
-        { value: 'FOLLOW_UP_VISIT', label: 'Follow-up Visit' },
-        { value: 'PHONE_CALL', label: 'Phone Call' },
-        { value: 'EMAIL', label: 'Email' },
-        { value: 'PRAYER_REQUEST', label: 'Prayer Request' },
-        { value: 'COUNSELING_SESSION', label: 'Counseling Session' },
-        { value: 'PASTORAL_VISIT', label: 'Pastoral Visit' },
-        { value: 'OTHER', label: 'Other' },
+        { value: "FOLLOW_UP_VISIT", label: "Follow-up Visit" },
+        { value: "PHONE_CALL", label: "Phone Call" },
+        { value: "EMAIL", label: "Email" },
+        { value: "PRAYER_REQUEST", label: "Prayer Request" },
+        { value: "COUNSELING_SESSION", label: "Counseling Session" },
+        { value: "PASTORAL_VISIT", label: "Pastoral Visit" },
+        { value: "OTHER", label: "Other" },
       ];
     default:
       return [];
@@ -129,10 +129,10 @@ const getTypeOptions = (entityType: string): FilterOption[] => {
 };
 
 const priorityOptions: FilterOption[] = [
-  { value: 'LOW', label: 'Low' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'URGENT', label: 'Urgent' },
+  { value: "LOW", label: "Low" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HIGH", label: "High" },
+  { value: "URGENT", label: "Urgent" },
 ];
 
 export default function AdvancedFilters({
@@ -143,7 +143,7 @@ export default function AdvancedFilters({
   onSearchChange,
   memberOptions = [],
   pastorOptions = [],
-  className = '',
+  className = "",
 }: AdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState(filters.searchTerm);
@@ -167,13 +167,16 @@ export default function AdvancedFilters({
     }
   }, [filters, onFiltersChange]);
 
-  const handleFilterChange = (filterType: keyof FilterState, value: string | boolean | DateRange | null) => {
+  const handleFilterChange = (
+    filterType: keyof FilterState,
+    value: string | boolean | DateRange | null,
+  ) => {
     onChange({ ...filters, [filterType]: value });
   };
 
   const clearAllFilters = () => {
     onChange(defaultFilters);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const getActiveFilterCount = () => {
@@ -193,7 +196,9 @@ export default function AdvancedFilters({
   const activeFilterCount = getActiveFilterCount();
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
+    <div
+      className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}
+    >
       {/* Search Bar */}
       <div className="p-4 border-b border-gray-200">
         <div className="relative">
@@ -218,7 +223,9 @@ export default function AdvancedFilters({
         >
           <div className="flex items-center">
             <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-700">Advanced Filters</span>
+            <span className="text-sm font-medium text-gray-700">
+              Advanced Filters
+            </span>
             {activeFilterCount > 0 && (
               <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                 {activeFilterCount}
@@ -227,7 +234,7 @@ export default function AdvancedFilters({
           </div>
           <ChevronDownIcon
             className={`h-5 w-5 text-gray-400 transform transition-transform ${
-              isExpanded ? 'rotate-180' : ''
+              isExpanded ? "rotate-180" : ""
             }`}
           />
         </button>
@@ -238,16 +245,18 @@ export default function AdvancedFilters({
         <div className="p-4 space-y-6">
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
             <div className="flex flex-wrap gap-2">
               {statusOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => handleFilterChange('status', option.value)}
+                  onClick={() => handleFilterChange("status", option.value)}
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                     filters.status.includes(option.value)
-                      ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                      ? "bg-indigo-100 text-indigo-800 border-indigo-200"
+                      : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
                   }`}
                 >
                   {option.label}
@@ -262,19 +271,23 @@ export default function AdvancedFilters({
           {/* Type Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {entityType === 'visits' ? 'Visit Type' : 
-               entityType === 'sessions' ? 'Session Type' : 
-               entityType === 'requests' ? 'Request Type' : 'Reminder Type'}
+              {entityType === "visits"
+                ? "Visit Type"
+                : entityType === "sessions"
+                  ? "Session Type"
+                  : entityType === "requests"
+                    ? "Request Type"
+                    : "Reminder Type"}
             </label>
             <div className="flex flex-wrap gap-2">
               {typeOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => handleFilterChange('type', option.value)}
+                  onClick={() => handleFilterChange("type", option.value)}
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                     filters.type.includes(option.value)
-                      ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                      ? "bg-indigo-100 text-indigo-800 border-indigo-200"
+                      : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
                   }`}
                 >
                   {option.label}
@@ -284,18 +297,20 @@ export default function AdvancedFilters({
           </div>
 
           {/* Priority Filter (for requests and reminders) */}
-          {(entityType === 'requests' || entityType === 'reminders') && (
+          {(entityType === "requests" || entityType === "reminders") && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Priority
+              </label>
               <div className="flex flex-wrap gap-2">
                 {priorityOptions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => handleFilterChange('priority', option.value)}
+                    onClick={() => handleFilterChange("priority", option.value)}
                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                       filters.priority.includes(option.value)
-                        ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
-                        : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                        ? "bg-indigo-100 text-indigo-800 border-indigo-200"
+                        : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
                     }`}
                   >
                     {option.label}
@@ -316,11 +331,13 @@ export default function AdvancedFilters({
                 <label className="block text-xs text-gray-500 mb-1">From</label>
                 <input
                   type="date"
-                  value={filters.dateRange?.startDate || ''}
-                  onChange={(e) => handleFilterChange('dateRange', {
-                    startDate: e.target.value,
-                    endDate: filters.dateRange?.endDate || '',
-                  })}
+                  value={filters.dateRange?.startDate || ""}
+                  onChange={(e) =>
+                    handleFilterChange("dateRange", {
+                      startDate: e.target.value,
+                      endDate: filters.dateRange?.endDate || "",
+                    })
+                  }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -328,11 +345,13 @@ export default function AdvancedFilters({
                 <label className="block text-xs text-gray-500 mb-1">To</label>
                 <input
                   type="date"
-                  value={filters.dateRange?.endDate || ''}
-                  onChange={(e) => handleFilterChange('dateRange', {
-                    startDate: filters.dateRange?.startDate || '',
-                    endDate: e.target.value,
-                  })}
+                  value={filters.dateRange?.endDate || ""}
+                  onChange={(e) =>
+                    handleFilterChange("dateRange", {
+                      startDate: filters.dateRange?.startDate || "",
+                      endDate: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -350,7 +369,10 @@ export default function AdvancedFilters({
                 multiple
                 value={filters.member}
                 onChange={(e) => {
-                  const values = Array.from(e.target.selectedOptions, option => option.value);
+                  const values = Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value,
+                  );
                   onChange({ ...filters, member: values });
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -375,7 +397,10 @@ export default function AdvancedFilters({
                 multiple
                 value={filters.assignedTo}
                 onChange={(e) => {
-                  const values = Array.from(e.target.selectedOptions, option => option.value);
+                  const values = Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value,
+                  );
                   onChange({ ...filters, assignedTo: values });
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -395,7 +420,9 @@ export default function AdvancedFilters({
             <input
               type="checkbox"
               checked={filters.showCompleted}
-              onChange={(e) => handleFilterChange('showCompleted', e.target.checked)}
+              onChange={(e) =>
+                handleFilterChange("showCompleted", e.target.checked)
+              }
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
             <label className="ml-2 block text-sm text-gray-700">

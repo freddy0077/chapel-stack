@@ -6,7 +6,9 @@ interface OfflineIndicatorProps {
   pendingCount: number;
 }
 
-export default function OfflineIndicator({ pendingCount }: OfflineIndicatorProps) {
+export default function OfflineIndicator({
+  pendingCount,
+}: OfflineIndicatorProps) {
   return (
     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md">
       <div className="flex">
@@ -19,12 +21,16 @@ export default function OfflineIndicator({ pendingCount }: OfflineIndicatorProps
           </h3>
           <div className="mt-2 text-sm text-yellow-700">
             <p>
-              You are currently working offline. Attendance records will be saved locally and synced when internet connection is restored.
+              You are currently working offline. Attendance records will be
+              saved locally and synced when internet connection is restored.
             </p>
             {pendingCount > 0 && (
               <div className="mt-2 flex items-center text-sm">
                 <CloudArrowUpIcon className="h-4 w-4 mr-1 text-yellow-600" />
-                <span className="font-medium">{pendingCount} pending records</span> waiting to be synced
+                <span className="font-medium">
+                  {pendingCount} pending records
+                </span>{" "}
+                waiting to be synced
               </div>
             )}
           </div>

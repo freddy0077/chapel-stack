@@ -1,12 +1,12 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 export interface PaginationProps {
   currentPage: number;
@@ -18,7 +18,7 @@ export interface PaginationProps {
   showItemsPerPage?: boolean;
   showInfo?: boolean;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -30,26 +30,26 @@ const Pagination: React.FC<PaginationProps> = ({
   onItemsPerPageChange,
   showItemsPerPage = true,
   showInfo = true,
-  className = '',
-  size = 'md',
+  className = "",
+  size = "md",
 }) => {
   const itemsPerPageOptions = [5, 10, 20, 50, 100];
-  
+
   const sizeClasses = {
     sm: {
-      button: 'px-2 py-1 text-xs',
-      select: 'text-xs px-2 py-1',
-      text: 'text-xs',
+      button: "px-2 py-1 text-xs",
+      select: "text-xs px-2 py-1",
+      text: "text-xs",
     },
     md: {
-      button: 'px-3 py-2 text-sm',
-      select: 'text-sm px-3 py-2',
-      text: 'text-sm',
+      button: "px-3 py-2 text-sm",
+      select: "text-sm px-3 py-2",
+      text: "text-sm",
     },
     lg: {
-      button: 'px-4 py-3 text-base',
-      select: 'text-base px-4 py-3',
-      text: 'text-base',
+      button: "px-4 py-3 text-base",
+      select: "text-base px-4 py-3",
+      text: "text-base",
     },
   };
 
@@ -61,12 +61,16 @@ const Pagination: React.FC<PaginationProps> = ({
     const range = [];
     const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
       range.push(i);
     }
 
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
+      rangeWithDots.push(1, "...");
     } else {
       rangeWithDots.push(1);
     }
@@ -74,7 +78,7 @@ const Pagination: React.FC<PaginationProps> = ({
     rangeWithDots.push(...range);
 
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
+      rangeWithDots.push("...", totalPages);
     } else if (totalPages > 1) {
       rangeWithDots.push(totalPages);
     }
@@ -83,25 +87,33 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   const visiblePages = getVisiblePages();
-  
+
   // Ensure all values are valid numbers to prevent NaN errors
   const safeCurrentPage = Number(currentPage) || 1;
   const safeItemsPerPage = Number(itemsPerPage) || 10;
   const safeTotalItems = Number(totalItems) || 0;
-  
-  const startItem = safeTotalItems === 0 ? 0 : (safeCurrentPage - 1) * safeItemsPerPage + 1;
-  const endItem = safeTotalItems === 0 ? 0 : Math.min(safeCurrentPage * safeItemsPerPage, safeTotalItems);
+
+  const startItem =
+    safeTotalItems === 0 ? 0 : (safeCurrentPage - 1) * safeItemsPerPage + 1;
+  const endItem =
+    safeTotalItems === 0
+      ? 0
+      : Math.min(safeCurrentPage * safeItemsPerPage, safeTotalItems);
 
   if (totalPages <= 1 && !showInfo) {
     return null;
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}>
+    <div
+      className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}
+    >
       {/* Items per page selector */}
       {showItemsPerPage && onItemsPerPageChange && (
         <div className="flex items-center gap-2">
-          <span className={`text-gray-700 font-medium ${classes.text}`}>Show:</span>
+          <span className={`text-gray-700 font-medium ${classes.text}`}>
+            Show:
+          </span>
           <select
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
@@ -120,9 +132,10 @@ const Pagination: React.FC<PaginationProps> = ({
       {/* Page info */}
       {showInfo && (
         <div className={`text-gray-700 font-medium ${classes.text}`}>
-          Showing <span className="font-bold text-gray-900">{startItem}</span> to{' '}
-          <span className="font-bold text-gray-900">{endItem}</span> of{' '}
-          <span className="font-bold text-gray-900">{safeTotalItems}</span> results
+          Showing <span className="font-bold text-gray-900">{startItem}</span>{" "}
+          to <span className="font-bold text-gray-900">{endItem}</span> of{" "}
+          <span className="font-bold text-gray-900">{safeTotalItems}</span>{" "}
+          results
         </div>
       )}
 
@@ -152,15 +165,15 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Page numbers */}
           {visiblePages.map((page, index) => (
             <React.Fragment key={index}>
-              {page === '...' ? (
+              {page === "..." ? (
                 <span className={`${classes.button} text-gray-500`}>...</span>
               ) : (
                 <button
                   onClick={() => onPageChange(page as number)}
                   className={`${classes.button} border rounded-lg transition-all duration-200 font-medium ${
                     safeCurrentPage === page
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105'
-                      : 'border-gray-300 hover:bg-gray-50 hover:shadow-sm'
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md transform scale-105"
+                      : "border-gray-300 hover:bg-gray-50 hover:shadow-sm"
                   }`}
                 >
                   {page}

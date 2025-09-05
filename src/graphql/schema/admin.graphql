@@ -1,7 +1,6 @@
 """
 Admin Operations schema - handles system administration, global settings, and maintenance
 """
-
 enum AuditEntityType {
   USER
   MEMBER
@@ -263,10 +262,10 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): AuditLogConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific audit log
   auditLog(id: ID!): AuditLog @auth(requires: [ADMIN])
-  
+
   # Get system configurations
   systemConfigurations(
     category: String
@@ -275,23 +274,24 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): SystemConfigurationConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific system configuration
   systemConfiguration(id: ID!): SystemConfiguration @auth(requires: [ADMIN])
-  
+
   # Get system configuration by key
-  systemConfigurationByKey(key: String!): SystemConfiguration @auth(requires: [ADMIN])
-  
+  systemConfigurationByKey(key: String!): SystemConfiguration
+    @auth(requires: [ADMIN])
+
   # Get maintenance schedules
   maintenanceSchedules(
     status: MaintenanceStatus
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): MaintenanceScheduleConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific maintenance schedule
   maintenanceSchedule(id: ID!): MaintenanceSchedule @auth(requires: [ADMIN])
-  
+
   # Get data operation jobs
   dataOperationJobs(
     type: DataOperation
@@ -300,10 +300,10 @@ extend type Query {
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): DataOperationJobConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific data operation job
   dataOperationJob(id: ID!): DataOperationJob @auth(requires: [ADMIN])
-  
+
   # Get custom fields
   customFields(
     entityType: String
@@ -312,30 +312,30 @@ extend type Query {
     branchId: ID
     pagination: PaginationInput
   ): CustomFieldConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific custom field
   customField(id: ID!): CustomField @auth(requires: [ADMIN])
-  
+
   # Get permission templates
   permissionTemplates(
     search: String
     applicableRole: String
     pagination: PaginationInput
   ): PermissionTemplateConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific permission template
   permissionTemplate(id: ID!): PermissionTemplate @auth(requires: [ADMIN])
-  
+
   # Get system health check
   systemHealthCheck: SystemHealthCheck! @auth(requires: [ADMIN])
-  
+
   # Get system metrics
   systemMetrics(
     type: String
     dateRange: DateRangeInput
     pagination: PaginationInput
   ): SystemMetricConnection! @auth(requires: [ADMIN])
-  
+
   # Get system issues
   systemIssues(
     component: String
@@ -343,26 +343,24 @@ extend type Query {
     isResolved: Boolean
     pagination: PaginationInput
   ): SystemIssueConnection! @auth(requires: [ADMIN])
-  
+
   # Get backup configuration
   backupConfiguration: BackupConfiguration! @auth(requires: [ADMIN])
-  
+
   # Get API keys
-  apiKeys(
-    isActive: Boolean
-    pagination: PaginationInput
-  ): ApiKeyConnection! @auth(requires: [ADMIN])
-  
+  apiKeys(isActive: Boolean, pagination: PaginationInput): ApiKeyConnection!
+    @auth(requires: [ADMIN])
+
   # Get a specific API key
   apiKey(id: ID!): ApiKey @auth(requires: [ADMIN])
-  
+
   # Get multibranch policies
   multibranchPolicies(
     policyType: String
     isEnabled: Boolean
     pagination: PaginationInput
   ): MultibranchPolicyConnection! @auth(requires: [ADMIN])
-  
+
   # Get a specific multibranch policy
   multibranchPolicy(id: ID!): MultibranchPolicy @auth(requires: [ADMIN])
 }
@@ -469,100 +467,137 @@ type MultibranchPolicyEdge {
 
 extend type Mutation {
   # Update system configuration
-  updateSystemConfiguration(id: ID!, input: UpdateSystemConfigurationInput!): SystemConfiguration! @auth(requires: [ADMIN])
-  
+  updateSystemConfiguration(
+    id: ID!
+    input: UpdateSystemConfigurationInput!
+  ): SystemConfiguration! @auth(requires: [ADMIN])
+
   # Create system configuration
-  createSystemConfiguration(input: CreateSystemConfigurationInput!): SystemConfiguration! @auth(requires: [ADMIN])
-  
+  createSystemConfiguration(
+    input: CreateSystemConfigurationInput!
+  ): SystemConfiguration! @auth(requires: [ADMIN])
+
   # Delete system configuration
   deleteSystemConfiguration(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Schedule maintenance
-  scheduleMaintenanceWindow(input: ScheduleMaintenanceInput!): MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+  scheduleMaintenanceWindow(
+    input: ScheduleMaintenanceInput!
+  ): MaintenanceSchedule! @auth(requires: [ADMIN])
+
   # Update maintenance schedule
-  updateMaintenanceSchedule(id: ID!, input: UpdateMaintenanceScheduleInput!): MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+  updateMaintenanceSchedule(
+    id: ID!
+    input: UpdateMaintenanceScheduleInput!
+  ): MaintenanceSchedule! @auth(requires: [ADMIN])
+
   # Delete maintenance schedule
   deleteMaintenanceSchedule(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Start maintenance window
   startMaintenanceWindow(id: ID!): MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+
   # End maintenance window
-  endMaintenanceWindow(id: ID!, notes: String): MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+  endMaintenanceWindow(id: ID!, notes: String): MaintenanceSchedule!
+    @auth(requires: [ADMIN])
+
   # Cancel maintenance window
-  cancelMaintenanceWindow(id: ID!, reason: String!): MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+  cancelMaintenanceWindow(id: ID!, reason: String!): MaintenanceSchedule!
+    @auth(requires: [ADMIN])
+
   # Start data import
-  startDataImport(input: StartDataImportInput!): DataOperationJob! @auth(requires: [ADMIN])
-  
+  startDataImport(input: StartDataImportInput!): DataOperationJob!
+    @auth(requires: [ADMIN])
+
   # Start data export
-  startDataExport(input: StartDataExportInput!): DataOperationJob! @auth(requires: [ADMIN])
-  
+  startDataExport(input: StartDataExportInput!): DataOperationJob!
+    @auth(requires: [ADMIN])
+
   # Start system backup
-  startSystemBackup(input: StartBackupInput!): DataOperationJob! @auth(requires: [ADMIN])
-  
+  startSystemBackup(input: StartBackupInput!): DataOperationJob!
+    @auth(requires: [ADMIN])
+
   # Start system restore
-  startSystemRestore(input: StartRestoreInput!): DataOperationJob! @auth(requires: [ADMIN])
-  
+  startSystemRestore(input: StartRestoreInput!): DataOperationJob!
+    @auth(requires: [ADMIN])
+
   # Cancel data operation job
   cancelDataOperationJob(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Create custom field
-  createCustomField(input: CreateCustomFieldInput!): CustomField! @auth(requires: [ADMIN])
-  
+  createCustomField(input: CreateCustomFieldInput!): CustomField!
+    @auth(requires: [ADMIN])
+
   # Update custom field
-  updateCustomField(id: ID!, input: UpdateCustomFieldInput!): CustomField! @auth(requires: [ADMIN])
-  
+  updateCustomField(id: ID!, input: UpdateCustomFieldInput!): CustomField!
+    @auth(requires: [ADMIN])
+
   # Delete custom field
   deleteCustomField(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Create permission template
-  createPermissionTemplate(input: CreatePermissionTemplateInput!): PermissionTemplate! @auth(requires: [ADMIN])
-  
+  createPermissionTemplate(
+    input: CreatePermissionTemplateInput!
+  ): PermissionTemplate! @auth(requires: [ADMIN])
+
   # Update permission template
-  updatePermissionTemplate(id: ID!, input: UpdatePermissionTemplateInput!): PermissionTemplate! @auth(requires: [ADMIN])
-  
+  updatePermissionTemplate(
+    id: ID!
+    input: UpdatePermissionTemplateInput!
+  ): PermissionTemplate! @auth(requires: [ADMIN])
+
   # Delete permission template
   deletePermissionTemplate(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Apply permission template to role
-  applyPermissionTemplate(templateId: ID!, roleId: ID!): Boolean! @auth(requires: [ADMIN])
-  
+  applyPermissionTemplate(templateId: ID!, roleId: ID!): Boolean!
+    @auth(requires: [ADMIN])
+
   # Run system health check
   runSystemHealthCheck: SystemHealthCheck! @auth(requires: [ADMIN])
-  
+
   # Resolve system issue
-  resolveSystemIssue(id: ID!, resolutionSteps: [String!]!): SystemIssue! @auth(requires: [ADMIN])
-  
+  resolveSystemIssue(id: ID!, resolutionSteps: [String!]!): SystemIssue!
+    @auth(requires: [ADMIN])
+
   # Update backup configuration
-  updateBackupConfiguration(input: UpdateBackupConfigurationInput!): BackupConfiguration! @auth(requires: [ADMIN])
-  
+  updateBackupConfiguration(
+    input: UpdateBackupConfigurationInput!
+  ): BackupConfiguration! @auth(requires: [ADMIN])
+
   # Create API key
   createApiKey(input: CreateApiKeyInput!): ApiKey! @auth(requires: [ADMIN])
-  
+
   # Update API key
-  updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey! @auth(requires: [ADMIN])
-  
+  updateApiKey(id: ID!, input: UpdateApiKeyInput!): ApiKey!
+    @auth(requires: [ADMIN])
+
   # Revoke API key
   revokeApiKey(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Create multibranch policy
-  createMultibranchPolicy(input: CreateMultibranchPolicyInput!): MultibranchPolicy! @auth(requires: [ADMIN])
-  
+  createMultibranchPolicy(
+    input: CreateMultibranchPolicyInput!
+  ): MultibranchPolicy! @auth(requires: [ADMIN])
+
   # Update multibranch policy
-  updateMultibranchPolicy(id: ID!, input: UpdateMultibranchPolicyInput!): MultibranchPolicy! @auth(requires: [ADMIN])
-  
+  updateMultibranchPolicy(
+    id: ID!
+    input: UpdateMultibranchPolicyInput!
+  ): MultibranchPolicy! @auth(requires: [ADMIN])
+
   # Delete multibranch policy
   deleteMultibranchPolicy(id: ID!): Boolean! @auth(requires: [ADMIN])
-  
+
   # Apply multibranch policy
-  applyMultibranchPolicy(id: ID!, branchIds: [ID!]!): Boolean! @auth(requires: [ADMIN])
-  
+  applyMultibranchPolicy(id: ID!, branchIds: [ID!]!): Boolean!
+    @auth(requires: [ADMIN])
+
   # Purge audit logs
-  purgeAuditLogs(olderThan: DateTime!, entityTypes: [AuditEntityType!]): Boolean! @auth(requires: [SUPER_ADMIN])
+  purgeAuditLogs(
+    olderThan: DateTime!
+    entityTypes: [AuditEntityType!]
+  ): Boolean! @auth(requires: [SUPER_ADMIN])
 }
 
 input CreateSystemConfigurationInput {
@@ -721,16 +756,17 @@ input UpdateMultibranchPolicyInput {
 extend type Subscription {
   # Get notified of maintenance schedule events
   maintenanceScheduleUpdated: MaintenanceSchedule! @auth(requires: [ADMIN])
-  
+
   # Get notified of data operation job status changes
-  dataOperationJobStatusChanged(jobId: ID!): DataOperationJob! @auth(requires: [ADMIN])
-  
+  dataOperationJobStatusChanged(jobId: ID!): DataOperationJob!
+    @auth(requires: [ADMIN])
+
   # Get notified of new system issues
   systemIssueDetected: SystemIssue! @auth(requires: [ADMIN])
-  
+
   # Get notified of significant audit events
   significantAuditEvent: AuditLog! @auth(requires: [ADMIN])
-  
+
   # Get notified of backup completion
   backupCompleted: DataOperationJob! @auth(requires: [ADMIN])
 }

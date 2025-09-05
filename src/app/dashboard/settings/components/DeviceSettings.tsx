@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { CheckIcon, DevicePhoneMobileIcon, ComputerDesktopIcon, DeviceTabletIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { useSettings, useUpdateSetting, useCreateBranchSetting } from '@/graphql/hooks/useSettings';
+import { useState, useEffect } from "react";
+import {
+  CheckIcon,
+  DevicePhoneMobileIcon,
+  ComputerDesktopIcon,
+  DeviceTabletIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import {
+  useSettings,
+  useUpdateSetting,
+  useCreateBranchSetting,
+} from "@/graphql/hooks/useSettings";
 
 type Device = {
   id: string;
   name: string;
-  type: 'mobile' | 'tablet' | 'desktop' | 'other';
+  type: "mobile" | "tablet" | "desktop" | "other";
   lastUsed: string;
   browser: string;
   operatingSystem: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   isCurrentDevice: boolean;
   isTrusted: boolean;
 };
@@ -23,86 +33,96 @@ export default function DeviceSettings() {
 
   const [devices, setDevices] = useState<Device[]>([
     {
-      id: '1',
-      name: 'iPhone 13',
-      type: 'mobile',
-      lastUsed: 'Now',
-      browser: 'Safari',
-      operatingSystem: 'iOS 16.5',
-      status: 'active',
+      id: "1",
+      name: "iPhone 13",
+      type: "mobile",
+      lastUsed: "Now",
+      browser: "Safari",
+      operatingSystem: "iOS 16.5",
+      status: "active",
       isCurrentDevice: true,
-      isTrusted: true
+      isTrusted: true,
     },
     {
-      id: '2',
-      name: 'MacBook Pro',
-      type: 'desktop',
-      lastUsed: '2 hours ago',
-      browser: 'Chrome',
-      operatingSystem: 'macOS 13.2',
-      status: 'active',
+      id: "2",
+      name: "MacBook Pro",
+      type: "desktop",
+      lastUsed: "2 hours ago",
+      browser: "Chrome",
+      operatingSystem: "macOS 13.2",
+      status: "active",
       isCurrentDevice: false,
-      isTrusted: true
+      isTrusted: true,
     },
     {
-      id: '3',
-      name: 'iPad Air',
-      type: 'tablet',
-      lastUsed: '3 days ago',
-      browser: 'Safari',
-      operatingSystem: 'iPadOS 15.6',
-      status: 'active',
+      id: "3",
+      name: "iPad Air",
+      type: "tablet",
+      lastUsed: "3 days ago",
+      browser: "Safari",
+      operatingSystem: "iPadOS 15.6",
+      status: "active",
       isCurrentDevice: false,
-      isTrusted: true
+      isTrusted: true,
     },
     {
-      id: '4',
-      name: 'Dell Laptop',
-      type: 'desktop',
-      lastUsed: '2 weeks ago',
-      browser: 'Firefox',
-      operatingSystem: 'Windows 11',
-      status: 'active',
+      id: "4",
+      name: "Dell Laptop",
+      type: "desktop",
+      lastUsed: "2 weeks ago",
+      browser: "Firefox",
+      operatingSystem: "Windows 11",
+      status: "active",
       isCurrentDevice: false,
-      isTrusted: false
-    }
+      isTrusted: false,
+    },
   ]);
 
-  const [nfcCardStatus, setNfcCardStatus] = useState<'active' | 'inactive'>('active');
+  const [nfcCardStatus, setNfcCardStatus] = useState<"active" | "inactive">(
+    "active",
+  );
   const [autoCheckIn, setAutoCheckIn] = useState(true);
   const [checkInNotifications, setCheckInNotifications] = useState(true);
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     if (data?.settings) {
-      setDevices(prev => prev.map(device => {
-        const setting = data.settings.find(s => s.key === `trustedDevice_${device.id}`);
-        return setting ? { ...device, isTrusted: setting.value === 'true' } : device;
-      }));
+      setDevices((prev) =>
+        prev.map((device) => {
+          const setting = data.settings.find(
+            (s) => s.key === `trustedDevice_${device.id}`,
+          );
+          return setting
+            ? { ...device, isTrusted: setting.value === "true" }
+            : device;
+        }),
+      );
     }
   }, [data]);
 
   const handleRemoveDevice = (deviceId: string) => {
-    setDevices(devices.filter(device => device.id !== deviceId));
+    setDevices(devices.filter((device) => device.id !== deviceId));
   };
 
   const handleToggleTrustedDevice = (deviceId: string) => {
-    setDevices(devices.map(device => 
-      device.id === deviceId 
-        ? { ...device, isTrusted: !device.isTrusted } 
-        : device
-    ));
+    setDevices(
+      devices.map((device) =>
+        device.id === deviceId
+          ? { ...device, isTrusted: !device.isTrusted }
+          : device,
+      ),
+    );
   };
 
-  const getDeviceIcon = (type: Device['type']) => {
+  const getDeviceIcon = (type: Device["type"]) => {
     switch (type) {
-      case 'mobile':
+      case "mobile":
         return <DevicePhoneMobileIcon className="h-6 w-6 text-gray-400" />;
-      case 'desktop':
+      case "desktop":
         return <ComputerDesktopIcon className="h-6 w-6 text-gray-400" />;
-      case 'tablet':
+      case "tablet":
         return <DeviceTabletIcon className="h-6 w-6 text-gray-400" />;
       default:
         return <DevicePhoneMobileIcon className="h-6 w-6 text-gray-400" />;
@@ -116,23 +136,25 @@ export default function DeviceSettings() {
       if (data?.settings) {
         for (const s of data.settings) settingsMap[s.key] = s.id;
       }
-      await Promise.all(devices.map(device => {
-        const key = `trustedDevice_${device.id}`;
-        if (settingsMap[key]) {
-          return updateSetting({
-            variables: {
-              id: settingsMap[key],
-              input: { key, value: String(device.isTrusted) }
-            },
-          });
-        } else {
-          return createSetting({
-            variables: {
-              input: { key, value: String(device.isTrusted) },
-            },
-          });
-        }
-      }));
+      await Promise.all(
+        devices.map((device) => {
+          const key = `trustedDevice_${device.id}`;
+          if (settingsMap[key]) {
+            return updateSetting({
+              variables: {
+                id: settingsMap[key],
+                input: { key, value: String(device.isTrusted) },
+              },
+            });
+          } else {
+            return createSetting({
+              variables: {
+                input: { key, value: String(device.isTrusted) },
+              },
+            });
+          }
+        }),
+      );
       setSaveSuccess(true);
       refetch();
     } finally {
@@ -142,17 +164,19 @@ export default function DeviceSettings() {
   };
 
   const handleDeviceNameChange = (deviceId: string, name: string) => {
-    setDevices(devices.map(device => 
-      device.id === deviceId 
-        ? { ...device, name } 
-        : device
-    ));
+    setDevices(
+      devices.map((device) =>
+        device.id === deviceId ? { ...device, name } : device,
+      ),
+    );
   };
 
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Device Settings</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          Device Settings
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           Manage your connected devices and check-in cards
         </p>
@@ -160,7 +184,9 @@ export default function DeviceSettings() {
 
       <div className="space-y-6">
         <div>
-          <h4 className="text-sm font-medium text-gray-900">Connected Devices</h4>
+          <h4 className="text-sm font-medium text-gray-900">
+            Connected Devices
+          </h4>
           <p className="mt-1 text-xs text-gray-500">
             Devices that are currently signed in to your account
           </p>
@@ -175,7 +201,9 @@ export default function DeviceSettings() {
                     <input
                       type="text"
                       value={device.name}
-                      onChange={e => handleDeviceNameChange(device.id, e.target.value)}
+                      onChange={(e) =>
+                        handleDeviceNameChange(device.id, e.target.value)
+                      }
                       className="mt-1 block w-full rounded-xl border border-yellow-100 bg-white/70 shadow-lg focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 backdrop-blur placeholder:text-yellow-300 text-yellow-900 font-medium transition-all duration-150"
                     />
                     {device.isCurrentDevice && (
@@ -190,7 +218,9 @@ export default function DeviceSettings() {
                     )}
                   </div>
                   <div className="mt-1 flex text-xs text-gray-500">
-                    <p className="mr-4">{device.browser} on {device.operatingSystem}</p>
+                    <p className="mr-4">
+                      {device.browser} on {device.operatingSystem}
+                    </p>
                     <p>Last active: {device.lastUsed}</p>
                   </div>
                 </div>
@@ -201,12 +231,12 @@ export default function DeviceSettings() {
                         type="button"
                         onClick={() => handleToggleTrustedDevice(device.id)}
                         className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                          device.isTrusted 
-                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                          device.isTrusted
+                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                            : "bg-green-100 text-green-800 hover:bg-green-200"
                         }`}
                       >
-                        {device.isTrusted ? 'Untrust' : 'Trust'}
+                        {device.isTrusted ? "Untrust" : "Trust"}
                       </button>
                       <button
                         type="button"
@@ -222,14 +252,18 @@ export default function DeviceSettings() {
             ))}
           </ul>
           <p className="mt-2 text-xs text-gray-500">
-            If you remove a device, you&#39;ll be signed out on that device and will need to sign in again.
+            If you remove a device, you&#39;ll be signed out on that device and
+            will need to sign in again.
           </p>
         </div>
 
         <div className="pt-6">
-          <h4 className="text-sm font-medium text-gray-900">NFC Cards & Check-In Devices</h4>
+          <h4 className="text-sm font-medium text-gray-900">
+            NFC Cards & Check-In Devices
+          </h4>
           <p className="mt-1 text-xs text-gray-500">
-            Manage your NFC cards and check-in preferences for attendance tracking
+            Manage your NFC cards and check-in preferences for attendance
+            tracking
           </p>
           <div className="mt-4 rounded-md bg-white border border-gray-200 p-4">
             <div className="flex items-center justify-between">
@@ -238,8 +272,12 @@ export default function DeviceSettings() {
                   <DevicePhoneMobileIcon className="h-6 w-6 text-primary-600" />
                 </div>
                 <div>
-                  <h5 className="text-sm font-medium text-gray-900">NFC Card Status</h5>
-                  <p className="text-xs text-gray-500">For quick attendance check-in at services and events</p>
+                  <h5 className="text-sm font-medium text-gray-900">
+                    NFC Card Status
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    For quick attendance check-in at services and events
+                  </p>
                 </div>
               </div>
               <div className="flex items-center">
@@ -252,7 +290,9 @@ export default function DeviceSettings() {
                     id="nfc-status"
                     name="nfc-status"
                     value={nfcCardStatus}
-                    onChange={(e) => setNfcCardStatus(e.target.value as 'active' | 'inactive')}
+                    onChange={(e) =>
+                      setNfcCardStatus(e.target.value as "active" | "inactive")
+                    }
                     className="rounded-md border-gray-300 text-xs shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   >
                     <option value="active">Active</option>
@@ -261,7 +301,7 @@ export default function DeviceSettings() {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 grid grid-cols-1 gap-y-4 border-t border-gray-200 pt-4 sm:grid-cols-2 sm:gap-x-6">
               <div className="flex items-start">
                 <div className="flex h-5 items-center">
@@ -275,13 +315,18 @@ export default function DeviceSettings() {
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="auto-check-in" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="auto-check-in"
+                    className="font-medium text-gray-700"
+                  >
                     Automatic check-in
                   </label>
-                  <p className="text-gray-500">Automatically check in when card is scanned</p>
+                  <p className="text-gray-500">
+                    Automatically check in when card is scanned
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start">
                 <div className="flex h-5 items-center">
                   <input
@@ -289,19 +334,26 @@ export default function DeviceSettings() {
                     name="check-in-notifications"
                     type="checkbox"
                     checked={checkInNotifications}
-                    onChange={() => setCheckInNotifications(!checkInNotifications)}
+                    onChange={() =>
+                      setCheckInNotifications(!checkInNotifications)
+                    }
                     className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="check-in-notifications" className="font-medium text-gray-700">
+                  <label
+                    htmlFor="check-in-notifications"
+                    className="font-medium text-gray-700"
+                  >
                     Check-in notifications
                   </label>
-                  <p className="text-gray-500">Receive notifications when checked in or out</p>
+                  <p className="text-gray-500">
+                    Receive notifications when checked in or out
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 flex justify-end">
               <button
                 type="button"
@@ -317,18 +369,25 @@ export default function DeviceSettings() {
               </button>
             </div>
           </div>
-          
+
           <div className="mt-6 rounded-md border border-gray-200 bg-gray-50 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                <ExclamationTriangleIcon
+                  className="h-5 w-5 text-yellow-400"
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-3 flex-1 md:flex md:justify-between">
                 <p className="text-xs text-gray-700">
-                  If you lose your NFC card, please contact your branch administrator immediately to deactivate it.
+                  If you lose your NFC card, please contact your branch
+                  administrator immediately to deactivate it.
                 </p>
                 <p className="mt-3 text-xs font-medium text-yellow-700 md:ml-6 md:mt-0">
-                  <a href="/dashboard/admin/security" className="whitespace-nowrap">
+                  <a
+                    href="/dashboard/admin/security"
+                    className="whitespace-nowrap"
+                  >
                     Contact Admin <span aria-hidden="true">&rarr;</span>
                   </a>
                 </p>
@@ -336,9 +395,11 @@ export default function DeviceSettings() {
             </div>
           </div>
         </div>
-        
+
         <div className="pt-6">
-          <h4 className="text-sm font-medium text-gray-900">Mobile App Settings</h4>
+          <h4 className="text-sm font-medium text-gray-900">
+            Mobile App Settings
+          </h4>
           <div className="mt-4 space-y-4">
             <div className="flex items-start">
               <div className="flex h-5 items-center">
@@ -351,13 +412,18 @@ export default function DeviceSettings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="location-services" className="font-medium text-gray-700">
+                <label
+                  htmlFor="location-services"
+                  className="font-medium text-gray-700"
+                >
                   Location services
                 </label>
-                <p className="text-gray-500">Allow the app to use your location for check-ins</p>
+                <p className="text-gray-500">
+                  Allow the app to use your location for check-ins
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="flex h-5 items-center">
                 <input
@@ -369,13 +435,18 @@ export default function DeviceSettings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="background-sync" className="font-medium text-gray-700">
+                <label
+                  htmlFor="background-sync"
+                  className="font-medium text-gray-700"
+                >
                   Background sync
                 </label>
-                <p className="text-gray-500">Sync data in the background for offline access</p>
+                <p className="text-gray-500">
+                  Sync data in the background for offline access
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="flex h-5 items-center">
                 <input
@@ -387,10 +458,15 @@ export default function DeviceSettings() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="biometric-auth" className="font-medium text-gray-700">
+                <label
+                  htmlFor="biometric-auth"
+                  className="font-medium text-gray-700"
+                >
                   Biometric authentication
                 </label>
-                <p className="text-gray-500">Use Face ID or Touch ID to log in</p>
+                <p className="text-gray-500">
+                  Use Face ID or Touch ID to log in
+                </p>
               </div>
             </div>
           </div>
@@ -410,7 +486,7 @@ export default function DeviceSettings() {
           disabled={isSaving}
           className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 shadow-lg hover:from-indigo-700 hover:to-purple-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all duration-200 border-2 border-white/80 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isSaving ? 'Saving...' : 'Save Settings'}
+          {isSaving ? "Saving..." : "Save Settings"}
         </button>
       </div>
     </div>

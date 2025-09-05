@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const CREATE_SPEAKER = gql`
   mutation CreateSpeaker($createSpeakerInput: CreateSpeakerInput!) {

@@ -1,5 +1,5 @@
-import { useQuery } from '@apollo/client';
-import { GET_SERMONS } from '../queries/sermonQueries';
+import { useQuery } from "@apollo/client";
+import { GET_SERMONS } from "../queries/sermonQueries";
 
 interface UseSermonsFilters {
   branchId?: string;

@@ -28,18 +28,20 @@ export default function CreateUserModal({
     roleName: "USER",
     branchId: branchId,
   });
-  
-  const [createUsersWithRole, { loading }] = useMutation(CREATE_USERS_WITH_ROLE);
+
+  const [createUsersWithRole, { loading }] = useMutation(
+    CREATE_USERS_WITH_ROLE,
+  );
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!organisationId) {
       toast.error("No organization selected");
       return;
@@ -69,7 +71,9 @@ export default function CreateUserModal({
           branchId: branchId,
         });
       } else {
-        toast.error(data.createUsersWithRole[0].error || "Failed to create user");
+        toast.error(
+          data.createUsersWithRole[0].error || "Failed to create user",
+        );
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
@@ -83,22 +87,38 @@ export default function CreateUserModal({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New User</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Create New User
+            </h3>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 First Name
               </label>
               <input
@@ -111,9 +131,12 @@ export default function CreateUserModal({
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Last Name
               </label>
               <input
@@ -126,9 +149,12 @@ export default function CreateUserModal({
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Email
               </label>
               <input
@@ -141,9 +167,12 @@ export default function CreateUserModal({
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Password
               </label>
               <input
@@ -160,9 +189,12 @@ export default function CreateUserModal({
                 Password must be at least 8 characters
               </p>
             </div>
-            
+
             <div>
-              <label htmlFor="roleName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="roleName"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Role
               </label>
               <select
@@ -183,7 +215,7 @@ export default function CreateUserModal({
               </select>
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-2 mt-6">
             <button
               type="button"

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { AnySacramentRecord } from '@/types/sacraments';
+import { useState, useEffect, useCallback } from "react";
+import { AnySacramentRecord } from "@/types/sacraments";
 
 interface AnniversaryNotification {
   id: string;
@@ -47,7 +47,9 @@ export const useAnniversaryNotifications = ({
   lookAheadDays = 30,
   lookBackDays = 7,
 }: UseAnniversaryNotificationsOptions): UseAnniversaryNotificationsReturn => {
-  const [notifications, setNotifications] = useState<AnniversaryNotification[]>([]);
+  const [notifications, setNotifications] = useState<AnniversaryNotification[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,14 +63,14 @@ export const useAnniversaryNotifications = ({
       records.forEach((record) => {
         const sacramentDate = new Date(record.dateOfSacrament);
         const yearsAgo = currentYear - sacramentDate.getFullYear();
-        
+
         // Only calculate for records that are at least 1 year old
         if (yearsAgo >= 1) {
           // Calculate this year's anniversary date
           const anniversaryThisYear = new Date(
             currentYear,
             sacramentDate.getMonth(),
-            sacramentDate.getDate()
+            sacramentDate.getDate(),
           );
 
           // Calculate days until anniversary
@@ -77,8 +79,11 @@ export const useAnniversaryNotifications = ({
 
           // Include anniversaries within the specified range
           if (daysUntil <= lookAheadDays && daysUntil >= -lookBackDays) {
-            const memberName = record.memberName || 
-              (record.member ? `${record.member.firstName} ${record.member.lastName}` : 'Unknown Member');
+            const memberName =
+              record.memberName ||
+              (record.member
+                ? `${record.member.firstName} ${record.member.lastName}`
+                : "Unknown Member");
 
             anniversaries.push({
               id: `${record.id}-${currentYear}`,
@@ -86,7 +91,7 @@ export const useAnniversaryNotifications = ({
               sacramentType: record.sacramentType,
               memberName,
               memberEmail: record.member?.email,
-              anniversaryDate: anniversaryThisYear.toISOString().split('T')[0],
+              anniversaryDate: anniversaryThisYear.toISOString().split("T")[0],
               yearsAgo,
               daysUntil,
               isToday: daysUntil === 0,
@@ -109,8 +114,8 @@ export const useAnniversaryNotifications = ({
       setNotifications(anniversaries);
       setError(null);
     } catch (err) {
-      setError('Failed to calculate anniversary notifications');
-      console.error('Anniversary calculation error:', err);
+      setError("Failed to calculate anniversary notifications");
+      console.error("Anniversary calculation error:", err);
     }
   }, [records, lookAheadDays, lookBackDays]);
 
@@ -120,30 +125,32 @@ export const useAnniversaryNotifications = ({
   }, [calculateAnniversaries]);
 
   // Send notification (email, SMS, etc.)
-  const sendNotification = async (notification: AnniversaryNotification): Promise<void> => {
+  const sendNotification = async (
+    notification: AnniversaryNotification,
+  ): Promise<void> => {
     setLoading(true);
     try {
       // In a real implementation, this would call an API endpoint
       // For now, we'll simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (enableEmailNotifications && notification.memberEmail) {
         // Simulate sending email notification
-        console.log(`Sending anniversary notification to ${notification.memberEmail}`);
+        console.log(
+          `Sending anniversary notification to ${notification.memberEmail}`,
+        );
       }
-      
+
       // Update local state to mark as sent
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notification.id 
-            ? { ...n, notificationSent: true }
-            : n
-        )
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notification.id ? { ...n, notificationSent: true } : n,
+        ),
       );
-      
+
       setError(null);
     } catch (err) {
-      setError('Failed to send notification');
+      setError("Failed to send notification");
       throw err;
     } finally {
       setLoading(false);
@@ -154,22 +161,20 @@ export const useAnniversaryNotifications = ({
   const markAsSent = async (notificationId: string): Promise<void> => {
     try {
       // In a real implementation, this would update the backend
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId 
-            ? { ...n, notificationSent: true }
-            : n
-        )
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, notificationSent: true } : n,
+        ),
       );
     } catch (err) {
-      setError('Failed to mark notification as sent');
+      setError("Failed to mark notification as sent");
       throw err;
     }
   };
 
   // Dismiss notification
   const dismissNotification = (notificationId: string): void => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
   };
 
   // Refresh notifications
@@ -178,9 +183,9 @@ export const useAnniversaryNotifications = ({
   };
 
   // Filtered notification arrays
-  const todayNotifications = notifications.filter(n => n.isToday);
-  const upcomingNotifications = notifications.filter(n => n.isUpcoming);
-  const recentNotifications = notifications.filter(n => n.isPast);
+  const todayNotifications = notifications.filter((n) => n.isToday);
+  const upcomingNotifications = notifications.filter((n) => n.isUpcoming);
+  const recentNotifications = notifications.filter((n) => n.isPast);
 
   return {
     notifications,

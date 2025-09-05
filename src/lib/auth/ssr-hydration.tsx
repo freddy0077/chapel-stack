@@ -3,12 +3,12 @@
  * Handles proper Next.js 15 hydration without authentication flashes
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { AuthUser, AuthTokens } from '@/types/auth-enhanced.types';
-import { authStorage } from './auth-storage';
-import { AuthUtils } from './auth-reducer';
+import { useState, useEffect, useCallback } from "react";
+import { AuthUser, AuthTokens } from "@/types/auth-enhanced.types";
+import { authStorage } from "./auth-storage";
+import { AuthUtils } from "./auth-reducer";
 
 export interface HydrationState {
   isHydrated: boolean;
@@ -61,9 +61,8 @@ export class SSRHydrationManager {
    */
   private async performHydration(): Promise<HydrationState> {
     try {
-
       // Check if we're in the browser
-      if (typeof window === 'undefined') {
+      if (typeof window === "undefined") {
         return {
           isHydrated: false,
           isLoading: true,
@@ -75,22 +74,23 @@ export class SSRHydrationManager {
       }
 
       // Small delay to ensure DOM is ready and prevent hydration mismatch
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Get stored authentication data
       const storedTokens = authStorage.getTokens();
       const storedUser = authStorage.getUser();
 
+      return {
         hasTokens: !!storedTokens,
         hasUser: !!storedUser,
         sessionExpired: authStorage.isSessionExpired(),
         refreshExpired: authStorage.isRefreshTokenExpired(),
-      });
+      };
 
       // Check if session is expired
       if (authStorage.isSessionExpired()) {
         authStorage.clear();
-        
+
         return {
           isHydrated: true,
           isLoading: false,
@@ -104,7 +104,7 @@ export class SSRHydrationManager {
       // Check if refresh token is expired
       if (storedTokens && authStorage.isRefreshTokenExpired()) {
         authStorage.clear();
-        
+
         return {
           isHydrated: true,
           isLoading: false,
@@ -118,30 +118,29 @@ export class SSRHydrationManager {
       // Validate stored data integrity
       if (storedTokens && !this.validateTokenIntegrity(storedTokens)) {
         authStorage.clear();
-        
+
         return {
           isHydrated: true,
           isLoading: false,
           hasStoredAuth: false,
           user: null,
           tokens: null,
-          error: 'Invalid authentication data',
+          error: "Invalid authentication data",
         };
       }
 
       if (storedUser && !this.validateUserIntegrity(storedUser)) {
         authStorage.clear();
-        
+
         return {
           isHydrated: true,
           isLoading: false,
           hasStoredAuth: false,
           user: null,
           tokens: null,
-          error: 'Invalid user data',
+          error: "Invalid user data",
         };
       }
-
 
       return {
         isHydrated: true,
@@ -151,9 +150,8 @@ export class SSRHydrationManager {
         tokens: storedTokens,
         error: null,
       };
-
     } catch (error) {
-      console.error('❌ SSR hydration failed:', error);
+      console.error("❌ SSR hydration failed:", error);
 
       return {
         isHydrated: true,
@@ -161,7 +159,7 @@ export class SSRHydrationManager {
         hasStoredAuth: false,
         user: null,
         tokens: null,
-        error: 'Hydration failed',
+        error: "Hydration failed",
       };
     }
   }
@@ -177,7 +175,7 @@ export class SSRHydrationManager {
       }
 
       // Validate token format (basic JWT structure check)
-      const tokenParts = tokens.accessToken.split('.');
+      const tokenParts = tokens.accessToken.split(".");
       if (tokenParts.length !== 3) {
         return false;
       }
@@ -257,21 +255,25 @@ export function useSSRHydration(): HydrationState & {
       const result = await hydrationManager.hydrate();
       setHydrationState(result);
     } catch (error) {
-      console.error('Hydration hook error:', error);
+      console.error("Hydration hook error:", error);
       setHydrationState({
         isHydrated: true,
         isLoading: false,
         hasStoredAuth: false,
         user: null,
         tokens: null,
-        error: 'Hydration failed',
+        error: "Hydration failed",
       });
     }
   }, [hydrationManager]);
 
   const rehydrate = useCallback(async () => {
     hydrationManager.reset();
-    setHydrationState(prev => ({ ...prev, isLoading: true, isHydrated: false }));
+    setHydrationState((prev) => ({
+      ...prev,
+      isLoading: true,
+      isHydrated: false,
+    }));
     await performHydration();
   }, [hydrationManager, performHydration]);
 
@@ -289,7 +291,7 @@ export function useSSRHydration(): HydrationState & {
  * Higher-order component for SSR hydration protection
  */
 export function withSSRHydration<T extends object>(
-  Component: React.ComponentType<T>
+  Component: React.ComponentType<T>,
 ): React.ComponentType<T> {
   return function SSRHydratedComponent(props: T) {
     const { isHydrated, isLoading } = useSSRHydration();
@@ -334,7 +336,7 @@ export const HydrationUtils = {
    * Check if we're in a browser environment
    */
   isBrowser(): boolean {
-    return typeof window !== 'undefined';
+    return typeof window !== "undefined";
   },
 
   /**
@@ -342,7 +344,10 @@ export const HydrationUtils = {
    */
   isDOMReady(): boolean {
     if (!this.isBrowser()) return false;
-    return document.readyState === 'complete' || document.readyState === 'interactive';
+    return (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    );
   },
 
   /**
@@ -353,7 +358,7 @@ export const HydrationUtils = {
 
     if (this.isDOMReady()) return;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const checkReady = () => {
         if (this.isDOMReady()) {
           resolve();
@@ -375,7 +380,7 @@ export const HydrationUtils = {
     await this.waitForDOM();
 
     // Small delay to ensure React hydration is complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   },
 
   /**
@@ -384,7 +389,7 @@ export const HydrationUtils = {
   safeLocalStorageAccess<T>(
     key: string,
     defaultValue: T,
-    parser?: (value: string) => T
+    parser?: (value: string) => T,
   ): T {
     if (!this.isBrowser()) return defaultValue;
 
@@ -404,7 +409,7 @@ export const HydrationUtils = {
   safeSessionStorageAccess<T>(
     key: string,
     defaultValue: T,
-    parser?: (value: string) => T
+    parser?: (value: string) => T,
   ): T {
     if (!this.isBrowser()) return defaultValue;
 
@@ -421,10 +426,7 @@ export const HydrationUtils = {
   /**
    * Create a hydration-safe initial state
    */
-  createHydrationSafeState<T>(
-    clientState: () => T,
-    serverState: T
-  ): T {
+  createHydrationSafeState<T>(clientState: () => T, serverState: T): T {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {

@@ -1,19 +1,25 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
+import React, { useState, useCallback, useMemo } from "react";
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
   XMarkIcon,
   CalendarIcon,
   UserIcon,
   MapPinIcon,
-  AdjustmentsHorizontalIcon
-} from '@heroicons/react/24/outline';
-import { SACRAMENT_TYPES, type SacramentType } from '@/constants/sacramentTypes';
-import { formatSacramentType, getSacramentDisplayName } from '@/utils/sacramentHelpers';
+  AdjustmentsHorizontalIcon,
+} from "@heroicons/react/24/outline";
+import {
+  SACRAMENT_TYPES,
+  type SacramentType,
+} from "@/constants/sacramentTypes";
+import {
+  formatSacramentType,
+  getSacramentDisplayName,
+} from "@/utils/sacramentHelpers";
 
 interface SearchFilters {
   searchTerm: string;
-  sacramentType: SacramentType | 'all';
+  sacramentType: SacramentType | "all";
   dateRange: {
     start: string;
     end: string;
@@ -22,8 +28,8 @@ interface SearchFilters {
   officiant: string;
   hasNotes: boolean | null;
   hasCertificate: boolean | null;
-  sortBy: 'dateOfSacrament' | 'memberName' | 'createdAt' | 'updatedAt';
-  sortOrder: 'asc' | 'desc';
+  sortBy: "dateOfSacrament" | "memberName" | "createdAt" | "updatedAt";
+  sortOrder: "asc" | "desc";
 }
 
 interface SacramentSearchProps {
@@ -36,15 +42,15 @@ interface SacramentSearchProps {
 }
 
 const defaultFilters: SearchFilters = {
-  searchTerm: '',
-  sacramentType: 'all',
-  dateRange: { start: '', end: '' },
-  location: '',
-  officiant: '',
+  searchTerm: "",
+  sacramentType: "all",
+  dateRange: { start: "", end: "" },
+  location: "",
+  officiant: "",
   hasNotes: null,
   hasCertificate: null,
-  sortBy: 'dateOfSacrament',
-  sortOrder: 'desc',
+  sortBy: "dateOfSacrament",
+  sortOrder: "desc",
 };
 
 /**
@@ -56,27 +62,33 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
   totalRecords,
   filteredRecords,
   isLoading = false,
-  className = '',
+  className = "",
 }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleFilterChange = useCallback((key: keyof SearchFilters, value: any) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value,
-    });
-  }, [filters, onFiltersChange]);
-
-  const handleDateRangeChange = useCallback((key: 'start' | 'end', value: string) => {
-    onFiltersChange({
-      ...filters,
-      dateRange: {
-        ...filters.dateRange,
+  const handleFilterChange = useCallback(
+    (key: keyof SearchFilters, value: any) => {
+      onFiltersChange({
+        ...filters,
         [key]: value,
-      },
-    });
-  }, [filters, onFiltersChange]);
+      });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handleDateRangeChange = useCallback(
+    (key: "start" | "end", value: string) => {
+      onFiltersChange({
+        ...filters,
+        dateRange: {
+          ...filters.dateRange,
+          [key]: value,
+        },
+      });
+    },
+    [filters, onFiltersChange],
+  );
 
   const clearFilters = useCallback(() => {
     onFiltersChange(defaultFilters);
@@ -85,12 +97,12 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
 
   const hasActiveFilters = useMemo(() => {
     return (
-      filters.searchTerm !== '' ||
-      filters.sacramentType !== 'all' ||
-      filters.dateRange.start !== '' ||
-      filters.dateRange.end !== '' ||
-      filters.location !== '' ||
-      filters.officiant !== '' ||
+      filters.searchTerm !== "" ||
+      filters.sacramentType !== "all" ||
+      filters.dateRange.start !== "" ||
+      filters.dateRange.end !== "" ||
+      filters.location !== "" ||
+      filters.officiant !== "" ||
       filters.hasNotes !== null ||
       filters.hasCertificate !== null
     );
@@ -99,7 +111,7 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.searchTerm) count++;
-    if (filters.sacramentType !== 'all') count++;
+    if (filters.sacramentType !== "all") count++;
     if (filters.dateRange.start || filters.dateRange.end) count++;
     if (filters.location) count++;
     if (filters.officiant) count++;
@@ -109,7 +121,9 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
   }, [filters]);
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+    <div
+      className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}
+    >
       {/* Main Search Bar */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-4">
@@ -122,7 +136,7 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
               type="text"
               placeholder="Search by member name, location, officiant, or notes..."
               value={filters.searchTerm}
-              onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+              onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
@@ -130,7 +144,9 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
           {/* Quick Sacrament Type Filter */}
           <select
             value={filters.sacramentType}
-            onChange={(e) => handleFilterChange('sacramentType', e.target.value)}
+            onChange={(e) =>
+              handleFilterChange("sacramentType", e.target.value)
+            }
             className="block w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="all">All Sacraments</option>
@@ -146,8 +162,8 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             className={`inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
               showAdvancedFilters || hasActiveFilters
-                ? 'text-indigo-700 bg-indigo-50 border-indigo-300'
-                : 'text-gray-700 bg-white hover:bg-gray-50'
+                ? "text-indigo-700 bg-indigo-50 border-indigo-300"
+                : "text-gray-700 bg-white hover:bg-gray-50"
             }`}
           >
             <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
@@ -174,20 +190,19 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
         {/* Results Summary */}
         <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
           <div>
-            Showing {filteredRecords.toLocaleString()} of {totalRecords.toLocaleString()} records
+            Showing {filteredRecords.toLocaleString()} of{" "}
+            {totalRecords.toLocaleString()} records
             {hasActiveFilters && (
-              <span className="ml-2 text-indigo-600">
-                (filtered)
-              </span>
+              <span className="ml-2 text-indigo-600">(filtered)</span>
             )}
           </div>
-          
+
           {/* Sort Options */}
           <div className="flex items-center space-x-2">
             <span>Sort by:</span>
             <select
               value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              onChange={(e) => handleFilterChange("sortBy", e.target.value)}
               className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               <option value="dateOfSacrament">Sacrament Date</option>
@@ -196,10 +211,15 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
               <option value="updatedAt">Last Updated</option>
             </select>
             <button
-              onClick={() => handleFilterChange('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')}
+              onClick={() =>
+                handleFilterChange(
+                  "sortOrder",
+                  filters.sortOrder === "asc" ? "desc" : "asc",
+                )
+              }
               className="text-indigo-600 hover:text-indigo-800 font-medium"
             >
-              {filters.sortOrder === 'asc' ? '↑' : '↓'}
+              {filters.sortOrder === "asc" ? "↑" : "↓"}
             </button>
           </div>
         </div>
@@ -219,14 +239,16 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
                 <input
                   type="date"
                   value={filters.dateRange.start}
-                  onChange={(e) => handleDateRangeChange('start', e.target.value)}
+                  onChange={(e) =>
+                    handleDateRangeChange("start", e.target.value)
+                  }
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Start date"
                 />
                 <input
                   type="date"
                   value={filters.dateRange.end}
-                  onChange={(e) => handleDateRangeChange('end', e.target.value)}
+                  onChange={(e) => handleDateRangeChange("end", e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="End date"
                 />
@@ -242,7 +264,7 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
               <input
                 type="text"
                 value={filters.location}
-                onChange={(e) => handleFilterChange('location', e.target.value)}
+                onChange={(e) => handleFilterChange("location", e.target.value)}
                 placeholder="Filter by location..."
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -257,7 +279,9 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
               <input
                 type="text"
                 value={filters.officiant}
-                onChange={(e) => handleFilterChange('officiant', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange("officiant", e.target.value)
+                }
                 placeholder="Filter by officiant..."
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -265,12 +289,19 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
 
             {/* Has Notes Filter */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Notes</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Notes
+              </label>
               <select
-                value={filters.hasNotes === null ? 'all' : filters.hasNotes.toString()}
+                value={
+                  filters.hasNotes === null
+                    ? "all"
+                    : filters.hasNotes.toString()
+                }
                 onChange={(e) => {
-                  const value = e.target.value === 'all' ? null : e.target.value === 'true';
-                  handleFilterChange('hasNotes', value);
+                  const value =
+                    e.target.value === "all" ? null : e.target.value === "true";
+                  handleFilterChange("hasNotes", value);
                 }}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
@@ -282,12 +313,19 @@ export const SacramentSearch: React.FC<SacramentSearchProps> = ({
 
             {/* Has Certificate Filter */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Certificate</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Certificate
+              </label>
               <select
-                value={filters.hasCertificate === null ? 'all' : filters.hasCertificate.toString()}
+                value={
+                  filters.hasCertificate === null
+                    ? "all"
+                    : filters.hasCertificate.toString()
+                }
                 onChange={(e) => {
-                  const value = e.target.value === 'all' ? null : e.target.value === 'true';
-                  handleFilterChange('hasCertificate', value);
+                  const value =
+                    e.target.value === "all" ? null : e.target.value === "true";
+                  handleFilterChange("hasCertificate", value);
                 }}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >

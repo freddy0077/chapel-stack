@@ -1,20 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  FileText, 
-  Download, 
-  TrendingUp, 
-  Users, 
-  Church, 
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileText,
+  Download,
+  TrendingUp,
+  Users,
+  Church,
   Award,
   Search,
   Filter,
@@ -31,27 +43,33 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Sparkles
-} from 'lucide-react';
-import ModernTemplateSelector from './ModernTemplateSelector';
-import CertificateGenerationWizard from './CertificateGenerationWizard';
-import { useCertificateManagementDashboard, useTemplateManagement } from '@/graphql/hooks/useCertificateManagement';
-import { useOrganizationBranchFilter } from '@/hooks/useOrganizationBranchFilter';
-import { formatDistanceToNow } from 'date-fns';
+  Sparkles,
+} from "lucide-react";
+import ModernTemplateSelector from "./ModernTemplateSelector";
+import CertificateGenerationWizard from "./CertificateGenerationWizard";
+import {
+  useCertificateManagementDashboard,
+  useTemplateManagement,
+} from "@/graphql/hooks/useCertificateManagement";
+import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
+import { formatDistanceToNow } from "date-fns";
 
 interface CertificateManagementDashboardProps {
   onTemplateSelect?: (templateId: string) => void;
-  onGenerateCertificate?: (sacramentalRecordId: string, templateId: string) => void;
+  onGenerateCertificate?: (
+    sacramentalRecordId: string,
+    templateId: string,
+  ) => void;
 }
 
-const CertificateManagementDashboard: React.FC<CertificateManagementDashboardProps> = ({
-  onTemplateSelect,
-  onGenerateCertificate,
-}) => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDenomination, setSelectedDenomination] = useState<string>('');
-  const [selectedSacramentType, setSelectedSacramentType] = useState<string>('');
+const CertificateManagementDashboard: React.FC<
+  CertificateManagementDashboardProps
+> = ({ onTemplateSelect, onGenerateCertificate }) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDenomination, setSelectedDenomination] = useState<string>("");
+  const [selectedSacramentType, setSelectedSacramentType] =
+    useState<string>("");
   const [showWizard, setShowWizard] = useState(false);
 
   // Get current branch for filtering
@@ -73,7 +91,11 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
     sacramentTypes,
     loading: templateLoading,
     error: templateError,
-  } = useTemplateManagement(searchTerm, selectedDenomination, selectedSacramentType);
+  } = useTemplateManagement(
+    searchTerm,
+    selectedDenomination,
+    selectedSacramentType,
+  );
 
   // Safely extract data with fallbacks
   const templatesData = templates?.data || [];
@@ -85,31 +107,31 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
   // Mock sacramental records for wizard (in production, this would come from GraphQL)
   const mockSacramentalRecords = [
     {
-      id: '1',
-      memberName: 'John Smith',
-      sacramentType: 'BAPTISM',
-      denomination: 'CATHOLIC',
-      dateOfSacrament: '2024-01-15',
-      location: 'St. Mary\'s Cathedral',
-      officiant: 'Father Michael Johnson',
+      id: "1",
+      memberName: "John Smith",
+      sacramentType: "BAPTISM",
+      denomination: "CATHOLIC",
+      dateOfSacrament: "2024-01-15",
+      location: "St. Mary's Cathedral",
+      officiant: "Father Michael Johnson",
     },
     {
-      id: '2',
-      memberName: 'Sarah Williams',
-      sacramentType: 'CONFIRMATION',
-      denomination: 'BAPTIST',
-      dateOfSacrament: '2024-02-20',
-      location: 'First Baptist Church',
-      officiant: 'Pastor David Brown',
+      id: "2",
+      memberName: "Sarah Williams",
+      sacramentType: "CONFIRMATION",
+      denomination: "BAPTIST",
+      dateOfSacrament: "2024-02-20",
+      location: "First Baptist Church",
+      officiant: "Pastor David Brown",
     },
     {
-      id: '3',
-      memberName: 'Emily Davis',
-      sacramentType: 'EUCHARIST_FIRST_COMMUNION',
-      denomination: 'LUTHERAN',
-      dateOfSacrament: '2024-03-10',
-      location: 'Grace Lutheran Church',
-      officiant: 'Pastor Lisa Anderson',
+      id: "3",
+      memberName: "Emily Davis",
+      sacramentType: "EUCHARIST_FIRST_COMMUNION",
+      denomination: "LUTHERAN",
+      dateOfSacrament: "2024-03-10",
+      location: "Grace Lutheran Church",
+      officiant: "Pastor Lisa Anderson",
     },
   ];
 
@@ -121,13 +143,16 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
 
   // Handle certificate generation completion
   const handleCertificateGeneration = (certificateData: any) => {
-    console.log('Generating certificate with data:', certificateData);
+    console.log("Generating certificate with data:", certificateData);
     // In production, this would call the GraphQL mutation
     if (onGenerateCertificate) {
-      onGenerateCertificate(certificateData.sacramentalRecordId, certificateData.templateId);
+      onGenerateCertificate(
+        certificateData.sacramentalRecordId,
+        certificateData.templateId,
+      );
     }
     // Show success message and redirect to recent certificates
-    setActiveTab('recent');
+    setActiveTab("recent");
     // Refetch data to show the new certificate
     refetchDashboard();
   };
@@ -149,9 +174,11 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-          <p className="text-red-600">Error loading certificate management system</p>
-          <Button 
-            variant="outline" 
+          <p className="text-red-600">
+            Error loading certificate management system
+          </p>
+          <Button
+            variant="outline"
             onClick={() => {
               refetchDashboard();
             }}
@@ -168,12 +195,12 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
   // Get status icon and color
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case "COMPLETED":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'PENDING':
-      case 'GENERATING':
+      case "PENDING":
+      case "GENERATING":
         return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'FAILED':
+      case "FAILED":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -182,15 +209,15 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'PENDING':
-      case 'GENERATING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'FAILED':
-        return 'bg-red-100 text-red-800';
+      case "COMPLETED":
+        return "bg-green-100 text-green-800";
+      case "PENDING":
+      case "GENERATING":
+        return "bg-yellow-100 text-yellow-800";
+      case "FAILED":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -199,7 +226,9 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Certificate Management</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Certificate Management
+          </h2>
           <p className="text-muted-foreground">
             Professional certificate generation for all Christian denominations
           </p>
@@ -210,7 +239,11 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="generate">Generate</TabsTrigger>
@@ -225,11 +258,15 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Generated</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Generated
+                </CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalGenerated.toLocaleString() || '0'}</div>
+                <div className="text-2xl font-bold">
+                  {totalGenerated.toLocaleString() || "0"}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   +{statsData.monthlyGrowth || 0}% from last month
                 </p>
@@ -238,11 +275,13 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  This Month
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{thisMonth || '0'}</div>
+                <div className="text-2xl font-bold">{thisMonth || "0"}</div>
                 <p className="text-xs text-muted-foreground">
                   {statsData.pending || 0} pending generation
                 </p>
@@ -264,7 +303,9 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Denominations</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Denominations
+                </CardTitle>
                 <Church className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -292,7 +333,8 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
                     <span className="text-sm">Universal Compatibility</span>
                   </div>
                   <p className="text-xs text-muted-foreground ml-6">
-                    Works with all {totalDenominations} major Christian denominations
+                    Works with all {totalDenominations} major Christian
+                    denominations
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -336,33 +378,33 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
             </CardHeader>
             <CardContent>
               <div className="grid gap-2 md:grid-cols-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('generate')}
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveTab("generate")}
                   className="justify-start bg-gradient-to-r from-primary/10 to-primary/20 hover:from-primary/20 hover:to-primary/30 border-primary/30"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Generate Certificate
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('templates')}
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveTab("templates")}
                   className="justify-start"
                 >
                   <Search className="h-4 w-4 mr-2" />
                   Browse Templates
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('recent')}
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveTab("recent")}
                   className="justify-start"
                 >
                   <Calendar className="h-4 w-4 mr-2" />
                   Recent Certificates
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveTab('denominations')}
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveTab("denominations")}
                   className="justify-start"
                 >
                   <Church className="h-4 w-4 mr-2" />
@@ -377,7 +419,7 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
         <TabsContent value="generate" className="space-y-6">
           <CertificateGenerationWizard
             onComplete={handleCertificateGeneration}
-            onCancel={() => setActiveTab('overview')}
+            onCancel={() => setActiveTab("overview")}
             templates={templatesData}
             sacramentalRecords={mockSacramentalRecords}
             loading={dashboardLoading}
@@ -386,7 +428,7 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
 
         {/* Templates Tab */}
         <TabsContent value="templates" className="space-y-6">
-          <ModernTemplateSelector 
+          <ModernTemplateSelector
             onTemplateSelect={onTemplateSelect}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -407,7 +449,8 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
             <CardHeader>
               <CardTitle>Supported Denominations</CardTitle>
               <CardDescription>
-                {totalDenominations} major Christian traditions with liturgically accurate templates
+                {totalDenominations} major Christian traditions with
+                liturgically accurate templates
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -416,13 +459,19 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
                   <Card key={denomination} className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium">{denomination.replace('_', ' ')}</h4>
+                        <h4 className="font-medium">
+                          {denomination.replace("_", " ")}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
                           Professional templates available
                         </p>
                       </div>
                       <Badge variant="secondary">
-                        {templatesData.filter((t: any) => t.denomination === denomination).length}
+                        {
+                          templatesData.filter(
+                            (t: any) => t.denomination === denomination,
+                          ).length
+                        }
                       </Badge>
                     </div>
                   </Card>
@@ -446,10 +495,12 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
                 {recentCertificatesData.length === 0 ? (
                   <div className="text-center py-8">
                     <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">No certificates generated yet</p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setActiveTab('templates')}
+                    <p className="text-muted-foreground">
+                      No certificates generated yet
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setActiveTab("templates")}
                       className="mt-2"
                     >
                       Browse Templates
@@ -457,16 +508,25 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
                   </div>
                 ) : (
                   recentCertificatesData.map((certificate: any) => (
-                    <div key={certificate.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={certificate.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(certificate.status)}
                         <div>
-                          <p className="font-medium">{certificate.memberName}</p>
+                          <p className="font-medium">
+                            {certificate.memberName}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {certificate.sacramentType.replace('_', ' ')} • {certificate.templateName}
+                            {certificate.sacramentType.replace("_", " ")} •{" "}
+                            {certificate.templateName}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(certificate.generatedAt), { addSuffix: true })}
+                            {formatDistanceToNow(
+                              new Date(certificate.generatedAt),
+                              { addSuffix: true },
+                            )}
                           </p>
                         </div>
                       </div>
@@ -474,13 +534,14 @@ const CertificateManagementDashboard: React.FC<CertificateManagementDashboardPro
                         <Badge className={getStatusColor(certificate.status)}>
                           {certificate.status}
                         </Badge>
-                        {certificate.downloadUrl && certificate.status === 'COMPLETED' && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={certificate.downloadUrl} download>
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
+                        {certificate.downloadUrl &&
+                          certificate.status === "COMPLETED" && (
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={certificate.downloadUrl} download>
+                                <Download className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
                       </div>
                     </div>
                   ))

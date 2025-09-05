@@ -1,25 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 export default function AuthTestPage() {
-  const { login, logout, user, isAuthenticated, isLoading, primaryRole } = useAuth();
-  const [email, setEmail] = useState('super_admin@chapelstack.com');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { login, logout, user, isAuthenticated, isLoading, primaryRole } =
+    useAuth();
+  const [email, setEmail] = useState("super_admin@chapelstack.com");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     try {
       const result = await login(email, password);
       if (!result.success) {
-        setError(result.error || 'Login failed');
+        setError(result.error || "Login failed");
       }
     } catch (err) {
-      setError('Login failed');
+      setError("Login failed");
     }
   };
 
@@ -37,8 +38,10 @@ export default function AuthTestPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">Authentication Test</h1>
-        
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Authentication Test
+        </h1>
+
         {!isAuthenticated ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -53,7 +56,7 @@ export default function AuthTestPage() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
@@ -66,11 +69,9 @@ export default function AuthTestPage() {
                 required
               />
             </div>
-            
-            {error && (
-              <div className="text-red-600 text-sm">{error}</div>
-            )}
-            
+
+            {error && <div className="text-red-600 text-sm">{error}</div>}
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -80,14 +81,24 @@ export default function AuthTestPage() {
           </form>
         ) : (
           <div className="text-center space-y-4">
-            <div className="text-green-600 font-semibold">✅ Authenticated!</div>
-            <div className="space-y-2 text-sm">
-              <p><strong>User:</strong> {user?.name}</p>
-              <p><strong>Email:</strong> {user?.email}</p>
-              <p><strong>Role:</strong> {primaryRole}</p>
-              <p><strong>Branch:</strong> {user?.branch?.name || 'N/A'}</p>
+            <div className="text-green-600 font-semibold">
+              ✅ Authenticated!
             </div>
-            
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>User:</strong> {user?.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {user?.email}
+              </p>
+              <p>
+                <strong>Role:</strong> {primaryRole}
+              </p>
+              <p>
+                <strong>Branch:</strong> {user?.branch?.name || "N/A"}
+              </p>
+            </div>
+
             <button
               onClick={logout}
               className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -96,14 +107,28 @@ export default function AuthTestPage() {
             </button>
           </div>
         )}
-        
+
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Debug Info:</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">
+            Debug Info:
+          </h3>
           <div className="text-xs text-gray-500 space-y-1">
-            <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
-            <p>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</p>
-            <p>Token in localStorage: {typeof window !== 'undefined' && localStorage.getItem('authToken') ? 'Yes' : 'No'}</p>
-            <p>Cookie: {typeof window !== 'undefined' && document.cookie.includes('authToken') ? 'Yes' : 'No'}</p>
+            <p>Loading: {isLoading ? "Yes" : "No"}</p>
+            <p>Authenticated: {isAuthenticated ? "Yes" : "No"}</p>
+            <p>
+              Token in localStorage:{" "}
+              {typeof window !== "undefined" &&
+              localStorage.getItem("authToken")
+                ? "Yes"
+                : "No"}
+            </p>
+            <p>
+              Cookie:{" "}
+              {typeof window !== "undefined" &&
+              document.cookie.includes("authToken")
+                ? "Yes"
+                : "No"}
+            </p>
           </div>
         </div>
       </div>

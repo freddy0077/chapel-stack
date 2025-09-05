@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   GET_SERMONS,
   GET_SERMON,
@@ -14,7 +14,7 @@ import {
   GET_CATEGORIES,
   GET_CATEGORY,
   GET_TAGS,
-} from '../queries/sermonQueries';
+} from "../queries/sermonQueries";
 import {
   CREATE_SERMON,
   UPDATE_SERMON,
@@ -30,7 +30,7 @@ import {
   CREATE_CATEGORY,
   UPDATE_CATEGORY,
   DELETE_CATEGORY,
-} from '../mutations/sermonMutations';
+} from "../mutations/sermonMutations";
 
 // TypeScript interfaces
 export interface SermonEntity {
@@ -95,9 +95,9 @@ export interface TagEntity {
 }
 
 export enum ContentStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED',
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
 }
 
 export interface CreateSermonInput {
@@ -194,7 +194,7 @@ export const useSermons = (filters?: {
 }) => {
   return useQuery<{ sermons: SermonEntity[] }>(GET_SERMONS, {
     variables: filters,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -202,14 +202,14 @@ export const useSermon = (id: string) => {
   return useQuery<{ findOne: SermonEntity }>(GET_SERMON, {
     variables: { id },
     skip: !id,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useRecentSermons = (limit?: number, branchId?: string) => {
   return useQuery<{ findRecent: SermonEntity[] }>(GET_RECENT_SERMONS, {
     variables: { limit, branchId },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -217,7 +217,7 @@ export const useSearchSermons = (query: string, branchId?: string) => {
   return useQuery<{ search: SermonEntity[] }>(SEARCH_SERMONS, {
     variables: { query, branchId },
     skip: !query,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -225,42 +225,42 @@ export const useSearchSermons = (query: string, branchId?: string) => {
 export const useGetSpeakers = (branchId?: string) => {
   return useQuery(GET_SPEAKERS, {
     variables: { branchId },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useGetSpeaker = (id: string) => {
   return useQuery(GET_SPEAKER, {
     variables: { id },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useGetSpeakerByMember = (memberId: string) => {
   return useQuery(GET_SPEAKER_BY_MEMBER, {
     variables: { memberId },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useCreateSpeaker = () => {
   return useMutation(CREATE_SPEAKER, {
     refetchQueries: [{ query: GET_SPEAKERS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useUpdateSpeaker = () => {
   return useMutation(UPDATE_SPEAKER, {
     refetchQueries: [{ query: GET_SPEAKERS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useDeleteSpeaker = () => {
   return useMutation(DELETE_SPEAKER, {
     refetchQueries: [{ query: GET_SPEAKERS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -268,42 +268,42 @@ export const useDeleteSpeaker = () => {
 export const useGetSeries = (branchId?: string) => {
   return useQuery(GET_SERIES, {
     variables: { branchId },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useGetSeriesById = (id: string) => {
   return useQuery(GET_SERIES_BY_ID, {
     variables: { id },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useGetActiveSeries = (branchId?: string) => {
   return useQuery(GET_ACTIVE_SERIES, {
     variables: { branchId },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useCreateSeries = () => {
   return useMutation(CREATE_SERIES, {
     refetchQueries: [{ query: GET_SERIES }, { query: GET_ACTIVE_SERIES }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useUpdateSeries = () => {
   return useMutation(UPDATE_SERIES, {
     refetchQueries: [{ query: GET_SERIES }, { query: GET_ACTIVE_SERIES }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useDeleteSeries = () => {
   return useMutation(DELETE_SERIES, {
     refetchQueries: [{ query: GET_SERIES }, { query: GET_ACTIVE_SERIES }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -311,28 +311,28 @@ export const useDeleteSeries = () => {
 export const useCreateSermon = () => {
   return useMutation(CREATE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }, { query: GET_RECENT_SERMONS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useUpdateSermon = () => {
   return useMutation(UPDATE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }, { query: GET_RECENT_SERMONS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 export const useDeleteSermon = () => {
   return useMutation(DELETE_SERMON, {
     refetchQueries: [{ query: GET_SERMONS }, { query: GET_RECENT_SERMONS }],
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
 // Category Hooks
 export const useCategories = () => {
   return useQuery<{ categories: CategoryEntity[] }>(GET_CATEGORIES, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -340,7 +340,7 @@ export const useCategory = (id: string) => {
   return useQuery<{ category: CategoryEntity }>(GET_CATEGORY, {
     variables: { id },
     skip: !id,
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -365,7 +365,7 @@ export const useDeleteCategory = () => {
 // Tags Hook
 export const useTags = () => {
   return useQuery<{ tags: TagEntity[] }>(GET_TAGS, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 };
 
@@ -375,10 +375,7 @@ export const useSermonMutations = () => {
     { createSermon: SermonEntity },
     { createSermonInput: CreateSermonInput }
   >(CREATE_SERMON, {
-    refetchQueries: [
-      { query: GET_SERMONS },
-      { query: GET_RECENT_SERMONS },
-    ],
+    refetchQueries: [{ query: GET_SERMONS }, { query: GET_RECENT_SERMONS }],
     awaitRefetchQueries: true,
   });
 
@@ -394,25 +391,19 @@ export const useSermonMutations = () => {
     awaitRefetchQueries: true,
   });
 
-  const [deleteSermon] = useMutation<
-    { remove: SermonEntity },
-    { id: string }
-  >(DELETE_SERMON, {
-    refetchQueries: [
-      { query: GET_SERMONS },
-      { query: GET_RECENT_SERMONS },
-    ],
-    awaitRefetchQueries: true,
-  });
+  const [deleteSermon] = useMutation<{ remove: SermonEntity }, { id: string }>(
+    DELETE_SERMON,
+    {
+      refetchQueries: [{ query: GET_SERMONS }, { query: GET_RECENT_SERMONS }],
+      awaitRefetchQueries: true,
+    },
+  );
 
   const [updateSermonStatus] = useMutation<
     { updateSermonStatus: SermonEntity },
     { id: string; status: ContentStatus }
   >(UPDATE_SERMON_STATUS, {
-    refetchQueries: [
-      { query: GET_SERMONS },
-      { query: GET_SERMON },
-    ],
+    refetchQueries: [{ query: GET_SERMONS }, { query: GET_SERMON }],
     awaitRefetchQueries: true,
   });
 
@@ -448,10 +439,7 @@ export const useSpeakerMutations = () => {
     { remove: SpeakerEntity },
     { id: string }
   >(DELETE_SPEAKER, {
-    refetchQueries: [
-      { query: GET_SPEAKERS },
-      { query: GET_SERMONS },
-    ],
+    refetchQueries: [{ query: GET_SPEAKERS }, { query: GET_SERMONS }],
     awaitRefetchQueries: true,
   });
 
@@ -479,16 +467,13 @@ export const useSeriesMutations = () => {
     awaitRefetchQueries: true,
   });
 
-  const [deleteSeries] = useMutation<
-    { remove: SeriesEntity },
-    { id: string }
-  >(DELETE_SERIES, {
-    refetchQueries: [
-      { query: GET_SERIES },
-      { query: GET_SERMONS },
-    ],
-    awaitRefetchQueries: true,
-  });
+  const [deleteSeries] = useMutation<{ remove: SeriesEntity }, { id: string }>(
+    DELETE_SERIES,
+    {
+      refetchQueries: [{ query: GET_SERIES }, { query: GET_SERMONS }],
+      awaitRefetchQueries: true,
+    },
+  );
 
   return {
     createSeries,

@@ -12,7 +12,13 @@ interface ToastProps {
   onClose: () => void;
 }
 
-export function Toast({ id, title, description, variant = "default", onClose }: ToastProps) {
+export function Toast({
+  id,
+  title,
+  description,
+  variant = "default",
+  onClose,
+}: ToastProps) {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -27,7 +33,7 @@ export function Toast({ id, title, description, variant = "default", onClose }: 
         "fixed top-4 right-4 z-50 w-full max-w-sm rounded-lg border p-4 shadow-lg transition-all",
         variant === "destructive"
           ? "border-red-200 bg-red-50 text-red-900"
-          : "border-gray-200 bg-white text-gray-900"
+          : "border-gray-200 bg-white text-gray-900",
       )}
     >
       <div className="flex items-start space-x-3">
@@ -51,17 +57,20 @@ export function Toast({ id, title, description, variant = "default", onClose }: 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastProps[]>([]);
 
-  const addToast = React.useCallback((toast: Omit<ToastProps, "id" | "onClose">) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const newToast: ToastProps = {
-      ...toast,
-      id,
-      onClose: () => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-      },
-    };
-    setToasts(prev => [...prev, newToast]);
-  }, []);
+  const addToast = React.useCallback(
+    (toast: Omit<ToastProps, "id" | "onClose">) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const newToast: ToastProps = {
+        ...toast,
+        id,
+        onClose: () => {
+          setToasts((prev) => prev.filter((t) => t.id !== id));
+        },
+      };
+      setToasts((prev) => [...prev, newToast]);
+    },
+    [],
+  );
 
   React.useEffect(() => {
     // Make toast function globally available
@@ -71,7 +80,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {toasts.map(toast => (
+      {toasts.map((toast) => (
         <Toast key={toast.id} {...toast} />
       ))}
     </>

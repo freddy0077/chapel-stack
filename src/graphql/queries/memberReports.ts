@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GENERATE_MEMBER_REPORT = gql`
   query GenerateMemberReport($input: MemberReportInput!) {

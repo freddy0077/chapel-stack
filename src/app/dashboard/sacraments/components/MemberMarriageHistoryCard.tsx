@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useMemberMarriageHistory } from '@/graphql/hooks/useMarriageAnalytics';
-import { 
-  Heart, 
-  Calendar, 
-  MapPin, 
-  User, 
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useMemberMarriageHistory } from "@/graphql/hooks/useMarriageAnalytics";
+import {
+  Heart,
+  Calendar,
+  MapPin,
+  User,
   Download,
   RefreshCw,
   ExternalLink,
-  Gift
-} from 'lucide-react';
-import { format, parseISO, differenceInDays } from 'date-fns';
+  Gift,
+} from "lucide-react";
+import { format, parseISO, differenceInDays } from "date-fns";
 
 interface MemberMarriageHistoryCardProps {
   memberId: string;
@@ -23,10 +23,10 @@ interface MemberMarriageHistoryCardProps {
   onClose?: () => void;
 }
 
-const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({ 
-  memberId, 
-  branchId, 
-  onClose 
+const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
+  memberId,
+  branchId,
+  onClose,
 }) => {
   const { data, loading, error, refetch } = useMemberMarriageHistory({
     memberId,
@@ -41,7 +41,7 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
 
   const handleDownloadCertificate = () => {
     if (marriageHistory?.certificateUrl) {
-      window.open(marriageHistory.certificateUrl, '_blank');
+      window.open(marriageHistory.certificateUrl, "_blank");
     }
   };
 
@@ -67,7 +67,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
         <CardContent>
           <div className="flex items-center justify-center h-32">
             <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">Loading marriage history...</span>
+            <span className="ml-2 text-gray-600">
+              Loading marriage history...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -85,7 +87,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-600 mb-4">Error loading marriage history: {error.message}</p>
+            <p className="text-red-600 mb-4">
+              Error loading marriage history: {error.message}
+            </p>
             <Button onClick={handleRefresh} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
@@ -108,7 +112,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
         <CardContent>
           <div className="text-center py-8">
             <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">No marriage record found for this member.</p>
+            <p className="text-gray-600 mb-4">
+              No marriage record found for this member.
+            </p>
             {onClose && (
               <Button onClick={onClose} variant="outline">
                 Close
@@ -120,7 +126,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
     );
   }
 
-  const daysUntilAnniversary = getDaysUntilAnniversary(marriageHistory.nextAnniversary);
+  const daysUntilAnniversary = getDaysUntilAnniversary(
+    marriageHistory.nextAnniversary,
+  );
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -132,7 +140,11 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
           </CardTitle>
           <div className="flex items-center gap-2">
             {marriageHistory.certificateUrl && (
-              <Button onClick={handleDownloadCertificate} variant="outline" size="sm">
+              <Button
+                onClick={handleDownloadCertificate}
+                variant="outline"
+                size="sm"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Certificate
               </Button>
@@ -165,7 +177,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
               <Heart className="h-4 w-4 text-pink-600" />
               <span className="font-medium">{marriageHistory.spouseName}</span>
               {marriageHistory.spouseMemberId && (
-                <Badge variant="secondary" className="ml-2">Member</Badge>
+                <Badge variant="secondary" className="ml-2">
+                  Member
+                </Badge>
               )}
             </div>
           </div>
@@ -176,28 +190,41 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
         {/* Marriage Details */}
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">Marriage Details</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-600">Marriage Date</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                Marriage Date
+              </Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Calendar className="h-4 w-4 text-gray-600" />
-                <span>{format(parseISO(marriageHistory.marriageDate), 'MMMM dd, yyyy')}</span>
+                <span>
+                  {format(
+                    parseISO(marriageHistory.marriageDate),
+                    "MMMM dd, yyyy",
+                  )}
+                </span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-600">Years Married</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                Years Married
+              </Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Gift className="h-4 w-4 text-gray-600" />
-                <span className="font-medium">{marriageHistory.yearsMarried} years</span>
+                <span className="font-medium">
+                  {marriageHistory.yearsMarried} years
+                </span>
               </div>
             </div>
           </div>
 
           {marriageHistory.marriageLocation && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-600">Location</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                Location
+              </Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <MapPin className="h-4 w-4 text-gray-600" />
                 <span>{marriageHistory.marriageLocation}</span>
@@ -207,7 +234,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
 
           {marriageHistory.officiantName && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-600">Officiant</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                Officiant
+              </Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <User className="h-4 w-4 text-gray-600" />
                 <span>{marriageHistory.officiantName}</span>
@@ -221,22 +250,24 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
         {/* Anniversary Information */}
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">Anniversary Information</h3>
-          
+
           <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg border border-pink-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-800">Next Anniversary</p>
                 <p className="text-lg font-bold text-pink-600">
-                  {format(parseISO(marriageHistory.nextAnniversary), 'MMMM dd, yyyy')}
+                  {format(
+                    parseISO(marriageHistory.nextAnniversary),
+                    "MMMM dd, yyyy",
+                  )}
                 </p>
                 {daysUntilAnniversary !== null && (
                   <p className="text-sm text-gray-600">
-                    {daysUntilAnniversary === 0 
-                      ? 'Today!' 
-                      : daysUntilAnniversary === 1 
-                      ? 'Tomorrow' 
-                      : `${daysUntilAnniversary} days away`
-                    }
+                    {daysUntilAnniversary === 0
+                      ? "Today!"
+                      : daysUntilAnniversary === 1
+                        ? "Tomorrow"
+                        : `${daysUntilAnniversary} days away`}
                   </p>
                 )}
               </div>
@@ -265,9 +296,15 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
               <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center gap-2">
                   <Download className="h-4 w-4 text-green-600" />
-                  <span className="text-green-800 font-medium">Marriage Certificate Available</span>
+                  <span className="text-green-800 font-medium">
+                    Marriage Certificate Available
+                  </span>
                 </div>
-                <Button onClick={handleDownloadCertificate} size="sm" variant="outline">
+                <Button
+                  onClick={handleDownloadCertificate}
+                  size="sm"
+                  variant="outline"
+                >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View
                 </Button>
@@ -281,8 +318,9 @@ const MemberMarriageHistoryCard: React.FC<MemberMarriageHistoryCardProps> = ({
 };
 
 // Helper Label component
-const Label: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <label className={className}>{children}</label>
-);
+const Label: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = "",
+}) => <label className={className}>{children}</label>;
 
 export default MemberMarriageHistoryCard;

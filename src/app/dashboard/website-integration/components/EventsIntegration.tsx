@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Switch } from '@headlessui/react';
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { useState } from "react";
+import { Switch } from "@headlessui/react";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 type EventCategory = {
@@ -27,12 +27,48 @@ export default function EventsIntegration() {
   });
 
   const [categories, setCategories] = useState<EventCategory[]>([
-    { id: '1', name: 'Mass Schedule', color: '#4F46E5', displayed: true, requiresApproval: false },
-    { id: '2', name: 'Parish Events', color: '#10B981', displayed: true, requiresApproval: true },
-    { id: '3', name: 'Youth Ministry', color: '#F59E0B', displayed: true, requiresApproval: true },
-    { id: '4', name: 'Committee Meetings', color: '#EF4444', displayed: false, requiresApproval: true },
-    { id: '5', name: 'Small Groups', color: '#8B5CF6', displayed: false, requiresApproval: true },
-    { id: '6', name: 'Service Opportunities', color: '#EC4899', displayed: true, requiresApproval: false },
+    {
+      id: "1",
+      name: "Mass Schedule",
+      color: "#4F46E5",
+      displayed: true,
+      requiresApproval: false,
+    },
+    {
+      id: "2",
+      name: "Parish Events",
+      color: "#10B981",
+      displayed: true,
+      requiresApproval: true,
+    },
+    {
+      id: "3",
+      name: "Youth Ministry",
+      color: "#F59E0B",
+      displayed: true,
+      requiresApproval: true,
+    },
+    {
+      id: "4",
+      name: "Committee Meetings",
+      color: "#EF4444",
+      displayed: false,
+      requiresApproval: true,
+    },
+    {
+      id: "5",
+      name: "Small Groups",
+      color: "#8B5CF6",
+      displayed: false,
+      requiresApproval: true,
+    },
+    {
+      id: "6",
+      name: "Service Opportunities",
+      color: "#EC4899",
+      displayed: true,
+      requiresApproval: false,
+    },
   ]);
 
   const [pastEventLimit, setPastEventLimit] = useState(30);
@@ -49,8 +85,8 @@ export default function EventsIntegration() {
       categories.map((category) =>
         category.id === id
           ? { ...category, displayed: !category.displayed }
-          : category
-      )
+          : category,
+      ),
     );
   };
 
@@ -59,17 +95,20 @@ export default function EventsIntegration() {
       categories.map((category) =>
         category.id === id
           ? { ...category, requiresApproval: !category.requiresApproval }
-          : category
-      )
+          : category,
+      ),
     );
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Events Integration</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          Events Integration
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
-          Configure how events from your Church Management System appear on your website.
+          Configure how events from your Church Management System appear on your
+          website.
         </p>
       </div>
 
@@ -78,12 +117,16 @@ export default function EventsIntegration() {
           <div className="space-y-6">
             <div className="space-y-4">
               {Object.entries(settings).map(([key, enabled]) => (
-                <Switch.Group as="div" className="flex items-center justify-between" key={key}>
+                <Switch.Group
+                  as="div"
+                  className="flex items-center justify-between"
+                  key={key}
+                >
                   <div className="flex flex-grow items-center">
                     <Switch.Label as="span" className="flex-grow text-sm">
                       <span className="font-medium text-gray-900">
                         {key
-                          .replace(/([A-Z])/g, ' $1')
+                          .replace(/([A-Z])/g, " $1")
                           .replace(/^./, (str) => str.toUpperCase())
                           .replace(/([A-Z])/g, (match) => match.toUpperCase())}
                       </span>
@@ -93,15 +136,15 @@ export default function EventsIntegration() {
                     checked={enabled}
                     onChange={() => handleToggle(key)}
                     className={classNames(
-                      enabled ? 'bg-blue-600' : 'bg-gray-200',
-                      'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                      enabled ? "bg-blue-600" : "bg-gray-200",
+                      "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                     )}
                   >
                     <span
                       aria-hidden="true"
                       className={classNames(
-                        enabled ? 'translate-x-5' : 'translate-x-0',
-                        'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                        enabled ? "translate-x-5" : "translate-x-0",
+                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
                       )}
                     />
                   </Switch>
@@ -111,7 +154,10 @@ export default function EventsIntegration() {
 
             {settings.limitPastEvents && (
               <div>
-                <label htmlFor="past-event-limit" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="past-event-limit"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Past Event Display Limit (Days)
                 </label>
                 <div className="mt-1">
@@ -137,25 +183,41 @@ export default function EventsIntegration() {
 
       <div className="bg-white shadow sm:rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-base font-semibold leading-6 text-gray-900">Event Categories</h3>
+          <h3 className="text-base font-semibold leading-6 text-gray-900">
+            Event Categories
+          </h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
-            <p>Configure which event categories are displayed on your website.</p>
+            <p>
+              Configure which event categories are displayed on your website.
+            </p>
           </div>
         </div>
         <div className="border-t border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Category
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Color
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Display on Website
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Requires Approval
                 </th>
               </tr>
@@ -186,7 +248,9 @@ export default function EventsIntegration() {
                       ) : (
                         <XCircleIcon className="h-5 w-5 text-red-500" />
                       )}
-                      <span className="ml-2">{category.displayed ? 'Yes' : 'No'}</span>
+                      <span className="ml-2">
+                        {category.displayed ? "Yes" : "No"}
+                      </span>
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -200,7 +264,9 @@ export default function EventsIntegration() {
                       ) : (
                         <XCircleIcon className="h-5 w-5 text-red-500" />
                       )}
-                      <span className="ml-2">{category.requiresApproval ? 'Yes' : 'No'}</span>
+                      <span className="ml-2">
+                        {category.requiresApproval ? "Yes" : "No"}
+                      </span>
                     </button>
                   </td>
                 </tr>

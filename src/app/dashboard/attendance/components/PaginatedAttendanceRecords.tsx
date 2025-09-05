@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   CalendarIcon,
   ClockIcon,
@@ -13,11 +13,11 @@ import {
   UsersIcon,
   CheckIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
-import Pagination from '@/components/ui/Pagination';
-import { usePagination } from '@/hooks/usePagination';
-import { AttendanceRecord } from '@/graphql/hooks/useAttendance';
+} from "@heroicons/react/24/outline";
+import { format } from "date-fns";
+import Pagination from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
+import { AttendanceRecord } from "@/graphql/hooks/useAttendance";
 
 export interface PaginatedAttendanceRecordsProps {
   records: AttendanceRecord[];
@@ -26,7 +26,7 @@ export interface PaginatedAttendanceRecordsProps {
   onViewRecord?: (record: AttendanceRecord) => void;
   onEditRecord?: (record: AttendanceRecord) => void;
   onDeleteRecord?: (record: AttendanceRecord) => void;
-  viewMode?: 'table' | 'cards';
+  viewMode?: "table" | "cards";
   showActions?: boolean;
   className?: string;
   emptyMessage?: string;
@@ -40,15 +40,16 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
   onViewRecord,
   onEditRecord,
   onDeleteRecord,
-  viewMode = 'table',
+  viewMode = "table",
   showActions = true,
-  className = '',
-  emptyMessage = 'No attendance records found',
-  emptyDescription = 'There are no attendance records to display.',
+  className = "",
+  emptyMessage = "No attendance records found",
+  emptyDescription = "There are no attendance records to display.",
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof AttendanceRecord>('createdAt');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] =
+    useState<keyof AttendanceRecord>("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // Filter and sort records
   const filteredAndSortedRecords = useMemo(() => {
@@ -56,12 +57,21 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
 
     // Apply search filter
     if (searchTerm) {
-      filtered = records.filter(record =>
-        record.member?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.member?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.visitorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.session?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.event?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = records.filter(
+        (record) =>
+          record.member?.firstName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          record.member?.lastName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          record.visitorName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          record.session?.name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          record.event?.title?.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -69,15 +79,15 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
     const sorted = [...filtered].sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
-      
+
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
-      
+
       let comparison = 0;
       if (aValue < bValue) comparison = -1;
       if (aValue > bValue) comparison = 1;
-      
-      return sortDirection === 'desc' ? -comparison : comparison;
+
+      return sortDirection === "desc" ? -comparison : comparison;
     });
 
     return sorted;
@@ -91,18 +101,18 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
 
   const handleSort = (field: keyof AttendanceRecord) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('desc');
+      setSortDirection("desc");
     }
   };
 
   const formatDateTime = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy h:mm a');
+      return format(new Date(dateString), "MMM dd, yyyy h:mm a");
     } catch {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
 
@@ -110,7 +120,7 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
     if (record.member) {
       return `${record.member.firstName} ${record.member.lastName}`;
     }
-    return record.visitorName || 'Unknown';
+    return record.visitorName || "Unknown";
   };
 
   const getEventOrSessionName = (record: AttendanceRecord) => {
@@ -120,12 +130,14 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
     if (record.event) {
       return record.event.title;
     }
-    return 'Unknown';
+    return "Unknown";
   };
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-xl shadow-sm border border-gray-200 ${className}`}>
+      <div
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 ${className}`}
+      >
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading attendance records...</p>
@@ -136,10 +148,14 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}>
+      <div
+        className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}
+      >
         <div className="flex items-center">
           <XMarkIcon className="h-5 w-5 text-red-400 mr-2" />
-          <p className="text-red-800">Error loading attendance records: {error.message}</p>
+          <p className="text-red-800">
+            Error loading attendance records: {error.message}
+          </p>
         </div>
       </div>
     );
@@ -161,7 +177,8 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
-              {filteredAndSortedRecords.length} record{filteredAndSortedRecords.length !== 1 ? 's' : ''}
+              {filteredAndSortedRecords.length} record
+              {filteredAndSortedRecords.length !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
@@ -173,10 +190,12 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
           <div className="text-gray-400 mb-4">
             <UsersIcon className="h-16 w-16 mx-auto" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">{emptyMessage}</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {emptyMessage}
+          </h3>
           <p className="text-gray-500">{emptyDescription}</p>
         </div>
-      ) : viewMode === 'table' ? (
+      ) : viewMode === "table" ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -185,12 +204,14 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('createdAt')}
+                    onClick={() => handleSort("createdAt")}
                   >
                     <div className="flex items-center">
                       Date & Time
-                      {sortField === 'createdAt' && (
-                        <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                      {sortField === "createdAt" && (
+                        <span className="ml-1">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
                       )}
                     </div>
                   </th>
@@ -254,7 +275,7 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
                             {getAttendeeDisplayName(record)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {record.member ? 'Member' : 'Visitor'}
+                            {record.member ? "Member" : "Visitor"}
                           </div>
                         </div>
                       </div>
@@ -264,21 +285,23 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
                         {getEventOrSessionName(record)}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {record.session ? 'Session' : 'Event'}
+                        {record.session ? "Session" : "Event"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {record.checkInMethod || 'Manual'}
+                        {record.checkInMethod || "Manual"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        record.checkOutTime 
-                          ? 'bg-gray-100 text-gray-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {record.checkOutTime ? 'Checked Out' : 'Present'}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          record.checkOutTime
+                            ? "bg-gray-100 text-gray-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {record.checkOutTime ? "Checked Out" : "Present"}
                       </span>
                     </td>
                     {showActions && (
@@ -341,21 +364,25 @@ const PaginatedAttendanceRecords: React.FC<PaginatedAttendanceRecordsProps> = ({
                       {formatDateTime(record.checkInTime)}
                     </div>
                   </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    record.member ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                  }`}>
-                    {record.member ? 'Member' : 'Visitor'}
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      record.member
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-purple-100 text-purple-800"
+                    }`}
+                  >
+                    {record.member ? "Member" : "Visitor"}
                   </span>
                 </div>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <TagIcon className="h-4 w-4 mr-2" />
-                    {record.checkInMethod || 'Manual'}
+                    {record.checkInMethod || "Manual"}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <CheckIcon className="h-4 w-4 mr-2" />
-                    {record.checkOutTime ? 'Checked Out' : 'Present'}
+                    {record.checkOutTime ? "Checked Out" : "Present"}
                   </div>
                 </div>
 

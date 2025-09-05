@@ -1,5 +1,5 @@
-import { useMutation } from '@apollo/client';
-import { CREATE_USERS_WITH_ROLE } from '../mutations/userMutations';
+import { useMutation } from "@apollo/client";
+import { CREATE_USERS_WITH_ROLE } from "../mutations/userMutations";
 
 export interface InvitationUserInput {
   email: string;
@@ -23,9 +23,10 @@ export interface CreateUsersWithRoleResponse {
 }
 
 export const useCreateUsersWithRole = () => {
-  const [mutate, { data, loading, error }] = useMutation<CreateUsersWithRoleResponse, { input: { users: InvitationUserInput[] } }>(
-    CREATE_USERS_WITH_ROLE
-  );
+  const [mutate, { data, loading, error }] = useMutation<
+    CreateUsersWithRoleResponse,
+    { input: { users: InvitationUserInput[] } }
+  >(CREATE_USERS_WITH_ROLE);
 
   return {
     createUsersWithRole: mutate,

@@ -21,27 +21,27 @@ export interface EnhancedMember {
   maritalStatus?: string;
   occupation?: string;
   employerName?: string;
-  
+
   // Family Information
   fatherName?: string;
   motherName?: string;
   fatherOccupation?: string;
   motherOccupation?: string;
-  
+
   // Emergency Contact
   emergencyContactName?: string;
   emergencyContactPhone?: string;
-  
+
   // Affidavit Upload
   affidavitUrl?: string;
-  
+
   // Status and Deactivation
   status: string;
   isDeactivated: boolean;
   deactivatedAt?: string;
   deactivatedBy?: string;
   deactivationReason?: string;
-  
+
   // Standard fields
   membershipDate?: string;
   baptismDate?: string;
@@ -52,7 +52,7 @@ export interface EnhancedMember {
   customFields?: any;
   privacySettings?: any;
   notes?: string;
-  
+
   // Relations
   branch?: {
     id: string;
@@ -76,7 +76,7 @@ export interface EnhancedMember {
     firstName: string;
     lastName: string;
   }>;
-  
+
   rfidCardId?: string;
   createdAt: string;
   updatedAt: string;
@@ -132,28 +132,28 @@ export interface FamilyStatistics {
 
 // Member View Options Types
 export enum MemberViewMode {
-  LIST = 'LIST',
-  CARD = 'CARD',
-  TABLE = 'TABLE',
-  GRID = 'GRID',
+  LIST = "LIST",
+  CARD = "CARD",
+  TABLE = "TABLE",
+  GRID = "GRID",
 }
 
 export enum MemberSortField {
-  FIRST_NAME = 'firstName',
-  LAST_NAME = 'lastName',
-  EMAIL = 'email',
-  PHONE_NUMBER = 'phoneNumber',
-  STATUS = 'status',
-  MEMBERSHIP_DATE = 'membershipDate',
-  DATE_OF_BIRTH = 'dateOfBirth',
-  CREATED_AT = 'createdAt',
-  UPDATED_AT = 'updatedAt',
-  BRANCH_NAME = 'branch.name',
+  FIRST_NAME = "firstName",
+  LAST_NAME = "lastName",
+  EMAIL = "email",
+  PHONE_NUMBER = "phoneNumber",
+  STATUS = "status",
+  MEMBERSHIP_DATE = "membershipDate",
+  DATE_OF_BIRTH = "dateOfBirth",
+  CREATED_AT = "createdAt",
+  UPDATED_AT = "updatedAt",
+  BRANCH_NAME = "branch.name",
 }
 
 export enum SortOrder {
-  ASC = 'asc',
-  DESC = 'desc',
+  ASC = "asc",
+  DESC = "desc",
 }
 
 export interface MemberViewOptionsInput {
@@ -213,7 +213,9 @@ export interface MemberViewPagination {
 }
 
 export interface MemberViewResult {
-  members: Array<MemberListItem | MemberCardItem | MemberTableItem | MemberGridItem>;
+  members: Array<
+    MemberListItem | MemberCardItem | MemberTableItem | MemberGridItem
+  >;
   pagination: MemberViewPagination;
 }
 
@@ -267,21 +269,21 @@ export interface EnhancedCreateMemberInput {
   maritalStatus?: string;
   occupation?: string;
   employerName?: string;
-  
+
   // Family Information
   fatherName?: string;
   motherName?: string;
   fatherOccupation?: string;
   motherOccupation?: string;
-  
+
   // Emergency Contact
   emergencyContactName?: string;
   emergencyContactPhone?: string;
-  
+
   // Required fields
   branchId: string;
   organisationId: string;
-  
+
   // Optional fields
   spouseId?: string;
   parentId?: string;

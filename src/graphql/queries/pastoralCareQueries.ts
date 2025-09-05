@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Get pastoral care statistics
 export const GET_PASTORAL_CARE_STATS = gql`
@@ -83,7 +83,11 @@ export const GET_PASTORAL_CARE_RECENT_ACTIVITY = gql`
 
 // Get care requests with filtering
 export const GET_CARE_REQUESTS = gql`
-  query GetCareRequests($filter: CareRequestFilterInput!, $skip: Int, $take: Int) {
+  query GetCareRequests(
+    $filter: CareRequestFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     careRequests(filter: $filter, skip: $skip, take: $take) {
       id
       title
@@ -97,6 +101,25 @@ export const GET_CARE_REQUESTS = gql`
       completionDate
       memberId
       requesterId
+      requester {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+        memberId
+      }
+      assignedPastor {
+        id
+        firstName
+        lastName
+        email
+      }
+      creator {
+        id
+        firstName
+        lastName
+      }
       organisationId
       branchId
       createdBy
@@ -122,6 +145,25 @@ export const GET_CARE_REQUEST = gql`
       completionDate
       memberId
       requesterId
+      requester {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+        memberId
+      }
+      assignedPastor {
+        id
+        firstName
+        lastName
+        email
+      }
+      creator {
+        id
+        firstName
+        lastName
+      }
       organisationId
       branchId
       createdBy
@@ -215,7 +257,11 @@ export const GET_OVERDUE_CARE_REQUESTS = gql`
 
 // Get pastoral visits
 export const GET_PASTORAL_VISITS = gql`
-  query GetPastoralVisits($filter: PastoralVisitFilterInput!, $skip: Int, $take: Int) {
+  query GetPastoralVisits(
+    $filter: PastoralVisitFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     pastoralVisits(filter: $filter, skip: $skip, take: $take) {
       id
       title
@@ -236,7 +282,11 @@ export const GET_PASTORAL_VISITS = gql`
 
 // Get counseling sessions
 export const GET_COUNSELING_SESSIONS = gql`
-  query GetCounselingSessions($filter: CounselingSessionFilterInput!, $skip: Int, $take: Int) {
+  query GetCounselingSessions(
+    $filter: CounselingSessionFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     counselingSessions(filter: $filter, skip: $skip, take: $take) {
       id
       title
@@ -257,7 +307,11 @@ export const GET_COUNSELING_SESSIONS = gql`
 
 // Get follow-up reminders
 export const GET_FOLLOW_UP_REMINDERS = gql`
-  query GetFollowUpReminders($filter: FollowUpReminderFilterInput!, $skip: Int, $take: Int) {
+  query GetFollowUpReminders(
+    $filter: FollowUpReminderFilterInput!
+    $skip: Int
+    $take: Int
+  ) {
     followUpReminders(filter: $filter, skip: $skip, take: $take) {
       id
       memberId

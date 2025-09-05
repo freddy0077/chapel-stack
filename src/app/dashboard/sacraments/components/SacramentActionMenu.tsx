@@ -2,17 +2,17 @@
 
 import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
-import { 
-  ChevronDownIcon, 
-  SparklesIcon, 
-  GiftIcon, 
-  HeartIcon, 
+import {
+  ChevronDownIcon,
+  SparklesIcon,
+  GiftIcon,
+  HeartIcon,
   UserGroupIcon,
   ShieldCheckIcon,
   HandRaisedIcon,
   AcademicCapIcon,
   BookOpenIcon,
-  PlusIcon
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 
 interface SacramentActionMenuProps {
@@ -29,68 +29,68 @@ interface SacramentActionMenuProps {
 
 const sacramentOptions = [
   {
-    name: 'Baptism',
+    name: "Baptism",
     icon: SparklesIcon,
-    color: 'blue',
-    description: 'Sacrament of initiation',
-    handler: 'onBaptismClick'
+    color: "blue",
+    description: "Sacrament of initiation",
+    handler: "onBaptismClick",
   },
   {
-    name: 'First Communion',
+    name: "First Communion",
     icon: GiftIcon,
-    color: 'amber',
-    description: 'First reception of Eucharist',
-    handler: 'onCommunionClick'
+    color: "amber",
+    description: "First reception of Eucharist",
+    handler: "onCommunionClick",
   },
   {
-    name: 'Confirmation',
+    name: "Confirmation",
     icon: HeartIcon,
-    color: 'purple',
-    description: 'Strengthening of faith',
-    handler: 'onConfirmationClick'
+    color: "purple",
+    description: "Strengthening of faith",
+    handler: "onConfirmationClick",
   },
   {
-    name: 'Marriage',
+    name: "Marriage",
     icon: UserGroupIcon,
-    color: 'rose',
-    description: 'Sacrament of matrimony',
-    handler: 'onMarriageClick'
+    color: "rose",
+    description: "Sacrament of matrimony",
+    handler: "onMarriageClick",
   },
   {
-    name: 'First Reconciliation',
+    name: "First Reconciliation",
     icon: ShieldCheckIcon,
-    color: 'green',
-    description: 'Sacrament of penance',
-    handler: 'onReconciliationClick'
+    color: "green",
+    description: "Sacrament of penance",
+    handler: "onReconciliationClick",
   },
   {
-    name: 'Anointing of the Sick',
+    name: "Anointing of the Sick",
     icon: HandRaisedIcon,
-    color: 'indigo',
-    description: 'Healing sacrament',
-    handler: 'onAnointingClick'
+    color: "indigo",
+    description: "Healing sacrament",
+    handler: "onAnointingClick",
   },
   {
-    name: 'Diaconate Ordination',
+    name: "Diaconate Ordination",
     icon: AcademicCapIcon,
-    color: 'violet',
-    description: 'Ordination to diaconate',
-    handler: 'onDiaconateClick'
+    color: "violet",
+    description: "Ordination to diaconate",
+    handler: "onDiaconateClick",
   },
   {
-    name: 'Priesthood Ordination',
+    name: "Priesthood Ordination",
     icon: AcademicCapIcon,
-    color: 'violet',
-    description: 'Ordination to priesthood',
-    handler: 'onPriesthoodClick'
+    color: "violet",
+    description: "Ordination to priesthood",
+    handler: "onPriesthoodClick",
   },
   {
-    name: 'RCIA Initiation',
+    name: "RCIA Initiation",
     icon: BookOpenIcon,
-    color: 'teal',
-    description: 'Adult initiation program',
-    handler: 'onRciaClick'
-  }
+    color: "teal",
+    description: "Adult initiation program",
+    handler: "onRciaClick",
+  },
 ];
 
 export default function SacramentActionMenu({
@@ -104,7 +104,6 @@ export default function SacramentActionMenu({
   onPriesthoodClick,
   onRciaClick,
 }: SacramentActionMenuProps) {
-  
   const handlerMap = {
     onBaptismClick,
     onCommunionClick,
@@ -124,7 +123,10 @@ export default function SacramentActionMenu({
           <Menu.Button className="inline-flex w-full justify-center rounded-lg bg-white/90 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-indigo-700 shadow-lg hover:bg-white focus:outline-none ring-1 ring-inset ring-indigo-200 transition-all duration-200">
             <PlusIcon className="h-5 w-5 mr-2" />
             New Sacrament Record
-            <ChevronDownIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+            <ChevronDownIcon
+              className="ml-2 -mr-1 h-5 w-5"
+              aria-hidden="true"
+            />
           </Menu.Button>
         </div>
 
@@ -140,10 +142,14 @@ export default function SacramentActionMenu({
           <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="py-2">
               <div className="px-4 py-2 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-900">Create New Record</h3>
-                <p className="text-xs text-gray-500 mt-1">Select a sacrament type to create a new record</p>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Create New Record
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a sacrament type to create a new record
+                </p>
               </div>
-              
+
               {/* Core Sacraments */}
               <div className="px-2 py-2">
                 <div className="text-xs font-medium text-gray-500 uppercase tracking-wide px-2 py-1">
@@ -151,21 +157,28 @@ export default function SacramentActionMenu({
                 </div>
                 {sacramentOptions.slice(0, 4).map((sacrament) => {
                   const Icon = sacrament.icon;
-                  const handler = handlerMap[sacrament.handler as keyof typeof handlerMap];
-                  
+                  const handler =
+                    handlerMap[sacrament.handler as keyof typeof handlerMap];
+
                   return (
                     <Menu.Item key={sacrament.name}>
                       {({ active }) => (
                         <button
                           onClick={handler}
                           className={`${
-                            active ? `bg-${sacrament.color}-50 text-${sacrament.color}-900` : "text-gray-700"
+                            active
+                              ? `bg-${sacrament.color}-50 text-${sacrament.color}-900`
+                              : "text-gray-700"
                           } flex items-center px-3 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
                         >
-                          <Icon className={`h-5 w-5 mr-3 text-${sacrament.color}-600`} />
+                          <Icon
+                            className={`h-5 w-5 mr-3 text-${sacrament.color}-600`}
+                          />
                           <div>
                             <div className="font-medium">{sacrament.name}</div>
-                            <div className="text-xs text-gray-500">{sacrament.description}</div>
+                            <div className="text-xs text-gray-500">
+                              {sacrament.description}
+                            </div>
                           </div>
                         </button>
                       )}
@@ -181,21 +194,28 @@ export default function SacramentActionMenu({
                 </div>
                 {sacramentOptions.slice(4).map((sacrament) => {
                   const Icon = sacrament.icon;
-                  const handler = handlerMap[sacrament.handler as keyof typeof handlerMap];
-                  
+                  const handler =
+                    handlerMap[sacrament.handler as keyof typeof handlerMap];
+
                   return (
                     <Menu.Item key={sacrament.name}>
                       {({ active }) => (
                         <button
                           onClick={handler}
                           className={`${
-                            active ? `bg-${sacrament.color}-50 text-${sacrament.color}-900` : "text-gray-700"
+                            active
+                              ? `bg-${sacrament.color}-50 text-${sacrament.color}-900`
+                              : "text-gray-700"
                           } flex items-center px-3 py-3 text-sm rounded-md mx-1 transition-colors w-full text-left`}
                         >
-                          <Icon className={`h-5 w-5 mr-3 text-${sacrament.color}-600`} />
+                          <Icon
+                            className={`h-5 w-5 mr-3 text-${sacrament.color}-600`}
+                          />
                           <div>
                             <div className="font-medium">{sacrament.name}</div>
-                            <div className="text-xs text-gray-500">{sacrament.description}</div>
+                            <div className="text-xs text-gray-500">
+                              {sacrament.description}
+                            </div>
                           </div>
                         </button>
                       )}

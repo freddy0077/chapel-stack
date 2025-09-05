@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragment for transfer request fields
 export const TRANSFER_REQUEST_FRAGMENT = gql`

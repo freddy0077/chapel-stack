@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@apollo/client';
-import { FINANCIAL_STATEMENTS_QUERY } from '@/graphql/queries/financialStatements';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
-import { 
-  DocumentTextIcon, 
-  PrinterIcon, 
+import React, { useState, useMemo } from "react";
+import { useQuery } from "@apollo/client";
+import { FINANCIAL_STATEMENTS_QUERY } from "@/graphql/queries/financialStatements";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
+import {
+  DocumentTextIcon,
+  PrinterIcon,
   ArrowDownTrayIcon,
   InformationCircleIcon,
   ScaleIcon,
   DocumentArrowDownIcon,
   TableCellsIcon,
-  DocumentIcon
-} from '@heroicons/react/24/outline';
-import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
+  DocumentIcon,
+} from "@heroicons/react/24/outline";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 
 interface FinancialStatementsProps {
   organisationId: string;
@@ -25,43 +25,50 @@ interface FinancialStatementsProps {
   };
 }
 
-type StatementType = 'INCOME_STATEMENT' | 'BALANCE_SHEET' | 'CASH_FLOW_STATEMENT' | 'STATEMENT_OF_NET_ASSETS';
+type StatementType =
+  | "INCOME_STATEMENT"
+  | "BALANCE_SHEET"
+  | "CASH_FLOW_STATEMENT"
+  | "STATEMENT_OF_NET_ASSETS";
 
 const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: 'GHS',
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
     minimumFractionDigits: 2,
   }).format(value);
 };
 
 const formatDateForDisplay = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
-const handleQuickRange = (range: string, setSelectedDateRange: (dateRange: { startDate: Date; endDate: Date }) => void) => {
+const handleQuickRange = (
+  range: string,
+  setSelectedDateRange: (dateRange: { startDate: Date; endDate: Date }) => void,
+) => {
   const today = new Date();
   let startDate: Date;
   let endDate: Date;
 
   switch (range) {
-    case 'thisMonth':
+    case "thisMonth":
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
       endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       break;
-    case 'lastMonth':
+    case "lastMonth":
       startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       endDate = new Date(today.getFullYear(), today.getMonth(), 0);
       break;
-    case 'thisYear':
+    case "thisYear":
       startDate = new Date(today.getFullYear(), 0, 1);
       endDate = new Date(today.getFullYear(), 11, 31);
       break;
-    case 'lastYear':
+    case "lastYear":
       startDate = new Date(today.getFullYear() - 1, 0, 1);
       endDate = new Date(today.getFullYear() - 1, 11, 31);
       break;
@@ -72,34 +79,34 @@ const handleQuickRange = (range: string, setSelectedDateRange: (dateRange: { sta
   setSelectedDateRange({ startDate, endDate });
 };
 
-const StatementRow: React.FC<{ 
-  label: string; 
-  amount: number; 
-  isSubtotal?: boolean; 
-  isTotal?: boolean; 
+const StatementRow: React.FC<{
+  label: string;
+  amount: number;
+  isSubtotal?: boolean;
+  isTotal?: boolean;
   indent?: boolean;
   previousAmount?: number;
-}> = ({ 
-  label, 
-  amount, 
-  isSubtotal = false, 
-  isTotal = false, 
+}> = ({
+  label,
+  amount,
+  isSubtotal = false,
+  isTotal = false,
   indent = false,
-  previousAmount 
+  previousAmount,
 }) => {
-  const variance = previousAmount !== undefined ? amount - previousAmount : undefined;
-  const variancePercent = previousAmount !== undefined && previousAmount !== 0 
-    ? ((amount - previousAmount) / Math.abs(previousAmount)) * 100 
-    : undefined;
+  const variance =
+    previousAmount !== undefined ? amount - previousAmount : undefined;
+  const variancePercent =
+    previousAmount !== undefined && previousAmount !== 0
+      ? ((amount - previousAmount) / Math.abs(previousAmount)) * 100
+      : undefined;
 
   return (
-    <tr className={`${isTotal ? 'border-t-2 border-gray-300 font-bold' : ''} ${isSubtotal ? 'font-semibold' : ''}`}>
-      <td className={`py-2 px-4 ${indent ? 'pl-8' : ''}`}>
-        {label}
-      </td>
-      <td className="py-2 px-4 text-right">
-        {formatCurrency(amount)}
-      </td>
+    <tr
+      className={`${isTotal ? "border-t-2 border-gray-300 font-bold" : ""} ${isSubtotal ? "font-semibold" : ""}`}
+    >
+      <td className={`py-2 px-4 ${indent ? "pl-8" : ""}`}>{label}</td>
+      <td className="py-2 px-4 text-right">{formatCurrency(amount)}</td>
       {previousAmount !== undefined && (
         <>
           <td className="py-2 px-4 text-right">
@@ -107,14 +114,20 @@ const StatementRow: React.FC<{
           </td>
           <td className="py-2 px-4 text-right">
             {variance !== undefined && (
-              <span className={variance >= 0 ? 'text-green-600' : 'text-red-600'}>
+              <span
+                className={variance >= 0 ? "text-green-600" : "text-red-600"}
+              >
                 {formatCurrency(variance)}
               </span>
             )}
           </td>
           <td className="py-2 px-4 text-right">
             {variancePercent !== undefined && (
-              <span className={variancePercent >= 0 ? 'text-green-600' : 'text-red-600'}>
+              <span
+                className={
+                  variancePercent >= 0 ? "text-green-600" : "text-red-600"
+                }
+              >
                 {variancePercent.toFixed(1)}%
               </span>
             )}
@@ -125,13 +138,20 @@ const StatementRow: React.FC<{
   );
 };
 
-const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationId, branchId, dateRange }) => {
-  const [activeStatementType, setActiveStatementType] = useState<StatementType>('INCOME_STATEMENT');
-  
+const FinancialStatements: React.FC<FinancialStatementsProps> = ({
+  organisationId,
+  branchId,
+  dateRange,
+}) => {
+  const [activeStatementType, setActiveStatementType] =
+    useState<StatementType>("INCOME_STATEMENT");
+
   const { user } = useAuth();
 
   // Determine effective branch ID (super admin can see all branches)
-  const effectiveBranchId = user?.roles?.includes('SUPER_ADMIN') ? branchId : branchId;
+  const effectiveBranchId = user?.roles?.includes("SUPER_ADMIN")
+    ? branchId
+    : branchId;
 
   // State for date range selection
   const [selectedDateRange, setSelectedDateRange] = useState<{
@@ -156,51 +176,65 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
       statementType: activeStatementType,
       includeComparative: true,
     };
-  }, [organisationId, effectiveBranchId, selectedDateRange, activeStatementType]);
+  }, [
+    organisationId,
+    effectiveBranchId,
+    selectedDateRange,
+    activeStatementType,
+  ]);
 
-  console.log('FinancialStatements - Input constructed:', financialStatementsInput);
-  console.log('FinancialStatements - dateRange object:', financialStatementsInput?.dateRange);
+  console.log(
+    "FinancialStatements - Input constructed:",
+    financialStatementsInput,
+  );
+  console.log(
+    "FinancialStatements - dateRange object:",
+    financialStatementsInput?.dateRange,
+  );
 
-  const { data, loading, error, refetch } = useQuery(FINANCIAL_STATEMENTS_QUERY, {
-    variables: { input: financialStatementsInput },
-    skip: !financialStatementsInput,
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
-    notifyOnNetworkStatusChange: true,
-    onCompleted: (data) => {
-      console.log('FinancialStatements - GraphQL Response:', data);
+  const { data, loading, error, refetch } = useQuery(
+    FINANCIAL_STATEMENTS_QUERY,
+    {
+      variables: { input: financialStatementsInput },
+      skip: !financialStatementsInput,
+      fetchPolicy: "cache-and-network",
+      errorPolicy: "all",
+      notifyOnNetworkStatusChange: true,
+      onCompleted: (data) => {
+        console.log("FinancialStatements - GraphQL Response:", data);
+      },
+      onError: (error) => {
+        console.log("FinancialStatements - GraphQL Error:", error);
+      },
     },
-    onError: (error) => {
-      console.log('FinancialStatements - GraphQL Error:', error);
-    },
-  });
+  );
 
   const financialStatements = data?.financialStatements;
 
   const statementTypes = [
-    { 
-      type: 'INCOME_STATEMENT' as StatementType, 
-      label: 'Income Statement', 
+    {
+      type: "INCOME_STATEMENT" as StatementType,
+      label: "Income Statement",
       icon: DocumentIcon,
-      description: 'Revenue and expenses overview'
+      description: "Revenue and expenses overview",
     },
-    { 
-      type: 'BALANCE_SHEET' as StatementType, 
-      label: 'Balance Sheet', 
+    {
+      type: "BALANCE_SHEET" as StatementType,
+      label: "Balance Sheet",
       icon: ScaleIcon,
-      description: 'Assets, liabilities, and net assets'
+      description: "Assets, liabilities, and net assets",
     },
-    { 
-      type: 'CASH_FLOW_STATEMENT' as StatementType, 
-      label: 'Cash Flow Statement', 
+    {
+      type: "CASH_FLOW_STATEMENT" as StatementType,
+      label: "Cash Flow Statement",
       icon: InformationCircleIcon,
-      description: 'Cash inflows and outflows'
+      description: "Cash inflows and outflows",
     },
-    { 
-      type: 'STATEMENT_OF_NET_ASSETS' as StatementType, 
-      label: 'Net Assets Statement', 
+    {
+      type: "STATEMENT_OF_NET_ASSETS" as StatementType,
+      label: "Net Assets Statement",
       icon: DocumentArrowDownIcon,
-      description: 'Restricted and unrestricted assets'
+      description: "Restricted and unrestricted assets",
     },
   ];
 
@@ -213,34 +247,37 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
           previousAmount={showComparative ? item.previousPeriod : undefined}
           isSubtotal={item.category !== item.description}
         />
-        {item.subItems && item.subItems.map((subItem, subIndex) => (
-          <StatementRow
-            key={`${index}-${subIndex}`}
-            label={subItem.description}
-            amount={subItem.currentPeriod}
-            previousAmount={showComparative ? subItem.previousPeriod : undefined}
-            indent={true}
-          />
-        ))}
+        {item.subItems &&
+          item.subItems.map((subItem, subIndex) => (
+            <StatementRow
+              key={`${index}-${subIndex}`}
+              label={subItem.description}
+              amount={subItem.currentPeriod}
+              previousAmount={
+                showComparative ? subItem.previousPeriod : undefined
+              }
+              indent={true}
+            />
+          ))}
       </React.Fragment>
     ));
   };
 
   const renderIncomeStatement = () => {
     if (!financialStatements?.incomeStatement) return null;
-    
+
     const { incomeStatement } = financialStatements;
     const showComparative = !!incomeStatement.previousTotalRevenue;
 
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Income Statement</h3>
-          <p className="text-sm text-gray-600">
-            For the period 
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Income Statement
+          </h3>
+          <p className="text-sm text-gray-600">For the period</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
@@ -269,7 +306,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
             <tbody className="bg-white divide-y divide-gray-200">
               {/* Revenue Section */}
               <tr className="bg-blue-50">
-                <td className="py-3 px-4 font-semibold text-blue-900">REVENUE</td>
+                <td className="py-3 px-4 font-semibold text-blue-900">
+                  REVENUE
+                </td>
                 <td className="py-3 px-4"></td>
                 {showComparative && <td className="py-3 px-4"></td>}
                 {showComparative && <td className="py-3 px-4"></td>}
@@ -279,13 +318,19 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
               <StatementRow
                 label="Total Revenue"
                 amount={incomeStatement.totalRevenue}
-                previousAmount={showComparative ? incomeStatement.previousTotalRevenue : undefined}
+                previousAmount={
+                  showComparative
+                    ? incomeStatement.previousTotalRevenue
+                    : undefined
+                }
                 isSubtotal={true}
               />
-              
+
               {/* Expenses Section */}
               <tr className="bg-red-50">
-                <td className="py-3 px-4 font-semibold text-red-900">EXPENSES</td>
+                <td className="py-3 px-4 font-semibold text-red-900">
+                  EXPENSES
+                </td>
                 <td className="py-3 px-4"></td>
                 {showComparative && <td className="py-3 px-4"></td>}
                 {showComparative && <td className="py-3 px-4"></td>}
@@ -295,15 +340,23 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
               <StatementRow
                 label="Total Expenses"
                 amount={incomeStatement.totalExpenses}
-                previousAmount={showComparative ? incomeStatement.previousTotalExpenses : undefined}
+                previousAmount={
+                  showComparative
+                    ? incomeStatement.previousTotalExpenses
+                    : undefined
+                }
                 isSubtotal={true}
               />
-              
+
               {/* Net Income */}
               <StatementRow
                 label="Net Income"
                 amount={incomeStatement.netIncome}
-                previousAmount={showComparative ? incomeStatement.previousNetIncome : undefined}
+                previousAmount={
+                  showComparative
+                    ? incomeStatement.previousNetIncome
+                    : undefined
+                }
                 isTotal={true}
               />
             </tbody>
@@ -315,18 +368,16 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
 
   const renderBalanceSheet = () => {
     if (!financialStatements?.balanceSheet) return null;
-    
+
     const { balanceSheet } = financialStatements;
 
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Balance Sheet</h3>
-          <p className="text-sm text-gray-600">
-            As of 
-          </p>
+          <p className="text-sm text-gray-600">As of</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
@@ -342,7 +393,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
             <tbody className="bg-white divide-y divide-gray-200">
               {/* Assets Section */}
               <tr className="bg-green-50">
-                <td className="py-3 px-4 font-semibold text-green-900">ASSETS</td>
+                <td className="py-3 px-4 font-semibold text-green-900">
+                  ASSETS
+                </td>
                 <td className="py-3 px-4"></td>
               </tr>
               {renderLineItems(balanceSheet.assets)}
@@ -351,12 +404,14 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                 amount={balanceSheet.totalAssets}
                 isSubtotal={true}
               />
-              
+
               {/* Liabilities Section */}
               {balanceSheet.liabilities.length > 0 && (
                 <>
                   <tr className="bg-red-50">
-                    <td className="py-3 px-4 font-semibold text-red-900">LIABILITIES</td>
+                    <td className="py-3 px-4 font-semibold text-red-900">
+                      LIABILITIES
+                    </td>
                     <td className="py-3 px-4"></td>
                   </tr>
                   {renderLineItems(balanceSheet.liabilities)}
@@ -367,10 +422,12 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                   />
                 </>
               )}
-              
+
               {/* Net Assets Section */}
               <tr className="bg-blue-50">
-                <td className="py-3 px-4 font-semibold text-blue-900">NET ASSETS</td>
+                <td className="py-3 px-4 font-semibold text-blue-900">
+                  NET ASSETS
+                </td>
                 <td className="py-3 px-4"></td>
               </tr>
               {renderLineItems(balanceSheet.netAssets)}
@@ -388,18 +445,18 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
 
   const renderCashFlowStatement = () => {
     if (!financialStatements?.cashFlowStatement) return null;
-    
+
     const { cashFlowStatement } = financialStatements;
 
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Cash Flow Statement</h3>
-          <p className="text-sm text-gray-600">
-            For the period 
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Cash Flow Statement
+          </h3>
+          <p className="text-sm text-gray-600">For the period</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
@@ -415,7 +472,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
             <tbody className="bg-white divide-y divide-gray-200">
               {/* Operating Activities */}
               <tr className="bg-blue-50">
-                <td className="py-3 px-4 font-semibold text-blue-900">OPERATING ACTIVITIES</td>
+                <td className="py-3 px-4 font-semibold text-blue-900">
+                  OPERATING ACTIVITIES
+                </td>
                 <td className="py-3 px-4"></td>
               </tr>
               {renderLineItems(cashFlowStatement.operatingActivities)}
@@ -424,12 +483,14 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                 amount={cashFlowStatement.netCashFromOperating}
                 isSubtotal={true}
               />
-              
+
               {/* Investing Activities */}
               {cashFlowStatement.investingActivities.length > 0 && (
                 <>
                   <tr className="bg-green-50">
-                    <td className="py-3 px-4 font-semibold text-green-900">INVESTING ACTIVITIES</td>
+                    <td className="py-3 px-4 font-semibold text-green-900">
+                      INVESTING ACTIVITIES
+                    </td>
                     <td className="py-3 px-4"></td>
                   </tr>
                   {renderLineItems(cashFlowStatement.investingActivities)}
@@ -440,12 +501,14 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                   />
                 </>
               )}
-              
+
               {/* Financing Activities */}
               {cashFlowStatement.financingActivities.length > 0 && (
                 <>
                   <tr className="bg-purple-50">
-                    <td className="py-3 px-4 font-semibold text-purple-900">FINANCING ACTIVITIES</td>
+                    <td className="py-3 px-4 font-semibold text-purple-900">
+                      FINANCING ACTIVITIES
+                    </td>
                     <td className="py-3 px-4"></td>
                   </tr>
                   {renderLineItems(cashFlowStatement.financingActivities)}
@@ -456,7 +519,7 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                   />
                 </>
               )}
-              
+
               {/* Net Change in Cash */}
               <StatementRow
                 label="Net Change in Cash"
@@ -481,18 +544,18 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
 
   const renderNetAssetsStatement = () => {
     if (!financialStatements?.statementOfNetAssets) return null;
-    
+
     const { statementOfNetAssets } = financialStatements;
 
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Statement of Net Assets</h3>
-          <p className="text-sm text-gray-600">
-            For the period 
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Statement of Net Assets
+          </h3>
+          <p className="text-sm text-gray-600">For the period</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
@@ -508,7 +571,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
             <tbody className="bg-white divide-y divide-gray-200">
               {/* Unrestricted Assets */}
               <tr className="bg-green-50">
-                <td className="py-3 px-4 font-semibold text-green-900">UNRESTRICTED NET ASSETS</td>
+                <td className="py-3 px-4 font-semibold text-green-900">
+                  UNRESTRICTED NET ASSETS
+                </td>
                 <td className="py-3 px-4"></td>
               </tr>
               {renderLineItems(statementOfNetAssets.unrestricted)}
@@ -517,12 +582,14 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                 amount={statementOfNetAssets.totalUnrestricted}
                 isSubtotal={true}
               />
-              
+
               {/* Temporarily Restricted Assets */}
               {statementOfNetAssets.temporarilyRestricted.length > 0 && (
                 <>
                   <tr className="bg-yellow-50">
-                    <td className="py-3 px-4 font-semibold text-yellow-900">TEMPORARILY RESTRICTED NET ASSETS</td>
+                    <td className="py-3 px-4 font-semibold text-yellow-900">
+                      TEMPORARILY RESTRICTED NET ASSETS
+                    </td>
                     <td className="py-3 px-4"></td>
                   </tr>
                   {renderLineItems(statementOfNetAssets.temporarilyRestricted)}
@@ -533,12 +600,14 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                   />
                 </>
               )}
-              
+
               {/* Permanently Restricted Assets */}
               {statementOfNetAssets.permanentlyRestricted.length > 0 && (
                 <>
                   <tr className="bg-red-50">
-                    <td className="py-3 px-4 font-semibold text-red-900">PERMANENTLY RESTRICTED NET ASSETS</td>
+                    <td className="py-3 px-4 font-semibold text-red-900">
+                      PERMANENTLY RESTRICTED NET ASSETS
+                    </td>
                     <td className="py-3 px-4"></td>
                   </tr>
                   {renderLineItems(statementOfNetAssets.permanentlyRestricted)}
@@ -549,7 +618,7 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                   />
                 </>
               )}
-              
+
               {/* Total Net Assets */}
               <StatementRow
                 label="Total Net Assets"
@@ -565,30 +634,30 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
 
   const renderCurrentStatement = () => {
     switch (activeStatementType) {
-      case 'INCOME_STATEMENT':
+      case "INCOME_STATEMENT":
         return renderIncomeStatement();
-      case 'BALANCE_SHEET':
+      case "BALANCE_SHEET":
         return renderBalanceSheet();
-      case 'CASH_FLOW_STATEMENT':
+      case "CASH_FLOW_STATEMENT":
         return renderCashFlowStatement();
-      case 'STATEMENT_OF_NET_ASSETS':
+      case "STATEMENT_OF_NET_ASSETS":
         return renderNetAssetsStatement();
       default:
         return null;
     }
   };
 
-  const handleExport = (format: 'pdf' | 'excel' | 'csv') => {
+  const handleExport = (format: "pdf" | "excel" | "csv") => {
     if (!financialStatements) return;
 
     const statementData = getExportData();
     const fileName = `financial-statements-${activeStatementType.toLowerCase()}-${formatDateForDisplay(selectedDateRange.startDate)}-to-${formatDateForDisplay(selectedDateRange.endDate)}`;
 
-    if (format === 'pdf') {
+    if (format === "pdf") {
       exportToPDF(statementData, fileName);
-    } else if (format === 'excel') {
+    } else if (format === "excel") {
       exportToExcel(statementData, fileName);
-    } else if (format === 'csv') {
+    } else if (format === "csv") {
       exportToCSV(statementData, fileName);
     }
   };
@@ -597,58 +666,66 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
     if (!financialStatements) return [];
 
     const data: any[] = [];
-    
-    if (activeStatementType === 'INCOME_STATEMENT' && financialStatements.incomeStatement) {
+
+    if (
+      activeStatementType === "INCOME_STATEMENT" &&
+      financialStatements.incomeStatement
+    ) {
       const stmt = financialStatements.incomeStatement;
-      
+
       // Add header info
-      data.push(['Income Statement']);
-      data.push([`Period: ${formatDateForDisplay(selectedDateRange.startDate)} - ${formatDateForDisplay(selectedDateRange.endDate)}`]);
-      data.push(['']);
-      
+      data.push(["Income Statement"]);
+      data.push([
+        `Period: ${formatDateForDisplay(selectedDateRange.startDate)} - ${formatDateForDisplay(selectedDateRange.endDate)}`,
+      ]);
+      data.push([""]);
+
       // Add revenue section
-      data.push(['REVENUE']);
-      stmt.revenue.forEach(item => {
+      data.push(["REVENUE"]);
+      stmt.revenue.forEach((item) => {
         data.push([item.description, formatCurrency(item.currentPeriod)]);
       });
-      data.push(['Total Revenue', formatCurrency(stmt.totalRevenue)]);
-      data.push(['']);
-      
+      data.push(["Total Revenue", formatCurrency(stmt.totalRevenue)]);
+      data.push([""]);
+
       // Add expenses section
-      data.push(['EXPENSES']);
-      stmt.expenses.forEach(item => {
+      data.push(["EXPENSES"]);
+      stmt.expenses.forEach((item) => {
         data.push([item.description, formatCurrency(item.currentPeriod)]);
       });
-      data.push(['Total Expenses', formatCurrency(stmt.totalExpenses)]);
-      data.push(['']);
-      
+      data.push(["Total Expenses", formatCurrency(stmt.totalExpenses)]);
+      data.push([""]);
+
       // Add net income
-      data.push(['NET INCOME', formatCurrency(stmt.netIncome)]);
+      data.push(["NET INCOME", formatCurrency(stmt.netIncome)]);
     }
-    
+
     // Add similar logic for other statement types
-    if (activeStatementType === 'BALANCE_SHEET' && financialStatements.balanceSheet) {
+    if (
+      activeStatementType === "BALANCE_SHEET" &&
+      financialStatements.balanceSheet
+    ) {
       const stmt = financialStatements.balanceSheet;
-      
-      data.push(['Balance Sheet']);
+
+      data.push(["Balance Sheet"]);
       data.push([`As of: ${formatDateForDisplay(selectedDateRange.endDate)}`]);
-      data.push(['']);
-      
-      data.push(['ASSETS']);
-      stmt.assets.forEach(item => {
+      data.push([""]);
+
+      data.push(["ASSETS"]);
+      stmt.assets.forEach((item) => {
         data.push([item.description, formatCurrency(item.currentPeriod)]);
       });
-      data.push(['Total Assets', formatCurrency(stmt.totalAssets)]);
-      data.push(['']);
-      
-      data.push(['LIABILITIES']);
-      stmt.liabilities.forEach(item => {
+      data.push(["Total Assets", formatCurrency(stmt.totalAssets)]);
+      data.push([""]);
+
+      data.push(["LIABILITIES"]);
+      stmt.liabilities.forEach((item) => {
         data.push([item.description, formatCurrency(item.currentPeriod)]);
       });
-      data.push(['Total Liabilities', formatCurrency(stmt.totalLiabilities)]);
-      data.push(['']);
-      
-      data.push(['NET ASSETS', formatCurrency(stmt.totalNetAssets)]);
+      data.push(["Total Liabilities", formatCurrency(stmt.totalLiabilities)]);
+      data.push([""]);
+
+      data.push(["NET ASSETS", formatCurrency(stmt.totalNetAssets)]);
     }
 
     return data;
@@ -678,28 +755,33 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
             <tr><th>Description</th><th>Amount</th></tr>
           </thead>
           <tbody>
-            ${data.slice(3).filter(row => row.length > 0 && row[0] !== '').map(row => 
-              `<tr class="${row[0].includes('Total') || row[0].includes('NET') ? 'total' : ''}">
+            ${data
+              .slice(3)
+              .filter((row) => row.length > 0 && row[0] !== "")
+              .map(
+                (row) =>
+                  `<tr class="${row[0].includes("Total") || row[0].includes("NET") ? "total" : ""}">
                 <td>${row[0]}</td>
-                <td>${row[1] || ''}</td>
-              </tr>`
-            ).join('')}
+                <td>${row[1] || ""}</td>
+              </tr>`,
+              )
+              .join("")}
           </tbody>
         </table>
       </body>
       </html>
     `;
-    
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+
+    const blob = new Blob([htmlContent], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `${fileName}.html`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     // Also open in new window for printing to PDF
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
@@ -713,15 +795,18 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
     // Create a simple HTML table that Excel can import
     const htmlContent = `
       <table>
-        ${data.map(row => 
-          `<tr>${row.map((cell: any) => `<td>${cell || ''}</td>`).join('')}</tr>`
-        ).join('')}
+        ${data
+          .map(
+            (row) =>
+              `<tr>${row.map((cell: any) => `<td>${cell || ""}</td>`).join("")}</tr>`,
+          )
+          .join("")}
       </table>
     `;
-    
-    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+
+    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `${fileName}.xls`;
     a.click();
@@ -729,13 +814,19 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
   };
 
   const exportToCSV = (data: any[], fileName: string) => {
-    const csvContent = data.map(row => 
-      row.map((cell: any) => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = data
+      .map((row) =>
+        row
+          .map(
+            (cell: any) => `"${(cell || "").toString().replace(/"/g, '""')}"`,
+          )
+          .join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `${fileName}.csv`;
     a.click();
@@ -761,7 +852,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <div className="text-red-600">
-          <h3 className="text-lg font-medium mb-2">Error Loading Financial Statements</h3>
+          <h3 className="text-lg font-medium mb-2">
+            Error Loading Financial Statements
+          </h3>
           <p className="text-sm">{error.message}</p>
         </div>
       </div>
@@ -774,61 +867,76 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
       <div className="border-b border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Financial Statements</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Financial Statements
+            </h2>
             <p className="text-sm text-gray-500 mt-1">
-              Period: {formatDateForDisplay(selectedDateRange.startDate)} - {formatDateForDisplay(selectedDateRange.endDate)}
+              Period: {formatDateForDisplay(selectedDateRange.startDate)} -{" "}
+              {formatDateForDisplay(selectedDateRange.endDate)}
             </p>
           </div>
-          
+
           {/* Date Range Controls */}
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Quick Range Buttons */}
             <div className="flex gap-2">
               <button
-                onClick={() => handleQuickRange('thisMonth', setSelectedDateRange)}
+                onClick={() =>
+                  handleQuickRange("thisMonth", setSelectedDateRange)
+                }
                 className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
               >
                 This Month
               </button>
               <button
-                onClick={() => handleQuickRange('lastMonth', setSelectedDateRange)}
+                onClick={() =>
+                  handleQuickRange("lastMonth", setSelectedDateRange)
+                }
                 className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
               >
                 Last Month
               </button>
               <button
-                onClick={() => handleQuickRange('thisYear', setSelectedDateRange)}
+                onClick={() =>
+                  handleQuickRange("thisYear", setSelectedDateRange)
+                }
                 className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
               >
                 This Year
               </button>
               <button
-                onClick={() => handleQuickRange('lastYear', setSelectedDateRange)}
+                onClick={() =>
+                  handleQuickRange("lastYear", setSelectedDateRange)
+                }
                 className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
               >
                 Last Year
               </button>
             </div>
-            
+
             {/* Manual Date Inputs */}
             <div className="flex gap-2">
               <input
                 type="date"
-                value={selectedDateRange.startDate.toISOString().split('T')[0]}
-                onChange={(e) => setSelectedDateRange(prev => ({
-                  ...prev,
-                  startDate: new Date(e.target.value)
-                }))}
+                value={selectedDateRange.startDate.toISOString().split("T")[0]}
+                onChange={(e) =>
+                  setSelectedDateRange((prev) => ({
+                    ...prev,
+                    startDate: new Date(e.target.value),
+                  }))
+                }
                 className="px-3 py-1 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <span className="text-gray-500 self-center">to</span>
               <input
                 type="date"
-                value={selectedDateRange.endDate.toISOString().split('T')[0]}
-                onChange={(e) => setSelectedDateRange(prev => ({
-                  ...prev,
-                  endDate: new Date(e.target.value)
-                }))}
+                value={selectedDateRange.endDate.toISOString().split("T")[0]}
+                onChange={(e) =>
+                  setSelectedDateRange((prev) => ({
+                    ...prev,
+                    endDate: new Date(e.target.value),
+                  }))
+                }
                 className="px-3 py-1 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -838,7 +946,9 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
 
       {/* Statement Type Selector */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Select Statement Type</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Select Statement Type
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statementTypes.map((statement) => {
             const Icon = statement.icon;
@@ -848,13 +958,15 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
                 onClick={() => setActiveStatementType(statement.type)}
                 className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                   activeStatementType === statement.type
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 <Icon className="h-8 w-8 mx-auto mb-2" />
                 <div className="text-sm font-medium">{statement.label}</div>
-                <div className="text-xs text-gray-500 mt-1">{statement.description}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {statement.description}
+                </div>
               </button>
             );
           })}
@@ -869,26 +981,27 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({ organisationI
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center">
             <DocumentTextIcon className="h-4 w-4 mr-1" />
-            Generated: {new Date(financialStatements.generatedAt).toLocaleString()}
+            Generated:{" "}
+            {new Date(financialStatements.generatedAt).toLocaleString()}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-500 mr-2">Export:</span>
             <button
-              onClick={() => handleExport('pdf')}
+              onClick={() => handleExport("pdf")}
               className="inline-flex items-center px-3 py-1 text-xs bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
             >
               <DocumentIcon className="h-3 w-3 mr-1" />
               PDF
             </button>
             <button
-              onClick={() => handleExport('excel')}
+              onClick={() => handleExport("excel")}
               className="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
             >
               <TableCellsIcon className="h-3 w-3 mr-1" />
               Excel
             </button>
             <button
-              onClick={() => handleExport('csv')}
+              onClick={() => handleExport("csv")}
               className="inline-flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
             >
               <ArrowDownTrayIcon className="h-3 w-3 mr-1" />

@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import Link from "next/link";
+import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline";
 
 export interface BreadcrumbItem {
   label: string;
@@ -21,12 +21,12 @@ interface BreadcrumbsProps {
  */
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   items,
-  className = '',
+  className = "",
   separator,
   showHome = true,
 }) => {
-  const allItems = showHome 
-    ? [{ label: 'Dashboard', href: '/dashboard', icon: HomeIcon }, ...items]
+  const allItems = showHome
+    ? [{ label: "Dashboard", href: "/dashboard", icon: HomeIcon }, ...items]
     : items;
 
   return (
@@ -43,16 +43,18 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                   {separator || <ChevronRightIcon className="h-4 w-4" />}
                 </span>
               )}
-              
+
               <div className="flex items-center">
                 {Icon && (
-                  <Icon className={`h-4 w-4 mr-1 ${
-                    isLast || item.current 
-                      ? 'text-indigo-600' 
-                      : 'text-gray-400'
-                  }`} />
+                  <Icon
+                    className={`h-4 w-4 mr-1 ${
+                      isLast || item.current
+                        ? "text-indigo-600"
+                        : "text-gray-400"
+                    }`}
+                  />
                 )}
-                
+
                 {item.href && !isLast && !item.current ? (
                   <Link
                     href={item.href}
@@ -61,11 +63,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     {item.label}
                   </Link>
                 ) : (
-                  <span className={`text-sm font-medium ${
-                    isLast || item.current
-                      ? 'text-gray-900'
-                      : 'text-gray-500'
-                  }`}>
+                  <span
+                    className={`text-sm font-medium ${
+                      isLast || item.current ? "text-gray-900" : "text-gray-500"
+                    }`}
+                  >
                     {item.label}
                   </span>
                 )}
@@ -85,14 +87,17 @@ export const SacramentBreadcrumbs: React.FC<{
   currentPage?: string;
   sacramentType?: string;
   recordId?: string;
-}> = ({ currentPage = 'Records', sacramentType, recordId }) => {
+}> = ({ currentPage = "Records", sacramentType, recordId }) => {
   const items: BreadcrumbItem[] = [
-    { label: 'Sacraments', href: '/dashboard/sacraments' },
+    { label: "Sacraments", href: "/dashboard/sacraments" },
   ];
 
   if (sacramentType) {
     items.push({
-      label: sacramentType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+      label: sacramentType
+        .replace("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
       href: `/dashboard/sacraments?type=${sacramentType.toLowerCase()}`,
     });
   }

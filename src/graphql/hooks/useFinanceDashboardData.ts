@@ -16,7 +16,9 @@ export interface UseFinanceDashboardDataResult {
   refetch: () => void;
 }
 
-export const useFinanceDashboardData = (branchId: string) : UseFinanceDashboardDataResult => {
+export const useFinanceDashboardData = (
+  branchId: string,
+): UseFinanceDashboardDataResult => {
   const { data, loading, error, refetch } = useQuery(GET_DASHBOARD_DATA, {
     variables: { branchId, dashboardType: "FINANCE" },
     fetchPolicy: "cache-and-network",

@@ -2,9 +2,9 @@
  * Enum for sermon status
  */
 export enum SermonStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
 }
 
 /**
@@ -56,7 +56,7 @@ export interface Sermon {
   createdById: string;
   createdAt: string | Date;
   updatedAt: string | Date;
-  
+
   // These are used for UI state, not from backend
   speaker?: Speaker;
   series?: Series;
@@ -81,7 +81,7 @@ export interface PaginationInput {
   page: number;
   pageSize: number;
   sortField?: string;
-  sortDirection?: 'ASC' | 'DESC';
+  sortDirection?: "ASC" | "DESC";
 }
 
 /**
@@ -133,4 +133,4 @@ export interface MediaUploadResult {
 /**
  * Media type for uploads
  */
-export type MediaType = 'AUDIO' | 'VIDEO' | 'THUMBNAIL';
+export type MediaType = "AUDIO" | "VIDEO" | "THUMBNAIL";

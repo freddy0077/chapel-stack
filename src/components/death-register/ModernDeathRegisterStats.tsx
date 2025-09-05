@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { 
-  UserMinusIcon, 
-  ClockIcon, 
-  HeartIcon, 
+import React from "react";
+import {
+  UserMinusIcon,
+  ClockIcon,
+  HeartIcon,
   BellIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   CalendarDaysIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
 
 interface ModernDeathRegisterStatsProps {
   stats?: {
@@ -29,63 +29,62 @@ interface ModernDeathRegisterStatsProps {
   loading?: boolean;
 }
 
-export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> = ({
-  stats,
-  loading = false,
-}) => {
+export const ModernDeathRegisterStats: React.FC<
+  ModernDeathRegisterStatsProps
+> = ({ stats, loading = false }) => {
   const statsData = [
     {
-      title: 'Total Deaths',
+      title: "Total Deaths",
       value: stats?.total || 0,
-      subtitle: 'All time records',
+      subtitle: "All time records",
       icon: UserMinusIcon,
-      gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-blue-100',
-      borderColor: 'border-blue-200',
-      iconBg: 'bg-blue-500',
-      textColor: 'text-blue-600',
-      valueColor: 'text-blue-900',
+      gradient: "from-blue-500 to-blue-600",
+      bgGradient: "from-blue-50 to-blue-100",
+      borderColor: "border-blue-200",
+      iconBg: "bg-blue-500",
+      textColor: "text-blue-600",
+      valueColor: "text-blue-900",
       trend: null,
     },
     {
-      title: 'This Year',
+      title: "This Year",
       value: stats?.thisYear || 0,
       subtitle: `${stats?.thisMonth || 0} this month`,
       icon: CalendarDaysIcon,
-      gradient: 'from-emerald-500 to-emerald-600',
-      bgGradient: 'from-emerald-50 to-emerald-100',
-      borderColor: 'border-emerald-200',
-      iconBg: 'bg-emerald-500',
-      textColor: 'text-emerald-600',
-      valueColor: 'text-emerald-900',
+      gradient: "from-emerald-500 to-emerald-600",
+      bgGradient: "from-emerald-50 to-emerald-100",
+      borderColor: "border-emerald-200",
+      iconBg: "bg-emerald-500",
+      textColor: "text-emerald-600",
+      valueColor: "text-emerald-900",
       trend: stats?.lastYearComparison,
-      trendLabel: 'vs last year',
+      trendLabel: "vs last year",
     },
     {
-      title: 'Average Age',
+      title: "Average Age",
       value: Math.round(stats?.averageAge || 0),
-      subtitle: 'Years at passing',
+      subtitle: "Years at passing",
       icon: HeartIcon,
-      gradient: 'from-purple-500 to-purple-600',
-      bgGradient: 'from-purple-50 to-purple-100',
-      borderColor: 'border-purple-200',
-      iconBg: 'bg-purple-500',
-      textColor: 'text-purple-600',
-      valueColor: 'text-purple-900',
+      gradient: "from-purple-500 to-purple-600",
+      bgGradient: "from-purple-50 to-purple-100",
+      borderColor: "border-purple-200",
+      iconBg: "bg-purple-500",
+      textColor: "text-purple-600",
+      valueColor: "text-purple-900",
       trend: stats?.averageAgeChange,
-      trendLabel: 'age change',
+      trendLabel: "age change",
     },
     {
-      title: 'Pending Notifications',
+      title: "Pending Notifications",
       value: stats?.pendingNotifications || 0,
-      subtitle: 'Require attention',
+      subtitle: "Require attention",
       icon: BellIcon,
-      gradient: 'from-amber-500 to-amber-600',
-      bgGradient: 'from-amber-50 to-amber-100',
-      borderColor: 'border-amber-200',
-      iconBg: 'bg-amber-500',
-      textColor: 'text-amber-600',
-      valueColor: 'text-amber-900',
+      gradient: "from-amber-500 to-amber-600",
+      bgGradient: "from-amber-50 to-amber-100",
+      borderColor: "border-amber-200",
+      iconBg: "bg-amber-500",
+      textColor: "text-amber-600",
+      valueColor: "text-amber-900",
       trend: null,
       urgent: (stats?.pendingNotifications || 0) > 0,
     },
@@ -93,12 +92,16 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
 
   const formatTrend = (trend: number | null | undefined, label?: string) => {
     if (trend === null || trend === undefined) return null;
-    
+
     const isPositive = trend > 0;
     const isNegative = trend < 0;
     const TrendIcon = isPositive ? ArrowUpIcon : ArrowDownIcon;
-    const trendColor = isPositive ? 'text-red-600' : isNegative ? 'text-green-600' : 'text-gray-500';
-    
+    const trendColor = isPositive
+      ? "text-red-600"
+      : isNegative
+        ? "text-green-600"
+        : "text-gray-500";
+
     return (
       <div className={`flex items-center space-x-1 ${trendColor}`}>
         <TrendIcon className="h-3 w-3" />
@@ -113,7 +116,10 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, index) => (
-          <div key={index} className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
+          <div
+            key={index}
+            className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
               <div className="w-16 h-4 bg-gray-200 rounded"></div>
@@ -132,23 +138,27 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
         <div
           key={stat.title}
           className={`group relative overflow-hidden bg-white rounded-2xl border ${stat.borderColor} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${
-            stat.urgent ? 'ring-2 ring-amber-400 ring-opacity-50' : ''
+            stat.urgent ? "ring-2 ring-amber-400 ring-opacity-50" : ""
           }`}
         >
           {/* Background gradient */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-50`}></div>
-          
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-50`}
+          ></div>
+
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
-          
+
           {/* Content */}
           <div className="relative p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+              <div
+                className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}
+              >
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
-              
+
               {stat.urgent && (
                 <div className="flex items-center space-x-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
                   <BellIcon className="h-3 w-3" />
@@ -159,7 +169,9 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
 
             {/* Value */}
             <div className="mb-2">
-              <div className={`text-3xl font-bold ${stat.valueColor} leading-none`}>
+              <div
+                className={`text-3xl font-bold ${stat.valueColor} leading-none`}
+              >
                 {stat.value.toLocaleString()}
               </div>
               {stat.trend && (
@@ -174,9 +186,7 @@ export const ModernDeathRegisterStats: React.FC<ModernDeathRegisterStatsProps> =
               <h3 className={`text-sm font-semibold ${stat.textColor} mb-1`}>
                 {stat.title}
               </h3>
-              <p className="text-xs text-gray-500">
-                {stat.subtitle}
-              </p>
+              <p className="text-xs text-gray-500">{stat.subtitle}</p>
             </div>
 
             {/* Hover effect indicator */}

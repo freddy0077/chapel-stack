@@ -1,5 +1,10 @@
-import { useState, useCallback, useMemo } from 'react';
-import { MemberFilters, Gender, MaritalStatus, MembershipStatus } from '../types/member.types';
+import { useState, useCallback, useMemo } from "react";
+import {
+  MemberFilters,
+  Gender,
+  MaritalStatus,
+  MembershipStatus,
+} from "../types/member.types";
 
 interface UseMemberFiltersReturn {
   filters: MemberFilters;
@@ -30,17 +35,19 @@ const defaultFilters: MemberFilters = {
   country: undefined,
 };
 
-export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberFiltersReturn => {
+export const useMemberFilters = (
+  initialFilters: MemberFilters = {},
+): UseMemberFiltersReturn => {
   const [filters, setFilters] = useState<MemberFilters>({
     ...defaultFilters,
-    ...initialFilters
+    ...initialFilters,
   });
 
   // Update specific filters
   const updateFilter = useCallback((newFilters: Partial<MemberFilters>) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      ...newFilters
+      ...newFilters,
     }));
   }, []);
 
@@ -51,9 +58,9 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
 
   // Clear specific filter
   const clearFilter = useCallback((filterKey: keyof MemberFilters) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterKey]: defaultFilters[filterKey]
+      [filterKey]: defaultFilters[filterKey],
     }));
   }, []);
 
@@ -67,7 +74,7 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
     return Object.entries(filters).some(([key, value]) => {
       if (value === undefined || value === null) return false;
       if (Array.isArray(value) && value.length === 0) return false;
-      if (typeof value === 'string' && value.trim() === '') return false;
+      if (typeof value === "string" && value.trim() === "") return false;
       return true;
     });
   }, [filters]);
@@ -77,7 +84,7 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
     return Object.entries(filters).reduce((count, [key, value]) => {
       if (value === undefined || value === null) return count;
       if (Array.isArray(value) && value.length === 0) return count;
-      if (typeof value === 'string' && value.trim() === '') return count;
+      if (typeof value === "string" && value.trim() === "") return count;
       return count + 1;
     }, 0);
   }, [filters]);
@@ -87,15 +94,15 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
     const summary: string[] = [];
 
     if (filters.membershipStatus && filters.membershipStatus.length > 0) {
-      summary.push(`Status: ${filters.membershipStatus.join(', ')}`);
+      summary.push(`Status: ${filters.membershipStatus.join(", ")}`);
     }
 
     if (filters.gender && filters.gender.length > 0) {
-      summary.push(`Gender: ${filters.gender.join(', ')}`);
+      summary.push(`Gender: ${filters.gender.join(", ")}`);
     }
 
     if (filters.maritalStatus && filters.maritalStatus.length > 0) {
-      summary.push(`Marital: ${filters.maritalStatus.join(', ')}`);
+      summary.push(`Marital: ${filters.maritalStatus.join(", ")}`);
     }
 
     if (filters.ageRange) {
@@ -115,19 +122,21 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
     }
 
     if (filters.hasRfidCard !== undefined) {
-      summary.push(`RFID: ${filters.hasRfidCard ? 'Yes' : 'No'}`);
+      summary.push(`RFID: ${filters.hasRfidCard ? "Yes" : "No"}`);
     }
 
     if (filters.isRegularAttendee !== undefined) {
-      summary.push(`Regular: ${filters.isRegularAttendee ? 'Yes' : 'No'}`);
+      summary.push(`Regular: ${filters.isRegularAttendee ? "Yes" : "No"}`);
     }
 
     if (filters.headOfHousehold !== undefined) {
-      summary.push(`Head of Household: ${filters.headOfHousehold ? 'Yes' : 'No'}`);
+      summary.push(
+        `Head of Household: ${filters.headOfHousehold ? "Yes" : "No"}`,
+      );
     }
 
     if (filters.hasFamily !== undefined) {
-      summary.push(`Has Family: ${filters.hasFamily ? 'Yes' : 'No'}`);
+      summary.push(`Has Family: ${filters.hasFamily ? "Yes" : "No"}`);
     }
 
     if (filters.occupation && filters.occupation.trim()) {
@@ -157,85 +166,91 @@ export const useMemberFilters = (initialFilters: MemberFilters = {}): UseMemberF
     hasActiveFilters,
     activeFilterCount,
     resetToDefaults,
-    getFilterSummary
+    getFilterSummary,
   };
 };
 
 // Predefined filter presets
 export const filterPresets = {
   activeMembers: {
-    membershipStatus: [MembershipStatus.ACTIVE_MEMBER, MembershipStatus.MEMBER]
+    membershipStatus: [MembershipStatus.ACTIVE_MEMBER, MembershipStatus.MEMBER],
   },
   newMembers: {
     joinDateRange: {
       start: new Date(new Date().getFullYear(), new Date().getMonth() - 3, 1),
-      end: new Date()
-    }
+      end: new Date(),
+    },
   },
   visitors: {
-    membershipStatus: [MembershipStatus.VISITOR]
+    membershipStatus: [MembershipStatus.VISITOR],
   },
   inactiveMembers: {
-    membershipStatus: [MembershipStatus.INACTIVE, MembershipStatus.DEACTIVATED]
+    membershipStatus: [MembershipStatus.INACTIVE, MembershipStatus.DEACTIVATED],
   },
   withRfid: {
-    hasRfidCard: true
+    hasRfidCard: true,
   },
   withoutRfid: {
-    hasRfidCard: false
+    hasRfidCard: false,
   },
   regularAttendees: {
-    isRegularAttendee: true
+    isRegularAttendee: true,
   },
   headsOfHousehold: {
-    headOfHousehold: true
+    headOfHousehold: true,
   },
   marriedMembers: {
-    maritalStatus: [MaritalStatus.MARRIED]
+    maritalStatus: [MaritalStatus.MARRIED],
   },
   singleMembers: {
-    maritalStatus: [MaritalStatus.SINGLE]
+    maritalStatus: [MaritalStatus.SINGLE],
   },
   youngAdults: {
-    ageRange: { min: 18, max: 35 }
+    ageRange: { min: 18, max: 35 },
   },
   seniors: {
-    ageRange: { min: 65, max: 120 }
-  }
+    ageRange: { min: 65, max: 120 },
+  },
 };
 
 // Hook for managing filter presets
 export const useFilterPresets = () => {
-  const applyPreset = useCallback((presetName: keyof typeof filterPresets): MemberFilters => {
-    return filterPresets[presetName];
-  }, []);
+  const applyPreset = useCallback(
+    (presetName: keyof typeof filterPresets): MemberFilters => {
+      return filterPresets[presetName];
+    },
+    [],
+  );
 
   const getPresetNames = useCallback((): string[] => {
     return Object.keys(filterPresets);
   }, []);
 
-  const getPresetLabel = useCallback((presetName: keyof typeof filterPresets): string => {
-    const labels: Record<keyof typeof filterPresets, string> = {
-      activeMembers: 'Active Members',
-      newMembers: 'New Members (3 months)',
-      visitors: 'Visitors',
-      inactiveMembers: 'Inactive Members',
-      withRfid: 'With RFID Card',
-      withoutRfid: 'Without RFID Card',
-      regularAttendees: 'Regular Attendees',
-      headsOfHousehold: 'Heads of Household',
-      marriedMembers: 'Married Members',
-      singleMembers: 'Single Members',
-      youngAdults: 'Young Adults (18-35)',
-      seniors: 'Seniors (65+)'
-    };
-    return labels[presetName];
-  }, []);
+  const getPresetLabel = useCallback(
+    (presetName: keyof typeof filterPresets): string => {
+      const labels: Record<keyof typeof filterPresets, string> = {
+        activeMembers: "Active Members",
+        newMembers: "New Members (3 months)",
+        visitors: "Visitors",
+        inactiveMembers: "Inactive Members",
+        withRfid: "With RFID Card",
+        withoutRfid: "Without RFID Card",
+        regularAttendees: "Regular Attendees",
+        headsOfHousehold: "Heads of Household",
+        marriedMembers: "Married Members",
+        singleMembers: "Single Members",
+        youngAdults: "Young Adults (18-35)",
+        seniors: "Seniors (65+)",
+      };
+      return labels[presetName];
+    },
+    [],
+  );
 
   return {
     applyPreset,
     getPresetNames,
     getPresetLabel,
-    presets: filterPresets
+    presets: filterPresets,
   };
 };

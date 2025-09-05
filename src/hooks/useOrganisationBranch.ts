@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 /**
  * Custom hook to centralize organisationId and branchId logic
@@ -40,7 +40,7 @@ export function useRequiredOrganisationBranch() {
   const { organisationId, branchId, hasAccess, user } = useOrganisationBranch();
 
   if (!hasAccess) {
-    throw new Error('User must have access to an organisation and branch');
+    throw new Error("User must have access to an organisation and branch");
   }
 
   return {
@@ -61,7 +61,7 @@ export function useUserBranches() {
       return [];
     }
 
-    return user.userBranches.map(userBranch => ({
+    return user.userBranches.map((userBranch) => ({
       id: userBranch.branch.id,
       name: userBranch.branch.name,
       role: userBranch.role,

@@ -18,23 +18,33 @@ interface MemberSearchComboboxProps {
   loading?: boolean;
 }
 
-export default function MemberSearchCombobox({ members, value, onChange, disabled, query = "", onQueryChange, loading }: MemberSearchComboboxProps) {
+export default function MemberSearchCombobox({
+  members,
+  value,
+  onChange,
+  disabled,
+  query = "",
+  onQueryChange,
+  loading,
+}: MemberSearchComboboxProps) {
   const [internalQuery, setInternalQuery] = useState("");
   const actualQuery = onQueryChange ? query : internalQuery;
   const setQuery = onQueryChange || setInternalQuery;
 
   // Avoid filteredMembers changing on every keystroke by memoizing
-  const filteredMembers = useMemo(() => (
-    actualQuery === ""
-      ? members
-      : members.filter((member) => {
-          const name = `${member.firstName} ${member.lastName}`.toLowerCase();
-          return (
-            name.includes(actualQuery.toLowerCase()) ||
-            member.id.toLowerCase().includes(actualQuery.toLowerCase())
-          );
-        })
-  ), [members, actualQuery]);
+  const filteredMembers = useMemo(
+    () =>
+      actualQuery === ""
+        ? members
+        : members.filter((member) => {
+            const name = `${member.firstName} ${member.lastName}`.toLowerCase();
+            return (
+              name.includes(actualQuery.toLowerCase()) ||
+              member.id.toLowerCase().includes(actualQuery.toLowerCase())
+            );
+          }),
+    [members, actualQuery],
+  );
 
   // Always show the input value, even if not in filteredMembers
   const displayValue = (id: string) => {
@@ -75,14 +85,19 @@ export default function MemberSearchCombobox({ members, value, onChange, disable
                 {({ selected, active }) => (
                   <>
                     <span
-                      className={"block truncate " + (selected ? "font-medium" : "font-normal")}
+                      className={
+                        "block truncate " +
+                        (selected ? "font-medium" : "font-normal")
+                      }
                     >
                       {member.firstName} {member.lastName} ({member.id})
                     </span>
                     {selected ? (
                       <span
-                        className={"absolute inset-y-0 left-0 flex items-center pl-3 " +
-                          (active ? "text-white" : "text-indigo-600")}
+                        className={
+                          "absolute inset-y-0 left-0 flex items-center pl-3 " +
+                          (active ? "text-white" : "text-indigo-600")
+                        }
                       >
                         ✓
                       </span>

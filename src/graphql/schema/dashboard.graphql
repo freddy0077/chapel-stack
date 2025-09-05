@@ -1,7 +1,6 @@
 """
 Dashboard schema - provides real-time metrics and data for dashboard views across the system
 """
-
 enum DashboardTimeframe {
   TODAY
   YESTERDAY
@@ -422,13 +421,13 @@ extend type Query {
     branchId: ID
     timeframe: DashboardTimeframe = TODAY
   ): DashboardOverview! @auth(requires: [STAFF])
-  
+
   # Get attendance metrics for dashboard
   dashboardAttendanceMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = TODAY
   ): DashboardAttendanceMetrics! @auth(requires: [STAFF])
-  
+
   # Get attendance trends for dashboard
   dashboardAttendanceTrends(
     branchId: ID
@@ -436,117 +435,122 @@ extend type Query {
     intervals: Int = 12
     eventTypes: [EventType!]
   ): DashboardAttendanceTrends! @auth(requires: [STAFF])
-  
+
   # Get membership metrics for dashboard
   dashboardMembershipMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
   ): DashboardMembershipMetrics! @auth(requires: [STAFF])
-  
+
   # Get financial metrics for dashboard
   dashboardFinancialMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
     comparisonPeriod: DashboardComparisonPeriod = PREVIOUS_PERIOD
   ): DashboardFinancialMetrics! @auth(requires: [STAFF])
-  
+
   # Get ministry metrics for dashboard
   dashboardMinistryMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
     ministryId: ID
   ): DashboardMinistryMetrics! @auth(requires: [STAFF])
-  
+
   # Get visitor metrics for dashboard
   dashboardVisitorMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
   ): DashboardVisitorMetrics! @auth(requires: [STAFF])
-  
+
   # Get event metrics for dashboard
   dashboardEventMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
   ): DashboardEventMetrics! @auth(requires: [STAFF])
-  
+
   # Get sacrament metrics for dashboard
   dashboardSacramentMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_YEAR
   ): DashboardSacramentMetrics! @auth(requires: [STAFF])
-  
+
   # Get communication metrics for dashboard
   dashboardCommunicationMetrics(
     branchId: ID
     timeframe: DashboardTimeframe = THIS_MONTH
   ): DashboardCommunicationMetrics! @auth(requires: [STAFF])
-  
+
   # Get security metrics for dashboard (Super Admin only)
   dashboardSecurityMetrics(
     timeframe: DashboardTimeframe = THIS_MONTH
   ): DashboardSecurityMetrics! @auth(requires: [ADMIN])
-  
+
   # Get user dashboard views
-  dashboardViews(
-    type: DashboardViewType
-    branchId: ID
-  ): [DashboardView!]! @auth(requires: [STAFF])
-  
+  dashboardViews(type: DashboardViewType, branchId: ID): [DashboardView!]!
+    @auth(requires: [STAFF])
+
   # Get a specific dashboard view
   dashboardView(id: ID!): DashboardView @auth(requires: [STAFF])
-  
+
   # Get default dashboard view for user
   defaultDashboardView: DashboardView! @auth(requires: [STAFF])
-  
+
   # Get dashboard widgets
-  dashboardWidgets(
-    dashboardId: ID!
-  ): [DashboardWidget!]! @auth(requires: [STAFF])
-  
+  dashboardWidgets(dashboardId: ID!): [DashboardWidget!]!
+    @auth(requires: [STAFF])
+
   # Get a specific dashboard widget
   dashboardWidget(id: ID!): DashboardWidget @auth(requires: [STAFF])
-  
+
   # Get widget data
-  widgetData(
-    widgetId: ID!
-    parameters: JSON
-  ): JSON! @auth(requires: [STAFF])
-  
+  widgetData(widgetId: ID!, parameters: JSON): JSON! @auth(requires: [STAFF])
+
   # Get all available widget types and data sources
   availableWidgetOptions: JSON! @auth(requires: [STAFF])
 }
 
 extend type Mutation {
   # Create a custom dashboard view
-  createDashboardView(input: CreateDashboardViewInput!): DashboardView! @auth(requires: [STAFF])
-  
+  createDashboardView(input: CreateDashboardViewInput!): DashboardView!
+    @auth(requires: [STAFF])
+
   # Update a dashboard view
-  updateDashboardView(id: ID!, input: UpdateDashboardViewInput!): DashboardView! @auth(requires: [STAFF])
-  
+  updateDashboardView(
+    id: ID!
+    input: UpdateDashboardViewInput!
+  ): DashboardView! @auth(requires: [STAFF])
+
   # Delete a dashboard view
   deleteDashboardView(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Set default dashboard view
   setDefaultDashboardView(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Create a dashboard widget
-  createDashboardWidget(input: CreateDashboardWidgetInput!): DashboardWidget! @auth(requires: [STAFF])
-  
+  createDashboardWidget(input: CreateDashboardWidgetInput!): DashboardWidget!
+    @auth(requires: [STAFF])
+
   # Update a dashboard widget
-  updateDashboardWidget(id: ID!, input: UpdateDashboardWidgetInput!): DashboardWidget! @auth(requires: [STAFF])
-  
+  updateDashboardWidget(
+    id: ID!
+    input: UpdateDashboardWidgetInput!
+  ): DashboardWidget! @auth(requires: [STAFF])
+
   # Delete a dashboard widget
   deleteDashboardWidget(id: ID!): Boolean! @auth(requires: [STAFF])
-  
+
   # Update dashboard layout
-  updateDashboardLayout(dashboardId: ID!, layout: JSON!): DashboardView! @auth(requires: [STAFF])
-  
+  updateDashboardLayout(dashboardId: ID!, layout: JSON!): DashboardView!
+    @auth(requires: [STAFF])
+
   # Clone a dashboard view
-  cloneDashboardView(id: ID!, name: String!): DashboardView! @auth(requires: [STAFF])
-  
+  cloneDashboardView(id: ID!, name: String!): DashboardView!
+    @auth(requires: [STAFF])
+
   # Share a dashboard view with other users
-  shareDashboardView(id: ID!, roleIds: [ID!]!, branchIds: [ID!]): Boolean! @auth(requires: [STAFF])
-  
+  shareDashboardView(id: ID!, roleIds: [ID!]!, branchIds: [ID!]): Boolean!
+    @auth(requires: [STAFF])
+
   # Refresh widget data
   refreshWidgetData(widgetId: ID!): JSON! @auth(requires: [STAFF])
 }
@@ -615,10 +619,11 @@ input UpdateDashboardWidgetInput {
 extend type Subscription {
   # Get real-time updates for dashboard data
   dashboardDataUpdated(dashboardId: ID!): JSON! @auth(requires: [STAFF])
-  
+
   # Get widget data updates
   widgetDataUpdated(widgetId: ID!): JSON! @auth(requires: [STAFF])
-  
+
   # Get alerts for dashboard metrics (thresholds)
-  dashboardAlert(branchId: ID, type: DashboardViewType): JSON! @auth(requires: [STAFF])
+  dashboardAlert(branchId: ID, type: DashboardViewType): JSON!
+    @auth(requires: [STAFF])
 }

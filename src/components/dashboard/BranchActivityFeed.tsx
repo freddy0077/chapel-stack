@@ -5,7 +5,7 @@ import {
   HeartIcon,
   CalendarDaysIcon,
   ClockIcon,
-  SparklesIcon
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { formatCurrency } from "@/utils/currency";
 
@@ -48,29 +48,31 @@ interface BranchActivityFeedProps {
 const formatRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-  
+  const diffInHours = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+  );
+
   if (diffInHours < 1) return "Just now";
   if (diffInHours < 24) return `${diffInHours}h ago`;
-  
+
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 7) return `${diffInDays}d ago`;
-  
+
   return date.toLocaleDateString();
 };
 
 // Helper function to get sacrament emoji
 const getSacramentEmoji = (type: string) => {
   const emojiMap: { [key: string]: string } = {
-    'BAPTISM': '💧',
-    'CONFIRMATION': '✋',
-    'COMMUNION': '🍞',
-    'MARRIAGE': '💒',
-    'ORDINATION': '🙏',
-    'ANOINTING': '🛡️',
-    'RECONCILIATION': '🕊️'
+    BAPTISM: "💧",
+    CONFIRMATION: "✋",
+    COMMUNION: "🍞",
+    MARRIAGE: "💒",
+    ORDINATION: "🙏",
+    ANOINTING: "🛡️",
+    RECONCILIATION: "🕊️",
   };
-  return emojiMap[type.toUpperCase()] || '⛪';
+  return emojiMap[type.toUpperCase()] || "⛪";
 };
 
 export function BranchActivityFeed({
@@ -81,21 +83,21 @@ export function BranchActivityFeed({
 }: BranchActivityFeedProps) {
   // Combine and sort all activities by date
   const allActivities = [
-    ...recentMembers.map(member => ({
+    ...recentMembers.map((member) => ({
       id: `member-${member.id}`,
-      type: 'member' as const,
+      type: "member" as const,
       date: member.joinedAt,
       data: member,
     })),
-    ...recentContributions.map(contribution => ({
+    ...recentContributions.map((contribution) => ({
       id: `contribution-${contribution.id}`,
-      type: 'contribution' as const,
+      type: "contribution" as const,
       date: contribution.date,
       data: contribution,
     })),
-    ...recentSacraments.map(sacrament => ({
+    ...recentSacraments.map((sacrament) => ({
       id: `sacrament-${sacrament.id}`,
-      type: 'sacrament' as const,
+      type: "sacrament" as const,
       date: sacrament.date,
       data: sacrament,
     })),
@@ -169,7 +171,7 @@ export function BranchActivityFeed({
             🔥 Recent Activities (Past 7 Days)
           </h3>
         </div>
-        
+
         <div className="p-6">
           {allActivities.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -185,31 +187,33 @@ export function BranchActivityFeed({
                 >
                   {/* Activity Icon */}
                   <div className="flex-shrink-0">
-                    {activity.type === 'member' && (
+                    {activity.type === "member" && (
                       <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                         <UserPlusIcon className="w-5 h-5 text-white" />
                       </div>
                     )}
-                    {activity.type === 'contribution' && (
+                    {activity.type === "contribution" && (
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                         <CurrencyDollarIcon className="w-5 h-5 text-white" />
                       </div>
                     )}
-                    {activity.type === 'sacrament' && (
+                    {activity.type === "sacrament" && (
                       <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white text-lg">
-                        {getSacramentEmoji((activity.data as RecentSacrament).type)}
+                        {getSacramentEmoji(
+                          (activity.data as RecentSacrament).type,
+                        )}
                       </div>
                     )}
                   </div>
 
                   {/* Activity Content */}
                   <div className="flex-1 min-w-0">
-                    {activity.type === 'member' && (
+                    {activity.type === "member" && (
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           <span className="font-semibold text-blue-600">
                             {(activity.data as RecentMember).name}
-                          </span>{' '}
+                          </span>{" "}
                           joined the branch
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -217,28 +221,32 @@ export function BranchActivityFeed({
                         </p>
                       </div>
                     )}
-                    
-                    {activity.type === 'contribution' && (
+
+                    {activity.type === "contribution" && (
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           <span className="font-semibold text-green-600">
-                            {formatCurrency((activity.data as RecentContribution).amount)}
-                          </span>{' '}
-                          {(activity.data as RecentContribution).type.toLowerCase()}
+                            {formatCurrency(
+                              (activity.data as RecentContribution).amount,
+                            )}
+                          </span>{" "}
+                          {(
+                            activity.data as RecentContribution
+                          ).type.toLowerCase()}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           Financial contribution
                         </p>
                       </div>
                     )}
-                    
-                    {activity.type === 'sacrament' && (
+
+                    {activity.type === "sacrament" && (
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           <span className="font-semibold text-pink-600">
                             {(activity.data as RecentSacrament).type}
-                          </span>{' '}
-                          sacrament for{' '}
+                          </span>{" "}
+                          sacrament for{" "}
                           <span className="font-semibold">
                             {(activity.data as RecentSacrament).memberName}
                           </span>

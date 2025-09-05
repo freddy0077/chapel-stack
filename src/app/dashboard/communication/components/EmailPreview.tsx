@@ -1,15 +1,15 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Mail, User, Calendar, Building } from 'lucide-react';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Mail, User, Calendar, Building } from "lucide-react";
 
 // Email placeholders
 const EMAIL_PLACEHOLDERS = [
-  { key: '{firstName}', description: 'Recipient\'s first name', icon: User },
-  { key: '{lastName}', description: 'Recipient\'s last name', icon: User },
-  { key: '{fullName}', description: 'Recipient\'s full name', icon: User },
-  { key: '{churchName}', description: 'Your church name', icon: Building },
-  { key: '{date}', description: 'Current date', icon: Calendar },
-  { key: '{email}', description: 'Recipient\'s email address', icon: Mail },
+  { key: "{firstName}", description: "Recipient's first name", icon: User },
+  { key: "{lastName}", description: "Recipient's last name", icon: User },
+  { key: "{fullName}", description: "Recipient's full name", icon: User },
+  { key: "{churchName}", description: "Your church name", icon: Building },
+  { key: "{date}", description: "Current date", icon: Calendar },
+  { key: "{email}", description: "Recipient's email address", icon: Mail },
 ];
 
 // Function to calculate email stats
@@ -17,54 +17,60 @@ const calculateEmailStats = (subject: string, body: string) => {
   const subjectLength = subject.length;
   const bodyLength = body.length;
   const totalLength = subjectLength + bodyLength;
-  
+
   // Estimate reading time (average 200 words per minute)
-  const wordCount = body.split(/\s+/).filter(word => word.length > 0).length;
+  const wordCount = body.split(/\s+/).filter((word) => word.length > 0).length;
   const readingTimeMinutes = Math.ceil(wordCount / 200);
-  
+
   return {
     subjectLength,
     bodyLength,
     totalLength,
     wordCount,
-    readingTimeMinutes: readingTimeMinutes || 1
+    readingTimeMinutes: readingTimeMinutes || 1,
   };
 };
 
 // Utility function to resolve frontend placeholders for preview
 const resolveFrontendPlaceholdersForPreview = (content: string): string => {
   let resolvedContent = content;
-  
+
   // Get current date in a readable format
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
+
   // Use default church name for preview
-  const churchName = 'Your Church';
-  
+  const churchName = "Your Church";
+
   // Replace frontend-handled placeholders
   resolvedContent = resolvedContent
     .replace(/{date}/g, currentDate)
     .replace(/{churchName}/g, churchName);
-  
+
   // Note: {firstName}, {lastName}, {fullName}, {email} are left as-is for preview
-  
+
   return resolvedContent;
 };
 
 // Utility function to resolve custom placeholders
-const resolveCustomPlaceholders = (content: string, customPlaceholders: { key: string; value: string }[]): string => {
+const resolveCustomPlaceholders = (
+  content: string,
+  customPlaceholders: { key: string; value: string }[],
+): string => {
   let resolvedContent = content;
-  
-  customPlaceholders.forEach(placeholder => {
-    const regex = new RegExp(placeholder.key.replace(/[{}]/g, '\\$&'), 'g');
-    resolvedContent = resolvedContent.replace(regex, placeholder.value || `[${placeholder.key}]`);
+
+  customPlaceholders.forEach((placeholder) => {
+    const regex = new RegExp(placeholder.key.replace(/[{}]/g, "\\$&"), "g");
+    resolvedContent = resolvedContent.replace(
+      regex,
+      placeholder.value || `[${placeholder.key}]`,
+    );
   });
-  
+
   return resolvedContent;
 };
 
@@ -76,20 +82,26 @@ interface EmailPreviewProps {
   customPlaceholders?: { key: string; value: string }[];
 }
 
-export default function EmailPreview({ 
-  subject, 
-  body, 
-  onInsertPlaceholder, 
+export default function EmailPreview({
+  subject,
+  body,
+  onInsertPlaceholder,
   getTotalRecipientCount,
-  customPlaceholders = []
+  customPlaceholders = [],
 }: EmailPreviewProps) {
   // Resolve frontend and custom placeholders for preview display
   const frontendResolved = resolveFrontendPlaceholdersForPreview(subject);
-  const resolvedSubject = resolveCustomPlaceholders(frontendResolved, customPlaceholders);
-  
+  const resolvedSubject = resolveCustomPlaceholders(
+    frontendResolved,
+    customPlaceholders,
+  );
+
   const frontendResolvedBody = resolveFrontendPlaceholdersForPreview(body);
-  const resolvedBody = resolveCustomPlaceholders(frontendResolvedBody, customPlaceholders);
-  
+  const resolvedBody = resolveCustomPlaceholders(
+    frontendResolvedBody,
+    customPlaceholders,
+  );
+
   const emailStats = calculateEmailStats(resolvedSubject, resolvedBody);
 
   return (
@@ -100,8 +112,8 @@ export default function EmailPreview({
           {EMAIL_PLACEHOLDERS.map((placeholder) => {
             const IconComponent = placeholder.icon;
             return (
-              <Badge 
-                key={placeholder.key} 
+              <Badge
+                key={placeholder.key}
                 onClick={() => onInsertPlaceholder(placeholder.key)}
                 className="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 cursor-pointer flex items-center gap-1"
                 title={placeholder.description}
@@ -120,11 +132,21 @@ export default function EmailPreview({
             </span>
             <span className="text-gray-500">•</span>
             <span className="text-gray-600">
-              <span className="font-medium">{emailStats.readingTimeMinutes}</span> min read
+              <span className="font-medium">
+                {emailStats.readingTimeMinutes}
+              </span>{" "}
+              min read
             </span>
             <span className="text-gray-500">•</span>
             <span className="text-gray-600">
-              Subject: <span className={emailStats.subjectLength > 50 ? "text-amber-500 font-medium" : "text-green-600 font-medium"}>
+              Subject:{" "}
+              <span
+                className={
+                  emailStats.subjectLength > 50
+                    ? "text-amber-500 font-medium"
+                    : "text-green-600 font-medium"
+                }
+              >
                 {emailStats.subjectLength} chars
               </span>
             </span>
@@ -134,7 +156,8 @@ export default function EmailPreview({
         {/* Subject Length Warning */}
         {emailStats.subjectLength > 50 && (
           <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded-md">
-            ⚠️ Subject line is long ({emailStats.subjectLength} chars). Consider keeping it under 50 characters for better mobile display.
+            ⚠️ Subject line is long ({emailStats.subjectLength} chars). Consider
+            keeping it under 50 characters for better mobile display.
           </div>
         )}
       </div>
@@ -152,18 +175,22 @@ export default function EmailPreview({
                 </div>
                 <div>
                   <div className="font-medium text-gray-800">Your Church</div>
-                  <div className="text-xs text-gray-500">church@example.com</div>
+                  <div className="text-xs text-gray-500">
+                    church@example.com
+                  </div>
                 </div>
               </div>
               <div className="text-xs text-gray-500">
                 {new Date().toLocaleDateString()}
               </div>
             </div>
-            
+
             <div className="text-sm text-gray-600 mb-1">
-              <span className="font-medium">To:</span> {getTotalRecipientCount() || 1} recipient{getTotalRecipientCount() !== 1 ? 's' : ''}
+              <span className="font-medium">To:</span>{" "}
+              {getTotalRecipientCount() || 1} recipient
+              {getTotalRecipientCount() !== 1 ? "s" : ""}
             </div>
-            
+
             <div className="text-lg font-semibold text-gray-800 mt-2">
               {resolvedSubject || "Your email subject will appear here"}
             </div>
@@ -171,13 +198,15 @@ export default function EmailPreview({
 
           {/* Email Body */}
           <div className="p-6">
-            <div 
+            <div
               className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ 
-                __html: resolvedBody || "<p class='text-gray-400 italic'>Your email content will appear here...</p>" 
+              dangerouslySetInnerHTML={{
+                __html:
+                  resolvedBody ||
+                  "<p class='text-gray-400 italic'>Your email content will appear here...</p>",
               }}
             />
-            
+
             {/* Email Footer */}
             <div className="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500">
               <div className="flex items-center justify-between">

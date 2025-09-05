@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   Title,
@@ -15,7 +15,7 @@ import {
   TabPanels,
   Select,
   SelectItem,
-  Grid
+  Grid,
 } from "@tremor/react";
 
 // Mock branch performance data
@@ -30,7 +30,7 @@ const branchPerformanceData = [
     discipleship: 65.2,
     firstTimeVisitors: 45,
     retention: 92.5,
-    benchmark: 100
+    benchmark: 100,
   },
   {
     branchName: "East Side",
@@ -42,7 +42,7 @@ const branchPerformanceData = [
     discipleship: 71.5,
     firstTimeVisitors: 28,
     retention: 88.7,
-    benchmark: 100
+    benchmark: 100,
   },
   {
     branchName: "West End",
@@ -54,7 +54,7 @@ const branchPerformanceData = [
     discipleship: 58.3,
     firstTimeVisitors: 18,
     retention: 86.2,
-    benchmark: 100
+    benchmark: 100,
   },
   {
     branchName: "South Chapel",
@@ -66,33 +66,35 @@ const branchPerformanceData = [
     discipleship: 75.8,
     firstTimeVisitors: 22,
     retention: 91.3,
-    benchmark: 100
-  }
+    benchmark: 100,
+  },
 ];
 
 // Prepare data for percentage comparisons (normalized to Main Campus as 100%)
 const getComparisonData = (metricKey) => {
-  const mainCampusValue = branchPerformanceData.find(b => b.branchName === "Main Campus")[metricKey];
-  
-  return branchPerformanceData.map(branch => ({
+  const mainCampusValue = branchPerformanceData.find(
+    (b) => b.branchName === "Main Campus",
+  )[metricKey];
+
+  return branchPerformanceData.map((branch) => ({
     branchName: branch.branchName,
     [metricKey]: branch[metricKey],
-    percentageOfMainCampus: (branch[metricKey] / mainCampusValue) * 100
+    percentageOfMainCampus: (branch[metricKey] / mainCampusValue) * 100,
   }));
 };
 
 // Prepare data for growth metrics
 const getGrowthComparisonData = () => {
-  return branchPerformanceData.map(branch => ({
+  return branchPerformanceData.map((branch) => ({
     branchName: branch.branchName,
     "Attendance Growth": branch.attendanceGrowth,
-    "Giving Growth": branch.givingGrowth
+    "Giving Growth": branch.givingGrowth,
   }));
 };
 
 // Prepare data for KPI metrics
 const getKpiComparisonData = () => {
-  return branchPerformanceData.map(branch => ({
+  return branchPerformanceData.map((branch) => ({
     branchName: branch.branchName,
     "Volunteer Rate": branch.volunteerRate,
     "Retention Rate": branch.retention,
@@ -106,15 +108,15 @@ const metrics = [
   { value: "giving", name: "Total Giving" },
   { value: "volunteerRate", name: "Volunteer Rate" },
   { value: "firstTimeVisitors", name: "First-time Visitors" },
-  { value: "retention", name: "Member Retention" }
+  { value: "retention", name: "Member Retention" },
 ];
 
 export default function BranchPerformanceComparison() {
   const [selectedMetric, setSelectedMetric] = useState("attendance");
-  
+
   // Get the appropriate data based on selected metric
   const comparisonData = getComparisonData(selectedMetric);
-  
+
   // Custom formatter for metrics
   const valueFormatter = (value) => {
     switch (selectedMetric) {
@@ -138,9 +140,7 @@ export default function BranchPerformanceComparison() {
         <div className="flex justify-between items-center">
           <div>
             <Title>Branch Performance Metrics</Title>
-            <Subtitle>
-              Compare key metrics across all branches
-            </Subtitle>
+            <Subtitle>Compare key metrics across all branches</Subtitle>
           </div>
           <TabList variant="solid" defaultValue="1">
             <Tab value="1">Single Metric</Tab>
@@ -148,7 +148,7 @@ export default function BranchPerformanceComparison() {
             <Tab value="3">Key Indicators</Tab>
           </TabList>
         </div>
-        
+
         <TabPanels>
           {/* Single Metric Comparison Tab */}
           <TabPanel>
@@ -156,8 +156,8 @@ export default function BranchPerformanceComparison() {
               <Flex justifyContent="start" className="mb-4">
                 <Text>Select metric for comparison:</Text>
                 <div className="max-w-xs ml-4">
-                  <Select 
-                    value={selectedMetric} 
+                  <Select
+                    value={selectedMetric}
                     onValueChange={setSelectedMetric}
                   >
                     {metrics.map((metric) => (
@@ -168,7 +168,7 @@ export default function BranchPerformanceComparison() {
                   </Select>
                 </div>
               </Flex>
-              
+
               <Grid numItems={1} className="gap-6 mt-6">
                 <Card>
                   <Title>Raw Values</Title>
@@ -183,7 +183,7 @@ export default function BranchPerformanceComparison() {
                     showLegend={false}
                   />
                 </Card>
-                
+
                 <Card>
                   <Title>% of Main Campus (Benchmark)</Title>
                   <BarChart
@@ -200,7 +200,7 @@ export default function BranchPerformanceComparison() {
               </Grid>
             </div>
           </TabPanel>
-          
+
           {/* Growth Comparison Tab */}
           <TabPanel>
             <Card className="mt-6">
@@ -217,7 +217,7 @@ export default function BranchPerformanceComparison() {
               />
             </Card>
           </TabPanel>
-          
+
           {/* Key Performance Indicators Tab */}
           <TabPanel>
             <Card className="mt-6">
@@ -226,7 +226,11 @@ export default function BranchPerformanceComparison() {
                 className="mt-4 h-80"
                 data={getKpiComparisonData()}
                 index="branchName"
-                categories={["Volunteer Rate", "Retention Rate", "Discipleship Engagement"]}
+                categories={[
+                  "Volunteer Rate",
+                  "Retention Rate",
+                  "Discipleship Engagement",
+                ]}
                 colors={["amber", "indigo", "rose"]}
                 valueFormatter={(value) => `${value.toFixed(1)}%`}
                 yAxisWidth={60}

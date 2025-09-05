@@ -1,58 +1,66 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useQuery, useLazyQuery } from '@apollo/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
-import { 
-  MagnifyingGlassIcon, 
-  PlusIcon, 
+import React, { useState, useMemo, useEffect } from "react";
+import { useQuery, useLazyQuery } from "@apollo/client";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
   FunnelIcon,
   Squares2X2Icon,
   ListBulletIcon,
   TableCellsIcon,
   AdjustmentsHorizontalIcon,
-  DocumentArrowDownIcon
-} from '@heroicons/react/24/outline';
+  DocumentArrowDownIcon,
+  DocumentArrowUpIcon,
+} from "@heroicons/react/24/outline";
 
 // Components
-import MemberList from './components/MemberList';
-import MemberStats from './components/MemberStats';
-import SearchBar from './components/SearchBar';
-import FilterPanel from './components/FilterPanel';
-import AddMemberModal from './components/AddMemberModal';
-import MemberDetailModal from './components/MemberDetailModal';
-import EditMemberModal from './components/EditMemberModal';
-import AddSacramentModal from './components/AddSacramentModal';
-import BulkActionsBar from './components/BulkActionsBar';
-import ViewModeToggle from './components/ViewModeToggle';
-import BulkActionSelectionDialog from './components/BulkActionSelectionDialog';
-import ExportModal, { ExportOptions } from './components/ExportModal';
+import MemberList from "./components/MemberList";
+import MemberStats from "./components/MemberStats";
+import SearchBar from "./components/SearchBar";
+import FilterPanel from "./components/FilterPanel";
+import AddMemberModal from "./components/AddMemberModal";
+import MemberDetailModal from "./components/MemberDetailModal";
+import EditMemberModal from "./components/EditMemberModal";
+import AddSacramentModal from "./components/AddSacramentModal";
+import BulkActionsBar from "./components/BulkActionsBar";
+import ViewModeToggle from "./components/ViewModeToggle";
+import BulkActionSelectionDialog from "./components/BulkActionSelectionDialog";
+import ExportModal, { ExportOptions } from "./components/ExportModal";
+import ImportMembersModal from "../../../components/members/ImportMembersModal";
+import FamilyRelationshipModal from "./components/FamilyRelationshipModal";
 
 // Hooks
-import { useMembers } from './hooks/useMembers';
-import { 
-  useMemberStatistics, 
+import { useMembers } from "./hooks/useMembers";
+import {
+  useMemberStatistics,
   useSearchMembers,
   useUpdateMember,
   useRemoveMember,
   useTransferMember,
   useUpdateMemberStatus,
-  useRfidOperations
-} from './hooks/useMemberOperations';
-import { useOrganisationBranch } from '../../../hooks/useOrganisationBranch';
-import { useMemberManagement } from '../../../hooks/useMemberManagement';
-import { GET_ALL_SMALL_GROUPS } from '@/graphql/queries/groupQueries';
-import { LIST_MINISTRIES } from '@/graphql/queries/ministryQueries';
-import { GET_MEMBER } from '@/graphql/queries/memberQueries';
+  useRfidOperations,
+} from "./hooks/useMemberOperations";
+import { useOrganisationBranch } from "../../../hooks/useOrganisationBranch";
+import { useMemberManagement } from "../../../hooks/useMemberManagement";
+import { GET_ALL_SMALL_GROUPS } from "@/graphql/queries/groupQueries";
+import { LIST_MINISTRIES } from "@/graphql/queries/ministryQueries";
+import { GET_MEMBER } from "@/graphql/queries/memberQueries";
 
 // Types
-import { ViewMode, MemberFilters, Member, BulkActionType } from './types/member.types';
+import {
+  ViewMode,
+  MemberFilters,
+  Member,
+  BulkActionType,
+} from "./types/member.types";
 
 const MembersPage: React.FC = () => {
   // State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('card');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [filters, setFilters] = useState<MemberFilters>({});
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSacramentModal, setShowSacramentModal] = useState(false);
@@ -60,15 +68,17 @@ const MembersPage: React.FC = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showMemberDetailModal, setShowMemberDetailModal] = useState(false);
   const [showEditMemberModal, setShowEditMemberModal] = useState(false);
+  const [showFamilyRelationshipModal, setShowFamilyRelationshipModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectionDialogData, setSelectionDialogData] = useState<{
     actionType: BulkActionType | null;
     options: { id: string; name: string }[];
     title: string;
     label: string;
-  }>({ actionType: null, options: [], title: '', label: '' });
+  }>({ actionType: null, options: [], title: "", label: "" });
 
   // Organisation and branch context
   const { organisationId, branchId } = useOrganisationBranch();
@@ -88,19 +98,32 @@ const MembersPage: React.FC = () => {
     filters: {
       ...filters,
       organisationId,
-      branchId
+      branchId,
     },
-    pageSize: 20
+    pageSize: 20,
   });
 
   // Member operations hooks
-  const { statistics, loading: statsLoading } = useMemberStatistics(branchId, organisationId);
-  const { searchMembers, members: searchResults, loading: searchLoading } = useSearchMembers();
+  const { statistics, loading: statsLoading } = useMemberStatistics(
+    branchId,
+    organisationId,
+  );
+  const {
+    searchMembers,
+    members: searchResults,
+    loading: searchLoading,
+  } = useSearchMembers();
   const { updateMember, loading: updateLoading } = useUpdateMember();
   const { removeMember, loading: removeLoading } = useRemoveMember();
   const { transferMember, loading: transferLoading } = useTransferMember();
-  const { updateMemberStatus, loading: statusUpdateLoading } = useUpdateMemberStatus();
-  const { assignRfidCard, removeRfidCard, getMemberByRfid, loading: rfidLoading } = useRfidOperations();
+  const { updateMemberStatus, loading: statusUpdateLoading } =
+    useUpdateMemberStatus();
+  const {
+    assignRfidCard,
+    removeRfidCard,
+    getMemberByRfid,
+    loading: rfidLoading,
+  } = useRfidOperations();
   const {
     bulkUpdateMemberStatus,
     bulkDeactivateMembers,
@@ -117,7 +140,14 @@ const MembersPage: React.FC = () => {
   const { data: ministriesData } = useQuery(LIST_MINISTRIES);
 
   // Lazy query to fetch full member details on demand for the detail modal
-  const [fetchMember, { data: memberDetailData, loading: memberDetailLoading, error: memberDetailError }] = useLazyQuery(GET_MEMBER);
+  const [
+    fetchMember,
+    {
+      data: memberDetailData,
+      loading: memberDetailLoading,
+      error: memberDetailError,
+    },
+  ] = useLazyQuery(GET_MEMBER);
 
   // Computed values
   const isLoading = loading || statsLoading;
@@ -129,7 +159,7 @@ const MembersPage: React.FC = () => {
       // Refresh data
       refetch?.();
     } catch (error) {
-      console.error('Error updating member:', error);
+      console.error("Error updating member:", error);
     }
   };
 
@@ -139,35 +169,50 @@ const MembersPage: React.FC = () => {
     setShowEditMemberModal(true);
   };
 
+  // Open Family Relationship modal with a member
+  const handleManageFamily = (member: Member) => {
+    setSelectedMember(member);
+    setShowFamilyRelationshipModal(true);
+  };
+
   const handleDeleteMember = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this member?')) {
+    if (window.confirm("Are you sure you want to delete this member?")) {
       try {
         await removeMember(id);
         // Refresh data
         refetch?.();
       } catch (error) {
-        console.error('Error deleting member:', error);
+        console.error("Error deleting member:", error);
       }
     }
   };
 
-  const handleTransferMember = async (id: string, fromBranchId: string, toBranchId: string, reason?: string) => {
+  const handleTransferMember = async (
+    id: string,
+    fromBranchId: string,
+    toBranchId: string,
+    reason?: string,
+  ) => {
     try {
       await transferMember(id, fromBranchId, toBranchId, reason);
       // Refresh data
       refetch?.();
     } catch (error) {
-      console.error('Error transferring member:', error);
+      console.error("Error transferring member:", error);
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: string, reason?: string) => {
+  const handleStatusUpdate = async (
+    id: string,
+    status: string,
+    reason?: string,
+  ) => {
     try {
       await updateMemberStatus(id, status, reason);
       // Refresh data
       refetch?.();
     } catch (error) {
-      console.error('Error updating member status:', error);
+      console.error("Error updating member status:", error);
     }
   };
 
@@ -177,7 +222,7 @@ const MembersPage: React.FC = () => {
       // Refresh data
       refetch?.();
     } catch (error) {
-      console.error('Error assigning RFID card:', error);
+      console.error("Error assigning RFID card:", error);
     }
   };
 
@@ -187,7 +232,7 @@ const MembersPage: React.FC = () => {
       // Refresh data
       refetch?.();
     } catch (error) {
-      console.error('Error removing RFID card:', error);
+      console.error("Error removing RFID card:", error);
     }
   };
 
@@ -196,10 +241,10 @@ const MembersPage: React.FC = () => {
       try {
         await searchMembers(query, {
           branchId,
-          ...filters
+          ...filters,
         });
       } catch (error) {
-        console.error('Error searching members:', error);
+        console.error("Error searching members:", error);
       }
     }
   };
@@ -216,15 +261,15 @@ const MembersPage: React.FC = () => {
 
   // Handlers
   const handleFilterChange = (newFilters: Partial<MemberFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
     setSelectedMembers([]); // Clear selection on filter change
   };
 
   const handleSelectMember = (memberId: string) => {
-    setSelectedMembers(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId)
-        : [...prev, memberId]
+    setSelectedMembers((prev) =>
+      prev.includes(memberId)
+        ? prev.filter((id) => id !== memberId)
+        : [...prev, memberId],
     );
   };
 
@@ -232,7 +277,7 @@ const MembersPage: React.FC = () => {
     if (selectedCount === members.length) {
       setSelectedMembers([]);
     } else {
-      setSelectedMembers(members.map(member => member.id));
+      setSelectedMembers(members.map((member) => member.id));
     }
   };
 
@@ -242,117 +287,142 @@ const MembersPage: React.FC = () => {
 
   const handleBulkAction = async (actionType: BulkActionType, data?: any) => {
     if (selectedMembers.length === 0) {
-      toast.error('Please select at least one member.');
+      toast.error("Please select at least one member.");
       return;
     }
 
     try {
       switch (actionType) {
-        case 'recordSacrament':
+        case "recordSacrament":
           setShowSacramentModal(true);
           break;
-        case 'addToGroup':
+        case "addToGroup":
           setSelectionDialogData({
             actionType,
-            options: groupsData?.smallGroups.map((g: any) => ({ id: g.id, name: g.name })) || [],
-            title: 'Add Members to Group',
-            label: 'Select a group',
+            options:
+              groupsData?.smallGroups.map((g: any) => ({
+                id: g.id,
+                name: g.name,
+              })) || [],
+            title: "Add Members to Group",
+            label: "Select a group",
           });
           setIsSelectionDialogOpen(true);
           break;
-        case 'removeFromGroup':
+        case "removeFromGroup":
           setSelectionDialogData({
             actionType,
-            options: groupsData?.smallGroups.map((g: any) => ({ id: g.id, name: g.name })) || [],
-            title: 'Remove Members from Group',
-            label: 'Select a group',
+            options:
+              groupsData?.smallGroups.map((g: any) => ({
+                id: g.id,
+                name: g.name,
+              })) || [],
+            title: "Remove Members from Group",
+            label: "Select a group",
           });
           setIsSelectionDialogOpen(true);
           break;
-        case 'addToMinistry':
+        case "addToMinistry":
           setSelectionDialogData({
             actionType,
-            options: ministriesData?.ministries.map((m: any) => ({ id: m.id, name: m.name })) || [],
-            title: 'Add Members to Ministry',
-            label: 'Select a ministry',
+            options:
+              ministriesData?.ministries.map((m: any) => ({
+                id: m.id,
+                name: m.name,
+              })) || [],
+            title: "Add Members to Ministry",
+            label: "Select a ministry",
           });
           setIsSelectionDialogOpen(true);
           break;
-        case 'removeFromMinistry':
+        case "removeFromMinistry":
           setSelectionDialogData({
             actionType,
-            options: ministriesData?.ministries.map((m: any) => ({ id: m.id, name: m.name })) || [],
-            title: 'Remove Members from Ministry',
-            label: 'Select a ministry',
+            options:
+              ministriesData?.ministries.map((m: any) => ({
+                id: m.id,
+                name: m.name,
+              })) || [],
+            title: "Remove Members from Ministry",
+            label: "Select a ministry",
           });
           setIsSelectionDialogOpen(true);
           break;
-        case 'updateStatus':
+        case "updateStatus":
           const newStatus = data?.newStatus;
           if (!newStatus) {
-            toast.error('Please select a new status.');
+            toast.error("Please select a new status.");
             return;
           }
           await bulkUpdateMemberStatus({
             variables: {
-              bulkUpdateStatusInput: { memberIds: selectedMembers, status: newStatus },
+              bulkUpdateStatusInput: {
+                memberIds: selectedMembers,
+                status: newStatus,
+              },
             },
           });
           break;
-        case 'export': {
+        case "export": {
           const result = await bulkExportMembers({
             variables: {
               bulkExportInput: {
                 memberIds: selectedMembers,
-                format: data?.format || 'CSV',
+                format: data?.format || "CSV",
               },
             },
           });
 
-          const exportContent: string | undefined = result?.data?.bulkExportMembers;
+          const exportContent: string | undefined =
+            result?.data?.bulkExportMembers;
           if (exportContent) {
             try {
               // The backend now returns CSV content directly as a string
-              const format = data?.format || 'CSV';
-              const mimeType = format === 'PDF' ? 'application/pdf' : 'text/csv;charset=utf-8;';
+              const format = data?.format || "CSV";
+              const mimeType =
+                format === "PDF"
+                  ? "application/pdf"
+                  : "text/csv;charset=utf-8;";
               const blob = new Blob([exportContent], { type: mimeType });
               const url = URL.createObjectURL(blob);
-              const link = document.createElement('a');
+              const link = document.createElement("a");
               const extension = format.toLowerCase();
               link.href = url;
-              link.download = `members-export-${new Date().toISOString().split('T')[0]}.${extension}`;
+              link.download = `members-export-${new Date().toISOString().split("T")[0]}.${extension}`;
               document.body.appendChild(link);
               link.click();
               document.body.removeChild(link);
               URL.revokeObjectURL(url);
-              toast.success(`Successfully exported ${selectedMembers.length} members`);
+              toast.success(
+                `Successfully exported ${selectedMembers.length} members`,
+              );
             } catch (error) {
-              console.error('Error processing export content:', error);
-              toast.error('Failed to process export data');
+              console.error("Error processing export content:", error);
+              toast.error("Failed to process export data");
             }
           } else {
-            toast.error('Export failed: No data returned');
+            toast.error("Export failed: No data returned");
           }
           break;
         }
-        case 'deactivate':
-          await bulkDeactivateMembers({ 
-            variables: { 
-              bulkDeactivateInput: { memberIds: selectedMembers } 
-            } 
+        case "deactivate":
+          await bulkDeactivateMembers({
+            variables: {
+              bulkDeactivateInput: { memberIds: selectedMembers },
+            },
           });
           break;
         default:
-          toast.error('This bulk action is not yet implemented.');
+          toast.error("This bulk action is not yet implemented.");
       }
 
-      if (['updateStatus', 'export', 'deactivate'].includes(actionType)) {
-        toast.success('Bulk action completed successfully!');
+      if (["updateStatus", "export", "deactivate"].includes(actionType)) {
+        toast.success("Bulk action completed successfully!");
         refetch();
         setSelectedMembers([]);
       }
     } catch (e: any) {
-      toast.error(e.message || 'An error occurred.');
+      toast.error(e.message || "An error occurred.");
     }
   };
 
@@ -361,32 +431,52 @@ const MembersPage: React.FC = () => {
 
     try {
       switch (selectionDialogData.actionType) {
-        case 'addToGroup':
+        case "addToGroup":
           await bulkAddToGroup({
-            variables: { bulkAddToGroupInput: { memberIds: selectedMembers, groupId: selectedId } },
+            variables: {
+              bulkAddToGroupInput: {
+                memberIds: selectedMembers,
+                groupId: selectedId,
+              },
+            },
           });
           break;
-        case 'removeFromGroup':
+        case "removeFromGroup":
           await bulkRemoveFromGroup({
-            variables: { bulkRemoveFromGroupInput: { memberIds: selectedMembers, groupId: selectedId } },
+            variables: {
+              bulkRemoveFromGroupInput: {
+                memberIds: selectedMembers,
+                groupId: selectedId,
+              },
+            },
           });
           break;
-        case 'addToMinistry':
+        case "addToMinistry":
           await bulkAddToMinistry({
-            variables: { bulkAddToMinistryInput: { memberIds: selectedMembers, ministryId: selectedId } },
+            variables: {
+              bulkAddToMinistryInput: {
+                memberIds: selectedMembers,
+                ministryId: selectedId,
+              },
+            },
           });
           break;
-        case 'removeFromMinistry':
+        case "removeFromMinistry":
           await bulkRemoveFromMinistry({
-            variables: { bulkRemoveFromMinistryInput: { memberIds: selectedMembers, ministryId: selectedId } },
+            variables: {
+              bulkRemoveFromMinistryInput: {
+                memberIds: selectedMembers,
+                ministryId: selectedId,
+              },
+            },
           });
           break;
       }
-      toast.success('Bulk action completed successfully!');
+      toast.success("Bulk action completed successfully!");
       refetch();
       setSelectedMembers([]);
     } catch (e: any) {
-      toast.error(e.message || 'An error occurred during the bulk action.');
+      toast.error(e.message || "An error occurred during the bulk action.");
     } finally {
       setIsSelectionDialogOpen(false);
     }
@@ -397,38 +487,38 @@ const MembersPage: React.FC = () => {
       let exportInput: any;
 
       switch (exportOptions.scope) {
-        case 'selected':
+        case "selected":
           exportInput = {
             memberIds: selectedMembers,
             format: exportOptions.format,
             fields: exportOptions.fields,
             includeHeaders: exportOptions.includeHeaders,
-            includeImages: exportOptions.includeImages
+            includeImages: exportOptions.includeImages,
           };
           break;
-        case 'filtered':
+        case "filtered":
           exportInput = {
             filters: {
               ...filters,
               organisationId,
-              branchId
+              branchId,
             },
             format: exportOptions.format,
             fields: exportOptions.fields,
             includeHeaders: exportOptions.includeHeaders,
-            includeImages: exportOptions.includeImages
+            includeImages: exportOptions.includeImages,
           };
           break;
-        case 'all':
+        case "all":
           exportInput = {
             filters: {
               organisationId,
-              branchId
+              branchId,
             },
             format: exportOptions.format,
             fields: exportOptions.fields,
             includeHeaders: exportOptions.includeHeaders,
-            includeImages: exportOptions.includeImages
+            includeImages: exportOptions.includeImages,
           };
           break;
       }
@@ -445,46 +535,51 @@ const MembersPage: React.FC = () => {
         try {
           // The backend now returns export content directly as a string
           const format = exportOptions.format;
-          const mimeType = format === 'PDF' ? 'application/pdf' : 'text/csv;charset=utf-8;';
+          const mimeType =
+            format === "PDF" ? "application/pdf" : "text/csv;charset=utf-8;";
           const blob = new Blob([exportContent], { type: mimeType });
           const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           const extension = format.toLowerCase();
-          
+
           // Generate filename based on export scope
-          let filename = '';
+          let filename = "";
           switch (exportOptions.scope) {
-            case 'selected':
-              filename = `members-export-selected-${selectedMembers.length}-${new Date().toISOString().split('T')[0]}.${extension}`;
+            case "selected":
+              filename = `members-export-selected-${selectedMembers.length}-${new Date().toISOString().split("T")[0]}.${extension}`;
               break;
-            case 'filtered':
-              filename = `members-export-filtered-${new Date().toISOString().split('T')[0]}.${extension}`;
+            case "filtered":
+              filename = `members-export-filtered-${new Date().toISOString().split("T")[0]}.${extension}`;
               break;
-            case 'all':
-              filename = `members-export-all-${new Date().toISOString().split('T')[0]}.${extension}`;
+            case "all":
+              filename = `members-export-all-${new Date().toISOString().split("T")[0]}.${extension}`;
               break;
           }
-          
+
           link.href = url;
           link.download = filename;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
-          
+
           // Show success message based on scope
-          const scopeText = exportOptions.scope === 'selected' ? `${selectedMembers.length} selected members` : 
-                           exportOptions.scope === 'filtered' ? 'filtered members' : 'all members';
+          const scopeText =
+            exportOptions.scope === "selected"
+              ? `${selectedMembers.length} selected members`
+              : exportOptions.scope === "filtered"
+                ? "filtered members"
+                : "all members";
           toast.success(`Successfully exported ${scopeText}`);
         } catch (error) {
-          console.error('Error processing export content:', error);
-          toast.error('Failed to process export data');
+          console.error("Error processing export content:", error);
+          toast.error("Failed to process export data");
         }
       } else {
-        toast.error('Export failed: No data returned');
+        toast.error("Export failed: No data returned");
       }
     } catch (e: any) {
-      toast.error(e.message || 'Export failed. Please try again.');
+      toast.error(e.message || "Export failed. Please try again.");
     }
   };
 
@@ -508,26 +603,32 @@ const MembersPage: React.FC = () => {
   // Optionally surface errors from the detail fetch
   useEffect(() => {
     if (memberDetailError) {
-      console.error('Error fetching member details:', memberDetailError);
+      console.error("Error fetching member details:", memberDetailError);
     }
   }, [memberDetailError]);
+
+  const handleImportSuccess = (result: any) => {
+    toast.success(`Import completed: ${result.successCount} members imported successfully!`);
+    refetch(); // Refresh the members list
+    setShowImportModal(false);
+  };
 
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.6,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   if (error) {
@@ -536,11 +637,23 @@ const MembersPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Members</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Members
+            </h3>
             <p className="text-gray-600 mb-4">{error.message}</p>
             <button
               onClick={() => refetch()}
@@ -555,7 +668,7 @@ const MembersPage: React.FC = () => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center"
       variants={containerVariants}
       initial="hidden"
@@ -563,7 +676,7 @@ const MembersPage: React.FC = () => {
     >
       <div className="w-full max-w-7xl">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40"
           variants={itemVariants}
         >
@@ -575,7 +688,9 @@ const MembersPage: React.FC = () => {
                 </h1>
                 <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
                   <span>{pageInfo.totalCount} total</span>
-                  {Object.keys(filters).some(key => filters[key as keyof MemberFilters]) && (
+                  {Object.keys(filters).some(
+                    (key) => filters[key as keyof MemberFilters],
+                  ) && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                       Filtered
                     </span>
@@ -585,21 +700,33 @@ const MembersPage: React.FC = () => {
 
               <div className="flex items-center space-x-3">
                 {/* View Mode Toggle */}
-                <ViewModeToggle 
-                  currentMode={viewMode} 
-                  onModeChange={setViewMode} 
+                <ViewModeToggle
+                  currentMode={viewMode}
+                  onModeChange={setViewMode}
                 />
 
                 {/* Filter Toggle */}
                 <button
                   onClick={() => setShowFilterPanel(!showFilterPanel)}
                   className={`p-2 rounded-lg transition-all duration-200 ${
-                    showFilterPanel || Object.keys(filters).some(key => filters[key as keyof MemberFilters])
-                      ? 'bg-blue-100 text-blue-700 shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    showFilterPanel ||
+                    Object.keys(filters).some(
+                      (key) => filters[key as keyof MemberFilters],
+                    )
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   <FunnelIcon className="w-5 h-5" />
+                </button>
+
+                {/* Import Button */}
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                >
+                  <DocumentArrowUpIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Import</span>
                 </button>
 
                 {/* Export Button */}
@@ -626,10 +753,10 @@ const MembersPage: React.FC = () => {
 
         {/* Stats Section */}
         <motion.div variants={itemVariants}>
-          <MemberStats 
-            totalMembers={pageInfo.totalCount} 
-            isLoading={isLoading} 
-            statistics={statistics} 
+          <MemberStats
+            totalMembers={pageInfo.totalCount}
+            isLoading={isLoading}
+            statistics={statistics}
           />
         </motion.div>
 
@@ -657,19 +784,19 @@ const MembersPage: React.FC = () => {
             </AnimatePresence>
 
             {/* Main Content Area */}
-            <motion.div 
-              className="flex-1 space-y-6"
-              variants={itemVariants}
-            >
+            <motion.div className="flex-1 space-y-6" variants={itemVariants}>
               {/* Search and Actions Bar */}
-              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <SearchBar 
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
+              >
+                <SearchBar
                   value={searchQuery}
                   onChange={setSearchQuery}
                   placeholder="Search members..."
                   loading={searchLoading}
                 />
-                
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
@@ -677,16 +804,18 @@ const MembersPage: React.FC = () => {
                   >
                     <AdjustmentsHorizontalIcon className="h-5 w-5" />
                     Filters
-                    {Object.keys(filters).some(key => filters[key as keyof MemberFilters]) && (
+                    {Object.keys(filters).some(
+                      (key) => filters[key as keyof MemberFilters],
+                    ) && (
                       <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1">
                         {Object.values(filters).filter(Boolean).length}
                       </span>
                     )}
                   </button>
-                  
-                  <ViewModeToggle 
-                    currentMode={viewMode} 
-                    onModeChange={setViewMode} 
+
+                  <ViewModeToggle
+                    currentMode={viewMode}
+                    onModeChange={setViewMode}
                   />
                 </div>
               </motion.div>
@@ -696,7 +825,7 @@ const MembersPage: React.FC = () => {
                 {hasSelection && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                   >
                     <BulkActionsBar
@@ -719,6 +848,7 @@ const MembersPage: React.FC = () => {
                   onSelectAll={handleSelectAll}
                   onViewMember={handleViewMember}
                   onEditMember={handleEditMember}
+                  onManageFamily={handleManageFamily}
                   totalCount={pageInfo.totalCount}
                   onLoadMore={loadMore}
                   hasNextPage={pageInfo.hasNextPage}
@@ -749,10 +879,10 @@ const MembersPage: React.FC = () => {
 
         <AnimatePresence>
           {showSacramentModal && (
-            <AddSacramentModal 
-              isOpen={showSacramentModal} 
-              onClose={() => setShowSacramentModal(false)} 
-              selectedMemberIds={selectedMembers} 
+            <AddSacramentModal
+              isOpen={showSacramentModal}
+              onClose={() => setShowSacramentModal(false)}
+              selectedMemberIds={selectedMembers}
             />
           )}
         </AnimatePresence>
@@ -781,6 +911,19 @@ const MembersPage: React.FC = () => {
         </AnimatePresence>
 
         <AnimatePresence>
+          {showFamilyRelationshipModal && selectedMember && (
+            <FamilyRelationshipModal
+              isOpen={showFamilyRelationshipModal}
+              onClose={() => setShowFamilyRelationshipModal(false)}
+              member={selectedMember}
+              onSuccess={() => {
+                refetch?.();
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
           {isSelectionDialogOpen && (
             <BulkActionSelectionDialog
               isOpen={isSelectionDialogOpen}
@@ -789,6 +932,16 @@ const MembersPage: React.FC = () => {
               title={selectionDialogData.title}
               label={selectionDialogData.label}
               options={selectionDialogData.options}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showImportModal && (
+            <ImportMembersModal
+              isOpen={showImportModal}
+              onClose={() => setShowImportModal(false)}
+              onSuccess={handleImportSuccess}
             />
           )}
         </AnimatePresence>

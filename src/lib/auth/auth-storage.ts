@@ -3,15 +3,15 @@
  * Handles secure token storage, cookie management, and multi-tab synchronization
  */
 
-import { 
-  AuthTokens, 
-  AuthUser, 
-  STORAGE_KEYS, 
+import {
+  AuthTokens,
+  AuthUser,
+  STORAGE_KEYS,
   COOKIE_NAMES,
   AuthConfig,
-  DEFAULT_AUTH_CONFIG 
-} from '@/types/auth-enhanced.types';
-import { AuthUtils } from './auth-reducer';
+  DEFAULT_AUTH_CONFIG,
+} from "@/types/auth-enhanced.types";
+import { AuthUtils } from "./auth-reducer";
 
 /**
  * Secure Storage Manager
@@ -29,11 +29,11 @@ export class AuthStorage {
    */
   setTokens(tokens: AuthTokens, rememberMe: boolean = false): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       // Store access token in localStorage for client-side access
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
-      
+
       // Store refresh token in secure HTTP-only cookie (handled by server)
       // For now, store in localStorage but mark for cookie migration
       if (tokens.refreshToken) {
@@ -47,24 +47,28 @@ export class AuthStorage {
         rememberMe,
         storedAt: Date.now(),
       };
-      localStorage.setItem('chapel_token_metadata', JSON.stringify(tokenMetadata));
+      localStorage.setItem(
+        "chapel_token_metadata",
+        JSON.stringify(tokenMetadata),
+      );
 
       // Set secure cookies for SSR and middleware access
       this.setSecureCookie(COOKIE_NAMES.ACCESS_TOKEN, tokens.accessToken, {
-        maxAge: rememberMe ? this.config.rememberMeDuration * 24 * 60 * 60 : undefined,
+        maxAge: rememberMe
+          ? this.config.rememberMeDuration * 24 * 60 * 60
+          : undefined,
         httpOnly: false, // Needs to be accessible by client for GraphQL
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
 
       // Store remember me preference
       localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, rememberMe.toString());
-      
+
       // Update last activity
       this.updateLastActivity();
-
     } catch (error) {
-      console.error('Failed to store authentication tokens:', error);
+      console.error("Failed to store authentication tokens:", error);
     }
   }
 
@@ -73,11 +77,11 @@ export class AuthStorage {
    */
   getTokens(): AuthTokens | null {
     try {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === "undefined") return null;
 
       const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-      const metadataStr = localStorage.getItem('chapel_token_metadata');
+      const metadataStr = localStorage.getItem("chapel_token_metadata");
 
       if (!accessToken) return null;
 
@@ -96,7 +100,7 @@ export class AuthStorage {
         refreshExpiresAt: metadata?.refreshExpiresAt,
       };
     } catch (error) {
-      console.error('Failed to retrieve authentication tokens:', error);
+      console.error("Failed to retrieve authentication tokens:", error);
       return null;
     }
   }
@@ -106,15 +110,18 @@ export class AuthStorage {
    */
   setUser(user: AuthUser): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       const sanitizedUser = AuthUtils.sanitizeUserData(user);
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(sanitizedUser));
-      
+      localStorage.setItem(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(sanitizedUser),
+      );
+
       // Update last activity
       this.updateLastActivity();
     } catch (error) {
-      console.error('Failed to store user data:', error);
+      console.error("Failed to store user data:", error);
     }
   }
 
@@ -123,14 +130,14 @@ export class AuthStorage {
    */
   getUser(): AuthUser | null {
     try {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === "undefined") return null;
 
       const userDataStr = localStorage.getItem(STORAGE_KEYS.USER_DATA);
       if (!userDataStr) return null;
 
       return JSON.parse(userDataStr);
     } catch (error) {
-      console.error('Failed to retrieve user data:', error);
+      console.error("Failed to retrieve user data:", error);
       return null;
     }
   }
@@ -140,18 +147,18 @@ export class AuthStorage {
    */
   setSessionId(sessionId: string): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
-      
+
       // Also set as cookie for server-side access
       this.setSecureCookie(COOKIE_NAMES.SESSION_ID, sessionId, {
         httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
       });
     } catch (error) {
-      console.error('Failed to store session ID:', error);
+      console.error("Failed to store session ID:", error);
     }
   }
 
@@ -160,10 +167,10 @@ export class AuthStorage {
    */
   getSessionId(): string | null {
     try {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === "undefined") return null;
       return localStorage.getItem(STORAGE_KEYS.SESSION_ID);
     } catch (error) {
-      console.error('Failed to retrieve session ID:', error);
+      console.error("Failed to retrieve session ID:", error);
       return null;
     }
   }
@@ -173,10 +180,10 @@ export class AuthStorage {
    */
   updateLastActivity(): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
       localStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, Date.now().toString());
     } catch (error) {
-      console.error('Failed to update last activity:', error);
+      console.error("Failed to update last activity:", error);
     }
   }
 
@@ -185,12 +192,12 @@ export class AuthStorage {
    */
   getLastActivity(): number {
     try {
-      if (typeof window === 'undefined') return Date.now();
-      
+      if (typeof window === "undefined") return Date.now();
+
       const lastActivity = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY);
       return lastActivity ? parseInt(lastActivity, 10) : Date.now();
     } catch (error) {
-      console.error('Failed to retrieve last activity:', error);
+      console.error("Failed to retrieve last activity:", error);
       return Date.now();
     }
   }
@@ -200,12 +207,12 @@ export class AuthStorage {
    */
   getRememberMe(): boolean {
     try {
-      if (typeof window === 'undefined') return false;
-      
+      if (typeof window === "undefined") return false;
+
       const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
-      return rememberMe === 'true';
+      return rememberMe === "true";
     } catch (error) {
-      console.error('Failed to retrieve remember me preference:', error);
+      console.error("Failed to retrieve remember me preference:", error);
       return false;
     }
   }
@@ -215,43 +222,46 @@ export class AuthStorage {
    */
   clear(): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       // Clear localStorage
-      Object.values(STORAGE_KEYS).forEach(key => {
+      Object.values(STORAGE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
       });
-      localStorage.removeItem('chapel_token_metadata');
+      localStorage.removeItem("chapel_token_metadata");
 
       // Clear cookies
-      Object.values(COOKIE_NAMES).forEach(cookieName => {
+      Object.values(COOKIE_NAMES).forEach((cookieName) => {
         this.deleteCookie(cookieName);
       });
-
     } catch (error) {
-      console.error('Failed to clear authentication data:', error);
+      console.error("Failed to clear authentication data:", error);
     }
   }
 
   /**
    * Set secure cookie
    */
-  private setSecureCookie(name: string, value: string, options: {
-    maxAge?: number;
-    httpOnly?: boolean;
-    secure?: boolean;
-    sameSite?: 'strict' | 'lax' | 'none';
-    path?: string;
-  } = {}): void {
+  private setSecureCookie(
+    name: string,
+    value: string,
+    options: {
+      maxAge?: number;
+      httpOnly?: boolean;
+      secure?: boolean;
+      sameSite?: "strict" | "lax" | "none";
+      path?: string;
+    } = {},
+  ): void {
     try {
-      if (typeof document === 'undefined') return;
+      if (typeof document === "undefined") return;
 
       const {
         maxAge,
         httpOnly = false,
-        secure = process.env.NODE_ENV === 'production',
-        sameSite = 'strict',
-        path = '/',
+        secure = process.env.NODE_ENV === "production",
+        sameSite = "strict",
+        path = "/",
       } = options;
 
       let cookieString = `${name}=${encodeURIComponent(value)}; path=${path}`;
@@ -261,30 +271,30 @@ export class AuthStorage {
       }
 
       if (httpOnly) {
-        cookieString += '; HttpOnly';
+        cookieString += "; HttpOnly";
       }
 
       if (secure) {
-        cookieString += '; Secure';
+        cookieString += "; Secure";
       }
 
       cookieString += `; SameSite=${sameSite}`;
 
       document.cookie = cookieString;
     } catch (error) {
-      console.error('Failed to set secure cookie:', error);
+      console.error("Failed to set secure cookie:", error);
     }
   }
 
   /**
    * Delete cookie
    */
-  private deleteCookie(name: string, path: string = '/'): void {
+  private deleteCookie(name: string, path: string = "/"): void {
     try {
-      if (typeof document === 'undefined') return;
+      if (typeof document === "undefined") return;
       document.cookie = `${name}=; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     } catch (error) {
-      console.error('Failed to delete cookie:', error);
+      console.error("Failed to delete cookie:", error);
     }
   }
 
@@ -303,7 +313,10 @@ export class AuthStorage {
     const tokens = this.getTokens();
     if (!tokens) return false;
 
-    return AuthUtils.isTokenExpired(tokens.expiresAt, this.config.tokenRefreshThreshold);
+    return AuthUtils.isTokenExpired(
+      tokens.expiresAt,
+      this.config.tokenRefreshThreshold,
+    );
   }
 
   /**
@@ -366,35 +379,37 @@ export class MultiTabSync {
    * Setup storage event listener for cross-tab communication
    */
   private setupStorageListener(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    window.addEventListener('storage', (event) => {
-      if (!event.key?.startsWith('chapel_')) return;
+    window.addEventListener("storage", (event) => {
+      if (!event.key?.startsWith("chapel_")) return;
 
       // Handle different storage events
       switch (event.key) {
         case STORAGE_KEYS.ACCESS_TOKEN:
-          this.emit('token_changed', {
+          this.emit("token_changed", {
             oldValue: event.oldValue,
             newValue: event.newValue,
           });
           break;
 
         case STORAGE_KEYS.USER_DATA:
-          this.emit('user_changed', {
+          this.emit("user_changed", {
             oldValue: event.oldValue ? JSON.parse(event.oldValue) : null,
             newValue: event.newValue ? JSON.parse(event.newValue) : null,
           });
           break;
 
         case STORAGE_KEYS.LAST_ACTIVITY:
-          this.emit('activity_updated', {
-            timestamp: event.newValue ? parseInt(event.newValue, 10) : Date.now(),
+          this.emit("activity_updated", {
+            timestamp: event.newValue
+              ? parseInt(event.newValue, 10)
+              : Date.now(),
           });
           break;
 
         default:
-          this.emit('storage_changed', {
+          this.emit("storage_changed", {
             key: event.key,
             oldValue: event.oldValue,
             newValue: event.newValue,
@@ -432,11 +447,11 @@ export class MultiTabSync {
   private emit(event: string, data?: any): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
-      eventListeners.forEach(callback => {
+      eventListeners.forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
-          console.error('Error in multi-tab sync listener:', error);
+          console.error("Error in multi-tab sync listener:", error);
         }
       });
     }
@@ -446,19 +461,19 @@ export class MultiTabSync {
    * Broadcast logout to all tabs
    */
   broadcastLogout(): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     // Trigger storage event by temporarily setting and removing a value
-    localStorage.setItem('chapel_logout_broadcast', Date.now().toString());
-    localStorage.removeItem('chapel_logout_broadcast');
+    localStorage.setItem("chapel_logout_broadcast", Date.now().toString());
+    localStorage.removeItem("chapel_logout_broadcast");
   }
 
   /**
    * Broadcast login to all tabs
    */
   broadcastLogin(user: AuthUser): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     // This will trigger the storage event listener in other tabs
     this.storage.setUser(user);
   }

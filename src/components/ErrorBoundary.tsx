@@ -1,5 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import {
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 
 interface Props {
   children: ReactNode;
@@ -41,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const eventId = this.generateEventId();
-    
+
     this.setState({
       error,
       errorInfo,
@@ -49,8 +52,8 @@ export class ErrorBoundary extends Component<Props, State> {
     });
 
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     // Call custom error handler if provided
@@ -69,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Reset error boundary when resetKeys change
     if (hasError && resetOnPropsChange && resetKeys) {
       const hasResetKeyChanged = resetKeys.some(
-        (resetKey, idx) => prevProps.resetKeys?.[idx] !== resetKey
+        (resetKey, idx) => prevProps.resetKeys?.[idx] !== resetKey,
       );
 
       if (hasResetKeyChanged) {
@@ -126,21 +129,22 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
               <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
             </div>
-            
+
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Something went wrong
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                We encountered an unexpected error. Please try again or reload the page.
+                We encountered an unexpected error. Please try again or reload
+                the page.
               </p>
-              
+
               {eventId && (
                 <p className="text-xs text-gray-500 mb-4">
                   Error ID: {eventId}
                 </p>
               )}
-              
+
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={this.handleRetry}
@@ -149,7 +153,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <ArrowPathIcon className="w-4 h-4 mr-2" />
                   Try Again
                 </button>
-                
+
                 <button
                   onClick={this.handleReload}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -157,20 +161,26 @@ export class ErrorBoundary extends Component<Props, State> {
                   Reload Page
                 </button>
               </div>
-              
-              {process.env.NODE_ENV === 'development' && error && (
+
+              {process.env.NODE_ENV === "development" && error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
                     Error Details (Development)
                   </summary>
                   <div className="mt-2 p-3 bg-gray-50 rounded-md text-xs text-gray-600 overflow-auto max-h-40">
                     <div className="font-semibold mb-2">Error:</div>
-                    <pre className="whitespace-pre-wrap">{error.toString()}</pre>
-                    
+                    <pre className="whitespace-pre-wrap">
+                      {error.toString()}
+                    </pre>
+
                     {errorInfo && (
                       <>
-                        <div className="font-semibold mt-3 mb-2">Component Stack:</div>
-                        <pre className="whitespace-pre-wrap">{errorInfo.componentStack}</pre>
+                        <div className="font-semibold mt-3 mb-2">
+                          Component Stack:
+                        </div>
+                        <pre className="whitespace-pre-wrap">
+                          {errorInfo.componentStack}
+                        </pre>
                       </>
                     )}
                   </div>
@@ -191,8 +201,8 @@ export class ErrorBoundary extends Component<Props, State> {
  */
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error('Error caught by useErrorHandler:', error, errorInfo);
-    
+    console.error("Error caught by useErrorHandler:", error, errorInfo);
+
     // In production, send to error reporting service
     // Example: Sentry.captureException(error, { extra: errorInfo });
   };
@@ -203,7 +213,7 @@ export const useErrorHandler = () => {
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<Props, 'children'>
+  errorBoundaryProps?: Omit<Props, "children">,
 ) {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
@@ -212,14 +222,16 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }
 
 /**
  * Sacrament-specific error boundary with custom fallback
  */
-export const SacramentErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const SacramentErrorBoundary: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   return (
     <ErrorBoundary
       fallback={
@@ -229,7 +241,8 @@ export const SacramentErrorBoundary: React.FC<{ children: ReactNode }> = ({ chil
             Sacrament Data Error
           </h3>
           <p className="text-sm text-red-600 mb-4">
-            Unable to load sacrament records. Please refresh the page or contact support.
+            Unable to load sacrament records. Please refresh the page or contact
+            support.
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -241,7 +254,7 @@ export const SacramentErrorBoundary: React.FC<{ children: ReactNode }> = ({ chil
         </div>
       }
       onError={(error, errorInfo) => {
-        console.error('Sacrament component error:', error, errorInfo);
+        console.error("Sacrament component error:", error, errorInfo);
         // Could send to analytics or error reporting service
       }}
     >

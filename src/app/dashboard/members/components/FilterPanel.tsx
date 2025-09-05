@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import React, { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
   FunnelIcon,
   XMarkIcon,
   ChevronDownIcon,
@@ -14,18 +14,18 @@ import {
   HeartIcon,
   EnvelopeIcon,
   PhoneIcon,
-  PhotoIcon
-} from '@heroicons/react/24/outline';
-import { 
-  MemberFilters, 
-  Gender, 
-  MaritalStatus, 
-  MembershipStatus, 
+  PhotoIcon,
+} from "@heroicons/react/24/outline";
+import {
+  MemberFilters,
+  Gender,
+  MaritalStatus,
+  MembershipStatus,
   MemberStatus,
   FilterOption,
-  Member
-} from '../types/member.types';
-import { MemberFilterService } from '../services/memberFilterService';
+  Member,
+} from "../types/member.types";
+import { MemberFilterService } from "../services/memberFilterService";
 
 interface FilterPanelProps {
   filters: MemberFilters;
@@ -40,9 +40,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onFiltersChange,
   members = [],
   statistics,
-  className = ""
+  className = "",
 }) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['basic']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(["basic"]),
+  );
 
   // Generate filter statistics
   const filterStats = useMemo(() => {
@@ -67,7 +69,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const updateFilter = (key: keyof MemberFilters, value: any) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
@@ -79,67 +81,129 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   // Filter options with counts (prefer API statistics when available)
   const genderOptions: FilterOption[] = [
     {
-      label: 'Male',
+      label: "Male",
       value: Gender.MALE,
-      count: (statistics?.membersByGender?.male ?? undefined) ?? (filterStats.gender.get(Gender.MALE) || 0)
+      count:
+        statistics?.membersByGender?.male ??
+        undefined ??
+        (filterStats.gender.get(Gender.MALE) || 0),
     },
     {
-      label: 'Female',
+      label: "Female",
       value: Gender.FEMALE,
-      count: (statistics?.membersByGender?.female ?? undefined) ?? (filterStats.gender.get(Gender.FEMALE) || 0)
+      count:
+        statistics?.membersByGender?.female ??
+        undefined ??
+        (filterStats.gender.get(Gender.FEMALE) || 0),
     },
     {
-      label: 'Not Specified',
+      label: "Not Specified",
       value: Gender.NOT_SPECIFIED,
-      count: (statistics?.membersByGender?.notSpecified ?? undefined) ?? (filterStats.gender.get(Gender.NOT_SPECIFIED) || 0)
+      count:
+        statistics?.membersByGender?.notSpecified ??
+        undefined ??
+        (filterStats.gender.get(Gender.NOT_SPECIFIED) || 0),
     },
   ];
 
   const maritalStatusOptions: FilterOption[] = [
-    { label: 'Single', value: MaritalStatus.SINGLE, count: filterStats.maritalStatus.get(MaritalStatus.SINGLE) || 0 },
-    { label: 'Married', value: MaritalStatus.MARRIED, count: filterStats.maritalStatus.get(MaritalStatus.MARRIED) || 0 },
-    { label: 'Divorced', value: MaritalStatus.DIVORCED, count: filterStats.maritalStatus.get(MaritalStatus.DIVORCED) || 0 },
-    { label: 'Widowed', value: MaritalStatus.WIDOWED, count: filterStats.maritalStatus.get(MaritalStatus.WIDOWED) || 0 },
-    { label: 'Separated', value: MaritalStatus.SEPARATED, count: filterStats.maritalStatus.get(MaritalStatus.SEPARATED) || 0 },
+    {
+      label: "Single",
+      value: MaritalStatus.SINGLE,
+      count: filterStats.maritalStatus.get(MaritalStatus.SINGLE) || 0,
+    },
+    {
+      label: "Married",
+      value: MaritalStatus.MARRIED,
+      count: filterStats.maritalStatus.get(MaritalStatus.MARRIED) || 0,
+    },
+    {
+      label: "Divorced",
+      value: MaritalStatus.DIVORCED,
+      count: filterStats.maritalStatus.get(MaritalStatus.DIVORCED) || 0,
+    },
+    {
+      label: "Widowed",
+      value: MaritalStatus.WIDOWED,
+      count: filterStats.maritalStatus.get(MaritalStatus.WIDOWED) || 0,
+    },
+    {
+      label: "Separated",
+      value: MaritalStatus.SEPARATED,
+      count: filterStats.maritalStatus.get(MaritalStatus.SEPARATED) || 0,
+    },
   ];
 
   const membershipStatusOptions: FilterOption[] = [
-    { label: 'Visitor', value: MembershipStatus.VISITOR, count: filterStats.membershipStatus.get(MembershipStatus.VISITOR) || 0 },
-    { label: 'Regular Attendee', value: MembershipStatus.REGULAR_ATTENDEE, count: filterStats.membershipStatus.get(MembershipStatus.REGULAR_ATTENDEE) || 0 },
-    { label: 'Member', value: MembershipStatus.MEMBER, count: filterStats.membershipStatus.get(MembershipStatus.MEMBER) || 0 },
-    { label: 'Active Member', value: MembershipStatus.ACTIVE_MEMBER, count: filterStats.membershipStatus.get(MembershipStatus.ACTIVE_MEMBER) || 0 },
-    { label: 'Inactive Member', value: MembershipStatus.INACTIVE_MEMBER, count: filterStats.membershipStatus.get(MembershipStatus.INACTIVE_MEMBER) || 0 },
+    {
+      label: "Visitor",
+      value: MembershipStatus.VISITOR,
+      count: filterStats.membershipStatus.get(MembershipStatus.VISITOR) || 0,
+    },
+    {
+      label: "Regular Attendee",
+      value: MembershipStatus.REGULAR_ATTENDEE,
+      count:
+        filterStats.membershipStatus.get(MembershipStatus.REGULAR_ATTENDEE) ||
+        0,
+    },
+    {
+      label: "Member",
+      value: MembershipStatus.MEMBER,
+      count: filterStats.membershipStatus.get(MembershipStatus.MEMBER) || 0,
+    },
+    {
+      label: "Active Member",
+      value: MembershipStatus.ACTIVE_MEMBER,
+      count:
+        filterStats.membershipStatus.get(MembershipStatus.ACTIVE_MEMBER) || 0,
+    },
+    {
+      label: "Inactive Member",
+      value: MembershipStatus.INACTIVE_MEMBER,
+      count:
+        filterStats.membershipStatus.get(MembershipStatus.INACTIVE_MEMBER) || 0,
+    },
   ];
 
   const memberStatusOptions: FilterOption[] = [
     {
-      label: 'Active',
+      label: "Active",
       value: MemberStatus.ACTIVE,
-      count: (statistics?.membersByStatus?.active ?? undefined) ?? (filterStats.memberStatus.get(MemberStatus.ACTIVE) || 0)
+      count:
+        statistics?.membersByStatus?.active ??
+        undefined ??
+        (filterStats.memberStatus.get(MemberStatus.ACTIVE) || 0),
     },
     {
-      label: 'Inactive',
+      label: "Inactive",
       value: MemberStatus.INACTIVE,
-      count: (statistics?.membersByStatus?.inactive ?? undefined) ?? (filterStats.memberStatus.get(MemberStatus.INACTIVE) || 0)
+      count:
+        statistics?.membersByStatus?.inactive ??
+        undefined ??
+        (filterStats.memberStatus.get(MemberStatus.INACTIVE) || 0),
     },
     {
-      label: 'Suspended',
+      label: "Suspended",
       value: MemberStatus.SUSPENDED,
-      count: filterStats.memberStatus.get(MemberStatus.SUSPENDED) || 0
+      count: filterStats.memberStatus.get(MemberStatus.SUSPENDED) || 0,
     },
     {
-      label: 'Transferred',
+      label: "Transferred",
       value: MemberStatus.TRANSFERRED,
-      count: (statistics?.membersByStatus?.transferred ?? undefined) ?? (filterStats.memberStatus.get(MemberStatus.TRANSFERRED) || 0)
+      count:
+        statistics?.membersByStatus?.transferred ??
+        undefined ??
+        (filterStats.memberStatus.get(MemberStatus.TRANSFERRED) || 0),
     },
   ];
 
   // Filter section component
-  const FilterSection = ({ 
-    title, 
-    children, 
+  const FilterSection = ({
+    title,
+    children,
     sectionKey,
-    defaultExpanded = false 
+    defaultExpanded = false,
   }: {
     title: string;
     children: React.ReactNode;
@@ -159,19 +223,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           <ChevronDownIcon className="w-5 h-5 text-gray-500" />
         </motion.div>
       </button>
-      
+
       <AnimatePresence>
         {expandedSections.has(sectionKey) && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4">
-              {children}
-            </div>
+            <div className="px-4 pb-4">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -196,7 +258,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               </span>
             )}
           </div>
-          
+
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
@@ -223,31 +285,37 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 type="checkbox"
                 checked={filters.hasMemberId === true}
                 onChange={(e) => {
-                  updateFilter('hasMemberId', e.target.checked ? true : undefined);
+                  updateFilter(
+                    "hasMemberId",
+                    e.target.checked ? true : undefined,
+                  );
                 }}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Has Member ID</span>
             </div>
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-              {members.filter(m => m.memberId).length}
+              {members.filter((m) => m.memberId).length}
             </span>
           </label>
-          
+
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={filters.hasMemberId === false}
                 onChange={(e) => {
-                  updateFilter('hasMemberId', e.target.checked ? false : undefined);
+                  updateFilter(
+                    "hasMemberId",
+                    e.target.checked ? false : undefined,
+                  );
                 }}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">No Member ID</span>
             </div>
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-              {members.filter(m => !m.memberId).length}
+              {members.filter((m) => !m.memberId).length}
             </span>
           </label>
         </div>
@@ -255,24 +323,37 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {/* Client-Side Filters */}
       <div className="bg-green-50 px-4 py-2 border-b border-gray-200">
-        <p className="text-xs text-green-800 font-medium">Client-Side Filters</p>
+        <p className="text-xs text-green-800 font-medium">
+          Client-Side Filters
+        </p>
       </div>
 
       {/* Gender Filter */}
       <FilterSection title="Gender" sectionKey="gender">
         <div className="space-y-2">
           {genderOptions.map((option) => (
-            <label key={option.value} className="flex items-center justify-between cursor-pointer">
+            <label
+              key={option.value}
+              className="flex items-center justify-between cursor-pointer"
+            >
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={(filters.gender || []).includes(option.value as Gender)}
+                  checked={(filters.gender || []).includes(
+                    option.value as Gender,
+                  )}
                   onChange={(e) => {
                     const currentGenders = filters.gender || [];
                     if (e.target.checked) {
-                      updateFilter('gender', [...currentGenders, option.value as Gender]);
+                      updateFilter("gender", [
+                        ...currentGenders,
+                        option.value as Gender,
+                      ]);
                     } else {
-                      updateFilter('gender', currentGenders.filter(g => g !== option.value));
+                      updateFilter(
+                        "gender",
+                        currentGenders.filter((g) => g !== option.value),
+                      );
                     }
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -291,17 +372,28 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <FilterSection title="Marital Status" sectionKey="maritalStatus">
         <div className="space-y-2">
           {maritalStatusOptions.map((option) => (
-            <label key={option.value} className="flex items-center justify-between cursor-pointer">
+            <label
+              key={option.value}
+              className="flex items-center justify-between cursor-pointer"
+            >
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={(filters.maritalStatus || []).includes(option.value as MaritalStatus)}
+                  checked={(filters.maritalStatus || []).includes(
+                    option.value as MaritalStatus,
+                  )}
                   onChange={(e) => {
                     const currentStatuses = filters.maritalStatus || [];
                     if (e.target.checked) {
-                      updateFilter('maritalStatus', [...currentStatuses, option.value as MaritalStatus]);
+                      updateFilter("maritalStatus", [
+                        ...currentStatuses,
+                        option.value as MaritalStatus,
+                      ]);
                     } else {
-                      updateFilter('maritalStatus', currentStatuses.filter(s => s !== option.value));
+                      updateFilter(
+                        "maritalStatus",
+                        currentStatuses.filter((s) => s !== option.value),
+                      );
                     }
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -320,17 +412,28 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <FilterSection title="Membership Status" sectionKey="membershipStatus">
         <div className="space-y-2">
           {membershipStatusOptions.map((option) => (
-            <label key={option.value} className="flex items-center justify-between cursor-pointer">
+            <label
+              key={option.value}
+              className="flex items-center justify-between cursor-pointer"
+            >
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={(filters.membershipStatus || []).includes(option.value as MembershipStatus)}
+                  checked={(filters.membershipStatus || []).includes(
+                    option.value as MembershipStatus,
+                  )}
                   onChange={(e) => {
                     const currentStatuses = filters.membershipStatus || [];
                     if (e.target.checked) {
-                      updateFilter('membershipStatus', [...currentStatuses, option.value as MembershipStatus]);
+                      updateFilter("membershipStatus", [
+                        ...currentStatuses,
+                        option.value as MembershipStatus,
+                      ]);
                     } else {
-                      updateFilter('membershipStatus', currentStatuses.filter(s => s !== option.value));
+                      updateFilter(
+                        "membershipStatus",
+                        currentStatuses.filter((s) => s !== option.value),
+                      );
                     }
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -349,17 +452,28 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <FilterSection title="Member Status" sectionKey="memberStatus">
         <div className="space-y-2">
           {memberStatusOptions.map((option) => (
-            <label key={option.value} className="flex items-center justify-between cursor-pointer">
+            <label
+              key={option.value}
+              className="flex items-center justify-between cursor-pointer"
+            >
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={(filters.memberStatus || []).includes(option.value as MemberStatus)}
+                  checked={(filters.memberStatus || []).includes(
+                    option.value as MemberStatus,
+                  )}
                   onChange={(e) => {
                     const currentStatuses = filters.memberStatus || [];
                     if (e.target.checked) {
-                      updateFilter('memberStatus', [...currentStatuses, option.value as MemberStatus]);
+                      updateFilter("memberStatus", [
+                        ...currentStatuses,
+                        option.value as MemberStatus,
+                      ]);
                     } else {
-                      updateFilter('memberStatus', currentStatuses.filter(s => s !== option.value));
+                      updateFilter(
+                        "memberStatus",
+                        currentStatuses.filter((s) => s !== option.value),
+                      );
                     }
                   }}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -382,7 +496,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               <input
                 type="checkbox"
                 checked={filters.hasProfileImage === true}
-                onChange={(e) => updateFilter('hasProfileImage', e.target.checked ? true : undefined)}
+                onChange={(e) =>
+                  updateFilter(
+                    "hasProfileImage",
+                    e.target.checked ? true : undefined,
+                  )
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Has Profile Image</span>
@@ -391,13 +510,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               {filterStats.hasProfileImage.true}
             </span>
           </label>
-          
+
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={filters.hasEmail === true}
-                onChange={(e) => updateFilter('hasEmail', e.target.checked ? true : undefined)}
+                onChange={(e) =>
+                  updateFilter("hasEmail", e.target.checked ? true : undefined)
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Has Email</span>
@@ -406,13 +527,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               {filterStats.hasEmail.true}
             </span>
           </label>
-          
+
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={filters.hasPhone === true}
-                onChange={(e) => updateFilter('hasPhone', e.target.checked ? true : undefined)}
+                onChange={(e) =>
+                  updateFilter("hasPhone", e.target.checked ? true : undefined)
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Has Phone</span>
@@ -421,13 +544,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               {filterStats.hasPhone.true}
             </span>
           </label>
-          
+
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={filters.isRegularAttendee === true}
-                onChange={(e) => updateFilter('isRegularAttendee', e.target.checked ? true : undefined)}
+                onChange={(e) =>
+                  updateFilter(
+                    "isRegularAttendee",
+                    e.target.checked ? true : undefined,
+                  )
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Regular Attendee</span>
@@ -444,31 +572,39 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Min Age</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Min Age
+              </label>
               <input
                 type="number"
                 min="0"
                 max="120"
-                value={filters.ageRange?.min || ''}
-                onChange={(e) => updateFilter('ageRange', {
-                  ...filters.ageRange,
-                  min: e.target.value ? parseInt(e.target.value) : undefined
-                })}
+                value={filters.ageRange?.min || ""}
+                onChange={(e) =>
+                  updateFilter("ageRange", {
+                    ...filters.ageRange,
+                    min: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Max Age</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Max Age
+              </label>
               <input
                 type="number"
                 min="0"
                 max="120"
-                value={filters.ageRange?.max || ''}
-                onChange={(e) => updateFilter('ageRange', {
-                  ...filters.ageRange,
-                  max: e.target.value ? parseInt(e.target.value) : undefined
-                })}
+                value={filters.ageRange?.max || ""}
+                onChange={(e) =>
+                  updateFilter("ageRange", {
+                    ...filters.ageRange,
+                    max: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="120"
               />
@@ -481,26 +617,34 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <FilterSection title="Joined Date Range" sectionKey="dateRange">
         <div className="space-y-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Joined After</label>
+            <label className="block text-xs text-gray-500 mb-1">
+              Joined After
+            </label>
             <input
               type="date"
-              value={filters.dateRange?.joinedAfter || ''}
-              onChange={(e) => updateFilter('dateRange', {
-                ...filters.dateRange,
-                joinedAfter: e.target.value || undefined
-              })}
+              value={filters.dateRange?.joinedAfter || ""}
+              onChange={(e) =>
+                updateFilter("dateRange", {
+                  ...filters.dateRange,
+                  joinedAfter: e.target.value || undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Joined Before</label>
+            <label className="block text-xs text-gray-500 mb-1">
+              Joined Before
+            </label>
             <input
               type="date"
-              value={filters.dateRange?.joinedBefore || ''}
-              onChange={(e) => updateFilter('dateRange', {
-                ...filters.dateRange,
-                joinedBefore: e.target.value || undefined
-              })}
+              value={filters.dateRange?.joinedBefore || ""}
+              onChange={(e) =>
+                updateFilter("dateRange", {
+                  ...filters.dateRange,
+                  joinedBefore: e.target.value || undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

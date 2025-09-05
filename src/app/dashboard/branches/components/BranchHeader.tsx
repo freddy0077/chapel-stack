@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { 
-  PencilIcon, 
-  ChevronLeftIcon, 
-  CheckCircleIcon, 
+import {
+  PencilIcon,
+  ChevronLeftIcon,
+  CheckCircleIcon,
   XCircleIcon,
   MapPinIcon,
   CalendarIcon,
   UserIcon,
-  ArrowTopRightOnSquareIcon
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 
 interface BranchHeaderProps {
@@ -45,7 +45,7 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
           />
         ) : null}
         <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-        
+
         {/* Back Button */}
         <div className="absolute top-4 left-4 z-10">
           <Link
@@ -56,7 +56,7 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
             <span className="sr-only">Back to branches</span>
           </Link>
         </div>
-        
+
         {/* Status Badge */}
         <div className="absolute top-4 right-4 z-10">
           {branch.isActive ? (
@@ -75,7 +75,7 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
           )}
         </div>
       </div>
-      
+
       {/* Content Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 sm:-mt-20 mb-6 relative z-10">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
@@ -95,52 +95,77 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
                 </div>
               )}
             </div>
-            
+
             {/* Branch Info */}
             <div className="flex-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{branch.name}</h1>
-                
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  {branch.name}
+                </h1>
+
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/dashboard/branches/${branch.id}/edit`}
                     className="inline-flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <PencilIcon className="-ml-0.5 mr-2 h-4 w-4" aria-hidden="true" />
+                    <PencilIcon
+                      className="-ml-0.5 mr-2 h-4 w-4"
+                      aria-hidden="true"
+                    />
                     Edit Branch
                   </Link>
-                  
+
                   {branch.website && (
                     <Link
                       href={branch.website}
                       target="_blank"
-                      rel="noopener noreferrer" 
+                      rel="noopener noreferrer"
                       className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
                     >
-                      <ArrowTopRightOnSquareIcon className="-ml-0.5 mr-2 h-4 w-4" aria-hidden="true" />
+                      <ArrowTopRightOnSquareIcon
+                        className="-ml-0.5 mr-2 h-4 w-4"
+                        aria-hidden="true"
+                      />
                       Visit Website
                     </Link>
                   )}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <MapPinIcon className="h-4 w-4 mr-2 flex-shrink-0" aria-hidden="true" />
-                  <span>{branch.city}, {branch.state}</span>
+                  <MapPinIcon
+                    className="h-4 w-4 mr-2 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    {branch.city}, {branch.state}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <CalendarIcon className="h-4 w-4 mr-2 flex-shrink-0" aria-hidden="true" />
-                  <span>Established {new Date(branch.establishedDate).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}</span>
+                  <CalendarIcon
+                    className="h-4 w-4 mr-2 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    Established{" "}
+                    {new Date(branch.establishedDate).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      },
+                    )}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center text-gray-600 dark:text-gray-300">
-                  <UserIcon className="h-4 w-4 mr-2 flex-shrink-0" aria-hidden="true" />
+                  <UserIcon
+                    className="h-4 w-4 mr-2 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>Pastor: {branch.mainPastor}</span>
                 </div>
               </div>

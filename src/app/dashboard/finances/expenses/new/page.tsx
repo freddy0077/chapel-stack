@@ -12,7 +12,7 @@ import {
   CurrencyDollarIcon,
   TagIcon,
   ArrowLeftIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
 export default function NewExpense() {
@@ -22,13 +22,17 @@ export default function NewExpense() {
       ? user.userBranches[0].branch.id
       : undefined;
 
-  const { categories, paymentMethods, departments, loading: referenceLoading } =
-    useExpenseReferenceData(branchId) as {
-      categories: { id: string; name: string }[];
-      paymentMethods: { id: string; name: string }[];
-      departments: { id: string; name: string }[];
-      loading: boolean;
-    };
+  const {
+    categories,
+    paymentMethods,
+    departments,
+    loading: referenceLoading,
+  } = useExpenseReferenceData(branchId) as {
+    categories: { id: string; name: string }[];
+    paymentMethods: { id: string; name: string }[];
+    departments: { id: string; name: string }[];
+    loading: boolean;
+  };
 
   const { funds, loading: fundsLoading } = useFinanceReferenceData(branchId);
   const { budgets, loading: budgetsLoading } = useBudgetReferenceData(branchId);
@@ -76,7 +80,9 @@ export default function NewExpense() {
   }, [referenceLoading, categories, paymentMethods, departments]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -93,13 +99,13 @@ export default function NewExpense() {
     setErrorMsg(null);
     try {
       const selectedCategory = categories.find(
-        (c) => c.name === expenseData.category
+        (c) => c.name === expenseData.category,
       );
       const selectedPaymentMethod = paymentMethods.find(
-        (m) => m.name === expenseData.paymentMethod
+        (m) => m.name === expenseData.paymentMethod,
       );
       const selectedDepartment = departments.find(
-        (d) => d.name === expenseData.department
+        (d) => d.name === expenseData.department,
       );
       const input = {
         amount: parseFloat(expenseData.amount),
@@ -194,23 +200,60 @@ export default function NewExpense() {
           {/* Expense Details Card */}
           <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 shadow-sm border border-indigo-100 mb-6">
             <h3 className="text-xl font-semibold text-indigo-900 mb-4 flex items-center gap-2">
-              <CurrencyDollarIcon className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+              <CurrencyDollarIcon
+                className="w-5 h-5 text-indigo-400"
+                aria-hidden="true"
+              />
               Expense Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Amount */}
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-indigo-800 mb-1">Amount <span className="text-red-500">*</span></label>
-                <input type="number" name="amount" id="amount" min="0.01" step="0.01" required value={expenseData.amount} onChange={handleInputChange} className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" placeholder="0.00" />
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Amount <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  min="0.01"
+                  step="0.01"
+                  required
+                  value={expenseData.amount}
+                  onChange={handleInputChange}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                  placeholder="0.00"
+                />
               </div>
               {/* Date Paid */}
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-indigo-800 mb-1">Date Paid <span className="text-red-500">*</span></label>
-                <input type="date" name="date" id="date" required value={expenseData.date} onChange={handleInputChange} className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" />
+                <label
+                  htmlFor="date"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Date Paid <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  id="date"
+                  required
+                  value={expenseData.date}
+                  onChange={handleInputChange}
+                  className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
+                />
               </div>
               {/* Description */}
               <div className="md:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-indigo-800 mb-1">Description <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Description <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="description"
@@ -224,7 +267,12 @@ export default function NewExpense() {
               </div>
               {/* Receipt Number */}
               <div>
-                <label htmlFor="receiptNumber" className="block text-sm font-medium text-indigo-800 mb-1">Receipt Number <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="receiptNumber"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Receipt Number <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="receiptNumber"
@@ -238,7 +286,12 @@ export default function NewExpense() {
               </div>
               {/* Invoice Number */}
               <div>
-                <label htmlFor="invoiceNumber" className="block text-sm font-medium text-indigo-800 mb-1">Invoice Number <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="invoiceNumber"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Invoice Number <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="invoiceNumber"
@@ -252,7 +305,12 @@ export default function NewExpense() {
               </div>
               {/* Fund Dropdown */}
               <div>
-                <label htmlFor="fundId" className="block text-sm font-medium text-indigo-800 mb-1">Fund <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="fundId"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Fund <span className="text-red-500">*</span>
+                </label>
                 {fundsLoading ? (
                   <div className="text-gray-400 text-sm">Loading funds...</div>
                 ) : (
@@ -265,17 +323,28 @@ export default function NewExpense() {
                     className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                   >
                     <option value="">Select Fund</option>
-                    {funds && funds.length > 0 && funds.map((fund: any) => (
-                      <option key={fund.id} value={fund.id}>{fund.name}</option>
-                    ))}
+                    {funds &&
+                      funds.length > 0 &&
+                      funds.map((fund: any) => (
+                        <option key={fund.id} value={fund.id}>
+                          {fund.name}
+                        </option>
+                      ))}
                   </select>
                 )}
               </div>
               {/* Budget Dropdown */}
               <div>
-                <label htmlFor="budgetId" className="block text-sm font-medium text-indigo-800 mb-1">Budget <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="budgetId"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Budget <span className="text-red-500">*</span>
+                </label>
                 {budgetsLoading ? (
-                  <div className="text-gray-400 text-sm">Loading budgets...</div>
+                  <div className="text-gray-400 text-sm">
+                    Loading budgets...
+                  </div>
                 ) : (
                   <select
                     id="budgetId"
@@ -286,15 +355,24 @@ export default function NewExpense() {
                     className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                   >
                     <option value="">Select Budget</option>
-                    {budgets && budgets.length > 0 && budgets.map((budget: any) => (
-                      <option key={budget.id} value={budget.id}>{budget.name} ({budget.fiscalYear})</option>
-                    ))}
+                    {budgets &&
+                      budgets.length > 0 &&
+                      budgets.map((budget: any) => (
+                        <option key={budget.id} value={budget.id}>
+                          {budget.name} ({budget.fiscalYear})
+                        </option>
+                      ))}
                   </select>
                 )}
               </div>
               {/* Vendor ID */}
               <div>
-                <label htmlFor="vendorId" className="block text-sm font-medium text-indigo-800 mb-1">Vendor ID</label>
+                <label
+                  htmlFor="vendorId"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Vendor ID
+                </label>
                 <input
                   type="text"
                   name="vendorId"
@@ -307,7 +385,12 @@ export default function NewExpense() {
               </div>
               {/* Vendor Name */}
               <div>
-                <label htmlFor="vendorName" className="block text-sm font-medium text-indigo-800 mb-1">Vendor Name</label>
+                <label
+                  htmlFor="vendorName"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Vendor Name
+                </label>
                 <input
                   type="text"
                   name="vendorName"
@@ -320,7 +403,12 @@ export default function NewExpense() {
               </div>
               {/* Vendor Contact */}
               <div>
-                <label htmlFor="vendorContact" className="block text-sm font-medium text-indigo-800 mb-1">Vendor Contact</label>
+                <label
+                  htmlFor="vendorContact"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Vendor Contact
+                </label>
                 <input
                   type="text"
                   name="vendorContact"
@@ -334,7 +422,12 @@ export default function NewExpense() {
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-indigo-800 mb-1">Category <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Category <span className="text-red-500">*</span>
+                </label>
                 <select
                   id="category"
                   name="category"
@@ -343,14 +436,22 @@ export default function NewExpense() {
                   required
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                 >
-                  {categories && categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
+                  {categories &&
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               {/* Department */}
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-indigo-800 mb-1">Department <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="department"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Department <span className="text-red-500">*</span>
+                </label>
                 <select
                   id="department"
                   name="department"
@@ -359,14 +460,22 @@ export default function NewExpense() {
                   required
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                 >
-                  {departments && departments.map((dept) => (
-                    <option key={dept.id} value={dept.name}>{dept.name}</option>
-                  ))}
+                  {departments &&
+                    departments.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               {/* Payment Method */}
               <div>
-                <label htmlFor="paymentMethod" className="block text-sm font-medium text-indigo-800 mb-1">Payment Method <span className="text-red-500">*</span></label>
+                <label
+                  htmlFor="paymentMethod"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Payment Method <span className="text-red-500">*</span>
+                </label>
                 <select
                   id="paymentMethod"
                   name="paymentMethod"
@@ -375,14 +484,22 @@ export default function NewExpense() {
                   required
                   className="block w-full rounded-lg border border-indigo-200 bg-white px-4 py-3 text-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition"
                 >
-                  {paymentMethods && paymentMethods.map((pm) => (
-                    <option key={pm.id} value={pm.name}>{pm.name}</option>
-                  ))}
+                  {paymentMethods &&
+                    paymentMethods.map((pm) => (
+                      <option key={pm.id} value={pm.name}>
+                        {pm.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               {/* Vendor (free text) */}
               <div>
-                <label htmlFor="vendor" className="block text-sm font-medium text-indigo-800 mb-1">Vendor</label>
+                <label
+                  htmlFor="vendor"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Vendor
+                </label>
                 <input
                   type="text"
                   name="vendor"
@@ -403,7 +520,12 @@ export default function NewExpense() {
                   onChange={handleInputChange}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <label htmlFor="receiptAvailable" className="ml-2 block text-sm text-indigo-800">Receipt Available</label>
+                <label
+                  htmlFor="receiptAvailable"
+                  className="ml-2 block text-sm text-indigo-800"
+                >
+                  Receipt Available
+                </label>
               </div>
               {/* Recurring */}
               <div className="flex items-center mt-2">
@@ -415,12 +537,22 @@ export default function NewExpense() {
                   onChange={handleInputChange}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <label htmlFor="recurring" className="ml-2 block text-sm text-indigo-800">Recurring</label>
+                <label
+                  htmlFor="recurring"
+                  className="ml-2 block text-sm text-indigo-800"
+                >
+                  Recurring
+                </label>
               </div>
               {/* Frequency (show if recurring) */}
               {expenseData.recurring && (
                 <div>
-                  <label htmlFor="frequency" className="block text-sm font-medium text-indigo-800 mb-1">Frequency</label>
+                  <label
+                    htmlFor="frequency"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Frequency
+                  </label>
                   <select
                     id="frequency"
                     name="frequency"
@@ -436,7 +568,12 @@ export default function NewExpense() {
               )}
               {/* Approved By */}
               <div>
-                <label htmlFor="approvedBy" className="block text-sm font-medium text-indigo-800 mb-1">Approved By</label>
+                <label
+                  htmlFor="approvedBy"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Approved By
+                </label>
                 <input
                   type="text"
                   name="approvedBy"
@@ -449,7 +586,12 @@ export default function NewExpense() {
               </div>
               {/* Notes */}
               <div className="md:col-span-2">
-                <label htmlFor="notes" className="block text-sm font-medium text-indigo-800 mb-1">Notes</label>
+                <label
+                  htmlFor="notes"
+                  className="block text-sm font-medium text-indigo-800 mb-1"
+                >
+                  Notes
+                </label>
                 <textarea
                   name="notes"
                   id="notes"
@@ -470,7 +612,12 @@ export default function NewExpense() {
                   onChange={handleInputChange}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <label htmlFor="budgeted" className="ml-2 block text-sm text-indigo-800">Budgeted</label>
+                <label
+                  htmlFor="budgeted"
+                  className="ml-2 block text-sm text-indigo-800"
+                >
+                  Budgeted
+                </label>
               </div>
               {/* Reimbursable */}
               <div className="flex items-center mt-2">
@@ -482,12 +629,22 @@ export default function NewExpense() {
                   onChange={handleInputChange}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <label htmlFor="reimbursable" className="ml-2 block text-sm text-indigo-800">Reimbursable</label>
+                <label
+                  htmlFor="reimbursable"
+                  className="ml-2 block text-sm text-indigo-800"
+                >
+                  Reimbursable
+                </label>
               </div>
               {/* Reimburse To (show if reimbursable) */}
               {expenseData.reimbursable && (
                 <div>
-                  <label htmlFor="reimburseTo" className="block text-sm font-medium text-indigo-800 mb-1">Reimburse To</label>
+                  <label
+                    htmlFor="reimburseTo"
+                    className="block text-sm font-medium text-indigo-800 mb-1"
+                  >
+                    Reimburse To
+                  </label>
                   <input
                     type="text"
                     name="reimburseTo"
@@ -514,7 +671,9 @@ export default function NewExpense() {
                   disabled={isSubmitting || mutationLoading}
                   className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting || mutationLoading ? "Submitting..." : "Submit Expense"}
+                  {isSubmitting || mutationLoading
+                    ? "Submitting..."
+                    : "Submit Expense"}
                 </button>
               </div>
             </div>

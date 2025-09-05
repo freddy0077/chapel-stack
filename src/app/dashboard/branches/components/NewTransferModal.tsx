@@ -6,7 +6,10 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useQuery } from "@apollo/client";
 import { GET_BRANCHES } from "../../../../graphql/queries/branchQueries";
 import { GET_MEMBERS_LIST } from "../../../../graphql/queries/memberQueries";
-import { useTransferRequests, TransferDataType } from "../../../../hooks/useTransferRequests";
+import {
+  useTransferRequests,
+  TransferDataType,
+} from "../../../../hooks/useTransferRequests";
 import { useOrganizationBranchFilter } from "../../../../hooks/useOrganizationBranchFilter";
 
 interface Branch {
@@ -28,11 +31,11 @@ interface NewTransferModalProps {
   onSuccess?: () => void;
 }
 
-export default function NewTransferModal({ 
-  isOpen, 
-  onClose, 
+export default function NewTransferModal({
+  isOpen,
+  onClose,
   currentBranchId,
-  onSuccess 
+  onSuccess,
 }: NewTransferModalProps) {
   // Form state
   const [memberId, setMemberId] = useState("");
@@ -42,38 +45,45 @@ export default function NewTransferModal({
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Get organization/branch filter
   const filter = useOrganizationBranchFilter();
 
   // Get branches for dropdown
-  const { data: branchesData, loading: loadingBranches } = useQuery(GET_BRANCHES, {
-    variables: {
-      pagination: { take: 100 }, // Fetch up to 100 branches
-      filter: {
-        isActive: true,
-        ...filter, // Include organization ID if available
+  const { data: branchesData, loading: loadingBranches } = useQuery(
+    GET_BRANCHES,
+    {
+      variables: {
+        pagination: { take: 100 }, // Fetch up to 100 branches
+        filter: {
+          isActive: true,
+          ...filter, // Include organization ID if available
+        },
       },
     },
-  });
+  );
 
   // Get members for dropdown (filtered by current branch)
-  const { data: membersData, loading: loadingMembers } = useQuery(GET_MEMBERS_LIST, {
-    variables: {
-      branchId: currentBranchId,
-      take: 50,
-      search: searchTerm,
+  const { data: membersData, loading: loadingMembers } = useQuery(
+    GET_MEMBERS_LIST,
+    {
+      variables: {
+        branchId: currentBranchId,
+        take: 50,
+        search: searchTerm,
+      },
+      skip: !currentBranchId,
     },
-    skip: !currentBranchId,
-  });
+  );
 
   // Get transfer actions
   const { actions } = useTransferRequests({ branchId: currentBranchId });
 
   // Filter out the current branch from the branches list
-  const branches = branchesData?.branches?.items?.filter(
-    (branch: Branch) => branch.id !== currentBranchId
-  ) || [];
+  const branches =
+    branchesData?.branches?.items?.filter(
+      (branch: Branch) => branch.id !== currentBranchId,
+    ) || [];
 
   // Members list
   const members = membersData?.members || [];
@@ -83,14 +93,18 @@ export default function NewTransferModal({
     { id: "personal", value: "PERSONAL", label: "Personal Information" },
     { id: "sacraments", value: "SACRAMENTS", label: "Sacramental Records" },
     { id: "ministries", value: "MINISTRIES", label: "Ministry Involvement" },
-    { id: "donation_history", value: "DONATION_HISTORY", label: "Donation History" },
+    {
+      id: "donation_history",
+      value: "DONATION_HISTORY",
+      label: "Donation History",
+    },
   ];
 
   // Handle checkbox changes for transfer data types
   const handleTransferDataChange = (type: TransferDataType) => {
-    setTransferData(prev => {
+    setTransferData((prev) => {
       if (prev.includes(type)) {
-        return prev.filter(item => item !== type);
+        return prev.filter((item) => item !== type);
       } else {
         return [...prev, type];
       }
@@ -100,31 +114,31 @@ export default function NewTransferModal({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!memberId) {
       setError("Please select a member");
       return;
     }
-    
+
     if (!destinationBranchId) {
       setError("Please select a destination branch");
       return;
     }
-    
+
     if (!reason.trim()) {
       setError("Please provide a reason for the transfer");
       return;
     }
-    
+
     if (transferData.length === 0) {
       setError("Please select at least one data type to transfer");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
-    
+
     try {
       await actions.createTransfer({
         memberId,
@@ -133,7 +147,7 @@ export default function NewTransferModal({
         reason,
         transferData,
       });
-      
+
       // Reset form and close modal
       setMemberId("");
       setDestinationBranchId("");
@@ -141,7 +155,7 @@ export default function NewTransferModal({
       setTransferData([]);
       setSearchTerm("");
       onClose();
-      
+
       // Call success callback if provided
       if (onSuccess) {
         onSuccess();
@@ -203,24 +217,30 @@ export default function NewTransferModal({
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
+                    >
                       New Member Transfer Request
                     </Dialog.Title>
-                    
+
                     <div className="mt-4">
                       {error && (
                         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400 text-sm">
                           {error}
                         </div>
                       )}
-                      
+
                       <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Member Selection */}
                         <div>
-                          <label htmlFor="member" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <label
+                            htmlFor="member"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >
                             Member to Transfer
                           </label>
                           <div className="mt-1">
@@ -232,16 +252,20 @@ export default function NewTransferModal({
                               className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white py-2 px-3"
                             />
                           </div>
-                          
+
                           {loadingMembers ? (
-                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading members...</div>
+                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                              Loading members...
+                            </div>
                           ) : members.length > 0 ? (
                             <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
                               {members.map((member: Member) => (
                                 <div
                                   key={member.id}
                                   className={`px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                                    memberId === member.id ? "bg-indigo-50 dark:bg-indigo-900/30" : ""
+                                    memberId === member.id
+                                      ? "bg-indigo-50 dark:bg-indigo-900/30"
+                                      : ""
                                   }`}
                                   onClick={() => setMemberId(member.id)}
                                 >
@@ -249,27 +273,36 @@ export default function NewTransferModal({
                                     {member.firstName} {member.lastName}
                                   </div>
                                   {member.email && (
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">{member.email}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      {member.email}
+                                    </div>
                                   )}
                                 </div>
                               ))}
                             </div>
                           ) : (
                             <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                              {searchTerm ? "No members found" : "Enter a search term to find members"}
+                              {searchTerm
+                                ? "No members found"
+                                : "Enter a search term to find members"}
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Destination Branch Selection */}
                         <div>
-                          <label htmlFor="destinationBranch" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <label
+                            htmlFor="destinationBranch"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >
                             Destination Branch
                           </label>
                           <select
                             id="destinationBranch"
                             value={destinationBranchId}
-                            onChange={(e) => setDestinationBranchId(e.target.value)}
+                            onChange={(e) =>
+                              setDestinationBranchId(e.target.value)
+                            }
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white py-2 px-3"
                           >
                             <option value="">Select destination branch</option>
@@ -284,10 +317,13 @@ export default function NewTransferModal({
                             )}
                           </select>
                         </div>
-                        
+
                         {/* Transfer Reason */}
                         <div>
-                          <label htmlFor="reason" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <label
+                            htmlFor="reason"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          >
                             Reason for Transfer
                           </label>
                           <textarea
@@ -299,7 +335,7 @@ export default function NewTransferModal({
                             placeholder="Explain why this member is being transferred..."
                           />
                         </div>
-                        
+
                         {/* Data to Transfer */}
                         <div>
                           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -311,18 +347,27 @@ export default function NewTransferModal({
                                 <input
                                   id={type.id}
                                   type="checkbox"
-                                  checked={transferData.includes(type.value as TransferDataType)}
-                                  onChange={() => handleTransferDataChange(type.value as TransferDataType)}
+                                  checked={transferData.includes(
+                                    type.value as TransferDataType,
+                                  )}
+                                  onChange={() =>
+                                    handleTransferDataChange(
+                                      type.value as TransferDataType,
+                                    )
+                                  }
                                   className="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <label htmlFor={type.id} className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                <label
+                                  htmlFor={type.id}
+                                  className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                                >
                                   {type.label}
                                 </label>
                               </div>
                             ))}
                           </div>
                         </div>
-                        
+
                         {/* Submit Button */}
                         <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                           <button
@@ -330,7 +375,9 @@ export default function NewTransferModal({
                             disabled={isSubmitting}
                             className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isSubmitting ? "Creating..." : "Create Transfer Request"}
+                            {isSubmitting
+                              ? "Creating..."
+                              : "Create Transfer Request"}
                           </button>
                           <button
                             type="button"

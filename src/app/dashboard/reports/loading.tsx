@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ReportsLoading() {
   return (
@@ -37,13 +37,13 @@ export default function ReportsLoading() {
                 <Skeleton className="h-10 w-full" />
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               {[1, 2, 3, 4].map((i) => (
                 <Skeleton key={i} className="h-8 w-[100px]" />
               ))}
             </div>
-            
+
             <div className="flex justify-end">
               <Skeleton className="h-9 w-[150px]" />
             </div>
@@ -54,7 +54,7 @@ export default function ReportsLoading() {
       <div className="mb-6">
         <Skeleton className="h-10 w-full" />
       </div>
-      
+
       {[1, 2].map((i) => (
         <Card key={i} className="mb-6">
           <CardHeader>

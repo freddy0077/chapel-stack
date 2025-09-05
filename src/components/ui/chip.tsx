@@ -7,20 +7,16 @@ const chipVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground hover:bg-primary/80",
+        default: "bg-primary text-primary-foreground hover:bg-primary/80",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        success:
-          "bg-green-100 text-green-800 hover:bg-green-200",
-        warning:
-          "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-        info:
-          "bg-blue-100 text-blue-800 hover:bg-blue-200",
+        success: "bg-green-100 text-green-800 hover:bg-green-200",
+        warning: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+        info: "bg-blue-100 text-blue-800 hover:bg-blue-200",
       },
       size: {
         default: "h-6 text-xs",
@@ -32,7 +28,7 @@ const chipVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export interface ChipProps
@@ -75,7 +71,7 @@ const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Chip.displayName = "Chip";

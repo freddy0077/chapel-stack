@@ -1,7 +1,7 @@
 "use client";
 
-import { MusicalNoteIcon } from '@heroicons/react/24/outline';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { MusicalNoteIcon } from "@heroicons/react/24/outline";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
 interface WorshipHeaderProps {
   onCreateService: () => void;
@@ -15,9 +15,12 @@ export default function WorshipHeader({ onCreateService }: WorshipHeaderProps) {
           <MusicalNoteIcon className="h-7 w-7" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-1">Worship Ministry</h1>
+          <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-1">
+            Worship Ministry
+          </h1>
           <p className="text-md text-gray-600 max-w-3xl">
-            Manage your worship team, song library, service planning, and resources all in one place.
+            Manage your worship team, song library, service planning, and
+            resources all in one place.
           </p>
         </div>
       </div>

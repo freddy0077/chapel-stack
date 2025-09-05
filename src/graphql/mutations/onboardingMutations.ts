@@ -1,5 +1,5 @@
 // src/graphql/mutations/onboardingMutations.ts
-import { gql } from '@apollo/client'; // Assuming Apollo Client
+import { gql } from "@apollo/client"; // Assuming Apollo Client
 
 export const CREATE_SUPER_ADMIN_USER = gql`
   mutation CreateSuperAdminUser(
@@ -79,22 +79,17 @@ export const INITIATE_BRANCH_SETUP = gql`
 `;
 
 export const CONFIGURE_INITIAL_SETTINGS = gql`
-  mutation ConfigureInitialSettings($branchId: ID!, $input: InitialSettingsInput!) {
+  mutation ConfigureInitialSettings(
+    $branchId: ID!
+    $input: InitialSettingsInput!
+  ) {
     configureInitialSettings(branchId: $branchId, input: $input)
   }
 `;
 
 export const IMPORT_MEMBER_DATA = gql`
-  mutation ImportMemberData(
-    $branchId: ID!
-    $file: Upload!
-    $mapping: String!
-  ) {
-    importMemberData(
-      branchId: $branchId
-      file: $file
-      mapping: $mapping
-    ) {
+  mutation ImportMemberData($branchId: ID!, $file: Upload!, $mapping: String!) {
+    importMemberData(branchId: $branchId, file: $file, mapping: $mapping) {
       success
       totalRecords
       importedRecords

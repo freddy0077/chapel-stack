@@ -1,36 +1,36 @@
-import { useQuery, useMutation } from '@apollo/client';
-import { 
-  GET_ALL_SMALL_GROUPS, 
-  GET_SINGLE_SMALL_GROUP, 
-  GET_FILTERED_SMALL_GROUPS 
-} from '../queries/groupQueries';
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_ALL_SMALL_GROUPS,
+  GET_SINGLE_SMALL_GROUP,
+  GET_FILTERED_SMALL_GROUPS,
+} from "../queries/groupQueries";
 import {
   CREATE_SMALL_GROUP,
   UPDATE_SMALL_GROUP,
   DELETE_SMALL_GROUP,
   ADD_MEMBER_TO_GROUP,
   REMOVE_MEMBER_FROM_GROUP,
-  UPDATE_GROUP_MEMBER
-} from '../mutations/groupMutations';
-import { OrganizationBranchFilterInput } from '../types/filters';
+  UPDATE_GROUP_MEMBER,
+} from "../mutations/groupMutations";
+import { OrganizationBranchFilterInput } from "../types/filters";
 
 // Define TypeScript interfaces for our data structures
 export enum SmallGroupStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  ARCHIVED = 'ARCHIVED'
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  ARCHIVED = "ARCHIVED",
 }
 
 export enum SmallGroupMemberRole {
-  LEADER = 'LEADER',
-  CO_LEADER = 'CO_LEADER',
-  MEMBER = 'MEMBER',
-  VISITOR = 'VISITOR'
+  LEADER = "LEADER",
+  CO_LEADER = "CO_LEADER",
+  MEMBER = "MEMBER",
+  VISITOR = "VISITOR",
 }
 
 export enum SmallGroupMemberStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
 }
 
 export interface Ministry {
@@ -136,12 +136,12 @@ export interface MutationResponse {
 // Custom hook for fetching all small groups
 export const useAllSmallGroups = () => {
   const { data, loading, error, refetch } = useQuery(GET_ALL_SMALL_GROUPS);
-  
+
   return {
     smallGroups: data?.smallGroups || [],
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
@@ -149,29 +149,35 @@ export const useAllSmallGroups = () => {
 export const useSmallGroup = (id: string) => {
   const { data, loading, error, refetch } = useQuery(GET_SINGLE_SMALL_GROUP, {
     variables: { id },
-    skip: !id
+    skip: !id,
   });
-  
+
   return {
     smallGroup: data?.smallGroup,
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
 // Custom hook for fetching filtered small groups
-export const useFilteredSmallGroups = (filters: SmallGroupFilterInput, skip: boolean = false) => {
-  const { data, loading, error, refetch } = useQuery(GET_FILTERED_SMALL_GROUPS, {
-    variables: { filters },
-    skip // Allow skipping the query when no valid branchId is available
-  });
-  
+export const useFilteredSmallGroups = (
+  filters: SmallGroupFilterInput,
+  skip: boolean = false,
+) => {
+  const { data, loading, error, refetch } = useQuery(
+    GET_FILTERED_SMALL_GROUPS,
+    {
+      variables: { filters },
+      skip, // Allow skipping the query when no valid branchId is available
+    },
+  );
+
   return {
     smallGroups: data?.smallGroups || [],
     loading,
     error,
-    refetch
+    refetch,
   };
 };
 
@@ -203,12 +209,12 @@ export const useSmallGroupMutations = () => {
           status: input.status,
           branchId: input.branchId,
           ministryId: input.ministryId,
-          organisationId: input.organisationId
-        }
+          organisationId: input.organisationId,
+        },
       });
       return data.createSmallGroup;
     } catch (error) {
-      console.error('Error creating small group:', error);
+      console.error("Error creating small group:", error);
       throw error;
     }
   };
@@ -218,11 +224,11 @@ export const useSmallGroupMutations = () => {
   const updateSmallGroup = async (id: string, input: UpdateSmallGroupInput) => {
     try {
       const { data } = await updateSmallGroupMutation({
-        variables: { id, input }
+        variables: { id, input },
       });
       return data.updateSmallGroup;
     } catch (error) {
-      console.error('Error updating small group:', error);
+      console.error("Error updating small group:", error);
       throw error;
     }
   };
@@ -232,18 +238,22 @@ export const useSmallGroupMutations = () => {
   const deleteSmallGroup = async (id: string) => {
     try {
       const { data } = await deleteSmallGroupMutation({
-        variables: { id }
+        variables: { id },
       });
       return data.deleteSmallGroup;
     } catch (error) {
-      console.error('Error deleting small group:', error);
+      console.error("Error deleting small group:", error);
       throw error;
     }
   };
 
   // Add member to group mutation
   const [addMemberToGroupMutation] = useMutation(ADD_MEMBER_TO_GROUP);
-  const addMemberToGroup = async ({ memberId, smallGroupId, role }: {
+  const addMemberToGroup = async ({
+    memberId,
+    smallGroupId,
+    role,
+  }: {
     memberId: string;
     smallGroupId: string;
     role: string;
@@ -253,12 +263,12 @@ export const useSmallGroupMutations = () => {
         variables: {
           groupId: smallGroupId,
           memberId,
-          roleInGroup: role
-        }
+          roleInGroup: role,
+        },
       });
       return data.addMemberToGroup;
     } catch (error) {
-      console.error('Error adding member to group:', error);
+      console.error("Error adding member to group:", error);
       throw error;
     }
   };
@@ -268,25 +278,28 @@ export const useSmallGroupMutations = () => {
   const removeMemberFromGroup = async (id: string) => {
     try {
       const { data } = await removeMemberFromGroupMutation({
-        variables: { id }
+        variables: { id },
       });
       return data.removeGroupMember;
     } catch (error) {
-      console.error('Error removing member from group:', error);
+      console.error("Error removing member from group:", error);
       throw error;
     }
   };
 
   // Update group member mutation
   const [updateGroupMemberMutation] = useMutation(UPDATE_GROUP_MEMBER);
-  const updateGroupMember = async (id: string, input: UpdateGroupMemberInput) => {
+  const updateGroupMember = async (
+    id: string,
+    input: UpdateGroupMemberInput,
+  ) => {
     try {
       const { data } = await updateGroupMemberMutation({
-        variables: { id, input }
+        variables: { id, input },
       });
       return data.updateGroupMember;
     } catch (error) {
-      console.error('Error updating group member:', error);
+      console.error("Error updating group member:", error);
       throw error;
     }
   };
@@ -297,12 +310,14 @@ export const useSmallGroupMutations = () => {
     deleteSmallGroup,
     addMemberToGroup,
     removeMemberFromGroup,
-    updateGroupMember
+    updateGroupMember,
   };
 };
 
 // Custom hook for filtered small groups with search functionality
-export const useFilteredSmallGroupsSearch = (filters: SmallGroupFilterInput) => {
+export const useFilteredSmallGroupsSearch = (
+  filters: SmallGroupFilterInput,
+) => {
   const GET_FILTERED_SMALL_GROUPS_SEARCH = gql`
     query GetFilteredSmallGroups($filters: SmallGroupFilterInput) {
       smallGroups(filters: $filters) {
@@ -324,15 +339,20 @@ export const useFilteredSmallGroupsSearch = (filters: SmallGroupFilterInput) => 
     }
   `;
 
-  const { data, loading, error, refetch } = useQuery(GET_FILTERED_SMALL_GROUPS_SEARCH, {
-    variables: { filters },
-    skip: !filters.organisationId || (filters.search && filters.search.length < 2)
-  });
+  const { data, loading, error, refetch } = useQuery(
+    GET_FILTERED_SMALL_GROUPS_SEARCH,
+    {
+      variables: { filters },
+      skip:
+        !filters.organisationId ||
+        (filters.search && filters.search.length < 2),
+    },
+  );
 
   return {
     smallGroups: data?.smallGroups || [],
     loading,
     error,
-    refetch
+    refetch,
   };
 };

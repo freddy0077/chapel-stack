@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextEnhanced';
+import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 interface UseProtectedRouteOptions {
   requiredRole?: string;
@@ -24,62 +24,61 @@ interface UserWithRoles {
  * @returns Nothing, but will redirect if the user is not authenticated
  */
 export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
-  const { requiredRole, redirectTo = '/auth/login' } = options;
+  const { requiredRole, redirectTo = "/auth/login" } = options;
   const router = useRouter();
   const { isAuthenticated, user, authLoading } = useAuth();
   const redirectInProgressRef = useRef(false);
   const effectRunCountRef = useRef(0);
 
-
   // Helper function to check if user has a role since useAuth may not provide hasRole
   const hasRequiredRole = (user: UserWithRoles, role: string): boolean => {
     if (!user) return false;
-    
+
     // Check primaryRole if it exists
     if (user.primaryRole === role) return true;
-    
+
     // Check roles array if it exists
     if (Array.isArray(user.roles)) {
-      return user.roles.some(userRole => 
-        typeof userRole === 'string' 
-          ? userRole === role 
-          : userRole?.name === role
+      return user.roles.some((userRole) =>
+        typeof userRole === "string"
+          ? userRole === role
+          : userRole?.name === role,
       );
     }
-    
+
     // Check role property directly
     return user.role === role;
   };
-  
+
   useEffect(() => {
     // Track how many times this effect runs
     effectRunCountRef.current += 1;
-    
+
     // Debug log
-    
+
     // Prevent redirect loops by checking if we're already handling a redirect
     if (redirectInProgressRef.current) {
       return;
     }
-    
+
     // Skip if still loading authentication state to avoid premature redirects
     if (authLoading) {
       return;
     }
-    
+
     // Check if we need to redirect to login
     const needsAuthRedirect = !isAuthenticated || !user;
-    
+
     if (needsAuthRedirect) {
       redirectInProgressRef.current = true;
-      
+
       // Safe redirect approach
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // If we're in the login page already, don't redirect again
-        if (window.location.pathname.includes('/auth/login')) {
+        if (window.location.pathname.includes("/auth/login")) {
           return;
         }
-        
+
         // Use setTimeout to ensure all state updates complete
         setTimeout(() => {
           window.location.href = redirectTo;
@@ -87,14 +86,14 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
       }
       return;
     }
-    
+
     // Role-based access control - if we get here, user is authenticated
     if (requiredRole && user) {
       const userHasRequiredRole = hasRequiredRole(user, requiredRole);
-      
+
       if (!userHasRequiredRole) {
         redirectInProgressRef.current = true;
-        router.replace('/dashboard');
+        router.replace("/dashboard");
       }
     }
   }, [isAuthenticated, user, authLoading, router, requiredRole, redirectTo]);

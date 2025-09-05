@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  SparklesIcon, 
-  PlusIcon, 
+import {
+  SparklesIcon,
+  PlusIcon,
   MagnifyingGlassIcon,
   CalendarIcon,
   MapPinIcon,
   UserIcon,
   DocumentTextIcon,
   FunnelIcon,
-  EyeIcon
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { SparklesIcon as SparklesIconSolid } from "@heroicons/react/24/solid";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -25,23 +25,29 @@ export default function BaptismRecordsPage() {
   const [dateFilter, setDateFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+
   const orgBranchFilter = useOrganizationBranchFilter();
-  const { records, loading, error, refetch } = useFilteredBaptismRecords(orgBranchFilter);
+  const { records, loading, error, refetch } =
+    useFilteredBaptismRecords(orgBranchFilter);
 
   // Filter records based on search and filters
-  const filteredRecords = records.filter(record => {
-    const matchesSearch = !searchTerm || 
-      record.member?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.member?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredRecords = records.filter((record) => {
+    const matchesSearch =
+      !searchTerm ||
+      record.member?.firstName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      record.member?.lastName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       record.officiant?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDate = !dateFilter || 
-      record.baptismDate?.includes(dateFilter);
-    
-    const matchesLocation = !locationFilter || 
+
+    const matchesDate = !dateFilter || record.baptismDate?.includes(dateFilter);
+
+    const matchesLocation =
+      !locationFilter ||
       record.location?.toLowerCase().includes(locationFilter.toLowerCase());
-    
+
     return matchesSearch && matchesDate && matchesLocation;
   });
 
@@ -59,7 +65,7 @@ export default function BaptismRecordsPage() {
           action={{
             label: "New Baptism",
             onClick: () => setIsCreateModalOpen(true),
-            icon: PlusIcon
+            icon: PlusIcon,
           }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -84,7 +90,7 @@ export default function BaptismRecordsPage() {
           action={{
             label: "New Baptism",
             onClick: () => setIsCreateModalOpen(true),
-            icon: PlusIcon
+            icon: PlusIcon,
           }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,7 +100,9 @@ export default function BaptismRecordsPage() {
                 <SparklesIcon className="h-6 w-6 text-red-500" />
               </div>
               <div>
-                <h3 className="text-sm font-medium text-red-800">Error Loading Records</h3>
+                <h3 className="text-sm font-medium text-red-800">
+                  Error Loading Records
+                </h3>
                 <p className="text-sm text-red-700 mt-1">
                   Unable to load baptism records. Please try again later.
                 </p>
@@ -115,10 +123,10 @@ export default function BaptismRecordsPage() {
         action={{
           label: "New Baptism",
           onClick: () => setIsCreateModalOpen(true),
-          icon: PlusIcon
+          icon: PlusIcon,
         }}
       />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -128,12 +136,16 @@ export default function BaptismRecordsPage() {
                 <SparklesIconSolid className="h-8 w-8 text-blue-500" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Baptisms</p>
-                <p className="text-2xl font-semibold text-gray-900">{records.length}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Baptisms
+                </p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {records.length}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border border-blue-100 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -142,12 +154,18 @@ export default function BaptismRecordsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">This Year</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {records.filter(r => r.baptismDate?.includes(new Date().getFullYear().toString())).length}
+                  {
+                    records.filter((r) =>
+                      r.baptismDate?.includes(
+                        new Date().getFullYear().toString(),
+                      ),
+                    ).length
+                  }
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border border-blue-100 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -156,26 +174,32 @@ export default function BaptismRecordsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">This Month</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {records.filter(r => {
-                    const recordDate = new Date(r.baptismDate || '');
-                    const now = new Date();
-                    return recordDate.getMonth() === now.getMonth() && 
-                           recordDate.getFullYear() === now.getFullYear();
-                  }).length}
+                  {
+                    records.filter((r) => {
+                      const recordDate = new Date(r.baptismDate || "");
+                      const now = new Date();
+                      return (
+                        recordDate.getMonth() === now.getMonth() &&
+                        recordDate.getFullYear() === now.getFullYear()
+                      );
+                    }).length
+                  }
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border border-blue-100 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <DocumentTextIcon className="h-8 w-8 text-blue-200" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">With Certificates</p>
+                <p className="text-sm font-medium text-gray-600">
+                  With Certificates
+                </p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {records.filter(r => r.certificate).length}
+                  {records.filter((r) => r.certificate).length}
                 </p>
               </div>
             </div>
@@ -188,7 +212,7 @@ export default function BaptismRecordsPage() {
             <FunnelIcon className="h-5 w-5 text-gray-400" />
             <h3 className="text-lg font-medium text-gray-900">Filters</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -205,7 +229,7 @@ export default function BaptismRecordsPage() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year
@@ -218,7 +242,7 @@ export default function BaptismRecordsPage() {
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location
@@ -238,12 +262,13 @@ export default function BaptismRecordsPage() {
         {filteredRecords.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <SparklesIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Baptism Records Found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Baptism Records Found
+            </h3>
             <p className="text-gray-600 mb-6">
-              {searchTerm || dateFilter || locationFilter 
-                ? "No records match your current filters." 
-                : "Get started by creating your first baptism record."
-              }
+              {searchTerm || dateFilter || locationFilter
+                ? "No records match your current filters."
+                : "Get started by creating your first baptism record."}
             </p>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -275,7 +300,7 @@ export default function BaptismRecordsPage() {
                     {record.baptismDate && (
                       <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
                         <span className="text-white text-xs font-medium">
-                          {format(new Date(record.baptismDate), 'MMM yyyy')}
+                          {format(new Date(record.baptismDate), "MMM yyyy")}
                         </span>
                       </div>
                     )}
@@ -287,33 +312,33 @@ export default function BaptismRecordsPage() {
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     <CalendarIcon className="h-4 w-4 text-gray-400" />
                     <span>
-                      {record.baptismDate 
-                        ? format(new Date(record.baptismDate), 'MMMM d, yyyy')
-                        : 'Date not specified'
-                      }
+                      {record.baptismDate
+                        ? format(new Date(record.baptismDate), "MMMM d, yyyy")
+                        : "Date not specified"}
                     </span>
                   </div>
-                  
+
                   {record.location && (
                     <div className="flex items-center space-x-3 text-sm text-gray-600">
                       <MapPinIcon className="h-4 w-4 text-gray-400" />
                       <span>{record.location}</span>
                     </div>
                   )}
-                  
+
                   {record.officiant && (
                     <div className="flex items-center space-x-3 text-sm text-gray-600">
                       <UserIcon className="h-4 w-4 text-gray-400" />
                       <span>Officiant: {record.officiant}</span>
                     </div>
                   )}
-                  
+
                   {record.sponsors && (
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">Sponsors:</span> {record.sponsors}
+                      <span className="font-medium">Sponsors:</span>{" "}
+                      {record.sponsors}
                     </div>
                   )}
-                  
+
                   {record.notes && (
                     <div className="text-sm text-gray-600">
                       <span className="font-medium">Notes:</span> {record.notes}
@@ -331,7 +356,7 @@ export default function BaptismRecordsPage() {
                       </span>
                     )}
                   </div>
-                  
+
                   <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <EyeIcon className="h-3 w-3 mr-1" />
                     View Details

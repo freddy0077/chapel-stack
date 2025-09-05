@@ -1,11 +1,11 @@
-import { useQuery } from '@apollo/client';
-import { useState } from 'react';
+import { useQuery } from "@apollo/client";
+import { useState } from "react";
 import {
   GET_SUBSCRIPTION_ANALYTICS,
   GET_SUBSCRIPTION_PAYMENTS,
   GET_FAILED_PAYMENTS,
   SubscriptionPayment,
-} from '../../graphql/subscription-management';
+} from "../../graphql/subscription-management";
 
 interface SubscriptionAnalytics {
   totalRevenue: number;
@@ -27,12 +27,14 @@ interface PaymentFilter {
   offset?: number;
 }
 
-export const useSubscriptionAnalytics = (period: 'MONTHLY' | 'QUARTERLY' | 'YEARLY' = 'MONTHLY') => {
+export const useSubscriptionAnalytics = (
+  period: "MONTHLY" | "QUARTERLY" | "YEARLY" = "MONTHLY",
+) => {
   const { data, loading, error, refetch } = useQuery<{
     subscriptionAnalytics: SubscriptionAnalytics;
   }>(GET_SUBSCRIPTION_ANALYTICS, {
     variables: { period },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {
@@ -48,7 +50,7 @@ export const useSubscriptionPayments = (filter?: PaymentFilter) => {
     subscriptionPayments: SubscriptionPayment[];
   }>(GET_SUBSCRIPTION_PAYMENTS, {
     variables: { filter },
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   const loadMore = () => {
@@ -86,7 +88,7 @@ export const useFailedPayments = () => {
   const { data, loading, error, refetch } = useQuery<{
     failedPayments: SubscriptionPayment[];
   }>(GET_FAILED_PAYMENTS, {
-    errorPolicy: 'all',
+    errorPolicy: "all",
   });
 
   return {
@@ -104,7 +106,7 @@ export const usePaymentFilters = () => {
   });
 
   const updateFilter = (key: keyof PaymentFilter, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
       offset: 0, // Reset offset when filter changes
@@ -119,7 +121,7 @@ export const usePaymentFilters = () => {
   };
 
   const setDateRange = (dateFrom: string, dateTo: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       dateFrom,
       dateTo,
@@ -144,28 +146,35 @@ export const useAnalyticsDashboard = () => {
     if (!analytics) return null;
 
     const totalFailedPayments = failedPayments.length;
-    const totalFailedAmount = failedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalFailedAmount = failedPayments.reduce(
+      (sum, payment) => sum + payment.amount,
+      0,
+    );
 
     return {
       // Revenue metrics
       mrr: analytics.monthlyRecurringRevenue,
       totalRevenue: analytics.totalRevenue,
       revenueGrowth: analytics.revenueGrowth,
-      
+
       // Customer metrics
       churnRate: analytics.churnRate,
       newSubscriptions: analytics.newSubscriptions,
       cancelledSubscriptions: analytics.cancelledSubscriptions,
       customerLifetimeValue: analytics.customerLifetimeValue,
       averageRevenuePerUser: analytics.averageRevenuePerUser,
-      
+
       // Payment metrics
       totalFailedPayments,
       totalFailedAmount,
-      
+
       // Calculated metrics
-      netSubscriptionGrowth: analytics.newSubscriptions - analytics.cancelledSubscriptions,
-      failureRate: totalFailedPayments > 0 ? (totalFailedPayments / (analytics.newSubscriptions || 1)) * 100 : 0,
+      netSubscriptionGrowth:
+        analytics.newSubscriptions - analytics.cancelledSubscriptions,
+      failureRate:
+        totalFailedPayments > 0
+          ? (totalFailedPayments / (analytics.newSubscriptions || 1)) * 100
+          : 0,
     };
   };
 

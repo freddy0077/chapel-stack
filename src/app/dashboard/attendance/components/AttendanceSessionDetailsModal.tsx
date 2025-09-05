@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 // If Transition.Root is not available in your version, use <Transition> instead of <Transition.Root> below.
 import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-import { useAttendanceRecordsForSession } from '@/graphql/hooks/useAttendance';
+import { useAttendanceRecordsForSession } from "@/graphql/hooks/useAttendance";
 
 interface AttendanceSessionDetailsModalProps {
   isOpen: boolean;
@@ -22,7 +22,11 @@ export default function AttendanceSessionDetailsModal({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { attendanceRecords: records, loading, error } = useAttendanceRecordsForSession({ sessionId });
+  const {
+    attendanceRecords: records,
+    loading,
+    error,
+  } = useAttendanceRecordsForSession({ sessionId });
 
   const filtered = records.filter((rec) => {
     const query = search.toLowerCase();
@@ -77,29 +81,43 @@ export default function AttendanceSessionDetailsModal({
                 <div className="px-6 pt-2 pb-2">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                     <div className="bg-indigo-100 rounded-lg p-3 flex flex-col items-center shadow">
-                      <span className="text-xl font-bold text-indigo-700">{records.length}</span>
-                      <span className="text-xs text-indigo-700">Total Records</span>
+                      <span className="text-xl font-bold text-indigo-700">
+                        {records.length}
+                      </span>
+                      <span className="text-xs text-indigo-700">
+                        Total Records
+                      </span>
                     </div>
                     <div className="bg-green-100 rounded-lg p-3 flex flex-col items-center shadow">
-                      <span className="text-xl font-bold text-green-700">{records.filter(r => r.visitorName).length}</span>
+                      <span className="text-xl font-bold text-green-700">
+                        {records.filter((r) => r.visitorName).length}
+                      </span>
                       <span className="text-xs text-green-700">Visitors</span>
                     </div>
                     <div className="bg-pink-100 rounded-lg p-3 flex flex-col items-center shadow">
-                      <span className="text-xl font-bold text-pink-700">{records.filter(r => r.checkInTime).length}</span>
+                      <span className="text-xl font-bold text-pink-700">
+                        {records.filter((r) => r.checkInTime).length}
+                      </span>
                       <span className="text-xs text-pink-700">Checked In</span>
                     </div>
                     <div className="bg-blue-100 rounded-lg p-3 flex flex-col items-center shadow">
-                      <span className="text-xl font-bold text-blue-700">{records.filter(r => r.checkOutTime).length}</span>
+                      <span className="text-xl font-bold text-blue-700">
+                        {records.filter((r) => r.checkOutTime).length}
+                      </span>
                       <span className="text-xs text-blue-700">Checked Out</span>
                     </div>
                   </div>
                 </div>
                 <div className="px-6 pb-2">
                   {loading && (
-                    <div className="my-6 text-center text-gray-500">Loading records...</div>
+                    <div className="my-6 text-center text-gray-500">
+                      Loading records...
+                    </div>
                   )}
                   {error && (
-                    <div className="my-6 text-center text-red-500">Error loading records. Please try again.</div>
+                    <div className="my-6 text-center text-red-500">
+                      Error loading records. Please try again.
+                    </div>
                   )}
                   {!loading && !error && (
                     <>
@@ -127,7 +145,9 @@ export default function AttendanceSessionDetailsModal({
                             }}
                           >
                             {[10, 20, 50, 100].map((size) => (
-                              <option key={size} value={size}>{size} / page</option>
+                              <option key={size} value={size}>
+                                {size} / page
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -136,64 +156,124 @@ export default function AttendanceSessionDetailsModal({
                         <table className="min-w-full divide-y divide-indigo-100 text-sm">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-4 py-2 text-left font-semibold">Name</th>
-                              <th className="px-4 py-2 text-left font-semibold">Check-in</th>
-                              <th className="px-4 py-2 text-left font-semibold">Check-out</th>
-                              <th className="px-4 py-2 text-left font-semibold">Type</th>
-                              <th className="px-4 py-2 text-left font-semibold">Notes</th>
-                              <th className="px-4 py-2 text-left font-semibold">Visitor?</th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Name
+                              </th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Check-in
+                              </th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Check-out
+                              </th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Type
+                              </th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Notes
+                              </th>
+                              <th className="px-4 py-2 text-left font-semibold">
+                                Visitor?
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
                             {paginated.length === 0 ? (
                               <tr>
-                                <td colSpan={6} className="py-8 text-center text-gray-400">No attendance records found.</td>
+                                <td
+                                  colSpan={6}
+                                  className="py-8 text-center text-gray-400"
+                                >
+                                  No attendance records found.
+                                </td>
                               </tr>
                             ) : (
                               paginated.map((rec) => (
-                                <tr key={rec.id} className="hover:bg-indigo-50 transition-colors duration-150">
+                                <tr
+                                  key={rec.id}
+                                  className="hover:bg-indigo-50 transition-colors duration-150"
+                                >
                                   <td className="px-4 py-2">
                                     {rec.visitorName ? (
                                       <span>{rec.visitorName}</span>
                                     ) : rec.memberId ? (
-                                      <span className="text-xs text-gray-500">Member ID: {rec.memberId}</span>
+                                      <span className="text-xs text-gray-500">
+                                        Member ID: {rec.memberId}
+                                      </span>
                                     ) : (
-                                      <span className="italic text-gray-400">Unknown</span>
+                                      <span className="italic text-gray-400">
+                                        Unknown
+                                      </span>
                                     )}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap">
                                     {rec.checkInTime ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
                                         <span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span>
-                                        {new Date(rec.checkInTime).toLocaleString()}
+                                        {new Date(
+                                          rec.checkInTime,
+                                        ).toLocaleString()}
                                       </span>
-                                    ) : <span className="text-gray-400">--</span>}
+                                    ) : (
+                                      <span className="text-gray-400">--</span>
+                                    )}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap">
                                     {rec.checkOutTime ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
                                         <span className="w-2 h-2 bg-blue-400 rounded-full inline-block"></span>
-                                        {new Date(rec.checkOutTime).toLocaleString()}
+                                        {new Date(
+                                          rec.checkOutTime,
+                                        ).toLocaleString()}
                                       </span>
-                                    ) : <span className="text-gray-400">--</span>}
+                                    ) : (
+                                      <span className="text-gray-400">--</span>
+                                    )}
                                   </td>
                                   <td className="px-4 py-2">
                                     {rec.checkInMethod ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-semibold">
                                         {rec.checkInMethod}
                                       </span>
-                                    ) : <span className="text-gray-400">--</span>}
+                                    ) : (
+                                      <span className="text-gray-400">--</span>
+                                    )}
                                   </td>
-                                  <td className="px-4 py-2">{rec.notes || ""}</td>
+                                  <td className="px-4 py-2">
+                                    {rec.notes || ""}
+                                  </td>
                                   <td className="px-4 py-2">
                                     {rec.visitorName ? (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-200 text-green-800 font-semibold">
-                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                        <svg
+                                          className="w-4 h-4 text-green-600"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M5 13l4 4L19 7"
+                                          />
+                                        </svg>
                                         Visitor
                                       </span>
                                     ) : (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 font-semibold">
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        <svg
+                                          className="w-4 h-4 text-gray-400"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6 18L18 6M6 6l12 12"
+                                          />
+                                        </svg>
                                         Member
                                       </span>
                                     )}
@@ -206,8 +286,12 @@ export default function AttendanceSessionDetailsModal({
                       </div>
                       <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 px-2">
                         <span className="text-sm text-indigo-700 font-medium bg-indigo-50 px-3 py-1 rounded-full shadow-sm">
-                          Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1}
-                          -{Math.min(page * pageSize, filtered.length)} of {filtered.length}
+                          Showing{" "}
+                          {filtered.length === 0
+                            ? 0
+                            : (page - 1) * pageSize + 1}
+                          -{Math.min(page * pageSize, filtered.length)} of{" "}
+                          {filtered.length}
                         </span>
                         <div className="flex gap-2">
                           <button
@@ -217,11 +301,15 @@ export default function AttendanceSessionDetailsModal({
                           >
                             Previous
                           </button>
-                          <span className="px-2 text-indigo-700 font-semibold">Page {page} of {totalPages}</span>
+                          <span className="px-2 text-indigo-700 font-semibold">
+                            Page {page} of {totalPages}
+                          </span>
                           <button
                             className="px-3 py-1 rounded-full border border-indigo-300 bg-white text-indigo-700 hover:bg-indigo-50 font-semibold shadow disabled:opacity-50"
                             disabled={page === totalPages}
-                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                            onClick={() =>
+                              setPage((p) => Math.min(totalPages, p + 1))
+                            }
                           >
                             Next
                           </button>

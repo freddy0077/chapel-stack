@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import { Label } from '../ui/label';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Loader2, Save, X } from 'lucide-react';
-import { ADD_EVENT_NOTES } from '../../graphql/mutations/eventMutations';
-import { GET_EVENT_BY_ID } from '../../graphql/queries/eventQueries';
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
+import { Alert, AlertDescription } from "../ui/alert";
+import { Loader2, Save, X } from "lucide-react";
+import { ADD_EVENT_NOTES } from "../../graphql/mutations/eventMutations";
+import { GET_EVENT_BY_ID } from "../../graphql/queries/eventQueries";
 
 interface EventNotesModalProps {
   isOpen: boolean;
@@ -22,7 +28,7 @@ export const EventNotesModal: React.FC<EventNotesModalProps> = ({
   onClose,
   eventId,
   eventTitle,
-  existingNotes = '',
+  existingNotes = "",
 }) => {
   const [notes, setNotes] = useState(existingNotes);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +51,9 @@ export const EventNotesModal: React.FC<EventNotesModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!notes.trim()) {
-      setError('Please enter some notes before saving.');
+      setError("Please enter some notes before saving.");
       return;
     }
 
@@ -62,7 +68,7 @@ export const EventNotesModal: React.FC<EventNotesModalProps> = ({
       });
     } catch (err) {
       // Error is handled by onError callback
-      console.error('Error adding event notes:', err);
+      console.error("Error adding event notes:", err);
     }
   };
 
@@ -81,7 +87,8 @@ export const EventNotesModal: React.FC<EventNotesModalProps> = ({
             Add Post-Event Notes
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Add detailed notes or a written report for: <strong>{eventTitle}</strong>
+            Add detailed notes or a written report for:{" "}
+            <strong>{eventTitle}</strong>
           </p>
         </DialogHeader>
 
@@ -118,10 +125,7 @@ export const EventNotesModal: React.FC<EventNotesModalProps> = ({
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || !notes.trim()}
-            >
+            <Button type="submit" disabled={loading || !notes.trim()}>
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

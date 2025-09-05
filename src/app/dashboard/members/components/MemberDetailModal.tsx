@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { 
+import React from "react";
+import {
   XMarkIcon,
   PencilIcon,
-  UserCircleIcon
-} from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Member } from '../types/member.types';
+  UserCircleIcon,
+} from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
+import { Member } from "../types/member.types";
 import {
   PersonalInfoSection,
   ContactInfoSection,
@@ -20,7 +20,7 @@ import {
   GroupMembershipsSection,
   ActivitiesSection,
   SacramentsSection,
-} from './MemberDetailSections';
+} from "./MemberDetailSections";
 
 interface MemberDetailModalProps {
   member: Member | null;
@@ -33,16 +33,18 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   member,
   isOpen,
   onClose,
-  onEdit
+  onEdit,
 }) => {
-  console.log('MemberDetailModal render:', { member, isOpen });
-  
+  console.log("MemberDetailModal render:", { member, isOpen });
+
   if (!member) {
-    console.log('MemberDetailModal: No member data provided');
+    console.log("MemberDetailModal: No member data provided");
     return null;
   }
 
-  const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(' ');
+  const fullName = [member.firstName, member.middleName, member.lastName]
+    .filter(Boolean)
+    .join(" ");
   const displayName = member.preferredName || fullName;
 
   return (
@@ -57,7 +59,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
             className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
             onClick={onClose}
           />
-          
+
           {/* Modal Container */}
           <div className="flex items-start justify-center min-h-screen px-4 pt-4 pb-20">
             <motion.div
@@ -86,10 +88,12 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Member Info */}
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{displayName}</h2>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {displayName}
+                      </h2>
                       <div className="flex items-center space-x-4 mt-1">
                         <span className="text-sm text-gray-500">
                           {member.membershipStatus}
@@ -102,7 +106,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Actions */}
                   <div className="flex items-center space-x-3">
                     {onEdit && (
@@ -114,7 +118,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                         Edit Member
                       </button>
                     )}
-                    
+
                     <button
                       onClick={onClose}
                       className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -136,7 +140,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                     <FamilyRelationshipsSection member={member} />
                     <GroupMembershipsSection member={member} />
                   </div>
-                  
+
                   {/* Right Column */}
                   <div className="space-y-6">
                     <MembershipInfoSection member={member} />
