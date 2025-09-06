@@ -6,6 +6,7 @@ import {
   usePastoralCareStats,
   usePastoralCareRecentActivity,
   useCareRequests,
+  useCareRequestsCount,
   useUpdateCareRequest,
   usePastoralVisits,
   useCounselingSessions,
@@ -44,6 +45,10 @@ export default function PastoralCarePage() {
   const { organisationId, branchId } = useOrganisationBranch();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Pagination state for care requests
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch data using our custom hooks
   const {
@@ -65,7 +70,17 @@ export default function PastoralCarePage() {
     loading: requestsLoading,
     error: requestsError,
     refetch: refetchRequests,
-  } = useCareRequests();
+  } = useCareRequests(
+    {}, // filter
+    (currentPage - 1) * pageSize, // skip
+    pageSize // take
+  );
+  
+  const {
+    count: totalCareRequests,
+    loading: countLoading,
+  } = useCareRequestsCount();
+  
   const { updateCareRequest, loading: updating } = useUpdateCareRequest();
   const {
     pastoralVisits,
@@ -101,9 +116,20 @@ export default function PastoralCarePage() {
     setIsCreateModalOpen(true);
   }, []);
 
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  }, []);
+
   const handleCreateSuccess = useCallback(() => {
     // Refetch requests to show the new request
     refetchRequests();
+    // Reset to first page to see the new request
+    setCurrentPage(1);
     // Show success toast
     toast.success('Care request created successfully', {
       icon: '💙',
@@ -243,12 +269,12 @@ export default function PastoralCarePage() {
           className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
         >
           {[
-            { label: 'Total Requests', value: stats?.totalRequests ?? 0, icon: DocumentTextIcon, color: 'from-rose-500 to-rose-600' },
-            { label: 'Active', value: stats?.activeRequests ?? 0, icon: ClockIcon, color: 'from-orange-500 to-orange-600' },
-            { label: 'Completed', value: stats?.completedRequests ?? 0, icon: CheckCircleIcon, color: 'from-green-500 to-green-600' },
+            { label: 'Total Requests', value: stats?.totalCareRequests ?? 0, icon: DocumentTextIcon, color: 'from-rose-500 to-rose-600' },
+            { label: 'Active', value: stats?.openCareRequests ?? 0, icon: ClockIcon, color: 'from-orange-500 to-orange-600' },
+            { label: 'Completed', value: stats?.resolvedCareRequests ?? 0, icon: CheckCircleIcon, color: 'from-green-500 to-green-600' },
             { label: 'Visits', value: stats?.totalVisits ?? 0, icon: HomeIcon, color: 'from-blue-500 to-blue-600' },
-            { label: 'Counseling', value: stats?.totalCounselingSessions ?? 0, icon: ChatBubbleOvalLeftEllipsisIcon, color: 'from-purple-500 to-purple-600' },
-            { label: 'Follow-ups', value: followUpReminders?.length ?? 0, icon: BellAlertIcon, color: 'from-indigo-500 to-indigo-600' },
+            { label: 'Counseling', value: stats?.totalSessions ?? 0, icon: ChatBubbleOvalLeftEllipsisIcon, color: 'from-purple-500 to-purple-600' },
+            { label: 'Follow-ups', value: stats?.totalReminders ?? 0, icon: BellAlertIcon, color: 'from-indigo-500 to-indigo-600' },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -370,9 +396,14 @@ export default function PastoralCarePage() {
                   >
                     <CareRequestsList
                       requests={careRequests}
-                      loading={requestsLoading}
+                      loading={requestsLoading || countLoading}
+                      totalCount={totalCareRequests || 0}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
                       onCreateRequest={handleCreateRequest}
                       onUpdateRequest={handleUpdateRequest}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={handlePageSizeChange}
                     />
                   </motion.div>
                 </div>

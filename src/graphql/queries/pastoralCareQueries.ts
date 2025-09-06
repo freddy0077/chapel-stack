@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 
 // Get pastoral care statistics
 export const GET_PASTORAL_CARE_STATS = gql`
-  query GetPastoralCareStats {
-    pastoralCareStats {
+  query GetPastoralCareStats($organisationId: String!, $branchId: String) {
+    pastoralCareStats(organisationId: $organisationId, branchId: $branchId) {
       totalVisits
       completedVisits
       upcomingVisits

@@ -309,7 +309,17 @@ export interface UpdateFollowUpReminderInput {
 
 // Get pastoral care statistics
 export function usePastoralCareStats() {
-  const { data, loading, error } = useQuery(GET_PASTORAL_CARE_STATS);
+  const { organisationId, branchId } = useOrganisationBranch();
+  
+  const { data, loading, error } = useQuery(GET_PASTORAL_CARE_STATS, {
+    variables: organisationId ? {
+      organisationId,
+      branchId,
+    } : undefined,
+    skip: !organisationId, // Skip if no organisationId
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
+  });
 
   return {
     stats: data?.pastoralCareStats as PastoralCareStats | undefined,

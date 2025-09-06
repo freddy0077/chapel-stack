@@ -494,8 +494,8 @@ export const COMPLETE_FOLLOW_UP_REMINDER = gql`
 
 // Dashboard and Statistics Queries
 export const GET_PASTORAL_CARE_STATS = gql`
-  query GetPastoralCareStats {
-    pastoralCareStats {
+  query GetPastoralCareStats($organisationId: String, $branchId: String) {
+    pastoralCareStats(organisationId: $organisationId, branchId: $branchId) {
       totalVisits
       totalSessions
       totalCareRequests
@@ -507,6 +507,7 @@ export const GET_PASTORAL_CARE_STATS = gql`
       upcomingVisits
       upcomingSessions
       openCareRequests
+      pendingReminders
     }
   }
 `;
@@ -686,6 +687,7 @@ export interface PastoralCareStats {
   upcomingVisits: number;
   upcomingSessions: number;
   openCareRequests: number;
+  pendingReminders: number;
 }
 
 export interface PastoralCareActivity {

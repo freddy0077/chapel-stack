@@ -10,6 +10,7 @@ export function useOrganisationBranch() {
   const user = state.user;
 
   const values = useMemo(() => {
+
     if (!user) {
       return {
         organisationId: undefined,
@@ -20,6 +21,7 @@ export function useOrganisationBranch() {
 
     const organisationId = user.organisationId || undefined;
     const branchId = user.userBranches?.[0]?.branch?.id || undefined;
+
 
     return {
       organisationId,

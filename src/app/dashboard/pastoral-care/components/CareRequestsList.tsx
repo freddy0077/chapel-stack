@@ -11,14 +11,21 @@ import {
   ClockIcon,
   PlusIcon,
   FunnelIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { CareRequest } from "@/graphql/hooks/usePastoralCare";
 
 interface CareRequestsListProps {
   requests?: CareRequest[];
   loading: boolean;
+  totalCount?: number;
+  currentPage?: number;
+  pageSize?: number;
   onCreateRequest?: () => void;
   onUpdateRequest?: (id: string, updates: any) => void;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 function getPriorityColor(priority: string) {
@@ -316,35 +323,41 @@ function CareRequestSkeleton() {
 export default function CareRequestsList({
   requests,
   loading,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 10,
   onCreateRequest,
   onUpdateRequest,
+  onPageChange,
+  onPageSizeChange,
 }: CareRequestsListProps) {
   const [filter, setFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
 
-  const filteredRequests =
-    requests?.filter((request) => {
-      if (filter === "all") return true;
-      return request.status.toLowerCase() === filter.toLowerCase();
-    }) || [];
+  // Since we're using server-side pagination, we don't need client-side filtering/sorting
+  // The filtering and sorting should be handled by the parent component via GraphQL variables
+  const displayRequests = requests || [];
 
-  const sortedRequests = [...filteredRequests].sort((a, b) => {
-    switch (sortBy) {
-      case "priority":
-        const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
-        return (
-          (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) -
-          (priorityOrder[a.priority as keyof typeof priorityOrder] || 0)
-        );
-      case "status":
-        return a.status.localeCompare(b.status);
-      case "date":
-      default:
-        return (
-          new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
-        );
+  // Calculate pagination info
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
+
+  const handlePageChange = (newPage: number) => {
+    if (onPageChange && newPage >= 1 && newPage <= totalPages) {
+      onPageChange(newPage);
     }
-  });
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    if (onPageSizeChange) {
+      onPageSizeChange(newPageSize);
+      // Reset to first page when changing page size
+      if (onPageChange) {
+        onPageChange(1);
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -370,30 +383,16 @@ export default function CareRequestsList({
         </div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 bg-white/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
-              <FunnelIcon className="h-5 w-5 text-indigo-500" />
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="text-sm bg-transparent border-none focus:ring-0 focus:outline-none text-gray-700 font-medium"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="assigned">Assigned</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
             <div className="bg-white/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="text-sm bg-transparent border-none focus:ring-0 focus:outline-none text-gray-700 font-medium"
               >
-                <option value="date">Sort by Date</option>
-                <option value="priority">Sort by Priority</option>
-                <option value="status">Sort by Status</option>
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
               </select>
             </div>
           </div>
@@ -412,7 +411,7 @@ export default function CareRequestsList({
         </div>
       </div>
 
-      {sortedRequests.length === 0 ? (
+      {displayRequests.length === 0 ? (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -423,9 +422,7 @@ export default function CareRequestsList({
           </div>
           <h4 className="text-lg font-semibold text-gray-900 mb-2">No care requests found</h4>
           <p className="text-gray-600 max-w-md mx-auto">
-            {filter === "all"
-              ? "Care requests will appear here when members submit them"
-              : `No requests with status: ${filter}`}
+            Care requests will appear here when members submit them
           </p>
         </motion.div>
       ) : (
@@ -435,7 +432,7 @@ export default function CareRequestsList({
           className="space-y-6"
         >
           <AnimatePresence>
-            {sortedRequests.map((request, index) => (
+            {displayRequests.map((request, index) => (
               <motion.div
                 key={request.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -453,18 +450,83 @@ export default function CareRequestsList({
         </motion.div>
       )}
 
-      {sortedRequests.length > 0 && (
+      {/* Pagination Controls */}
+      {totalCount > 0 && (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-8 text-center"
+          className="mt-8 flex items-center justify-between"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
-            <span className="text-sm font-medium text-gray-700">
-              Showing {sortedRequests.length} of {requests?.length || 0} requests
-            </span>
+          {/* Pagination Info */}
+          <div className="flex items-center space-x-4">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+              <span className="text-sm font-medium text-gray-700">
+                Showing {startItem} to {endItem} of {totalCount} requests
+              </span>
+            </div>
           </div>
+
+          {/* Pagination Buttons */}
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentPage <= 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <ChevronLeftIcon className="h-4 w-4 mr-1" />
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        currentPage === pageNum
+                          ? 'bg-indigo-600 text-white shadow-lg'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentPage >= totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                Next
+                <ChevronRightIcon className="h-4 w-4 ml-1" />
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
     </div>
