@@ -44,7 +44,8 @@ export default function NewEventModal({
   error,
   mode = "event",
 }: NewEventModalProps) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const user = state.user;
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
     useOrganizationBranchFilter();
   const [form, setForm] = useState<
@@ -61,8 +62,21 @@ export default function NewEventModal({
   const [localError, setLocalError] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 
-  // Check if user data is loaded
-  const isUserLoaded = user && user.id;
+  // Check if user data is loaded and authentication state
+  const isUserLoaded = user && user.id && state.isAuthenticated;
+  const isAuthLoading = !state.isHydrated;
+
+  // Debug logging to help identify the issue
+  console.log('NewEventModal Debug:', {
+    isOpen,
+    user,
+    state,
+    isUserLoaded,
+    isAuthLoading,
+    branchIdFromFilter,
+    orgIdFromFilter,
+    userBranches: user?.userBranches
+  });
 
   // Branch selection logic
   const isSuperAdmin = user?.primaryRole === "SUPER_ADMIN";
@@ -80,16 +94,25 @@ export default function NewEventModal({
         ? user.userBranches[0].branch.id
         : undefined);
 
-  // Get branch name for display - simplified logic
+  // Get branch name for display - improved logic with better fallbacks
   let branchName = "";
+  let branchDisplayText = "";
 
-  if (isSuperAdmin) {
+  if (isAuthLoading) {
+    branchDisplayText = "Loading authentication...";
+  } else if (!isUserLoaded) {
+    branchDisplayText = "User data not available";
+  } else if (isSuperAdmin) {
     // For super admin, show selected branch from dropdown
     branchName = branches.find((b) => b.id === selectedBranchId)?.name || "";
+    branchDisplayText = branchName || "Select a branch";
   } else {
     // For regular users, show their current branch
-    if (isUserLoaded && user?.userBranches && user.userBranches.length > 0) {
+    if (user?.userBranches && user.userBranches.length > 0) {
       branchName = user.userBranches[0].branch.name || "";
+      branchDisplayText = branchName || "Branch name not available";
+    } else {
+      branchDisplayText = "No branch assigned";
     }
   }
 
@@ -195,21 +218,22 @@ export default function NewEventModal({
                       </label>
                       <input
                         type="text"
-                        value={
-                          !isUserLoaded
-                            ? "Loading user data..."
-                            : branchName || "No branch assigned"
-                        }
+                        value={branchDisplayText}
                         className="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed sm:text-sm"
                         disabled
                         placeholder="Your branch will appear here"
                       />
-                      {!isUserLoaded && (
+                      {isAuthLoading && (
                         <p className="mt-1 text-xs text-blue-500">
-                          Loading user information...
+                          Loading authentication state...
                         </p>
                       )}
-                      {isUserLoaded && !branchName && (
+                      {!isAuthLoading && !isUserLoaded && (
+                        <p className="mt-1 text-xs text-orange-500">
+                          Authentication required. Please refresh the page.
+                        </p>
+                      )}
+                      {isUserLoaded && !branchName && !isSuperAdmin && (
                         <p className="mt-1 text-xs text-red-500">
                           No branch assigned to your account. Please contact
                           your administrator.

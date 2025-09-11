@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   UsersIcon,
   MagnifyingGlassIcon,
@@ -17,151 +18,160 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { 
+  GET_STAFF_MEMBERS, 
+  GET_STAFF_STATISTICS, 
+  GET_AVAILABLE_ROLES, 
+  GET_AVAILABLE_BRANCHES 
+} from "@/graphql/queries/staffQueries";
+import { 
+  CREATE_STAFF_MEMBER, 
+  UPDATE_STAFF_MEMBER, 
+  DELETE_STAFF_MEMBER, 
+  TOGGLE_STAFF_STATUS 
+} from "@/graphql/mutations/staffMutations";
 
-// Types for staff management
+// Types for staff management based on backend User schema
 interface StaffMember {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
-  role: string;
-  department?: string;
-  branch?: string;
-  status: "active" | "inactive" | "suspended";
-  hireDate: Date;
-  lastLogin?: Date;
-  permissions: string[];
-  avatar?: string;
+  phoneNumber?: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  userBranches: {
+    branchId: string;
+    roleId: string;
+    branch: {
+      id: string;
+      name: string;
+    };
+    role: {
+      id: string;
+      name: string;
+      description?: string;
+    };
+  }[];
+  roles: {
+    id: string;
+    name: string;
+    description?: string;
+  }[];
+  member?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string;
+    status: string;
+  };
 }
 
-// Mock staff data
-const mockStaffMembers: StaffMember[] = [
-  {
-    id: "1",
-    firstName: "John",
-    lastName: "Smith",
-    email: "john.smith@church.org",
-    phone: "+1 (555) 123-4567",
-    role: "Senior Pastor",
-    department: "Ministry",
-    branch: "Main Campus",
-    status: "active",
-    hireDate: new Date("2020-01-15"),
-    lastLogin: new Date("2024-12-30"),
-    permissions: ["manage_members", "conduct_services", "manage_ministries"],
-  },
-  {
-    id: "2",
-    firstName: "Sarah",
-    lastName: "Johnson",
-    email: "sarah.johnson@church.org",
-    phone: "+1 (555) 234-5678",
-    role: "Worship Leader",
-    department: "Music",
-    branch: "Main Campus",
-    status: "active",
-    hireDate: new Date("2021-03-10"),
-    lastLogin: new Date("2024-12-29"),
-    permissions: ["manage_worship", "schedule_events"],
-  },
-  {
-    id: "3",
-    firstName: "Michael",
-    lastName: "Brown",
-    email: "michael.brown@church.org",
-    phone: "+1 (555) 345-6789",
-    role: "Youth Pastor",
-    department: "Youth Ministry",
-    branch: "East Campus",
-    status: "active",
-    hireDate: new Date("2022-06-01"),
-    lastLogin: new Date("2024-12-28"),
-    permissions: ["manage_youth", "schedule_events"],
-  },
-  {
-    id: "4",
-    firstName: "Emily",
-    lastName: "Davis",
-    email: "emily.davis@church.org",
-    phone: "+1 (555) 456-7890",
-    role: "Administrative Assistant",
-    department: "Administration",
-    branch: "Main Campus",
-    status: "active",
-    hireDate: new Date("2023-01-15"),
-    lastLogin: new Date("2024-12-30"),
-    permissions: ["manage_events", "view_reports"],
-  },
-  {
-    id: "5",
-    firstName: "David",
-    lastName: "Wilson",
-    email: "david.wilson@church.org",
-    phone: "+1 (555) 567-8901",
-    role: "Finance Manager",
-    department: "Finance",
-    branch: "Main Campus",
-    status: "inactive",
-    hireDate: new Date("2019-09-01"),
-    lastLogin: new Date("2024-11-15"),
-    permissions: ["manage_finances", "view_reports", "manage_donations"],
-  },
-];
+interface StaffStatistics {
+  totalStaff: number;
+  activeStaff: number;
+  inactiveStaff: number;
+  totalDepartments: number;
+  totalBranches: number;
+  recentHires: number;
+}
 
-const departments = [
-  "Ministry",
-  "Music",
-  "Youth Ministry",
-  "Administration",
-  "Finance",
-  "Maintenance",
-  "Security",
-];
-const branches = ["Main Campus", "East Campus", "West Campus", "South Campus"];
-const roles = [
-  "Senior Pastor",
-  "Associate Pastor",
-  "Youth Pastor",
-  "Worship Leader",
-  "Administrative Assistant",
-  "Finance Manager",
-  "Maintenance Staff",
-  "Security Staff",
-];
+interface Role {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface Branch {
+  id: string;
+  name: string;
+  address?: string;
+  isActive: boolean;
+}
+
+// Helper functions for staff data transformation
+const transformUserToStaffMember = (user: any): StaffMember => {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    isActive: user.isActive,
+    isEmailVerified: user.isEmailVerified,
+    lastLoginAt: user.lastLoginAt,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    userBranches: user.userBranches || [],
+    roles: user.roles || [],
+    member: user.member,
+  };
+};
+
+const getStaffStatus = (staff: StaffMember): "active" | "inactive" | "suspended" => {
+  if (!staff.isActive) return "inactive";
+  if (!staff.isEmailVerified) return "suspended";
+  return "active";
+};
+
+const getStaffRole = (staff: StaffMember): string => {
+  if (staff.userBranches.length > 0) {
+    return staff.userBranches[0].role.name;
+  }
+  if (staff.roles.length > 0) {
+    return staff.roles[0].name;
+  }
+  return "No Role Assigned";
+};
+
+const getStaffBranch = (staff: StaffMember): string => {
+  if (staff.userBranches.length > 0) {
+    return staff.userBranches[0].branch.name;
+  }
+  return "No Branch Assigned";
+};
 
 function StaffModal({
   isOpen,
   onClose,
   staff,
   onSave,
+  roles,
+  branches,
 }: {
   isOpen: boolean;
   onClose: () => void;
   staff?: StaffMember;
-  onSave: (staff: StaffMember) => void;
+  onSave: (staff: any) => void;
+  roles: Role[];
+  branches: Branch[];
 }) {
-  const [formData, setFormData] = useState<Partial<StaffMember>>(
-    staff || {
+  const [formData, setFormData] = useState<any>(
+    staff ? {
+      firstName: staff.firstName,
+      lastName: staff.lastName,
+      email: staff.email,
+      phoneNumber: staff.phoneNumber || "",
+      roleId: staff.roles[0]?.id || "",
+      branchId: "",
+      isActive: staff.isActive,
+    } : {
       firstName: "",
       lastName: "",
       email: "",
-      phone: "",
-      role: "",
-      department: "",
-      branch: "",
-      status: "active",
-      hireDate: new Date(),
-      permissions: [],
+      phoneNumber: "",
+      roleId: "",
+      branchId: "",
+      isActive: true,
     },
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      id: staff?.id || Date.now().toString(),
-    } as StaffMember);
+    onSave(formData);
     onClose();
   };
 
@@ -229,9 +239,9 @@ function StaffModal({
               </label>
               <input
                 type="tel"
-                value={formData.phone || ""}
+                value={formData.phoneNumber || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({ ...formData, phoneNumber: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -242,57 +252,39 @@ function StaffModal({
                 Role
               </label>
               <select
-                value={formData.role || ""}
+                value={formData.roleId || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
+                  setFormData({ ...formData, roleId: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Select Role</option>
                 {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
+                  <option key={role.id} value={role.id}>
+                    {role.name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department
-              </label>
-              <select
-                value={formData.department || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, department: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Branch
               </label>
               <select
-                value={formData.branch || ""}
+                value={formData.branchId || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, branch: e.target.value })
+                  setFormData({ ...formData, branchId: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
               >
                 <option value="">Select Branch</option>
-                {branches.map((branch) => (
-                  <option key={branch} value={branch}>
-                    {branch}
+                {branches.filter(b => b.isActive).map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
                   </option>
                 ))}
               </select>
@@ -303,21 +295,17 @@ function StaffModal({
                 Status
               </label>
               <select
-                value={formData.status || "active"}
+                value={formData.isActive ? "active" : "inactive"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value as
-                      | "active"
-                      | "inactive"
-                      | "suspended",
+                    isActive: e.target.value === "active",
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
               </select>
             </div>
           </div>
@@ -345,27 +333,125 @@ function StaffModal({
 
 export default function StaffManagementPage() {
   const { state } = useAuth();
-  const [staffMembers, setStaffMembers] =
-    useState<StaffMember[]>(mockStaffMembers);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const filteredStaff = staffMembers.filter((staff) => {
-    const matchesSearch =
-      staff.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.role.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDepartment =
-      !selectedDepartment || staff.department === selectedDepartment;
-    const matchesStatus = !selectedStatus || staff.status === selectedStatus;
-
-    return matchesSearch && matchesDepartment && matchesStatus;
+  // GraphQL queries
+  const { data: staffData, loading: staffLoading, error: staffError, refetch: refetchStaff } = useQuery(GET_STAFF_MEMBERS, {
+    variables: {
+      pagination: {
+        skip: (currentPage - 1) * itemsPerPage,
+        take: itemsPerPage,
+      },
+      filter: {
+        isActive: true,
+        organisationId: state.user?.organisationId,
+      },
+    },
+    skip: !state.user?.organisationId,
+    fetchPolicy: "cache-and-network",
   });
+
+  const { data: statsData, loading: statsLoading } = useQuery(GET_STAFF_STATISTICS, {
+    variables: { organisationId: state.user?.organisationId },
+    skip: !state.user?.organisationId,
+  });
+
+  const { data: rolesData } = useQuery(GET_AVAILABLE_ROLES, {
+    variables: { organisationId: state.user?.organisationId },
+    skip: !state.user?.organisationId,
+  });
+
+  const { data: branchesData } = useQuery(GET_AVAILABLE_BRANCHES, {
+    variables: { organisationId: state.user?.organisationId },
+    skip: !state.user?.organisationId,
+  });
+
+  // GraphQL mutations
+  const [createStaffMember, { loading: createLoading }] = useMutation(CREATE_STAFF_MEMBER, {
+    onCompleted: () => {
+      refetchStaff();
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error creating staff member:", error);
+    },
+  });
+
+  const [updateStaffMember, { loading: updateLoading }] = useMutation(UPDATE_STAFF_MEMBER, {
+    onCompleted: () => {
+      refetchStaff();
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error updating staff member:", error);
+    },
+  });
+
+  const [deleteStaffMember] = useMutation(DELETE_STAFF_MEMBER, {
+    onCompleted: () => {
+      refetchStaff();
+    },
+    onError: (error) => {
+      console.error("Error deleting staff member:", error);
+    },
+  });
+
+  const [toggleStaffStatus] = useMutation(TOGGLE_STAFF_STATUS, {
+    onCompleted: () => {
+      refetchStaff();
+    },
+    onError: (error) => {
+      console.error("Error toggling staff status:", error);
+    },
+  });
+
+  // Transform and filter data
+  const staffMembers = useMemo(() => {
+    if (!staffData?.adminUsers?.items) return [];
+    return staffData.adminUsers.items.map((user: any) => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber || "",
+      isActive: user.isActive,
+      isEmailVerified: user.isEmailVerified || true,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt || new Date().toISOString(),
+      updatedAt: user.updatedAt || new Date().toISOString(),
+      userBranches: [],
+      roles: user.roles || [],
+      member: user.member,
+    }));
+  }, [staffData]);
+
+  const roles = rolesData?.roles || [];
+  const branches = branchesData?.branches || [];
+  const statistics = statsData?.staffStatistics;
+
+  const filteredStaff = useMemo(() => {
+    return staffMembers.filter((staff) => {
+      const matchesSearch =
+        staff.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        staff.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getStaffRole(staff).toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesRole = !selectedRole || 
+        staff.roles.some(r => r.name === selectedRole);
+      
+      const staffStatus = getStaffStatus(staff);
+      const matchesStatus = !selectedStatus || staffStatus === selectedStatus;
+
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [staffMembers, searchTerm, selectedRole, selectedStatus]);
 
   const handleAddStaff = () => {
     setEditingStaff(undefined);
@@ -377,23 +463,58 @@ export default function StaffManagementPage() {
     setIsModalOpen(true);
   };
 
-  const handleSaveStaff = (staff: StaffMember) => {
-    if (editingStaff) {
-      setStaffMembers((prev) =>
-        prev.map((s) => (s.id === staff.id ? staff : s)),
-      );
-    } else {
-      setStaffMembers((prev) => [...prev, staff]);
+  const handleSaveStaff = async (formData: any) => {
+    try {
+      if (editingStaff) {
+        await updateStaffMember({
+          variables: {
+            id: editingStaff.id,
+            input: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phoneNumber: formData.phoneNumber,
+              isActive: formData.isActive,
+              roleId: formData.roleId,
+              branchId: formData.branchId,
+            },
+          },
+        });
+      } else {
+        await createStaffMember({
+          variables: {
+            input: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phoneNumber: formData.phoneNumber,
+              isActive: formData.isActive,
+              roleId: formData.roleId,
+              branchId: formData.branchId,
+              organisationId: state.user?.organisationId,
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error saving staff member:", error);
     }
   };
 
-  const handleDeleteStaff = (id: string) => {
+  const handleDeleteStaff = async (id: string) => {
     if (confirm("Are you sure you want to delete this staff member?")) {
-      setStaffMembers((prev) => prev.filter((s) => s.id !== id));
+      try {
+        await deleteStaffMember({
+          variables: { id },
+        });
+      } catch (error) {
+        console.error("Error deleting staff member:", error);
+      }
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (staff: StaffMember) => {
+    const status = getStaffStatus(staff);
     const styles = {
       active: "bg-green-100 text-green-800",
       inactive: "bg-gray-100 text-gray-800",
@@ -401,6 +522,39 @@ export default function StaffManagementPage() {
     };
     return styles[status as keyof typeof styles] || styles.inactive;
   };
+
+  // Loading state
+  if (staffLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading staff members...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (staffError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <XCircleIcon className="h-12 w-12 mx-auto" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Staff</h2>
+          <p className="text-gray-600 mb-4">{staffError.message}</p>
+          <button
+            onClick={() => refetchStaff()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -451,7 +605,7 @@ export default function StaffManagementPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {staffMembers.filter((s) => s.status === "active").length}
+                  {statsLoading ? "..." : (statistics?.activeStaff || staffMembers.filter((s) => getStaffStatus(s) === "active").length)}
                 </p>
               </div>
             </div>
@@ -463,13 +617,9 @@ export default function StaffManagementPage() {
                 <BuildingOfficeIcon className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Departments</p>
+                <p className="text-sm font-medium text-gray-600">Roles</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {
-                    new Set(
-                      staffMembers.map((s) => s.department).filter(Boolean),
-                    ).size
-                  }
+                  {roles.length}
                 </p>
               </div>
             </div>
@@ -483,7 +633,7 @@ export default function StaffManagementPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Inactive</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {staffMembers.filter((s) => s.status !== "active").length}
+                  {statsLoading ? "..." : (statistics?.inactiveStaff || staffMembers.filter((s) => getStaffStatus(s) !== "active").length)}
                 </p>
               </div>
             </div>
@@ -505,14 +655,14 @@ export default function StaffManagementPage() {
             </div>
 
             <select
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
+              <option value="">All Roles</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.name}>
+                  {role.name}
                 </option>
               ))}
             </select>
@@ -576,15 +726,15 @@ export default function StaffManagementPage() {
                             {staff.firstName} {staff.lastName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {staff.branch}
+                            Staff Member
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{staff.role}</div>
+                      <div className="text-sm text-gray-900">{getStaffRole(staff)}</div>
                       <div className="text-sm text-gray-500">
-                        {staff.department}
+                        Staff Member
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -592,25 +742,25 @@ export default function StaffManagementPage() {
                         <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
                         {staff.email}
                       </div>
-                      {staff.phone && (
+                      {staff.phoneNumber && (
                         <div className="flex items-center text-sm text-gray-500">
                           <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
-                          {staff.phone}
+                          {staff.phoneNumber}
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(staff.status)}`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(staff)}`}
                       >
-                        {staff.status.charAt(0).toUpperCase() +
-                          staff.status.slice(1)}
+                        {getStaffStatus(staff).charAt(0).toUpperCase() +
+                          getStaffStatus(staff).slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex items-center">
                         <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
-                        {staff.hireDate.toLocaleDateString()}
+                        {new Date(staff.createdAt).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -642,7 +792,7 @@ export default function StaffManagementPage() {
                 No staff members found
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {searchTerm || selectedDepartment || selectedStatus
+                {searchTerm || selectedRole || selectedStatus
                   ? "Try adjusting your search criteria."
                   : "Get started by adding your first staff member."}
               </p>
@@ -657,6 +807,8 @@ export default function StaffManagementPage() {
         onClose={() => setIsModalOpen(false)}
         staff={editingStaff}
         onSave={handleSaveStaff}
+        roles={roles}
+        branches={branches}
       />
     </div>
   );

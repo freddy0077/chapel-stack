@@ -11,7 +11,6 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   Member,
-  MembershipStatus,
   MemberStatus,
 } from "../../types/member.types";
 
@@ -22,32 +21,46 @@ interface MembershipInfoSectionProps {
 const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
   member,
 }) => {
-  // Status badge colors
-  const getStatusBadgeColor = (
-    status: MembershipStatus | MemberStatus | undefined,
-  ) => {
-    switch (status) {
-      case "ACTIVE":
-      case "ACTIVE_MEMBER":
-        return "bg-green-100 text-green-800";
-      case "INACTIVE":
-      case "INACTIVE_MEMBER":
-        return "bg-yellow-100 text-yellow-800";
-      case "VISITOR":
-        return "bg-blue-100 text-blue-800";
-      case "MEMBER":
-      case "REGULAR_ATTENDEE":
-        return "bg-purple-100 text-purple-800";
-      case "SUSPENDED":
-        return "bg-red-100 text-red-800";
-      case "TRANSFERRED":
-        return "bg-gray-100 text-gray-800";
-      case "DECEASED":
-        return "bg-gray-100 text-gray-600";
-      default:
-        return "bg-gray-100 text-gray-800";
+  // Get member status color and label - simplified to use only MemberStatus
+  const getStatusInfo = (status?: MemberStatus) => {
+    if (!status) {
+      // Default status when none is set
+      return {
+        color: "bg-blue-100 text-blue-800",
+        label: "Active", // Default to Active
+      };
     }
+
+    const statusMap = {
+      [MemberStatus.ACTIVE]: {
+        color: "bg-green-100 text-green-800",
+        label: "Active",
+      },
+      [MemberStatus.INACTIVE]: {
+        color: "bg-yellow-100 text-yellow-800",
+        label: "Inactive",
+      },
+      [MemberStatus.SUSPENDED]: {
+        color: "bg-orange-100 text-orange-800",
+        label: "Suspended",
+      },
+      [MemberStatus.TRANSFERRED]: {
+        color: "bg-blue-100 text-blue-800",
+        label: "Transferred",
+      },
+      [MemberStatus.DECEASED]: {
+        color: "bg-gray-100 text-gray-800",
+        label: "Deceased",
+      },
+      [MemberStatus.REMOVED]: {
+        color: "bg-red-100 text-red-800",
+        label: "Removed",
+      },
+    };
+    return statusMap[status];
   };
+
+  const statusInfo = getStatusInfo(member.status);
 
   const formatDate = (date: string | Date | undefined) => {
     if (!date) return null;
@@ -70,49 +83,22 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Membership Status */}
+        {/* Member Status */}
         <div className="space-y-4">
-          <h4 className="text-md font-medium text-gray-900">Status & Type</h4>
+          <h4 className="text-md font-medium text-gray-900">Member Status</h4>
 
           <div>
             <label className="text-sm font-medium text-gray-500">
-              Membership Status
+              Current Status
             </label>
             <div className="mt-1">
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(member.membershipStatus)}`}
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}
               >
-                {member.membershipStatus}
+                {statusInfo.label}
               </span>
             </div>
           </div>
-
-          {member.status && (
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Member Status
-              </label>
-              <div className="mt-1">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(member.status)}`}
-                >
-                  {member.status}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {member.membershipType && (
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Membership Type
-              </label>
-              <div className="flex items-center">
-                <StarIcon className="w-4 h-4 text-gray-400 mr-2" />
-                <p className="text-sm text-gray-900">{member.membershipType}</p>
-              </div>
-            </div>
-          )}
 
           {member.isRegularAttendee !== undefined && (
             <div>

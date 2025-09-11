@@ -98,11 +98,11 @@ function DashboardStats() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-GH", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      currency: "GHS",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -217,7 +217,7 @@ function DashboardStats() {
 }
 
 // Dashboard Component
-function DashboardComponent() {
+function DashboardComponent({ onTabChange }: { onTabChange: (tabIndex: number) => void }) {
   const {
     activities,
     loading: activitiesLoading,
@@ -342,7 +342,10 @@ function DashboardComponent() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <button className="group p-6 rounded-2xl bg-gradient-to-br from-blue-50/80 to-blue-100/40 border border-blue-200/50 hover:from-blue-100/80 hover:to-blue-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <button 
+              onClick={() => onTabChange(1)} // Navigate to Organizations tab
+              className="group p-6 rounded-2xl bg-gradient-to-br from-blue-50/80 to-blue-100/40 border border-blue-200/50 hover:from-blue-100/80 hover:to-blue-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            >
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 w-fit mx-auto mb-3 group-hover:shadow-lg transition-shadow">
                 <BuildingOfficeIcon className="h-6 w-6 text-white" />
               </div>
@@ -350,7 +353,10 @@ function DashboardComponent() {
                 Add Organization
               </span>
             </button>
-            <button className="group p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-emerald-100/40 border border-emerald-200/50 hover:from-emerald-100/80 hover:to-emerald-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <button 
+              onClick={() => onTabChange(4)} // Navigate to Subscriptions tab
+              className="group p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-emerald-100/40 border border-emerald-200/50 hover:from-emerald-100/80 hover:to-emerald-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            >
               <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 w-fit mx-auto mb-3 group-hover:shadow-lg transition-shadow">
                 <CreditCardIcon className="h-6 w-6 text-white" />
               </div>
@@ -358,7 +364,10 @@ function DashboardComponent() {
                 Create Subscription
               </span>
             </button>
-            <button className="group p-6 rounded-2xl bg-gradient-to-br from-purple-50/80 to-purple-100/40 border border-purple-200/50 hover:from-purple-100/80 hover:to-purple-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <button 
+              onClick={() => onTabChange(3)} // Navigate to Plans tab
+              className="group p-6 rounded-2xl bg-gradient-to-br from-purple-50/80 to-purple-100/40 border border-purple-200/50 hover:from-purple-100/80 hover:to-purple-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            >
               <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 w-fit mx-auto mb-3 group-hover:shadow-lg transition-shadow">
                 <RectangleStackIcon className="h-6 w-6 text-white" />
               </div>
@@ -366,7 +375,10 @@ function DashboardComponent() {
                 Manage Plans
               </span>
             </button>
-            <button className="group p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 to-amber-100/40 border border-amber-200/50 hover:from-amber-100/80 hover:to-amber-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+            <button 
+              onClick={() => onTabChange(5)} // Navigate to Payments tab
+              className="group p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 to-amber-100/40 border border-amber-200/50 hover:from-amber-100/80 hover:to-amber-200/40 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            >
               <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 w-fit mx-auto mb-3 group-hover:shadow-lg transition-shadow">
                 <ChartBarIcon className="h-6 w-6 text-white" />
               </div>
@@ -481,7 +493,7 @@ function SubscriptionManagerContent(): React.ReactElement {
     {
       name: "Dashboard",
       icon: Squares2X2Icon,
-      component: DashboardComponent,
+      component: () => <DashboardComponent onTabChange={setSelectedIndex} />,
       description:
         "Overview of subscription management metrics and quick actions",
     },

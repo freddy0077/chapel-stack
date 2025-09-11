@@ -31,6 +31,7 @@ import BulkActionSelectionDialog from "./components/BulkActionSelectionDialog";
 import ExportModal, { ExportOptions } from "./components/ExportModal";
 import ImportMembersModal from "../../../components/members/ImportMembersModal";
 import FamilyRelationshipModal from "./components/FamilyRelationshipModal";
+import StatusSelectionModal from "./components/StatusSelectionModal";
 
 // Hooks
 import { useMembers } from "./hooks/useMembers";
@@ -73,6 +74,7 @@ const MembersPage: React.FC = () => {
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectionDialogData, setSelectionDialogData] = useState<{
     actionType: BulkActionType | null;
     options: { id: string; name: string }[];
@@ -104,7 +106,7 @@ const MembersPage: React.FC = () => {
   });
 
   // Member operations hooks
-  const { statistics, loading: statsLoading } = useMemberStatistics(
+  const { statistics, loading: statsLoading, refetch: refetchStatistics } = useMemberStatistics(
     branchId,
     organisationId,
   );
@@ -156,8 +158,11 @@ const MembersPage: React.FC = () => {
   const handleUpdateMember = async (id: string, memberData: any) => {
     try {
       await updateMember(id, memberData);
-      // Refresh data
-      refetch?.();
+      // Refresh both member list and statistics in real-time
+      await Promise.all([
+        refetch?.(),
+        refetchStatistics?.()
+      ]);
     } catch (error) {
       console.error("Error updating member:", error);
     }
@@ -179,8 +184,11 @@ const MembersPage: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this member?")) {
       try {
         await removeMember(id);
-        // Refresh data
-        refetch?.();
+        // Refresh both member list and statistics in real-time
+        await Promise.all([
+          refetch?.(),
+          refetchStatistics?.()
+        ]);
       } catch (error) {
         console.error("Error deleting member:", error);
       }
@@ -418,7 +426,11 @@ const MembersPage: React.FC = () => {
 
       if (["updateStatus", "export", "deactivate"].includes(actionType)) {
         toast.success("Bulk action completed successfully!");
-        refetch();
+        // Refresh both member list and statistics in real-time
+        await Promise.all([
+          refetch?.(),
+          refetchStatistics?.()
+        ]);
         setSelectedMembers([]);
       }
     } catch (e: any) {
@@ -473,7 +485,11 @@ const MembersPage: React.FC = () => {
           break;
       }
       toast.success("Bulk action completed successfully!");
-      refetch();
+      // Refresh both member list and statistics in real-time
+      await Promise.all([
+        refetch?.(),
+        refetchStatistics?.()
+      ]);
       setSelectedMembers([]);
     } catch (e: any) {
       toast.error(e.message || "An error occurred during the bulk action.");
@@ -607,10 +623,23 @@ const MembersPage: React.FC = () => {
     }
   }, [memberDetailError]);
 
-  const handleImportSuccess = (result: any) => {
+  const handleImportSuccess = async (result: any) => {
     toast.success(`Import completed: ${result.successCount} members imported successfully!`);
-    refetch(); // Refresh the members list
+    // Refresh both member list and statistics in real-time after import
+    await Promise.all([
+      refetch?.(),
+      refetchStatistics?.()
+    ]);
     setShowImportModal(false);
+  };
+
+  const handleStatusSelection = async (status: string) => {
+    try {
+      await handleBulkAction("updateStatus", { newStatus: status });
+      setShowStatusModal(false);
+    } catch (error) {
+      console.error("Error updating member status:", error);
+    }
   };
 
   // Animation variants
@@ -832,6 +861,7 @@ const MembersPage: React.FC = () => {
                       selectedCount={selectedCount}
                       onClearSelection={handleClearSelection}
                       onBulkAction={handleBulkAction}
+                      onShowStatusModal={() => setShowStatusModal(true)}
                     />
                   </motion.div>
                 )}
@@ -956,6 +986,17 @@ const MembersPage: React.FC = () => {
               selectedCount={selectedMembers.length}
               totalFilteredCount={pageInfo.totalCount}
               loading={bulkLoading.bulkExportMembersLoading}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showStatusModal && (
+            <StatusSelectionModal
+              isOpen={showStatusModal}
+              onClose={() => setShowStatusModal(false)}
+              onConfirm={handleStatusSelection}
+              selectedCount={selectedMembers.length}
             />
           )}
         </AnimatePresence>

@@ -133,29 +133,32 @@ export const GET_DASHBOARD_DATA = gql`
       branchName
       dashboardType
       generatedAt
-      kpiCards {
-        ...KpiCardFields
-      }
-      charts {
-        ...ChartDataFields
-      }
-      announcements {
-        ...AnnouncementsWidgetFields
-      }
-      notifications {
-        ...NotificationsWidgetFields
-      }
-      tasks {
-        ...TasksWidgetFields
-      }
-      upcomingEvents {
-        ...UpcomingEventsWidgetFields
-      }
-      quickLinks {
-        ...QuickLinksWidgetFields
-      }
-      myGroups {
-        ...MyGroupsWidgetFields
+      organisationId
+      widgets {
+        ... on KpiCard {
+          ...KpiCardFields
+        }
+        ... on ChartData {
+          ...ChartDataFields
+        }
+        ... on AnnouncementsWidget {
+          ...AnnouncementsWidgetFields
+        }
+        ... on NotificationsWidget {
+          ...NotificationsWidgetFields
+        }
+        ... on TasksWidget {
+          ...TasksWidgetFields
+        }
+        ... on UpcomingEventsWidget {
+          ...UpcomingEventsWidgetFields
+        }
+        ... on QuickLinksWidget {
+          ...QuickLinksWidgetFields
+        }
+        ... on MyGroupsWidget {
+          ...MyGroupsWidgetFields
+        }
       }
     }
   }
@@ -213,6 +216,28 @@ export const SAVE_USER_DASHBOARD_PREFERENCE = gql`
 `;
 
 // Query for fetching super admin dashboard data
+// Query for security overview dashboard with corrected structure
+export const GET_SECURITY_OVERVIEW = gql`
+  query GetSecurityOverview($organisationId: ID!) {
+    dashboardData(dashboardType: ADMIN, organisationId: $organisationId) {
+      branchId
+      branchName
+      dashboardType
+      generatedAt
+      organisationId
+      widgets {
+        ... on KpiCard {
+          title
+          value
+          icon
+          percentChange
+          widgetType
+        }
+      }
+    }
+  }
+`;
+
 export const GET_SUPER_ADMIN_DASHBOARD = gql`
   query SuperAdminDashboard($organisationId: ID) {
     superAdminDashboardData(organisationId: $organisationId) {

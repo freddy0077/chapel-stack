@@ -152,7 +152,13 @@ export const useCreateMember = () => {
 export const useUpdateMember = () => {
   const { organisationId, branchId } = useOrganisationBranch();
   const [updateMember, { data, loading, error }] = useMutation(UPDATE_MEMBER, {
-    refetchQueries: ["GetMembersList", "GetMemberById"],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMemberById",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
     awaitRefetchQueries: true,
   });
 
@@ -278,7 +284,13 @@ export const useTransferMember = () => {
   const [transferMember, { data, loading, error }] = useMutation(
     TRANSFER_MEMBER,
     {
-      refetchQueries: ["GetMembersList", "GetMemberById"],
+      refetchQueries: [
+        "GetMembersList",
+        "GetMemberById",
+        "GetMemberStatisticsDetailed",
+        "GetTotalMembersCount",
+        "MemberStatisticsEnhanced"
+      ],
       awaitRefetchQueries: true,
     },
   );
@@ -318,6 +330,7 @@ export const useUpdateMemberStatus = () => {
         "GetMembersList",
         "GetMemberById",
         "GetMemberStatisticsDetailed",
+        "GetTotalMembersCount",
         "MemberStatisticsEnhanced",
       ],
       awaitRefetchQueries: true,

@@ -11,6 +11,7 @@ import { OrganizationBranchFilterInput } from "../types/filters";
 // Types for GraphQL responses
 interface MembersListQueryResponse {
   members: Member[];
+  membersCount: number;
 }
 
 // Removed unused pagination interfaces
@@ -321,8 +322,8 @@ export const useMembers = (
   );
 
   const items = data?.members || [];
-  // Use the length of fetched members as total count - simpler and always consistent
-  const totalCount = items.length;
+  // Use the actual total count from the GraphQL response
+  const totalCount = data?.membersCount || 0;
 
   return {
     members: items,

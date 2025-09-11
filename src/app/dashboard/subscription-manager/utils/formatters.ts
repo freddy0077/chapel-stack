@@ -1,10 +1,12 @@
 // Shared utility functions for Subscription Manager components
 // This prevents duplicate function definitions that cause Fast Refresh loops
 
-export function formatCurrency(amount: number, currency: string): string {
+export function formatCurrency(amount: number, currency: string = "GHS"): string {
   return new Intl.NumberFormat("en-GH", {
     style: "currency",
     currency: currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 

@@ -508,27 +508,27 @@ export default function AttendanceDashboard() {
                   Take Attendance
                 </Link>
 
-                {/*<button*/}
-                {/*  onClick={() => {*/}
-                {/*    setModalMode('session');*/}
-                {/*    setIsNewEventModalOpen(true);*/}
-                {/*  }}*/}
-                {/*  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"*/}
-                {/*>*/}
-                {/*  <PlusIcon className="h-5 w-5" />*/}
-                {/*  New Session*/}
-                {/*</button>*/}
+                <button
+                  onClick={() => {
+                    setModalMode('session');
+                    setIsNewEventModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  New Session
+                </button>
 
-                {/*<button*/}
-                {/*  onClick={() => {*/}
-                {/*    setModalMode('event');*/}
-                {/*    setIsNewEventModalOpen(true);*/}
-                {/*  }}*/}
-                {/*  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"*/}
-                {/*>*/}
-                {/*  <PlusIcon className="h-5 w-5" />*/}
-                {/*  New Event*/}
-                {/*</button>*/}
+                <button
+                  onClick={() => {
+                    setModalMode('event');
+                    setIsNewEventModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  New Event
+                </button>
 
                 <button
                   onClick={() => setIsDownloadModalOpen(true)}
@@ -811,6 +811,8 @@ export default function AttendanceDashboard() {
         <AttendanceReportDownloadModal
           isOpen={isDownloadModalOpen}
           onClose={() => setIsDownloadModalOpen(false)}
+          branchId={orgBranchFilter.branchId}
+          organisationId={orgBranchFilter.organisationId}
         />
 
         <NewEventModal

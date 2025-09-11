@@ -25,11 +25,13 @@ import { toast } from "react-hot-toast";
 interface AttendanceReportDownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  branchId?: string;
+  organisationId?: string;
 }
 
 const AttendanceReportDownloadModal: React.FC<
   AttendanceReportDownloadModalProps
-> = ({ isOpen, onClose }) => {
+> = ({ isOpen, onClose, branchId: propBranchId, organisationId: propOrganisationId }) => {
   const { user } = useAuth();
   const { generateReport, loading, error } = useGenerateAttendanceReport();
 
@@ -42,7 +44,7 @@ const AttendanceReportDownloadModal: React.FC<
     endDate: new Date().toISOString().split("T")[0], // today
   });
   const [format, setFormat] = useState<AttendanceReportFormat>(
-    AttendanceReportFormat.PDF,
+    AttendanceReportFormat.EXCEL,
   );
   const [groupBy, setGroupBy] = useState<AttendanceReportGroupBy>(
     AttendanceReportGroupBy.WEEK,
@@ -53,8 +55,9 @@ const AttendanceReportDownloadModal: React.FC<
     includeCharts: true,
   });
 
-  const branchId = user?.userBranches?.[0]?.branch?.id;
-  const organisationId = user?.organisationId;
+  // Use props first, fallback to user data
+  const branchId = propBranchId || user?.userBranches?.[0]?.branch?.id;
+  const organisationId = propOrganisationId || user?.organisationId;
 
   const reportTypes = [
     {
@@ -93,16 +96,10 @@ const AttendanceReportDownloadModal: React.FC<
 
   const formatOptions = [
     {
-      value: AttendanceReportFormat.PDF,
-      label: "PDF Document",
-      icon: DocumentTextIcon,
-      recommended: true,
-    },
-    {
       value: AttendanceReportFormat.EXCEL,
       label: "Excel Spreadsheet",
       icon: DocumentTextIcon,
-      recommended: false,
+      recommended: true,
     },
     {
       value: AttendanceReportFormat.CSV,

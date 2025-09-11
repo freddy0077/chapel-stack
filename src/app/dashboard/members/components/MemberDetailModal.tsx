@@ -7,7 +7,7 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
-import { Member } from "../types/member.types";
+import { Member, MemberStatus } from "../types/member.types";
 import {
   PersonalInfoSection,
   ContactInfoSection,
@@ -46,6 +46,47 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
     .filter(Boolean)
     .join(" ");
   const displayName = member.preferredName || fullName;
+
+  // Get member status color and label - simplified to use only MemberStatus
+  const getStatusInfo = (status?: MemberStatus) => {
+    if (!status) {
+      // Default status when none is set
+      return {
+        color: "bg-blue-100 text-blue-800",
+        label: "Active", // Default to Active
+      };
+    }
+
+    const statusMap = {
+      [MemberStatus.ACTIVE]: {
+        color: "bg-green-100 text-green-800",
+        label: "Active",
+      },
+      [MemberStatus.INACTIVE]: {
+        color: "bg-yellow-100 text-yellow-800",
+        label: "Inactive",
+      },
+      [MemberStatus.SUSPENDED]: {
+        color: "bg-orange-100 text-orange-800",
+        label: "Suspended",
+      },
+      [MemberStatus.TRANSFERRED]: {
+        color: "bg-blue-100 text-blue-800",
+        label: "Transferred",
+      },
+      [MemberStatus.DECEASED]: {
+        color: "bg-gray-100 text-gray-800",
+        label: "Deceased",
+      },
+      [MemberStatus.REMOVED]: {
+        color: "bg-red-100 text-red-800",
+        label: "Removed",
+      },
+    };
+    return statusMap[status];
+  };
+
+  const statusInfo = getStatusInfo(member.status);
 
   return (
     <AnimatePresence>
@@ -95,8 +136,10 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                         {displayName}
                       </h2>
                       <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-sm text-gray-500">
-                          {member.membershipStatus}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                        >
+                          {statusInfo.label}
                         </span>
                         {member.memberId && (
                           <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">

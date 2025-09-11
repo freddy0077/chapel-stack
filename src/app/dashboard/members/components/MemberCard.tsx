@@ -15,7 +15,7 @@ import {
   CheckCircleIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { Member, ViewMode, MembershipStatus } from "../types/member.types";
+import { Member, ViewMode, MemberStatus } from "../types/member.types";
 
 interface MemberCardProps {
   member: Member;
@@ -54,44 +54,46 @@ const MemberCard: React.FC<MemberCardProps> = ({
     ? `${member.title}. ${baseDisplayName}`
     : baseDisplayName;
 
-  // Get status color and label
-  const getStatusInfo = (status: MembershipStatus) => {
-    const statusMap = {
-      [MembershipStatus.VISITOR]: {
+  // Get member status color and label - simplified to use only MemberStatus
+  const getStatusInfo = (status?: MemberStatus) => {
+    if (!status) {
+      // Default status when none is set
+      return {
         color: "bg-blue-100 text-blue-800",
-        label: "Visitor",
-      },
-      [MembershipStatus.REGULAR_ATTENDEE]: {
+        label: "Active", // Default to Active
+      };
+    }
+
+    const statusMap = {
+      [MemberStatus.ACTIVE]: {
         color: "bg-green-100 text-green-800",
-        label: "Regular Attendee",
+        label: "Active",
       },
-      [MembershipStatus.MEMBER]: {
-        color: "bg-purple-100 text-purple-800",
-        label: "Member",
+      [MemberStatus.INACTIVE]: {
+        color: "bg-yellow-100 text-yellow-800",
+        label: "Inactive",
       },
-      [MembershipStatus.ACTIVE_MEMBER]: {
-        color: "bg-green-100 text-green-800",
-        label: "Active Member",
-      },
-      [MembershipStatus.INACTIVE_MEMBER]: {
-        color: "bg-gray-100 text-gray-800",
-        label: "Inactive Member",
-      },
-      [MembershipStatus.TRANSFERRED]: {
+      [MemberStatus.SUSPENDED]: {
         color: "bg-orange-100 text-orange-800",
+        label: "Suspended",
+      },
+      [MemberStatus.TRANSFERRED]: {
+        color: "bg-blue-100 text-blue-800",
         label: "Transferred",
       },
-      [MembershipStatus.DECEASED]: {
-        color: "bg-red-100 text-red-800",
+      [MemberStatus.DECEASED]: {
+        color: "bg-gray-100 text-gray-800",
         label: "Deceased",
       },
+      [MemberStatus.REMOVED]: {
+        color: "bg-red-100 text-red-800",
+        label: "Removed",
+      },
     };
-    return statusMap[status] || statusMap[MembershipStatus.VISITOR];
+    return statusMap[status];
   };
 
-  const statusInfo = getStatusInfo(
-    member.membershipStatus || MembershipStatus.VISITOR,
-  );
+  const statusInfo = getStatusInfo(member.status);
 
   // Calculate age if date of birth is available
   const getAge = (dateOfBirth?: Date) => {
@@ -110,6 +112,42 @@ const MemberCard: React.FC<MemberCardProps> = ({
   };
 
   const age = getAge(member.dateOfBirth);
+
+  // Determine styling based on life events
+  const getLifeEventStyling = () => {
+    // Death registry connection - deceased members
+    if (member.status === MemberStatus.DECEASED) {
+      return {
+        background: "bg-gray-100 border border-gray-300",
+        opacity: "opacity-75",
+        grayscale: "grayscale",
+        textColor: "text-gray-600",
+        isDeceased: true
+      };
+    }
+    
+    // Birth registry connection - newborns under 1 year
+    if (age !== null && age < 1) {
+      return {
+        background: "bg-pink-50 border border-pink-200",
+        opacity: "",
+        grayscale: "",
+        textColor: "",
+        isDeceased: false
+      };
+    }
+    
+    // Default styling - no special treatment
+    return {
+      background: "bg-white",
+      opacity: "",
+      grayscale: "",
+      textColor: "",
+      isDeceased: false
+    };
+  };
+
+  const lifeEventStyling = getLifeEventStyling();
 
   // Handle selection
   const handleSelect = (e: React.MouseEvent) => {
@@ -146,7 +184,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
     return (
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer ${
+        className={`${lifeEventStyling.background} ${lifeEventStyling.opacity} ${lifeEventStyling.grayscale} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer ${
           selected ? "ring-2 ring-blue-500 bg-blue-50" : ""
         }`}
         onClick={handleCardClick}
@@ -190,8 +228,13 @@ const MemberCard: React.FC<MemberCardProps> = ({
             {/* Member Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
-                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                <h3 className={`text-lg font-semibold truncate ${lifeEventStyling.textColor || "text-gray-900"}`}>
                   {displayName}
+                  {lifeEventStyling.isDeceased && (
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Deceased)
+                    </span>
+                  )}
                 </h3>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
@@ -299,7 +342,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
   return (
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
-      className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${
+      className={`${lifeEventStyling.background} ${lifeEventStyling.opacity} ${lifeEventStyling.grayscale} rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${
         selected ? "ring-2 ring-blue-500 bg-blue-50" : ""
       }`}
       onClick={handleCardClick}
@@ -384,11 +427,16 @@ const MemberCard: React.FC<MemberCardProps> = ({
             </div>
           )}
 
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className={`text-lg font-semibold mb-1 ${lifeEventStyling.textColor || "text-gray-900"}`}>
             {displayName}
+            {lifeEventStyling.isDeceased && (
+              <span className="block text-xs text-gray-500 font-normal mt-1">
+                (Deceased)
+              </span>
+            )}
           </h3>
 
-          <div className="flex items-center space-x-2 mb-3">
+          <div className="flex items-center justify-center space-x-2 mb-3">
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
             >

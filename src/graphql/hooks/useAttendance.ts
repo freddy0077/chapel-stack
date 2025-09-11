@@ -299,7 +299,7 @@ export function useFilteredAttendanceSessions(filter: AttendanceFilterParams) {
   );
 
   return {
-    sessions: data?.attendanceSessions?.items || [],
+    sessions: data?.attendanceSessions || [],
     loading,
     error,
     refetch,

@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_RECIPIENT_GROUPS = gql`
-  query RecipientGroups {
-    recipientGroups {
+  query RecipientGroups($organisationId: String, $branchId: String) {
+    recipientGroups(organisationId: $organisationId, branchId: $branchId) {
       id
       name
       type

@@ -119,7 +119,15 @@ export const useBulkUpdateMemberStatus = () => {
   return useMutation(BULK_UPDATE_MEMBER_STATUS, {
     onCompleted: (data) => {},
     onError: (error) => {},
-    refetchQueries: ["GetMembersWithDeactivated", "GetMemberStatistics"],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
   });
 };
 
@@ -128,7 +136,15 @@ export const useBulkTransferMembers = () => {
   return useMutation(BULK_TRANSFER_MEMBERS, {
     onCompleted: (data) => {},
     onError: (error) => {},
-    refetchQueries: ["GetMembersWithDeactivated", "GetMemberStatistics"],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
   });
 };
 
@@ -137,7 +153,15 @@ export const useBulkDeactivateMembers = () => {
   return useMutation(BULK_DEACTIVATE_MEMBERS, {
     onCompleted: (data) => {},
     onError: (error) => {},
-    refetchQueries: ["GetMembersWithDeactivated", "GetMemberStatistics"],
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
   });
 };
 
@@ -160,22 +184,62 @@ export const useBulkExportMembers = () => {
 
 // Hook for bulk adding members to a group
 export const useBulkAddToGroup = () => {
-  return useMutation(BULK_ADD_TO_GROUP);
+  return useMutation(BULK_ADD_TO_GROUP, {
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
+  });
 };
 
 // Hook for bulk removing members from a group
 export const useBulkRemoveFromGroup = () => {
-  return useMutation(BULK_REMOVE_FROM_GROUP);
+  return useMutation(BULK_REMOVE_FROM_GROUP, {
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
+  });
 };
 
 // Hook for bulk adding members to a ministry
 export const useBulkAddToMinistry = () => {
-  return useMutation(BULK_ADD_TO_MINISTRY);
+  return useMutation(BULK_ADD_TO_MINISTRY, {
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
+  });
 };
 
 // Hook for bulk removing members from a ministry
 export const useBulkRemoveFromMinistry = () => {
-  return useMutation(BULK_REMOVE_FROM_MINISTRY);
+  return useMutation(BULK_REMOVE_FROM_MINISTRY, {
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
+  });
 };
 
 // Combined hook for all member management operations

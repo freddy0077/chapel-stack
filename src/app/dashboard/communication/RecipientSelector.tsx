@@ -82,6 +82,8 @@ export default function RecipientSelector({
   setRecipients,
   birthdayRange,
   setBirthdayRange,
+  organisationId,
+  branchId,
 }) {
   const [mode, setMode] = useState("groups");
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,7 +92,10 @@ export default function RecipientSelector({
     groups,
     loading: groupsLoading,
     error: groupsError,
-  } = useRecipientGroups();
+  } = useRecipientGroups({
+    organisationId,
+    branchId,
+  });
   const {
     members: searchMembers,
     searchMembers: triggerSearch,

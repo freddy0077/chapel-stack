@@ -129,8 +129,8 @@ const EMAIL_TEMPLATES: EmailTemplate[] = [
 const CHANNELS = [
   { key: "email", label: "Email" },
   { key: "sms", label: "SMS" },
-  { key: "inapp", label: "In-App" },
-  { key: "push", label: "Push" },
+  // { key: "inapp", label: "In-App" },
+  // { key: "push", label: "Push" },
 ];
 
 export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
@@ -394,6 +394,8 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               setRecipients={setRecipients}
               birthdayRange={birthdayRange}
               setBirthdayRange={setBirthdayRange}
+              organisationId={organisationId}
+              branchId={branchId}
             />
           </Card>
 

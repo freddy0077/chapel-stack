@@ -20,6 +20,7 @@ interface BulkActionsBarProps {
   selectedCount: number;
   onClearSelection: () => void;
   onBulkAction: (action: BulkActionType, data?: any) => void;
+  onShowStatusModal?: () => void;
   className?: string;
 }
 
@@ -96,13 +97,16 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   selectedCount,
   onClearSelection,
   onBulkAction,
+  onShowStatusModal,
   className = "",
 }) => {
   const [showConfirmation, setShowConfirmation] =
     useState<BulkActionType | null>(null);
 
   const handleActionClick = (action: BulkActionOption) => {
-    if (action.requiresConfirmation) {
+    if (action.type === "updateStatus") {
+      onShowStatusModal?.();
+    } else if (action.requiresConfirmation) {
       setShowConfirmation(action.type);
     } else {
       onBulkAction(action.type);

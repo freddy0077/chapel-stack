@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 const CHANNELS = [
   { key: "email", label: "Email" },
   { key: "sms", label: "SMS" },
-  { key: "inapp", label: "In-App" },
-  { key: "push", label: "Push" },
+  // { key: "inapp", label: "In-App" },
+  // { key: "push", label: "Push" },
 ];
 
 interface ChannelSelectorProps {
