@@ -149,6 +149,7 @@ export const GET_MEMBERS_LIST = gql`
     $hasEmail: Boolean
     $hasPhone: Boolean
     $isRegularAttendee: Boolean
+    $includeDeactivated: Boolean
   ) {
     members(
       organisationId: $organisationId
@@ -169,6 +170,7 @@ export const GET_MEMBERS_LIST = gql`
       hasEmail: $hasEmail
       hasPhone: $hasPhone
       isRegularAttendee: $isRegularAttendee
+      includeDeactivated: $includeDeactivated
     ) {
       id
       firstName
@@ -214,6 +216,10 @@ export const GET_MEMBERS_LIST = gql`
       consentDate
       consentVersion
       status
+      isDeactivated
+      deactivatedAt
+      deactivatedBy
+      deactivationReason
       profileImageUrl
       createdAt
       memberId
@@ -255,7 +261,7 @@ export const GET_MEMBERS_LIST = gql`
         lastName
       }
     }
-    membersCount(organisationId: $organisationId, branchId: $branchId)
+    membersCount(organisationId: $organisationId, branchId: $branchId, includeDeactivated: $includeDeactivated)
   }
 `;
 

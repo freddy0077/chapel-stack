@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useQuery, useLazyQuery } from "@apollo/client";
+import { useQuery, useLazyQuery, useApolloClient } from "@apollo/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
@@ -59,6 +59,9 @@ import {
 } from "./types/member.types";
 
 const MembersPage: React.FC = () => {
+  // Apollo Client for cache management
+  const apolloClient = useApolloClient();
+
   // State
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("card");
@@ -414,17 +417,45 @@ const MembersPage: React.FC = () => {
           break;
         }
         case "deactivate":
-          await bulkDeactivateMembers({
-            variables: {
-              bulkDeactivateInput: { memberIds: selectedMembers },
-            },
-          });
-          break;
+          try {
+            await bulkDeactivateMembers({
+              variables: {
+                bulkDeactivateInput: { memberIds: selectedMembers },
+              },
+            });
+            
+            // Immediately refresh both member list and statistics after deactivation
+            toast.success("Members deactivated successfully!");
+            
+            // Clear selections first
+            setSelectedMembers([]);
+            
+            // Force a complete cache reset and refetch all queries
+            try {
+              // Reset the entire Apollo cache - this will refetch all active queries
+              await apolloClient.resetStore();
+            } catch (refetchError) {
+              // Fallback to manual refetch
+              try {
+                await Promise.all([
+                  refetch?.(),
+                  refetchStatistics?.()
+                ]);
+              } catch (manualRefetchError) {
+                // Force a page reload as last resort
+                window.location.reload();
+              }
+            }
+            
+            return; // Early return to avoid duplicate refetch
+          } catch (error) {
+            toast.error("Failed to deactivate members");
+          }
         default:
           toast.error("This bulk action is not yet implemented.");
       }
 
-      if (["updateStatus", "export", "deactivate"].includes(actionType)) {
+      if (["updateStatus", "export"].includes(actionType)) {
         toast.success("Bulk action completed successfully!");
         // Refresh both member list and statistics in real-time
         await Promise.all([

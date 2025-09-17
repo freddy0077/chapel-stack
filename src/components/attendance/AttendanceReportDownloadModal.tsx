@@ -21,6 +21,7 @@ import {
 } from "../../graphql/hooks/useAttendanceReports";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { toast } from "react-hot-toast";
+import { transformLocalhostUrl } from "@/utils/urlUtils";
 
 interface AttendanceReportDownloadModalProps {
   isOpen: boolean;
@@ -53,6 +54,12 @@ const AttendanceReportDownloadModal: React.FC<
     includeVisitors: true,
     includeStatistics: true,
     includeCharts: true,
+    includeMemberDetails: true,
+    includeSessionDetails: true,
+    includeEventDetails: true,
+    includeFamilyInfo: true,
+    includeContactInfo: true,
+    includePersonalDetails: true,
   });
 
   // Use props first, fallback to user data
@@ -71,10 +78,10 @@ const AttendanceReportDownloadModal: React.FC<
     {
       type: AttendanceReportType.DETAILED,
       name: "Detailed Report",
-      description: "Comprehensive analysis with all data",
+      description: "Comprehensive member data including IDs, contact info, family details, and attendance patterns",
       icon: DocumentTextIcon,
       color: "bg-green-500",
-      recommended: false,
+      recommended: true,
     },
     {
       type: AttendanceReportType.TRENDS,
@@ -135,9 +142,10 @@ const AttendanceReportDownloadModal: React.FC<
       if (report) {
         // Handle download based on the backend response
         if (report.downloadUrl) {
-          // Backend provided a download URL - use it directly
+          // Backend provided a download URL - transform localhost to proper base URL
+          const transformedUrl = transformLocalhostUrl(report.downloadUrl);
           const link = document.createElement("a");
-          link.href = report.downloadUrl;
+          link.href = transformedUrl;
 
           // Map format to correct file extension
           const getFileExtension = (format: AttendanceReportFormat): string => {
@@ -338,33 +346,99 @@ const AttendanceReportDownloadModal: React.FC<
             </div>
           </div>
 
-          {/* Quick Options */}
+          {/* Report Options */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Include
+              Report Content Options
             </label>
-            <div className="space-y-2">
-              {Object.entries(includeOptions).map(([key, value]) => (
-                <label key={key} className="flex items-center">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Basic Options */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wide">Basic Data</h4>
+                <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={value}
-                    onChange={(e) =>
-                      updateIncludeOption(
-                        key as keyof typeof includeOptions,
-                        e.target.checked,
-                      )
-                    }
+                    checked={includeOptions.includeVisitors}
+                    onChange={(e) => updateIncludeOption('includeVisitors', e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
-                    {key
-                      .replace(/([A-Z])/g, " $1")
-                      .replace(/^./, (str) => str.toUpperCase())}
-                  </span>
+                  <span className="ml-2 text-sm text-gray-700">Visitors</span>
                 </label>
-              ))}
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={includeOptions.includeStatistics}
+                    onChange={(e) => updateIncludeOption('includeStatistics', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Statistics</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={includeOptions.includeCharts}
+                    onChange={(e) => updateIncludeOption('includeCharts', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Charts</span>
+                </label>
+              </div>
+              
+              {/* Detailed Options */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wide">Member Details</h4>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={includeOptions.includeContactInfo}
+                    onChange={(e) => updateIncludeOption('includeContactInfo', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Contact Info</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={includeOptions.includePersonalDetails}
+                    onChange={(e) => updateIncludeOption('includePersonalDetails', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Personal Details</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={includeOptions.includeFamilyInfo}
+                    onChange={(e) => updateIncludeOption('includeFamilyInfo', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Family Info</span>
+                </label>
+              </div>
             </div>
+            
+            {/* Additional Options for Detailed Reports */}
+            {selectedReportType === AttendanceReportType.DETAILED && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="flex-shrink-0">
+                    <DocumentTextIcon className="h-5 w-5 text-green-600 mt-0.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-green-800">Detailed Report Includes:</h4>
+                    <ul className="mt-1 text-xs text-green-700 space-y-1">
+                      <li>• Member IDs and full names</li>
+                      <li>• Contact information (email, phone, address)</li>
+                      <li>• Personal details (DOB, gender, occupation)</li>
+                      <li>• Family relationships and emergency contacts</li>
+                      <li>• Church membership dates and status</li>
+                      <li>• Complete attendance history and patterns</li>
+                      <li>• Branch and organizational information</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Error Display */}

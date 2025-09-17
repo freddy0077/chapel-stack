@@ -39,13 +39,65 @@ export const GENERATE_ATTENDANCE_REPORT = gql`
       }
       members {
         id
+        memberId
         firstName
+        middleName
         lastName
+        title
         email
+        phoneNumber
+        dateOfBirth
+        gender
+        maritalStatus
+        occupation
+        employerName
+        address
+        city
+        state
+        postalCode
+        country
+        nationality
+        placeOfBirth
+        nlbNumber
+        fatherName
+        motherName
+        fatherOccupation
+        motherOccupation
+        emergencyContactName
+        emergencyContactPhone
+        membershipDate
+        baptismDate
+        confirmationDate
+        status
+        branch {
+          id
+          name
+        }
+        branchId
+        spouse {
+          id
+          firstName
+          lastName
+        }
+        parent {
+          id
+          firstName
+          lastName
+        }
+        children {
+          id
+          firstName
+          lastName
+        }
         attendanceCount
         attendanceRate
         lastAttendance
         attendanceDates
+        profileImageUrl
+        notes
+        rfidCardId
+        createdAt
+        updatedAt
       }
       sessions {
         id

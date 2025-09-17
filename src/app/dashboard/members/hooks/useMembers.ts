@@ -73,6 +73,7 @@ export const useMembers = (
       branchId: backendFilters.branchId || branchId,
       skip: (currentPage - 1) * currentPageSize,
       take: currentPageSize,
+      includeDeactivated: false, // Exclude deactivated members by default
       ...backendFilters, // All filters are now sent to backend
     };
 
@@ -103,6 +104,8 @@ export const useMembers = (
     notifyOnNetworkStatusChange: true,
     errorPolicy: "partial",
     fetchPolicy: "cache-and-network",
+    // Ensure fresh data after mutations
+    nextFetchPolicy: "cache-first",
   });
 
   // Search query for advanced search
@@ -153,8 +156,9 @@ export const useMembers = (
   }, [currentPage, currentPageSize, totalCount]);
 
   // Handlers
-  const refetch = useCallback(() => {
-    apolloRefetch(variables);
+  const refetch = useCallback(async () => {
+    // Force a fresh fetch from the server by using fetchPolicy: 'network-only'
+    return await apolloRefetch(variables);
   }, [apolloRefetch, variables]);
 
   const loadMore = useCallback(async () => {

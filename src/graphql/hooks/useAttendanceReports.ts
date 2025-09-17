@@ -68,13 +68,79 @@ export interface AttendanceReportData {
 
 export interface AttendanceReportMember {
   id: string;
+  memberId?: string;
   firstName: string;
+  middleName?: string;
   lastName: string;
+  title?: string;
   email?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  maritalStatus?: string;
+  occupation?: string;
+  employerName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  nationality?: string;
+  placeOfBirth?: string;
+  nlbNumber?: string;
+  
+  // Family Information
+  fatherName?: string;
+  motherName?: string;
+  fatherOccupation?: string;
+  motherOccupation?: string;
+  
+  // Emergency Contact
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  
+  // Church Information
+  membershipDate?: string;
+  baptismDate?: string;
+  confirmationDate?: string;
+  status: string;
+  
+  // Branch Information
+  branch?: {
+    id: string;
+    name: string;
+  };
+  branchId: string;
+  
+  // Family Relations
+  spouse?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  parent?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  children?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+  }>;
+  
+  // Attendance Data
   attendanceCount: number;
   attendanceRate: number;
   lastAttendance?: string;
   attendanceDates: string[];
+  
+  // Additional Information
+  profileImageUrl?: string;
+  notes?: string;
+  rfidCardId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AttendanceReportSession {
@@ -299,6 +365,9 @@ export const getDefaultReportConfig = (
         includeMemberDetails: true,
         includeSessionDetails: true,
         includeEventDetails: true,
+        includeVisitors: true,
+        includeCharts: true,
+        includeStatistics: true,
       };
     case AttendanceReportType.MEMBER_ANALYSIS:
       return {

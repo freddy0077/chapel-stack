@@ -20,8 +20,10 @@ import {
   ClockIcon, 
   MapPinIcon,
   UsersIcon,
-  MagnifyingGlassIcon 
+  MagnifyingGlassIcon,
+  ChevronDownIcon 
 } from "@heroicons/react/24/outline";
+import { useFilteredSmallGroups } from "@/graphql/hooks/useSmallGroups";
 
 // Query to get events for the branch/organization
 const GET_EVENTS = gql`
@@ -76,13 +78,9 @@ export default function TakeAttendancePage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Backend pagination state for members
+  // Pagination state for members
   const [memberPage, setMemberPage] = useState(1);
   const [memberItemsPerPage, setMemberItemsPerPage] = useState(10);
-  
-  // Calculate backend pagination parameters
-  const memberSkip = (memberPage - 1) * memberItemsPerPage;
-  const memberTake = memberItemsPerPage;
 
   // Debounce search input to avoid too many API calls
   useEffect(() => {
@@ -95,8 +93,16 @@ export default function TakeAttendancePage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Members for this branch with backend pagination
-  const { members, loading: loadingMembers, totalCount: membersTotalCount } = useMembers({
+  // Group selection dropdown state
+  const [showGroupDropdown, setShowGroupDropdown] = useState(false);
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState<string | null>(null);
+
+  // Members for this branch - fetch all members when group filter is active, otherwise use pagination
+  const shouldFetchAll = selectedGroupFilter !== null;
+  const memberSkip = shouldFetchAll ? 0 : (memberPage - 1) * memberItemsPerPage;
+  const memberTake = shouldFetchAll ? 1000 : memberItemsPerPage; // Fetch up to 1000 members when filtering by group
+  
+  const { members: allMembers, loading: loadingMembers, totalCount: membersTotalCount } = useMembers({
     branchId: orgBranchFilter.branchId,
     organisationId: orgBranchFilter.organisationId,
     search: debouncedSearch, // Pass debounced search to backend
@@ -104,6 +110,61 @@ export default function TakeAttendancePage() {
     skip: memberSkip,
     take: memberTake,
   });
+
+  // Fetch groups for group-based selection
+  const { smallGroups, loading: loadingGroups, error: groupsError } = useFilteredSmallGroups({
+    branchId: orgBranchFilter.branchId,
+    organisationId: orgBranchFilter.organisationId,
+    status: "ACTIVE", // Only get active groups
+  });
+
+  // Filter members by selected group and apply client-side pagination
+  const { members, filteredTotalCount, paginatedMembers } = useMemo(() => {
+    if (!selectedGroupFilter || !smallGroups) {
+      // Show all members if no group filter selected - use backend pagination
+      return {
+        members: allMembers,
+        filteredTotalCount: membersTotalCount || 0,
+        paginatedMembers: allMembers
+      };
+    }
+
+    const selectedGroup = smallGroups.find((group: any) => group.id === selectedGroupFilter);
+    if (!selectedGroup) {
+      return {
+        members: allMembers,
+        filteredTotalCount: membersTotalCount || 0,
+        paginatedMembers: allMembers
+      };
+    }
+
+    const groupMemberIds = selectedGroup.members?.map((member: any) => member.memberId) || [];
+    const filteredMembers = allMembers.filter((member: any) => groupMemberIds.includes(member.id));
+    
+    // Apply client-side pagination to filtered members
+    const startIndex = (memberPage - 1) * memberItemsPerPage;
+    const endIndex = startIndex + memberItemsPerPage;
+    const paginatedFilteredMembers = filteredMembers.slice(startIndex, endIndex);
+    
+    return {
+      members: filteredMembers, // Keep full filtered list for calculations
+      filteredTotalCount: filteredMembers.length, // Actual count of filtered members
+      paginatedMembers: paginatedFilteredMembers // Paginated subset for display
+    };
+  }, [allMembers, selectedGroupFilter, smallGroups, membersTotalCount, memberPage, memberItemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showGroupDropdown && !target.closest('[data-group-dropdown]')) {
+        setShowGroupDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showGroupDropdown]);
 
   // Fetch attendance records based on type
   const { attendanceRecords: sessionAttendanceRecords } =
@@ -200,24 +261,24 @@ export default function TakeAttendancePage() {
     setAttendance((prev) => ({ ...prev, [memberId]: !prev[memberId] }));
   };
 
-  // Select All / Deselect All functionality
+  // Select All / Deselect All functionality (works on current page)
   const handleSelectAll = () => {
     const newAttendance = { ...attendance };
-    const availableMembers = members.filter((member: any) => {
+    const availableMembersOnPage = paginatedMembers.filter((member: any) => {
       // Don't include members who already have attendance marked
       return !(attendanceRecords || []).some((r: any) => r.member?.id === member.id);
     });
 
-    const allSelected = availableMembers.every((member: any) => attendance[member.id]);
+    const allSelected = availableMembersOnPage.every((member: any) => attendance[member.id]);
     
     if (allSelected) {
       // Deselect all available members on current page
-      availableMembers.forEach((member: any) => {
+      availableMembersOnPage.forEach((member: any) => {
         newAttendance[member.id] = false;
       });
     } else {
       // Select all available members on current page
-      availableMembers.forEach((member: any) => {
+      availableMembersOnPage.forEach((member: any) => {
         newAttendance[member.id] = true;
       });
     }
@@ -225,8 +286,18 @@ export default function TakeAttendancePage() {
     setAttendance(newAttendance);
   };
 
-  // Calculate selection state for the select all checkbox
-  const availableMembers = members.filter((member: any) => {
+  // Handle group filter selection
+  const handleGroupFilter = (groupId: string | null) => {
+    setSelectedGroupFilter(groupId);
+    setShowGroupDropdown(false);
+    // Reset to first page when group filter changes
+    setMemberPage(1);
+    // Clear any current attendance selections when switching groups
+    setAttendance({});
+  };
+
+  // Calculate selection state for the select all checkbox (use paginated members for current page)
+  const availableMembers = paginatedMembers.filter((member: any) => {
     return !(attendanceRecords || []).some((r: any) => r.member?.id === member.id);
   });
   const selectedCount = availableMembers.filter((member: any) => attendance[member.id]).length;
@@ -622,24 +693,111 @@ export default function TakeAttendancePage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <h2 className="text-xl font-semibold text-gray-800">
-                Members ({membersTotalCount || 0})
+                Members ({filteredTotalCount})
+                {selectedGroupFilter && (
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (filtered from {membersTotalCount || 0} total)
+                  </span>
+                )}
               </h2>
-              {availableMembers.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    ref={(el) => {
-                      if (el) el.indeterminate = isPartiallySelected;
-                    }}
-                    onChange={handleSelectAll}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label className="text-sm text-gray-600 cursor-pointer" onClick={handleSelectAll}>
-                    {isAllSelected ? 'Deselect All' : 'Select All'} ({availableMembers.length} available)
-                  </label>
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                {/* Group Filter Dropdown - Always visible */}
+                {smallGroups && smallGroups.length > 0 && (
+                  <div className="relative" data-group-dropdown>
+                    <button
+                      onClick={() => setShowGroupDropdown(!showGroupDropdown)}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+                      disabled={loadingGroups}
+                    >
+                      <UsersIcon className="h-4 w-4" />
+                      {selectedGroupFilter 
+                        ? `Group: ${smallGroups.find((g: any) => g.id === selectedGroupFilter)?.name || 'Unknown'}`
+                        : 'All Members'
+                      }
+                      <ChevronDownIcon className={`h-4 w-4 transition-transform ${showGroupDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showGroupDropdown && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-48 max-h-64 overflow-y-auto">
+                        <div className="py-1">
+                          <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                            Filter Members by Group
+                          </div>
+                          
+                          {/* All Members Option */}
+                          <button
+                            onClick={() => handleGroupFilter(null)}
+                            className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                              selectedGroupFilter === null 
+                                ? 'bg-indigo-50 text-indigo-700 font-medium' 
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>All Members</span>
+                              <span className="text-xs text-gray-500">
+                                {allMembers.length} total
+                              </span>
+                            </div>
+                          </button>
+                          
+                          {/* Individual Groups */}
+                          {smallGroups.map((group: any) => {
+                            const groupMemberIds = group.members?.map((member: any) => member.memberId) || [];
+                            const groupMemberCount = allMembers.filter((member: any) => 
+                              groupMemberIds.includes(member.id)
+                            ).length;
+                            
+                            return (
+                              <button
+                                key={group.id}
+                                onClick={() => handleGroupFilter(group.id)}
+                                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                  selectedGroupFilter === group.id 
+                                    ? 'bg-indigo-50 text-indigo-700 font-medium' 
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span>{group.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    {groupMemberCount} members
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                          
+                          {smallGroups.length === 0 && (
+                            <div className="px-3 py-2 text-sm text-gray-500">
+                              No groups available
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Select All Checkbox - Only show when there are available members */}
+                {availableMembers.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isPartiallySelected;
+                      }}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label className="text-sm text-gray-600 cursor-pointer" onClick={handleSelectAll}>
+                      {isAllSelected ? 'Deselect All' : 'Select All'} ({availableMembers.length} available)
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -664,7 +822,7 @@ export default function TakeAttendancePage() {
           ) : (
             <>
               <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100 bg-white/60 mb-4">
-                {members.map((member: any) => {
+                {paginatedMembers.map((member: any) => {
                   const isAlreadyMarked = (attendanceRecords || []).some(
                     (r: any) => r.member?.id === member.id,
                   );
@@ -739,16 +897,19 @@ export default function TakeAttendancePage() {
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                   <span>
-                    Showing {((memberPage - 1) * memberItemsPerPage) + 1} to {Math.min(memberPage * memberItemsPerPage, membersTotalCount || 0)} of {membersTotalCount || 0} members
+                    Showing {((memberPage - 1) * memberItemsPerPage) + 1} to {Math.min(memberPage * memberItemsPerPage, filteredTotalCount)} of {filteredTotalCount} members
+                    {selectedGroupFilter && (
+                      <span className="text-gray-500"> (filtered)</span>
+                    )}
                   </span>
-                  {Math.ceil((membersTotalCount || 0) / memberItemsPerPage) > 1 && (
-                    <span>Page {memberPage} of {Math.ceil((membersTotalCount || 0) / memberItemsPerPage)}</span>
+                  {Math.ceil(filteredTotalCount / memberItemsPerPage) > 1 && (
+                    <span>Page {memberPage} of {Math.ceil(filteredTotalCount / memberItemsPerPage)}</span>
                   )}
                 </div>
                 <Pagination
                   currentPage={memberPage}
-                  totalPages={Math.ceil((membersTotalCount || 0) / memberItemsPerPage)}
-                  totalItems={membersTotalCount || 0}
+                  totalPages={Math.ceil(filteredTotalCount / memberItemsPerPage)}
+                  totalItems={filteredTotalCount}
                   itemsPerPage={memberItemsPerPage}
                   onPageChange={setMemberPage}
                   onItemsPerPageChange={(newItemsPerPage) => {
