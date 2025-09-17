@@ -384,7 +384,7 @@ export default function UltraModernBranchDashboard() {
                   <QuickActionButton
                     icon={CalendarDaysIcon}
                     label="New Event"
-                    href="/dashboard/calendar/new"
+                    href="/dashboard/calendar"
                     color="purple"
                   />
                 </div>
