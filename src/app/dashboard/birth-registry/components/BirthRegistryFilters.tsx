@@ -3,15 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FunnelIcon,
-  XMarkIcon,
-  CalendarIcon,
-  UserGroupIcon,
-  MapPinIcon,
-  DocumentTextIcon,
-  SparklesIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
+  Filter,
+  X,
+  Calendar,
+  Users,
+  MapPin,
+  FileText,
+  Sparkles,
+  Search,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

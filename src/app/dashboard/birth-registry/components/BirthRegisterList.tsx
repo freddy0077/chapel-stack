@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import {
-  PlusIcon,
-  MagnifyingGlassIcon,
-  CalendarDaysIcon,
-  HeartIcon,
-  DocumentTextIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  FunnelIcon,
-} from '@heroicons/react/24/outline';
+  Plus,
+  Search,
+  Calendar,
+  Heart,
+  FileText,
+  Eye,
+  Pencil,
+  Trash2,
+  Filter,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

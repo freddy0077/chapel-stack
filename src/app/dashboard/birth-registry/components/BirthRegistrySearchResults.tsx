@@ -3,11 +3,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  MagnifyingGlassIcon,
-  ExclamationTriangleIcon,
-  SparklesIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline';
+  Search,
+  AlertTriangle,
+  Sparkles,
+  Clock,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { BirthRegistryFilters } from './BirthRegistryFilters';
@@ -83,13 +83,13 @@ const BirthRegistrySearchResults: React.FC<BirthRegistrySearchResultsProps> = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <MagnifyingGlassIcon className="h-4 w-4 text-blue-600" />
+                  <Search className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-900">
                     {totalResults === 0 ? 'No results found' : `${totalResults} result${totalResults !== 1 ? 's' : ''} found`}
                   </span>
                   {searchTime && (
                     <div className="flex items-center gap-1 text-xs text-blue-600">
-                      <ClockIcon className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                       <span>{searchTime}ms</span>
                     </div>
                   )}

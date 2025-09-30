@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  XMarkIcon, 
-  DocumentTextIcon, 
-  UserIcon, 
-  HeartIcon, 
-  CalendarDaysIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CheckCircleIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline';
+  X, 
+  FileText, 
+  User, 
+  Heart, 
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -138,25 +138,25 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
     {
       id: 1,
       title: 'Child Information',
-      icon: UserIcon,
+      icon: User,
       description: 'Basic details about the child',
     },
     {
       id: 2,
       title: 'Birth Details',
-      icon: SparklesIcon,
+      icon: Sparkles,
       description: 'Birth location and medical information',
     },
     {
       id: 3,
       title: 'Parent Information',
-      icon: HeartIcon,
+      icon: Heart,
       description: 'Details about the parents',
     },
     {
       id: 4,
       title: 'Baptism Planning',
-      icon: CalendarDaysIcon,
+      icon: Calendar,
       description: 'Baptism arrangements if planned',
     },
   ];
@@ -381,7 +381,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <DocumentTextIcon className="h-6 w-6 text-white" />
+                  <FileText className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
@@ -397,7 +397,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                 onClick={handleClose}
                 className="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition-colors"
               >
-                <XMarkIcon className="h-5 w-5 text-white" />
+                <X className="h-5 w-5 text-white" />
               </button>
             </div>
 
@@ -415,7 +415,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                     }`}
                   >
                     {currentStep > step.id ? (
-                      <CheckCircleIcon className="h-4 w-4" />
+                      <CheckCircle className="h-4 w-4" />
                     ) : (
                       <step.icon className="h-4 w-4" />
                     )}
@@ -678,7 +678,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                 >
                   <div className="space-y-4">
                     <h4 className="text-md font-medium text-gray-900 flex items-center gap-2">
-                      <HeartIcon className="h-5 w-5 text-pink-500" />
+                      <Heart className="h-5 w-5 text-pink-500" />
                       Parent Information
                     </h4>
                     
@@ -857,7 +857,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                   disabled={loading}
                   className="bg-white/50 backdrop-blur-sm border-gray-200 hover:bg-white/80 rounded-xl"
                 >
-                  <ChevronLeftIcon className="h-4 w-4 mr-2" />
+                  <ChevronLeft className="h-4 w-4 mr-2" />
                   Previous
                 </Button>
               </motion.div>
@@ -890,7 +890,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg"
                 >
                   Next
-                  <ChevronRightIcon className="h-4 w-4 ml-2" />
+                  <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               </motion.div>
             ) : (
@@ -910,7 +910,7 @@ const BirthRegisterForm: React.FC<BirthRegisterFormProps> = ({
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <CheckCircleIcon className="h-4 w-4" />
+                      <CheckCircle className="h-4 w-4" />
                       {isEditing ? 'Update Record' : 'Create Record'}
                     </div>
                   )}

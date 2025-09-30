@@ -12,21 +12,21 @@ import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  PlusIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  CalendarDaysIcon,
-  CheckCircleIcon,
-  DocumentTextIcon,
-  HeartIcon,
-  FunnelIcon,
-  SparklesIcon,
-  MapPinIcon,
-  CalendarIcon,
-  ScaleIcon,
-  HashtagIcon,
-  LightBulbIcon,
-} from '@heroicons/react/24/outline';
+  Plus,
+  BarChart3,
+  Users,
+  Calendar,
+  CheckCircle,
+  FileText,
+  Heart,
+  Filter,
+  Sparkles,
+  MapPin,
+  Calendar as CalendarIcon,
+  Scale,
+  Hash,
+  Lightbulb,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 

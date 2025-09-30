@@ -1,15 +1,15 @@
 import React from 'react';
 import {
-  XMarkIcon,
-  UserIcon,
-  CalendarDaysIcon,
-  MapPinIcon,
-  HeartIcon,
-  DocumentTextIcon,
-  PencilIcon,
-  PrinterIcon,
-  ShareIcon,
-} from '@heroicons/react/24/outline';
+  X,
+  User,
+  Calendar,
+  MapPin,
+  Heart,
+  FileText,
+  Pencil,
+  Printer,
+  Share,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,23 +83,23 @@ const BirthRegisterDetails: React.FC<BirthRegisterDetailsProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DocumentTextIcon className="h-5 w-5" />
+              <FileText className="h-5 w-5" />
               Birth Record Details
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handlePrint}>
-                <PrinterIcon className="h-4 w-4 mr-2" />
+                <Printer className="h-4 w-4 mr-2" />
                 Print
               </Button>
               {navigator.share && (
                 <Button variant="outline" size="sm" onClick={handleShare}>
-                  <ShareIcon className="h-4 w-4 mr-2" />
+                  <Share className="h-4 w-4 mr-2" />
                   Share
                 </Button>
               )}
               {onEdit && (
                 <Button variant="outline" size="sm" onClick={() => onEdit(birthRegister)}>
-                  <PencilIcon className="h-4 w-4 mr-2" />
+                  <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
               )}
