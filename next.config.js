@@ -15,13 +15,12 @@ const nextConfig = {
       "@radix-ui/react-dialog",
       "@radix-ui/react-dropdown-menu",
       "lucide-react",
-      "react-icons",
     ],
   },
   // Compress responses
   compress: true,
-  // Enable SWC minification
-  swcMinify: true,
+  // SWC minification is now default in Next.js 15
+  // swcMinify: true, // Removed - deprecated in Next.js 15
   images: {
     domains: [
       "images.unsplash.com",
