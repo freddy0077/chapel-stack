@@ -4,12 +4,12 @@ This document outlines the GraphQL queries designed to support the finance dashb
 
 ## General Conventions
 
-*   **`DateTime` Scalar**: Represents date-time strings, typically in ISO 8601 format (e.g., `"2023-10-27T10:00:00Z"`).
-*   **`JSON` Scalar**: Represents complex data structures whose specific shape is determined by the backend resolver. Frontend clients will need to parse this JSON accordingly.
-*   **`ID` Scalar**: Represents unique identifiers for entities.
-*   **Pagination**: Queries returning lists (e.g., contributions, expenses) typically support pagination via `skip` and `take` arguments, often within a `pagination` input object. They might return a paginated structure (e.g., with `items`, `totalCount`, `hasNextPage`).
-*   **Filtering**: List queries usually accept filter arguments (e.g., `branchId`, date ranges) to narrow down results, often within a `filter` input object.
-*   **`branchId`**: Most finance queries are scoped to a specific branch and require a `branchId`.
+- **`DateTime` Scalar**: Represents date-time strings, typically in ISO 8601 format (e.g., `"2023-10-27T10:00:00Z"`).
+- **`JSON` Scalar**: Represents complex data structures whose specific shape is determined by the backend resolver. Frontend clients will need to parse this JSON accordingly.
+- **`ID` Scalar**: Represents unique identifiers for entities.
+- **Pagination**: Queries returning lists (e.g., contributions, expenses) typically support pagination via `skip` and `take` arguments, often within a `pagination` input object. They might return a paginated structure (e.g., with `items`, `totalCount`, `hasNextPage`).
+- **Filtering**: List queries usually accept filter arguments (e.g., `branchId`, date ranges) to narrow down results, often within a `filter` input object.
+- **`branchId`**: Most finance queries are scoped to a specific branch and require a `branchId`.
 
 ---
 
@@ -55,7 +55,8 @@ query GetFinanceDashboardData($branchId: ID!) {
         title
         widgetType
       }
-      ... on ChartData { # ChartData can also be a direct widget
+      ... on ChartData {
+        # ChartData can also be a direct widget
         chartType
         data # JSON
         title
@@ -69,7 +70,7 @@ query GetFinanceDashboardData($branchId: ID!) {
 
 **Variables:**
 
-*   `branchId: ID!`: The ID of the branch for which to fetch dashboard data.
+- `branchId: ID!`: The ID of the branch for which to fetch dashboard data.
 
 **Returns:** A `DashboardData` object containing arrays of `charts`, `kpiCards`, and a `widgets` union which can include various types like `AnnouncementsWidget`, `ChartData`, `KpiCard`, `MyGroupsWidget`, etc.
 
@@ -82,13 +83,21 @@ Provides a summary of income and expenses over a specified period for a branch.
 **Query:**
 
 ```graphql
-query GetIncomeStatement($branchId: ID!, $startDate: DateTime!, $endDate: DateTime!) {
-  incomeStatement(branchId: $branchId, startDate: $startDate, endDate: $endDate) {
+query GetIncomeStatement(
+  $branchId: ID!
+  $startDate: DateTime!
+  $endDate: DateTime!
+) {
+  incomeStatement(
+    branchId: $branchId
+    startDate: $startDate
+    endDate: $endDate
+  ) {
     branchId
     startDate
     endDate
-    income     # JSON data (e.g., categorized income)
-    expenses   # JSON data (e.g., categorized expenses)
+    income # JSON data (e.g., categorized income)
+    expenses # JSON data (e.g., categorized expenses)
     netIncome
   }
 }
@@ -96,9 +105,9 @@ query GetIncomeStatement($branchId: ID!, $startDate: DateTime!, $endDate: DateTi
 
 **Variables:**
 
-*   `branchId: ID!`: The ID of the branch.
-*   `startDate: DateTime!`: The start date for the income statement period.
-*   `endDate: DateTime!`: The end date for the income statement period.
+- `branchId: ID!`: The ID of the branch.
+- `startDate: DateTime!`: The start date for the income statement period.
+- `endDate: DateTime!`: The end date for the income statement period.
 
 **Returns:** An `IncomeStatement` object. The `income` and `expenses` fields are `JSON` and their structure is determined by the backend.
 
@@ -111,20 +120,21 @@ Compares budgeted amounts against actual expenditures for a given fiscal year an
 **Query:**
 
 ```graphql
-query GetBudgetVsActual($branchId: ID!, $fiscalYear: Float!) { # Confirm if fiscalYear should be Int!
+query GetBudgetVsActual($branchId: ID!, $fiscalYear: Float!) {
+  # Confirm if fiscalYear should be Int!
   budgetVsActual(branchId: $branchId, fiscalYear: $fiscalYear) {
     branchId
     fiscalYear
     byCategory # JSON data (e.g., categorized budget vs. actual figures)
-    totals     # JSON data (e.g., overall totals for budget vs. actual)
+    totals # JSON data (e.g., overall totals for budget vs. actual)
   }
 }
 ```
 
 **Variables:**
 
-*   `branchId: ID!`: The ID of the branch.
-*   `fiscalYear: Float!`: The fiscal year for the comparison. (Note: Schema showed `Float!`, confirm if `Int!` is more appropriate).
+- `branchId: ID!`: The ID of the branch.
+- `fiscalYear: Float!`: The fiscal year for the comparison. (Note: Schema showed `Float!`, confirm if `Int!` is more appropriate).
 
 **Returns:** A `BudgetVsActual` object. `byCategory` and `totals` are `JSON` fields whose structure is determined by the backend.
 
@@ -148,8 +158,8 @@ query GetFundBalances($branchId: ID!, $asOfDate: DateTime!) {
 
 **Variables:**
 
-*   `branchId: ID!`: The ID of the branch.
-*   `asOfDate: DateTime!`: The date for which to report fund balances.
+- `branchId: ID!`: The ID of the branch.
+- `asOfDate: DateTime!`: The date for which to report fund balances.
 
 **Returns:** A `FundBalance` object. `fundBalances` is a `JSON` field whose structure is determined by the backend.
 
@@ -173,7 +183,8 @@ query GetContributionsList(
   $take: Int = 10
 ) {
   contributions(
-    filter: { # Example filter structure
+    filter: {
+      # Example filter structure
       branchId: $branchId
       fundId: $fundId
       # ... other filters
@@ -182,14 +193,23 @@ query GetContributionsList(
   ) {
     # Paginated structure might apply (items, totalCount, hasNextPage)
     # items {
+    id
+    amount
+    date
+    contributionType {
       id
-      amount
-      date
-      contributionType { id name }
-      fund { id name }
-      memberId # or member { id firstName lastName }
-      paymentMethod { id name }
-      # ... other Contribution fields
+      name
+    }
+    fund {
+      id
+      name
+    }
+    memberId # or member { id firstName lastName }
+    paymentMethod {
+      id
+      name
+    }
+    # ... other Contribution fields
     # }
   }
 }
@@ -197,12 +217,12 @@ query GetContributionsList(
 
 **Variables (Example):**
 
-*   `branchId: ID` (Optional)
-*   `fundId: ID` (Optional)
-*   `startDate: DateTime` (Optional)
-*   `endDate: DateTime` (Optional)
-*   `skip: Int` (Optional, for pagination, default: 0)
-*   `take: Int` (Optional, for pagination, default: 10)
+- `branchId: ID` (Optional)
+- `fundId: ID` (Optional)
+- `startDate: DateTime` (Optional)
+- `endDate: DateTime` (Optional)
+- `skip: Int` (Optional, for pagination, default: 0)
+- `take: Int` (Optional, for pagination, default: 10)
 
 **Returns:** An array of `Contribution` objects (potentially within a paginated structure). Each contribution includes details like amount, date, type, fund, and payment method.
 
@@ -226,7 +246,8 @@ query GetExpensesList(
   $take: Int = 10
 ) {
   expenses(
-    filter: { # Example filter structure
+    filter: {
+      # Example filter structure
       branchId: $branchId
       categoryId: $categoryId
       # ... other filters
@@ -235,15 +256,24 @@ query GetExpensesList(
   ) {
     # Paginated structure might apply (items, totalCount, hasNextPage)
     # items {
+    id
+    amount
+    date
+    description
+    category {
       id
-      amount
-      date
-      description
-      category { id name }
-      fund { id name }
-      vendorName # or vendor { id name }
-      paymentMethod { id name }
-      # ... other Expense fields
+      name
+    }
+    fund {
+      id
+      name
+    }
+    vendorName # or vendor { id name }
+    paymentMethod {
+      id
+      name
+    }
+    # ... other Expense fields
     # }
   }
 }
@@ -251,12 +281,12 @@ query GetExpensesList(
 
 **Variables (Example):**
 
-*   `branchId: ID` (Optional)
-*   `categoryId: ID` (Optional)
-*   `startDate: DateTime` (Optional)
-*   `endDate: DateTime` (Optional)
-*   `skip: Int` (Optional, for pagination, default: 0)
-*   `take: Int` (Optional, for pagination, default: 10)
+- `branchId: ID` (Optional)
+- `categoryId: ID` (Optional)
+- `startDate: DateTime` (Optional)
+- `endDate: DateTime` (Optional)
+- `skip: Int` (Optional, for pagination, default: 0)
+- `take: Int` (Optional, for pagination, default: 10)
 
 **Returns:** An array of `Expense` objects (potentially within a paginated structure). Each expense includes details like amount, date, description, category, fund, and vendor information.
 
@@ -264,10 +294,10 @@ query GetExpensesList(
 
 ## Important Considerations
 
-*   **JSON Field Structures**: For fields typed as `JSON` (e.g., `income` in `IncomeStatement`, `data` in `ChartData`), the exact structure of the JSON content is determined by the backend resolvers. Consult backend documentation or inspect sample responses to understand how to parse these fields.
-*   **Filter and Pagination Input Types**: The exact structure of `filter` and `pagination` input objects should be verified against the GraphQL schema.
-*   **Root Query Field Names**: The names of the root query fields (e.g., `dashboardData`, `contributions`) should match the schema. If they are nested (e.g., `finance { incomeStatement }`), adjust queries accordingly.
-*   **Error Handling**: Implement proper error handling on the client-side to manage API errors or unexpected responses.
+- **JSON Field Structures**: For fields typed as `JSON` (e.g., `income` in `IncomeStatement`, `data` in `ChartData`), the exact structure of the JSON content is determined by the backend resolvers. Consult backend documentation or inspect sample responses to understand how to parse these fields.
+- **Filter and Pagination Input Types**: The exact structure of `filter` and `pagination` input objects should be verified against the GraphQL schema.
+- **Root Query Field Names**: The names of the root query fields (e.g., `dashboardData`, `contributions`) should match the schema. If they are nested (e.g., `finance { incomeStatement }`), adjust queries accordingly.
+- **Error Handling**: Implement proper error handling on the client-side to manage API errors or unexpected responses.
 
 This document provides a comprehensive overview for interacting with the finance-related GraphQL API. Always refer to the canonical GraphQL schema for the most up-to-date definitions and capabilities.
 
@@ -297,8 +327,9 @@ mutation CreateBatch($input: CreateBatchInput!) {
   }
 }
 ```
-*   **Input:** `CreateBatchInput!`
-*   **Returns:** `Batch!`
+
+- **Input:** `CreateBatchInput!`
+- **Returns:** `Batch!`
 
 **2. Process Batch Contributions**
 
@@ -311,8 +342,9 @@ mutation ProcessBatchContributions($input: BatchContributionInput!) {
   }
 }
 ```
-*   **Input:** `BatchContributionInput!` (Likely contains batch ID and contribution details)
-*   **Returns:** `[Contribution!]!`
+
+- **Input:** `BatchContributionInput!` (Likely contains batch ID and contribution details)
+- **Returns:** `[Contribution!]!`
 
 **3. Reconcile Batch**
 
@@ -324,8 +356,9 @@ mutation ReconcileBatch($batchId: ID!, $actualAmount: Float!) {
   }
 }
 ```
-*   **Variables:** `batchId: ID!`, `actualAmount: Float!`
-*   **Returns:** `Contribution!` (Schema indicates Contribution, verify if Batch is more appropriate)
+
+- **Variables:** `batchId: ID!`, `actualAmount: Float!`
+- **Returns:** `Contribution!` (Schema indicates Contribution, verify if Batch is more appropriate)
 
 **4. Update Batch**
 
@@ -339,8 +372,9 @@ mutation UpdateBatch($input: UpdateBatchInput!) {
   }
 }
 ```
-*   **Input:** `UpdateBatchInput!` (Likely includes `id` of the batch)
-*   **Returns:** `Batch!`
+
+- **Input:** `UpdateBatchInput!` (Likely includes `id` of the batch)
+- **Returns:** `Batch!`
 
 **5. Remove Batch**
 
@@ -352,8 +386,9 @@ mutation RemoveBatch($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Batch!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Batch!`
 
 **6. Close Batch**
 
@@ -365,8 +400,9 @@ mutation CloseBatch($batchId: ID!) {
   }
 }
 ```
-*   **Variables:** `batchId: ID!`
-*   **Returns:** `Contribution!` (Schema indicates Contribution, verify if Batch is more appropriate)
+
+- **Variables:** `batchId: ID!`
+- **Returns:** `Contribution!` (Schema indicates Contribution, verify if Batch is more appropriate)
 
 ### Budget Mutations
 
@@ -385,8 +421,9 @@ mutation CreateBudget($input: CreateBudgetInput!) {
   }
 }
 ```
-*   **Input:** `CreateBudgetInput!`
-*   **Returns:** `Budget!`
+
+- **Input:** `CreateBudgetInput!`
+- **Returns:** `Budget!`
 
 **2. Create Budget Item**
 
@@ -400,8 +437,9 @@ mutation CreateBudgetItem($input: CreateBudgetItemInput!) {
   }
 }
 ```
-*   **Input:** `CreateBudgetItemInput!`
-*   **Returns:** `BudgetItem!`
+
+- **Input:** `CreateBudgetItemInput!`
+- **Returns:** `BudgetItem!`
 
 **3. Update Budget**
 
@@ -415,8 +453,9 @@ mutation UpdateBudget($input: UpdateBudgetInput!) {
   }
 }
 ```
-*   **Input:** `UpdateBudgetInput!` (Includes `id` of the budget)
-*   **Returns:** `Budget!`
+
+- **Input:** `UpdateBudgetInput!` (Includes `id` of the budget)
+- **Returns:** `Budget!`
 
 **4. Update Budget Item**
 
@@ -430,8 +469,9 @@ mutation UpdateBudgetItem($input: UpdateBudgetItemInput!) {
   }
 }
 ```
-*   **Input:** `UpdateBudgetItemInput!` (Includes `id` of the budget item)
-*   **Returns:** `BudgetItem!`
+
+- **Input:** `UpdateBudgetItemInput!` (Includes `id` of the budget item)
+- **Returns:** `BudgetItem!`
 
 **5. Update Budget Status**
 
@@ -444,8 +484,9 @@ mutation UpdateBudgetStatus($id: ID!, $status: String!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`, `status: String!`
-*   **Returns:** `Budget!`
+
+- **Variables:** `id: ID!`, `status: String!`
+- **Returns:** `Budget!`
 
 **6. Remove Budget**
 
@@ -456,8 +497,9 @@ mutation RemoveBudget($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Budget!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Budget!`
 
 **7. Remove Budget Item**
 
@@ -468,8 +510,9 @@ mutation RemoveBudgetItem($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `BudgetItem!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `BudgetItem!`
 
 ### Contribution Mutations
 
@@ -487,8 +530,9 @@ mutation CreateContribution($input: CreateContributionInput!) {
   }
 }
 ```
-*   **Input:** `CreateContributionInput!`
-*   **Returns:** `Contribution!`
+
+- **Input:** `CreateContributionInput!`
+- **Returns:** `Contribution!`
 
 **2. Update Contribution**
 
@@ -501,8 +545,9 @@ mutation UpdateContribution($input: UpdateContributionInput!) {
   }
 }
 ```
-*   **Input:** `UpdateContributionInput!` (Includes `id` of the contribution)
-*   **Returns:** `Contribution!`
+
+- **Input:** `UpdateContributionInput!` (Includes `id` of the contribution)
+- **Returns:** `Contribution!`
 
 **3. Remove Contribution**
 
@@ -513,8 +558,9 @@ mutation RemoveContribution($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Contribution!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Contribution!`
 
 ### Expense Mutations
 
@@ -533,8 +579,9 @@ mutation CreateExpense($input: CreateExpenseInput!) {
   }
 }
 ```
-*   **Input:** `CreateExpenseInput!`
-*   **Returns:** `Expense!`
+
+- **Input:** `CreateExpenseInput!`
+- **Returns:** `Expense!`
 
 **2. Update Expense**
 
@@ -548,8 +595,9 @@ mutation UpdateExpense($input: UpdateExpenseInput!) {
   }
 }
 ```
-*   **Input:** `UpdateExpenseInput!` (Includes `id` of the expense)
-*   **Returns:** `Expense!`
+
+- **Input:** `UpdateExpenseInput!` (Includes `id` of the expense)
+- **Returns:** `Expense!`
 
 **3. Remove Expense**
 
@@ -560,8 +608,9 @@ mutation RemoveExpense($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Expense!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Expense!`
 
 ### Fund Mutations
 
@@ -579,8 +628,9 @@ mutation CreateFund($input: CreateFundInput!) {
   }
 }
 ```
-*   **Input:** `CreateFundInput!`
-*   **Returns:** `Fund!`
+
+- **Input:** `CreateFundInput!`
+- **Returns:** `Fund!`
 
 **2. Update Fund**
 
@@ -594,8 +644,9 @@ mutation UpdateFund($input: UpdateFundInput!) {
   }
 }
 ```
-*   **Input:** `UpdateFundInput!` (Includes `id` of the fund)
-*   **Returns:** `Fund!`
+
+- **Input:** `UpdateFundInput!` (Includes `id` of the fund)
+- **Returns:** `Fund!`
 
 **3. Remove Fund**
 
@@ -606,8 +657,9 @@ mutation RemoveFund($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Fund!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Fund!`
 
 ### Pledge Mutations
 
@@ -625,8 +677,9 @@ mutation CreatePledge($input: CreatePledgeInput!) {
   }
 }
 ```
-*   **Input:** `CreatePledgeInput!`
-*   **Returns:** `Pledge!`
+
+- **Input:** `CreatePledgeInput!`
+- **Returns:** `Pledge!`
 
 **2. Update Pledge**
 
@@ -640,8 +693,9 @@ mutation UpdatePledge($input: UpdatePledgeInput!) {
   }
 }
 ```
-*   **Input:** `UpdatePledgeInput!` (Includes `id` of the pledge)
-*   **Returns:** `Pledge!`
+
+- **Input:** `UpdatePledgeInput!` (Includes `id` of the pledge)
+- **Returns:** `Pledge!`
 
 **3. Update Pledge Status**
 
@@ -654,8 +708,9 @@ mutation UpdatePledgeStatus($id: ID!, $status: String!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`, `status: String!`
-*   **Returns:** `Pledge!`
+
+- **Variables:** `id: ID!`, `status: String!`
+- **Returns:** `Pledge!`
 
 **4. Remove Pledge**
 
@@ -666,8 +721,9 @@ mutation RemovePledge($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Pledge!`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Pledge!`
 
 **5. Check Pledge Fulfillment**
 
@@ -679,8 +735,9 @@ mutation CheckPledgeFulfillment {
   }
 }
 ```
-*   **Variables:** None
-*   **Returns:** `Pledge!` (The schema suggests it returns a single Pledge, which might be one that needs attention or a summary. This needs clarification from backend logic.)
+
+- **Variables:** None
+- **Returns:** `Pledge!` (The schema suggests it returns a single Pledge, which might be one that needs attention or a summary. This needs clarification from backend logic.)
 
 ### Financial Data Import Mutations
 
@@ -689,8 +746,18 @@ Mutations for importing financial data.
 **1. Import Financial Data**
 
 ```graphql
-mutation ImportFinancialData($branchId: ID!, $file: Upload!, $mapping: String!, $type: String!) {
-  importFinancialData(branchId: $branchId, file: $file, mapping: $mapping, type: $type) {
+mutation ImportFinancialData(
+  $branchId: ID!
+  $file: Upload!
+  $mapping: String!
+  $type: String!
+) {
+  importFinancialData(
+    branchId: $branchId
+    file: $file
+    mapping: $mapping
+    type: $type
+  ) {
     success
     message
     importedRecords
@@ -703,8 +770,9 @@ mutation ImportFinancialData($branchId: ID!, $file: Upload!, $mapping: String!, 
   }
 }
 ```
-*   **Variables:** `branchId: ID!`, `file: Upload!`, `mapping: String!` (JSON string or identifier for mapping config), `type: String!` (e.g., "contributions", "expenses")
-*   **Returns:** `ImportResult!`
+
+- **Variables:** `branchId: ID!`, `file: Upload!`, `mapping: String!` (JSON string or identifier for mapping config), `type: String!` (e.g., "contributions", "expenses")
+- **Returns:** `ImportResult!`
 
 ---
 
@@ -734,8 +802,9 @@ query GetBatch($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Batch`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Batch`
 
 **2. List Batches**
 
@@ -752,8 +821,9 @@ query ListBatches($branchId: ID, $status: String) {
   }
 }
 ```
-*   **Variables (Optional):** `branchId: ID`, `status: String`
-*   **Returns:** `[Batch!]!`
+
+- **Variables (Optional):** `branchId: ID`, `status: String`
+- **Returns:** `[Batch!]!`
 
 ### Detailed Budget Queries
 
@@ -777,14 +847,25 @@ query GetBudget($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Budget`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Budget`
 
 **2. List Budgets**
 
 ```graphql
-query ListBudgets($branchId: ID, $fiscalYear: Int, $fundId: ID, $status: String) {
-  budgets(branchId: $branchId, fiscalYear: $fiscalYear, fundId: $fundId, status: $status) {
+query ListBudgets(
+  $branchId: ID
+  $fiscalYear: Int
+  $fundId: ID
+  $status: String
+) {
+  budgets(
+    branchId: $branchId
+    fiscalYear: $fiscalYear
+    fundId: $fundId
+    status: $status
+  ) {
     id
     name
     fiscalYear
@@ -793,8 +874,9 @@ query ListBudgets($branchId: ID, $fiscalYear: Int, $fundId: ID, $status: String)
   }
 }
 ```
-*   **Variables (Optional):** `branchId: ID`, `fiscalYear: Int`, `fundId: ID`, `status: String`
-*   **Returns:** `[Budget!]!`
+
+- **Variables (Optional):** `branchId: ID`, `fiscalYear: Int`, `fundId: ID`, `status: String`
+- **Returns:** `[Budget!]!`
 
 **3. Get Expenses for a Budget**
 
@@ -809,8 +891,9 @@ query GetBudgetExpenses($budgetId: ID!) {
   }
 }
 ```
-*   **Variables:** `budgetId: ID!`
-*   **Returns:** `[Expense!]!`
+
+- **Variables:** `budgetId: ID!`
+- **Returns:** `[Expense!]!`
 
 ### Detailed Contribution Queries
 
@@ -831,10 +914,11 @@ query GetContribution($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Contribution`
 
-*(Note: The `contributions` list query is already in the "Core Finance Queries" section, but can be referenced here too.)*
+- **Variables:** `id: ID!`
+- **Returns:** `Contribution`
+
+_(Note: The `contributions` list query is already in the "Core Finance Queries" section, but can be referenced here too.)_
 
 **2. Get Contributions for a Member**
 
@@ -850,8 +934,9 @@ query GetMemberContributions($memberId: ID!) {
   }
 }
 ```
-*   **Variables:** `memberId: ID!`
-*   **Returns:** `[Contribution!]!`
+
+- **Variables:** `memberId: ID!`
+- **Returns:** `[Contribution!]!`
 
 ### Detailed Expense Queries
 
@@ -872,10 +957,11 @@ query GetExpense($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Expense`
 
-*(Note: The `expenses` list query is already in the "Core Finance Queries" section, but can be referenced here too.)*
+- **Variables:** `id: ID!`
+- **Returns:** `Expense`
+
+_(Note: The `expenses` list query is already in the "Core Finance Queries" section, but can be referenced here too.)_
 
 **2. Get Expenses for a Category**
 
@@ -890,8 +976,9 @@ query GetCategoryExpenses($categoryId: ID!) {
   }
 }
 ```
-*   **Variables:** `categoryId: ID!`
-*   **Returns:** `[Expense!]!`
+
+- **Variables:** `categoryId: ID!`
+- **Returns:** `[Expense!]!`
 
 **3. Get Expenses for a Fund**
 
@@ -906,8 +993,9 @@ query GetFundExpenses($fundId: ID!) {
   }
 }
 ```
-*   **Variables:** `fundId: ID!`
-*   **Returns:** `[Expense!]!`
+
+- **Variables:** `fundId: ID!`
+- **Returns:** `[Expense!]!`
 
 **4. Get Expenses for a Vendor**
 
@@ -922,8 +1010,9 @@ query GetVendorExpenses($vendorId: ID!) {
   }
 }
 ```
-*   **Variables:** `vendorId: ID!`
-*   **Returns:** `[Expense!]!`
+
+- **Variables:** `vendorId: ID!`
+- **Returns:** `[Expense!]!`
 
 ### Detailed Fund Queries
 
@@ -942,8 +1031,9 @@ query GetFund($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Fund`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Fund`
 
 **2. List Funds**
 
@@ -957,10 +1047,11 @@ query ListFunds($branchId: ID) {
   }
 }
 ```
-*   **Variables (Optional):** `branchId: ID`
-*   **Returns:** `[Fund!]!`
 
-*(Note: The `fundBalances` query is already in the "Core Finance Queries" section.)*
+- **Variables (Optional):** `branchId: ID`
+- **Returns:** `[Fund!]!`
+
+_(Note: The `fundBalances` query is already in the "Core Finance Queries" section.)_
 
 **3. Generate Funds Import Template**
 
@@ -969,8 +1060,9 @@ query GenerateFundsImportTemplate {
   generateFundsImportTemplate
 }
 ```
-*   **Variables:** None
-*   **Returns:** `String!` (Likely a CSV template string or URL to a template)
+
+- **Variables:** None
+- **Returns:** `String!` (Likely a CSV template string or URL to a template)
 
 ### Detailed Pledge Queries
 
@@ -992,14 +1084,20 @@ query GetPledge($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Pledge`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Pledge`
 
 **2. List Pledges**
 
 ```graphql
 query ListPledges($branchId: ID, $fundId: ID, $memberId: ID, $status: String) {
-  pledges(branchId: $branchId, fundId: $fundId, memberId: $memberId, status: $status) {
+  pledges(
+    branchId: $branchId
+    fundId: $fundId
+    memberId: $memberId
+    status: $status
+  ) {
     id
     memberId
     fundId
@@ -1009,8 +1107,9 @@ query ListPledges($branchId: ID, $fundId: ID, $memberId: ID, $status: String) {
   }
 }
 ```
-*   **Variables (Optional):** `branchId: ID`, `fundId: ID`, `memberId: ID`, `status: String`
-*   **Returns:** `[Pledge!]!`
+
+- **Variables (Optional):** `branchId: ID`, `fundId: ID`, `memberId: ID`, `status: String`
+- **Returns:** `[Pledge!]!`
 
 **3. Get Pledges for a Fund**
 
@@ -1026,8 +1125,9 @@ query GetFundPledges($fundId: ID!) {
   }
 }
 ```
-*   **Variables:** `fundId: ID!`
-*   **Returns:** `[Pledge!]!`
+
+- **Variables:** `fundId: ID!`
+- **Returns:** `[Pledge!]!`
 
 **4. Get Pledges for a Member**
 
@@ -1043,8 +1143,9 @@ query GetMemberPledges($memberId: ID!) {
   }
 }
 ```
-*   **Variables:** `memberId: ID!`
-*   **Returns:** `[Pledge!]!`
+
+- **Variables:** `memberId: ID!`
+- **Returns:** `[Pledge!]!`
 
 ### Vendor Queries
 
@@ -1063,8 +1164,9 @@ query GetVendor($id: ID!) {
   }
 }
 ```
-*   **Variables:** `id: ID!`
-*   **Returns:** `Vendor`
+
+- **Variables:** `id: ID!`
+- **Returns:** `Vendor`
 
 **2. List Vendors**
 
@@ -1079,8 +1181,9 @@ query ListVendors($branchId: ID) {
   }
 }
 ```
-*   **Variables (Optional):** `branchId: ID`
-*   **Returns:** `[Vendor!]!`
+
+- **Variables (Optional):** `branchId: ID`
+- **Returns:** `[Vendor!]!`
 
 **3. Search Vendors**
 
@@ -1093,16 +1196,25 @@ query SearchVendors($branchId: ID, $name: String!) {
   }
 }
 ```
-*   **Variables:** `name: String!`, `branchId: ID` (Optional)
-*   **Returns:** `[Vendor!]!`
+
+- **Variables:** `name: String!`, `branchId: ID` (Optional)
+- **Returns:** `[Vendor!]!`
 
 ### Financial Reporting Queries
 
 **1. Get Giving Statement**
 
 ```graphql
-query GetGivingStatement($memberId: ID!, $startDate: DateTime!, $endDate: DateTime!) {
-  givingStatement(memberId: $memberId, startDate: $startDate, endDate: $endDate) {
+query GetGivingStatement(
+  $memberId: ID!
+  $startDate: DateTime!
+  $endDate: DateTime!
+) {
+  givingStatement(
+    memberId: $memberId
+    startDate: $startDate
+    endDate: $endDate
+  ) {
     member # JSON
     startDate
     endDate
@@ -1113,8 +1225,9 @@ query GetGivingStatement($memberId: ID!, $startDate: DateTime!, $endDate: DateTi
   }
 }
 ```
-*   **Variables:** `memberId: ID!`, `startDate: DateTime!`, `endDate: DateTime!`
-*   **Returns:** `GivingStatement` (Contains several `JSON` fields requiring client-side parsing)
+
+- **Variables:** `memberId: ID!`, `startDate: DateTime!`, `endDate: DateTime!`
+- **Returns:** `GivingStatement` (Contains several `JSON` fields requiring client-side parsing)
 
 **2. Generate Generic Report**
 
@@ -1130,8 +1243,8 @@ query GenerateReport($input: ReportRequestInput!) {
   }
 }
 ```
-*   **Input:** `ReportRequestInput!` (Includes `reportType`, `filter`, `outputFormat`)
-*   **Returns:** `ReportOutput!` (The `data` field is `JSON` and its structure depends on the `reportType`)
+
+- **Input:** `ReportRequestInput!` (Includes `reportType`, `filter`, `outputFormat`)
+- **Returns:** `ReportOutput!` (The `data` field is `JSON` and its structure depends on the `reportType`)
 
 This document provides a comprehensive overview for interacting with the finance-related GraphQL API. Always refer to the canonical GraphQL schema for the most up-to-date definitions and capabilities.
-

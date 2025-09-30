@@ -48,14 +48,14 @@ const RELATIONSHIP_ICONS = {
   [FamilyRelationshipType.SIBLING]: Users,
   [FamilyRelationshipType.GRANDPARENT]: User,
   [FamilyRelationshipType.GRANDCHILD]: User,
-  [FamilyRelationshipType.UNCLE_AUNT]: UserIcon,
-  [FamilyRelationshipType.NEPHEW_NIECE]: UserIcon,
-  [FamilyRelationshipType.COUSIN]: UserGroupIcon,
-  [FamilyRelationshipType.GUARDIAN]: UserIcon,
-  [FamilyRelationshipType.WARD]: UserIcon,
-  [FamilyRelationshipType.FRIEND]: UserGroupIcon,
-  [FamilyRelationshipType.EMERGENCY_CONTACT]: UserIcon,
-  [FamilyRelationshipType.OTHER]: UserIcon,
+  [FamilyRelationshipType.UNCLE_AUNT]: User,
+  [FamilyRelationshipType.NEPHEW_NIECE]: User,
+  [FamilyRelationshipType.COUSIN]: Users,
+  [FamilyRelationshipType.GUARDIAN]: User,
+  [FamilyRelationshipType.WARD]: User,
+  [FamilyRelationshipType.FRIEND]: Users,
+  [FamilyRelationshipType.EMERGENCY_CONTACT]: User,
+  [FamilyRelationshipType.OTHER]: User,
 };
 
 // Relationship colors

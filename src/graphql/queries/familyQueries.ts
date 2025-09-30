@@ -124,6 +124,161 @@ export const REMOVE_FAMILY_RELATIONSHIP = gql`
   }
 `;
 
+// Get all families with pagination and search
+export const GET_FAMILIES_LIST = gql`
+  query GetFamiliesList($skip: Int, $take: Int) {
+    families(skip: $skip, take: $take) {
+      id
+      name
+      address
+      city
+      state
+      postalCode
+      country
+      phoneNumber
+      customFields
+      createdAt
+      updatedAt
+      members {
+        id
+        firstName
+        lastName
+        profileImageUrl
+        email
+        phoneNumber
+      }
+    }
+  }
+`;
+
+// Get families count
+export const GET_FAMILIES_COUNT = gql`
+  query GetFamiliesCount {
+    familiesCount
+  }
+`;
+
+// Get single family by ID
+export const GET_FAMILY_BY_ID = gql`
+  query GetFamilyById($id: String!) {
+    family(id: $id) {
+      id
+      name
+      address
+      city
+      state
+      postalCode
+      country
+      phoneNumber
+      customFields
+      createdAt
+      updatedAt
+      members {
+        id
+        firstName
+        lastName
+        middleName
+        email
+        phoneNumber
+        profileImageUrl
+        gender
+        dateOfBirth
+        membershipStatus
+        status
+      }
+    }
+  }
+`;
+
+// Create family
+export const CREATE_FAMILY = gql`
+  mutation CreateFamily($createFamilyInput: CreateFamilyInput!) {
+    createFamily(createFamilyInput: $createFamilyInput) {
+      id
+      name
+      address
+      city
+      state
+      postalCode
+      country
+      phoneNumber
+      customFields
+      createdAt
+      updatedAt
+      members {
+        id
+        firstName
+        lastName
+        profileImageUrl
+      }
+    }
+  }
+`;
+
+// Update family
+export const UPDATE_FAMILY = gql`
+  mutation UpdateFamily($id: String!, $updateFamilyInput: UpdateFamilyInput!) {
+    updateFamily(id: $id, updateFamilyInput: $updateFamilyInput) {
+      id
+      name
+      address
+      city
+      state
+      postalCode
+      country
+      phoneNumber
+      customFields
+      createdAt
+      updatedAt
+      members {
+        id
+        firstName
+        lastName
+        profileImageUrl
+      }
+    }
+  }
+`;
+
+// Remove family
+export const REMOVE_FAMILY = gql`
+  mutation RemoveFamily($id: String!) {
+    removeFamily(id: $id)
+  }
+`;
+
+// Add member to family
+export const ADD_MEMBER_TO_FAMILY = gql`
+  mutation AddMemberToFamily($familyId: String!, $memberId: String!) {
+    addMemberToFamily(familyId: $familyId, memberId: $memberId) {
+      id
+      name
+      members {
+        id
+        firstName
+        lastName
+        profileImageUrl
+      }
+    }
+  }
+`;
+
+// Remove member from family
+export const REMOVE_MEMBER_FROM_FAMILY = gql`
+  mutation RemoveMemberFromFamily($familyId: String!, $memberId: String!) {
+    removeMemberFromFamily(familyId: $familyId, memberId: $memberId) {
+      id
+      name
+      members {
+        id
+        firstName
+        lastName
+        profileImageUrl
+      }
+    }
+  }
+`;
+
 // Search members for family relationship creation
 export const SEARCH_MEMBERS_FOR_FAMILY = gql`
   query SearchMembersForFamily($query: String!) {
@@ -183,4 +338,53 @@ export interface CreateFamilyRelationshipInput {
 export interface UpdateFamilyRelationshipInput {
   relationshipType?: FamilyRelationshipType;
   familyId?: string;
+}
+
+// Family interfaces
+export interface Family {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phoneNumber?: string;
+  customFields?: any;
+  createdAt: string;
+  updatedAt: string;
+  members?: FamilyMember[];
+}
+
+export interface CreateFamilyInput {
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phoneNumber?: string;
+  customFields?: any;
+  memberIds?: string[];
+}
+
+export interface UpdateFamilyInput {
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phoneNumber?: string;
+  customFields?: any;
+  memberIds?: string[];
+}
+
+export interface FamilySearchFilters {
+  name?: string;
+  address?: string;
+  city?: string;
+  phoneNumber?: string;
+  memberName?: string;
+  dateRange?: { from: Date; to: Date };
 }

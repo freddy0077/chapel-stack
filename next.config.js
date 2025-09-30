@@ -1,5 +1,5 @@
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 /** @type {import('next').NextConfig} */
@@ -9,13 +9,13 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: [
-      '@mui/material',
-      '@mui/icons-material',
-      '@tremor/react',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      'lucide-react',
-      'react-icons'
+      "@mui/material",
+      "@mui/icons-material",
+      "@tremor/react",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "lucide-react",
+      "react-icons",
     ],
   },
   // Compress responses
@@ -23,32 +23,38 @@ const nextConfig = {
   // Enable SWC minification
   swcMinify: true,
   images: {
-    domains: ['images.unsplash.com', 'placehold.co', 'via.placeholder.com', 'example.com', 'chapelstack-bucket.s3.eu-west-1.amazonaws.com'],
+    domains: [
+      "images.unsplash.com",
+      "placehold.co",
+      "via.placeholder.com",
+      "example.com",
+      "chapelstack-bucket.s3.eu-west-1.amazonaws.com",
+    ],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "**",
       },
       {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        pathname: '**',
+        protocol: "https",
+        hostname: "placehold.co",
+        pathname: "**",
       },
       {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "via.placeholder.com",
+        pathname: "**",
       },
       {
-        protocol: 'https',
-        hostname: 'example.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "example.com",
+        pathname: "**",
       },
       {
-        protocol: 'https',
-        hostname: 'chapelstack-bucket.s3.eu-west-1.amazonaws.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "chapelstack-bucket.s3.eu-west-1.amazonaws.com",
+        pathname: "**",
       },
     ],
   },

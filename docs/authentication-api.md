@@ -55,6 +55,7 @@ mutation Login($input: LoginInput!) {
 ```
 
 **Input:**
+
 ```typescript
 interface LoginInput {
   email: string;
@@ -63,6 +64,7 @@ interface LoginInput {
 ```
 
 **Response:**
+
 ```typescript
 interface AuthPayload {
   accessToken: string;
@@ -81,7 +83,7 @@ interface AuthPayload {
       role: string;
       isHomeBranch: boolean;
     }[];
-  }
+  };
 }
 ```
 
@@ -105,6 +107,7 @@ mutation Register($input: RegisterInput!) {
 ```
 
 **Input:**
+
 ```typescript
 interface RegisterInput {
   email: string;
@@ -339,8 +342,18 @@ mutation RemoveRoleFromUser($userId: ID!, $roleId: ID!) {
 Assigns a branch-specific role to a user (requires SUPER_ADMIN, SYSTEM_ADMIN, or BRANCH_ADMIN role).
 
 ```graphql
-mutation AssignBranchRoleToUser($userId: ID!, $branchId: ID!, $roleId: ID!, $assignedBy: ID) {
-  assignBranchRoleToUser(userId: $userId, branchId: $branchId, roleId: $roleId, assignedBy: $assignedBy) {
+mutation AssignBranchRoleToUser(
+  $userId: ID!
+  $branchId: ID!
+  $roleId: ID!
+  $assignedBy: ID
+) {
+  assignBranchRoleToUser(
+    userId: $userId
+    branchId: $branchId
+    roleId: $roleId
+    assignedBy: $assignedBy
+  ) {
     id
     userId
     branchId
@@ -357,7 +370,11 @@ Removes a branch-specific role from a user (requires SUPER_ADMIN, SYSTEM_ADMIN, 
 
 ```graphql
 mutation RemoveBranchRoleFromUser($userId: ID!, $branchId: ID!, $roleId: ID!) {
-  removeBranchRoleFromUser(userId: $userId, branchId: $branchId, roleId: $roleId) {
+  removeBranchRoleFromUser(
+    userId: $userId
+    branchId: $branchId
+    roleId: $roleId
+  ) {
     id
     userId
     branchId
