@@ -10,13 +10,13 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  CloudArrowUpIcon, 
-  DocumentArrowUpIcon, 
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline';
+  CloudUpload, 
+  FileUp, 
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Info
+} from 'lucide-react';
 import { useMutation } from '@apollo/client';
 import { CREATE_MEMBER, CreateMemberInput, ImportMembersResult, ImportMemberData, ImportMemberResult } from '@/graphql/queries/memberImportQueries';
 import { useOrganisationBranch } from '@/hooks/useOrganisationBranch';

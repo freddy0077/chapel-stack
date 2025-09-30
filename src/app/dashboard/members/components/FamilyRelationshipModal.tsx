@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { XMarkIcon, PlusIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { X, Plus, Trash2, Users } from 'lucide-react';
 import { Member } from '../types/member.types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';

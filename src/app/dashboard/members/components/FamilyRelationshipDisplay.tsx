@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { UserGroupIcon, HeartIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Users, Heart, User } from 'lucide-react';
 import { Member } from '../types/member.types';
 
 // Family Relationship Types
@@ -42,12 +42,12 @@ const RELATIONSHIP_LABELS = {
 
 // Relationship icons
 const RELATIONSHIP_ICONS = {
-  [FamilyRelationshipType.SPOUSE]: HeartIcon,
-  [FamilyRelationshipType.PARENT]: UserIcon,
-  [FamilyRelationshipType.CHILD]: UserIcon,
-  [FamilyRelationshipType.SIBLING]: UserGroupIcon,
-  [FamilyRelationshipType.GRANDPARENT]: UserIcon,
-  [FamilyRelationshipType.GRANDCHILD]: UserIcon,
+  [FamilyRelationshipType.SPOUSE]: Heart,
+  [FamilyRelationshipType.PARENT]: User,
+  [FamilyRelationshipType.CHILD]: User,
+  [FamilyRelationshipType.SIBLING]: Users,
+  [FamilyRelationshipType.GRANDPARENT]: User,
+  [FamilyRelationshipType.GRANDCHILD]: User,
   [FamilyRelationshipType.UNCLE_AUNT]: UserIcon,
   [FamilyRelationshipType.NEPHEW_NIECE]: UserIcon,
   [FamilyRelationshipType.COUSIN]: UserGroupIcon,
