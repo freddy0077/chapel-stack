@@ -13,6 +13,12 @@ export const GET_SUBSCRIPTION_ORGANIZATIONS = gql`
       suspendedBy
       createdAt
       updatedAt
+      mainUser {
+        id
+        email
+        firstName
+        lastName
+      }
       subscription {
         id
         status
@@ -781,6 +787,16 @@ export const GET_SUBSCRIPTION_TAB_COUNTS = gql`
       gracePeriodSubscriptions
       pendingRenewals
       cancelledSubscriptions
+    }
+  }
+`;
+
+// User Password Management
+export const UPDATE_USER_PASSWORD = gql`
+  mutation UpdateUserPassword($userId: String!, $newPassword: String!) {
+    updateUserPassword(userId: $userId, newPassword: $newPassword) {
+      success
+      message
     }
   }
 `;

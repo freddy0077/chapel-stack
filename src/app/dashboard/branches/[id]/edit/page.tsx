@@ -7,7 +7,8 @@ import toast from "react-hot-toast";
 import { useMutation } from "@apollo/client";
 import { UPDATE_BRANCH } from "../../../../../graphql/mutations/branchMutations";
 import { useBranch } from "../../../../../graphql/hooks/useBranch";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, KeyIcon } from "@heroicons/react/24/outline";
+import ChangePasswordModal from "../../../subscription-manager/components/ChangePasswordModal";
 
 // Ghana regions list
 const GHANA_REGIONS = [
@@ -53,6 +54,7 @@ export default function EditBranchPage() {
     status: "active",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     if (branch) {
@@ -396,6 +398,37 @@ export default function EditBranchPage() {
                 </div>
               </div>
             </div>
+
+            {/* Branch Admin Password Section */}
+            {branch?.branchAdmin && (
+              <div className="col-span-2 bg-gradient-to-br from-amber-50 to-white rounded-xl p-6 shadow-sm border border-amber-100">
+                <h3 className="text-xl font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                  <KeyIcon className="w-5 h-5 text-amber-600" />
+                  Branch Admin Account
+                </h3>
+                <div className="mt-4">
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Admin User</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {branch.branchAdmin.firstName} {branch.branchAdmin.lastName}
+                        </p>
+                        <p className="text-sm text-gray-600">{branch.branchAdmin.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsPasswordModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
+                      >
+                        <KeyIcon className="w-4 h-4" />
+                        Change Password
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-end space-x-3">
             <Link
@@ -440,6 +473,17 @@ export default function EditBranchPage() {
           </div>
         </form>
       </div>
+
+      {/* Change Password Modal */}
+      {branch?.branchAdmin && (
+        <ChangePasswordModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+          userId={branch.branchAdmin.id}
+          userName={`${branch.branchAdmin.firstName || ''} ${branch.branchAdmin.lastName || ''}`.trim() || branch.branchAdmin.email}
+          organizationName={`${branch.name} - Branch Admin`}
+        />
+      )}
     </div>
   );
 }

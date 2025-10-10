@@ -73,6 +73,12 @@ export const GET_BRANCH = gql`
       establishedAt
       createdAt
       updatedAt
+      branchAdmin {
+        id
+        email
+        firstName
+        lastName
+      }
       settings {
         id
         branchId

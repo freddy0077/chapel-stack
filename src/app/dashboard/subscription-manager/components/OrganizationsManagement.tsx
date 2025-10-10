@@ -21,6 +21,7 @@ import {
   ClockIcon,
   UserGroupIcon,
   CalendarDaysIcon,
+  KeyIcon,
 } from "@heroicons/react/24/outline";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import {
   formatDate,
 } from "../utils/formatters";
 import CreateOrganizationModal from "./CreateOrganizationModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 import { GET_SUBSCRIPTION_ORGANIZATIONS } from "@/graphql/subscription-management";
 import { useCreateOrganizationSubscription } from "@/hooks/subscription/useOrganizationSubscription";
 
@@ -133,11 +135,13 @@ function OrganizationCard({
   onCreateSubscription,
   renewalLoading,
   renewalOrgId,
+  onChangePassword,
 }: {
   organization: any;
   onCreateSubscription: (orgId: string) => void;
   renewalLoading: boolean;
   renewalOrgId: string | null;
+  onChangePassword: (org: any) => void;
 }) {
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
@@ -273,6 +277,21 @@ function OrganizationCard({
               )}
             </div>
           </div>
+
+          {/* Change Password Button */}
+          {organization.mainUser && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onChangePassword(organization)}
+                className="w-full flex items-center justify-center space-x-2"
+              >
+                <KeyIcon className="h-4 w-4" />
+                <span>Change Main User Password</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </Card>
@@ -286,6 +305,8 @@ export default function OrganizationsManagement() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [renewalOrgId, setRenewalOrgId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
 
   // Hook for creating/renewing subscriptions
   const { createOrganizationSubscription, loading: renewalLoading } =
@@ -357,6 +378,16 @@ export default function OrganizationsManagement() {
 
   const handleRefresh = () => {
     refetch();
+  };
+
+  const handleChangePassword = (organization: any) => {
+    setSelectedOrganization(organization);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleClosePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    setSelectedOrganization(null);
   };
 
   if (error) {
@@ -510,6 +541,7 @@ export default function OrganizationsManagement() {
               onCreateSubscription={handleCreateSubscription}
               renewalLoading={renewalLoading}
               renewalOrgId={renewalOrgId}
+              onChangePassword={handleChangePassword}
             />
           ))}
         </div>
@@ -524,6 +556,17 @@ export default function OrganizationsManagement() {
           refetch();
         }}
       />
+
+      {/* Change Password Modal */}
+      {selectedOrganization && (
+        <ChangePasswordModal
+          isOpen={isPasswordModalOpen}
+          onClose={handleClosePasswordModal}
+          userId={selectedOrganization.mainUser?.id}
+          userName={`${selectedOrganization.mainUser?.firstName || ''} ${selectedOrganization.mainUser?.lastName || ''}`.trim() || selectedOrganization.mainUser?.email}
+          organizationName={selectedOrganization.name}
+        />
+      )}
     </div>
   );
 }
