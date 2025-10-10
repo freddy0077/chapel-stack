@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@apollo/client";
-import { GET_MEMBERS_LIST } from "../../../../graphql/queries/memberQueries";
+import { useQuery, useMutation } from "@apollo/client";
+import { GET_MEMBERS_LIST, PERMANENTLY_DELETE_MEMBER } from "../../../../graphql/queries/memberQueries";
 import { useOrganizationBranchFilter } from "../../../../hooks/useOrganizationBranchFilter";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { TrashIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface Member {
   id: string;
@@ -19,6 +21,9 @@ interface Member {
   dateOfBirth?: string;
   membershipDate?: string;
   occupation?: string;
+  isDeactivated?: boolean;
+  deactivatedAt?: string;
+  deactivationReason?: string;
 }
 
 interface BranchMembersPanelProps {
@@ -30,6 +35,8 @@ export default function BranchMembersPanel({
 }: BranchMembersPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
+  const [showDeactivated, setShowDeactivated] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const pageSize = 10;
 
   // Get organization/branch filter
@@ -59,10 +66,26 @@ export default function BranchMembersPanel({
       skip: page * pageSize,
       take: pageSize,
       search: searchTerm || undefined,
+      onlyDeactivated: showDeactivated,
       ...cleanFilter, // Include organization ID but exclude branchId from filter
     },
     fetchPolicy: "cache-and-network",
   });
+
+  // Permanently delete member mutation
+  const [permanentlyDeleteMember, { loading: deleteLoading }] = useMutation(
+    PERMANENTLY_DELETE_MEMBER,
+    {
+      refetchQueries: [{ query: GET_MEMBERS_LIST, variables: { branchId, skip: page * pageSize, take: pageSize, search: searchTerm || undefined, onlyDeactivated: showDeactivated, ...cleanFilter } }],
+      onCompleted: () => {
+        toast.success("Member permanently deleted successfully");
+        setMemberToDelete(null);
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to delete member");
+      },
+    }
+  );
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +97,19 @@ export default function BranchMembersPanel({
     e.preventDefault();
     setPage(0); // Reset to first page
     refetch();
+  };
+
+  // Handle permanent delete
+  const handlePermanentDelete = async () => {
+    if (!memberToDelete) return;
+    
+    try {
+      await permanentlyDeleteMember({
+        variables: { memberId: memberToDelete.id },
+      });
+    } catch (error) {
+      console.error("Error deleting member:", error);
+    }
   };
 
   // Format date for display
@@ -88,14 +124,36 @@ export default function BranchMembersPanel({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
-      <div className="px-4 py-5 sm:px-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Branch Members
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            View and manage all members associated with this branch
-          </p>
+      <div className="px-4 py-5 sm:px-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Branch Members
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              View and manage all members associated with this branch
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => {
+              setShowDeactivated(!showDeactivated);
+              setPage(0);
+            }}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              showDeactivated
+                ? "bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900 dark:text-amber-200"
+                : "bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-700 dark:text-gray-300"
+            }`}
+          >
+            {showDeactivated ? "Showing Deactivated" : "Show Deactivated"}
+          </button>
+          {showDeactivated && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Deactivated members can be permanently deleted
+            </span>
+          )}
         </div>
       </div>
 
@@ -231,32 +289,53 @@ export default function BranchMembersPanel({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.status === "active"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      }`}
-                    >
-                      {member.status}
-                    </span>
+                    <div className="flex flex-col space-y-1">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          member.status === "active"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        }`}
+                      >
+                        {member.status}
+                      </span>
+                      {member.isDeactivated && (
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                          Deactivated
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(member.membershipDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      href={`/dashboard/members/${member.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
-                    >
-                      View
-                    </Link>
-                    <Link
-                      href={`/dashboard/members/${member.id}/edit`}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                    >
-                      Edit
-                    </Link>
+                    <div className="flex items-center space-x-3">
+                      <Link
+                        href={`/dashboard/members/${member.id}`}
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        View
+                      </Link>
+                      {!member.isDeactivated && (
+                        <Link
+                          href={`/dashboard/members/${member.id}/edit`}
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        >
+                          Edit
+                        </Link>
+                      )}
+                      {member.isDeactivated && (
+                        <button
+                          onClick={() => setMemberToDelete(member)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 flex items-center space-x-1"
+                          title="Permanently delete this member"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          <span>Delete</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -366,6 +445,71 @@ export default function BranchMembersPanel({
                   </svg>
                 </button>
               </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {memberToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Permanently Delete Member
+              </h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Are you sure you want to permanently delete{" "}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {memberToDelete.firstName} {memberToDelete.lastName}
+                </span>?
+              </p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p className="text-sm text-red-800 dark:text-red-200 font-medium">
+                  ⚠️ This action cannot be undone!
+                </p>
+                <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                  All member data, including history, attendance records, and relationships will be permanently removed from the system.
+                </p>
+              </div>
+              {memberToDelete.deactivationReason && (
+                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                  <span className="font-medium">Deactivation reason:</span> {memberToDelete.deactivationReason}
+                </div>
+              )}
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setMemberToDelete(null)}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePermanentDelete}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+              >
+                {deleteLoading ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="h-4 w-4" />
+                    <span>Delete Permanently</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

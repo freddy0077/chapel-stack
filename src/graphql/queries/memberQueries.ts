@@ -150,6 +150,7 @@ export const GET_MEMBERS_LIST = gql`
     $hasPhone: Boolean
     $isRegularAttendee: Boolean
     $includeDeactivated: Boolean
+    $onlyDeactivated: Boolean
   ) {
     members(
       organisationId: $organisationId
@@ -171,6 +172,7 @@ export const GET_MEMBERS_LIST = gql`
       hasPhone: $hasPhone
       isRegularAttendee: $isRegularAttendee
       includeDeactivated: $includeDeactivated
+      onlyDeactivated: $onlyDeactivated
     ) {
       id
       firstName
