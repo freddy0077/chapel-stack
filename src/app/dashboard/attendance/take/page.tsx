@@ -14,7 +14,7 @@ import { useQuery, gql } from "@apollo/client";
 import { AttendanceRecord } from "../types";
 import Link from "next/link";
 import { usePagination } from "@/hooks/usePagination";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import { 
   CalendarIcon, 
   ClockIcon, 

@@ -15,7 +15,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { AttendanceRecord } from "@/graphql/hooks/useAttendance";
 

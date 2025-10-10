@@ -40,7 +40,7 @@ import { useMutation, useQuery, gql } from "@apollo/client";
 import { CREATE_ATTENDANCE_SESSION } from "@/graphql/queries/attendanceQueries";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useOrganizationBranchFilter } from "@/hooks";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import { usePagination } from "@/hooks/usePagination";
 
 // Query to get events for the dashboard with correct parameter types
