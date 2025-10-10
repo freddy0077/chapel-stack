@@ -200,9 +200,15 @@ function OrganizationCard({
           {/* Organization Details */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <p className="text-sm text-gray-500">Email</p>
+              <p className="text-sm text-gray-500">Organization Email</p>
               <p className="text-sm font-medium text-gray-900">
                 {organization.email || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Admin Email</p>
+              <p className="text-sm font-medium text-gray-900">
+                {organization.mainUser?.email || "N/A"}
               </p>
             </div>
             <div>
