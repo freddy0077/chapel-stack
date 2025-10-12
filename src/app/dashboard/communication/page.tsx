@@ -56,15 +56,72 @@ const TABS = [
       </svg>
     ),
   },
-  // { key: "inbox", label: "Inbox", icon: (
-  //   <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="4" fill="url(#c)"/><defs><linearGradient id="c" x1="2" y1="4" x2="18" y2="16" gradientUnits="userSpaceOnUse"><stop stopColor="#f472b6"/><stop offset="1" stopColor="#a78bfa"/></linearGradient></defs></svg>
-  // ) },
-  // { key: "scheduler", label: "Scheduler", icon: (
-  //   <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="4" fill="url(#d)"/><defs><linearGradient id="d" x1="2" y1="4" x2="18" y2="16" gradientUnits="userSpaceOnUse"><stop stopColor="#fbbf24"/><stop offset="1" stopColor="#a78bfa"/></linearGradient></defs></svg>
-  // ) },
-  // { key: "analytics", label: "Analytics", icon: (
-  //   <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="4" fill="url(#e)"/><defs><linearGradient id="e" x1="2" y1="4" x2="18" y2="16" gradientUnits="userSpaceOnUse"><stop stopColor="#38bdf8"/><stop offset="1" stopColor="#a78bfa"/></linearGradient></defs></svg>
-  // ) },
+  {
+    key: "inbox",
+    label: "Inbox",
+    icon: (
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+        <rect x="2" y="4" width="16" height="12" rx="4" fill="url(#c)" />
+        <defs>
+          <linearGradient
+            id="c"
+            x1="2"
+            y1="4"
+            x2="18"
+            y2="16"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#f472b6" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
+  {
+    key: "scheduler",
+    label: "Scheduler",
+    icon: (
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+        <rect x="2" y="4" width="16" height="12" rx="4" fill="url(#d)" />
+        <defs>
+          <linearGradient
+            id="d"
+            x1="2"
+            y1="4"
+            x2="18"
+            y2="16"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#fbbf24" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
+  {
+    key: "analytics",
+    label: "Analytics",
+    icon: (
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+        <rect x="2" y="4" width="16" height="12" rx="4" fill="url(#e)" />
+        <defs>
+          <linearGradient
+            id="e"
+            x1="2"
+            y1="4"
+            x2="18"
+            y2="16"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#38bdf8" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
 ];
 
 export default function CommunicationPage() {

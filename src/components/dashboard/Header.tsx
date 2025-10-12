@@ -1,6 +1,7 @@
 import React from "react";
 import ThemeToggle from "./ThemeToggle";
 import NotificationDropdown from "./NotificationDropdown";
+import { AutoLogoutTimer } from "@/components/auth/AutoLogoutTimer";
 
 export const Header = () => (
   <header className="h-16 bg-white/70 backdrop-blur-lg border-b border-gray-200 flex items-center px-6 justify-between shadow-md">
@@ -13,6 +14,9 @@ export const Header = () => (
       </span>
     </div>
     <div className="flex items-center space-x-4">
+      {/* Auto-Logout Timer */}
+      <AutoLogoutTimer compact={true} warningThreshold={60} />
+      
       <ThemeToggle />
       <NotificationDropdown />
       {/* User Avatar with dropdown */}

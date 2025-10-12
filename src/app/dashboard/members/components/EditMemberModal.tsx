@@ -199,7 +199,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         >
           <div className="absolute inset-0 bg-black/40" onClick={onClose} />
           <motion.div
-            className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden"
+            className="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
             initial={{ scale: 0.98, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.98, y: 20, opacity: 0 }}
@@ -239,7 +239,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
             <form
               onSubmit={handleSubmit}
-              className="modal-content p-6 space-y-6"
+              className="modal-content p-6 space-y-6 overflow-y-auto flex-1"
             >
               {currentStep === 1 && (
                 <div className="step-card">

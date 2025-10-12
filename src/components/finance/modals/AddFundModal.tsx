@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, gql } from "@apollo/client";
 import SharedModal from "./SharedModal";
 
 const CREATE_FUND = gql`
   mutation CreateFund($createFundInput: CreateFundInput!) {
     createFund(createFundInput: $createFundInput) {
+      id
+      name
+      description
+      organisationId
+      branchId
+    }
+  }
+`;
+
+const UPDATE_FUND = gql`
+  mutation UpdateFund($updateFundInput: UpdateFundInput!) {
+    updateFund(updateFundInput: $updateFundInput) {
       id
       name
       description
@@ -27,12 +39,20 @@ const GET_FUNDS = gql`
   }
 `;
 
+interface Fund {
+  id: string;
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
 interface AddFundModalProps {
   open: boolean;
   onClose: () => void;
   organisationId: string;
   branchId: string;
   onFundCreated: () => void;
+  editingFund?: Fund | null;
 }
 
 export default function AddFundModal({
@@ -41,35 +61,77 @@ export default function AddFundModal({
   organisationId,
   branchId,
   onFundCreated,
+  editingFund = null,
 }: AddFundModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  const [createFund, { loading, error }] = useMutation(CREATE_FUND);
+  const [createFund, { loading: creating, error: createError }] = useMutation(CREATE_FUND);
+  const [updateFund, { loading: updating, error: updateError }] = useMutation(UPDATE_FUND);
+
+  const loading = creating || updating;
+  const error = createError || updateError;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingFund) {
+      setName(editingFund.name);
+      setDescription(editingFund.description || "");
+      setIsActive(editingFund.isActive ?? true);
+    } else {
+      setName("");
+      setDescription("");
+      setIsActive(true);
+    }
+  }, [editingFund, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await createFund({
-        variables: {
-          createFundInput: {
-            name,
-            description,
-            isActive,
-            organisationId,
-            branchId,
+      if (editingFund) {
+        // Update existing fund
+        await updateFund({
+          variables: {
+            updateFundInput: {
+              id: editingFund.id,
+              name,
+              description,
+              isActive,
+              organisationId,
+              branchId,
+            },
           },
-        },
-        refetchQueries: [
-          {
-            query: GET_FUNDS,
-            variables: { organisationId, branchId },
+          refetchQueries: [
+            {
+              query: GET_FUNDS,
+              variables: { organisationId, branchId },
+            },
+          ],
+          awaitRefetchQueries: true,
+        });
+      } else {
+        // Create new fund
+        await createFund({
+          variables: {
+            createFundInput: {
+              name,
+              description,
+              isActive,
+              organisationId,
+              branchId,
+            },
           },
-        ],
-        awaitRefetchQueries: true,
-      });
+          refetchQueries: [
+            {
+              query: GET_FUNDS,
+              variables: { organisationId, branchId },
+            },
+          ],
+          awaitRefetchQueries: true,
+        });
+      }
 
       // Reset form
       setName("");
@@ -80,7 +142,7 @@ export default function AddFundModal({
       onFundCreated();
       onClose();
     } catch (err) {
-      console.error("Error creating fund:", err);
+      console.error(`Error ${editingFund ? 'updating' : 'creating'} fund:`, err);
     }
   };
 
@@ -95,7 +157,7 @@ export default function AddFundModal({
   return (
     <SharedModal
       open={open}
-      title="Add Fund"
+      title={editingFund ? "Edit Fund" : "Add Fund"}
       onClose={handleClose}
       maxWidth="md"
     >
@@ -143,7 +205,7 @@ export default function AddFundModal({
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-sm text-red-600">
-              Error creating fund: {error.message}
+              Error {editingFund ? 'updating' : 'creating'} fund: {error.message}
             </p>
           </div>
         )}
@@ -161,7 +223,7 @@ export default function AddFundModal({
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
-            {loading ? "Adding..." : "Add Fund"}
+            {loading ? (editingFund ? "Updating..." : "Adding...") : (editingFund ? "Update Fund" : "Add Fund")}
           </button>
         </div>
       </form>

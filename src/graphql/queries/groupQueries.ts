@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 
 // Query to get all small groups with details
 export const GET_ALL_SMALL_GROUPS = gql`
-  query GetAllSmallGroupsWithDetails {
-    smallGroups {
+  query GetAllSmallGroupsWithDetails($filters: SmallGroupFilterInput) {
+    smallGroups(filters: $filters) {
       id
       name
       description

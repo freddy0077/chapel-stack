@@ -566,6 +566,56 @@ export const PERMANENTLY_DELETE_MEMBER = gql`
   }
 `;
 
+// Query to get member history
+export const GET_MEMBER_HISTORY = gql`
+  query GetMemberHistory($memberId: String!, $skip: Int, $take: Int) {
+    memberHistory(memberId: $memberId, skip: $skip, take: $take) {
+      id
+      action
+      entityType
+      entityId
+      description
+      metadata
+      userId
+      user {
+        id
+        email
+        firstName
+        lastName
+      }
+      branchId
+      ipAddress
+      userAgent
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// Query to get member history count
+export const GET_MEMBER_HISTORY_COUNT = gql`
+  query GetMemberHistoryCount($memberId: String!) {
+    memberHistoryCount(memberId: $memberId)
+  }
+`;
+
+// Query to get member activities
+export const GET_MEMBER_ACTIVITIES = gql`
+  query GetMemberActivities($memberId: String!, $limit: Int) {
+    memberActivities(memberId: $memberId, limit: $limit) {
+      id
+      type
+      title
+      description
+      date
+      status
+      amount
+      priority
+      relatedEntityId
+    }
+  }
+`;
+
 // Mutation to upload affidavit for name changes
 export const UPLOAD_AFFIDAVIT = gql`
   mutation UploadAffidavit(

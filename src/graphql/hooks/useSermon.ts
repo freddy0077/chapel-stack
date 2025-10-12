@@ -188,6 +188,7 @@ export interface UpdateCategoryInput {
 // Sermon Hooks
 export const useSermons = (filters?: {
   branchId?: string;
+  organisationId?: string;
   speakerId?: string;
   seriesId?: string;
   status?: ContentStatus;

@@ -7,6 +7,10 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronsLeft as ChevronDoubleLeftIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronsRight as ChevronDoubleRightIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

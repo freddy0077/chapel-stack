@@ -11,6 +11,8 @@ export interface MinistryMember {
   role: string;
   status: string;
   joinDate: string;
+  leaveDate?: string;
+  leaveReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +32,8 @@ export interface SmallGroupMember {
   role: string;
   status: string;
   joinDate: string;
+  leaveDate?: string;
+  leaveReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +79,8 @@ export interface MemberGroupMembership {
   smallGroupName?: string;
   role: string;
   joinDate: string;
+  leaveDate?: string;
+  leaveReason?: string;
   isActive: boolean;
   responsibilities: string[];
 }
@@ -118,6 +124,8 @@ export const useMemberGroupMemberships = (
             ministryName: ministry.name,
             role: memberInMinistry.role,
             joinDate: memberInMinistry.joinDate,
+            leaveDate: memberInMinistry.leaveDate,
+            leaveReason: memberInMinistry.leaveReason,
             isActive: memberInMinistry.status === "ACTIVE",
             responsibilities: [], // This would need to come from a different field if available
           });
@@ -140,6 +148,8 @@ export const useMemberGroupMemberships = (
             smallGroupName: smallGroup.name,
             role: memberInGroup.role,
             joinDate: memberInGroup.joinDate,
+            leaveDate: memberInGroup.leaveDate,
+            leaveReason: memberInGroup.leaveReason,
             isActive: memberInGroup.status === "ACTIVE",
             responsibilities: [], // This would need to come from a different field if available
           });

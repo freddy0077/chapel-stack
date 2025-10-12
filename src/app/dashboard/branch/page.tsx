@@ -349,7 +349,7 @@ export default function UltraModernBranchDashboard() {
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <timeIcon className="w-4 h-4" />
+                    <ClockIcon className="w-4 h-4" />
                     <span>
                       {greeting}, {userName}
                     </span>

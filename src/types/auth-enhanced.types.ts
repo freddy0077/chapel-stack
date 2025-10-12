@@ -199,7 +199,8 @@ export const COOKIE_NAMES = {
 export const DEFAULT_AUTH_CONFIG: AuthConfig = {
   tokenRefreshThreshold: 5, // 5 minutes before expiry
   maxRefreshAttempts: 3,
-  sessionTimeout: 480, // 8 hours
+  // sessionTimeout: 480, // 8 hours
+  sessionTimeout: 5,
   rememberMeDuration: 30, // 30 days
   enableAutoRefresh: true,
   enableMultiTabSync: true,

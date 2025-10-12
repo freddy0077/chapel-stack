@@ -6,7 +6,11 @@ import {
   BuildingLibraryIcon,
   CalendarIcon,
   CreditCardIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
+import { useQuery } from "@apollo/client";
+import { GET_ZONES } from "@/graphql/queries/zoneQueries";
+import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import { WizardStepProps, ValidationError } from "../types/WizardTypes";
 import { MembershipStatus, MembershipType } from "../../../types/member.types";
 
@@ -19,6 +23,15 @@ const ChurchMembershipStep: React.FC<WizardStepProps> = ({
   isLastStep,
 }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
+  const { organisationId, branchId } = useOrganisationBranch();
+
+  // Fetch zones
+  const { data: zonesData } = useQuery(GET_ZONES, {
+    variables: { organisationId, branchId },
+    skip: !organisationId,
+  });
+
+  const zones = zonesData?.zones || [];
 
   const validateStep = (): boolean => {
     const newErrors: ValidationError[] = [];
@@ -289,6 +302,37 @@ const ChurchMembershipStep: React.FC<WizardStepProps> = ({
               For mobile-based access and interactions
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Zone/Community Section */}
+      <div className="bg-blue-50 rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <MapPinIcon className="w-5 h-5 text-blue-600 mr-2" />
+          <h4 className="text-lg font-medium text-gray-900">
+            Zone & Community
+          </h4>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Assign to Zone (Optional)
+          </label>
+          <select
+            value={formData.zoneId || ""}
+            onChange={(e) => handleInputChange("zoneId", e.target.value || undefined)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          >
+            <option value="">No Zone Assigned</option>
+            {zones.map((zone: any) => (
+              <option key={zone.id} value={zone.id}>
+                {zone.name} {zone.location ? `(${zone.location})` : ""}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Assign member to a geographical zone or community group
+          </p>
         </div>
       </div>
 

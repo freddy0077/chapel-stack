@@ -21,6 +21,7 @@ import {
   ActivitiesSection,
   SacramentsSection,
 } from "./MemberDetailSections";
+import MemberHistorySection from "./MemberHistorySection";
 
 interface MemberDetailModalProps {
   member: Member | null;
@@ -193,6 +194,11 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                     <ActivitiesSection member={member} />
                     <SystemInfoSection member={member} />
                   </div>
+                </div>
+
+                {/* Full Width Member History Section */}
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <MemberHistorySection memberId={member.id} />
                 </div>
               </div>
 

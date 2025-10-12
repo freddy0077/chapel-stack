@@ -18,6 +18,7 @@ import {
   MicrophoneIcon,
   UserMinusIcon,
   UserPlusIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
@@ -155,10 +156,22 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           moduleId: "branch-finances",
         },
         {
+          name: "Assets",
+          href: "/dashboard/assets",
+          icon: CubeIcon,
+          moduleId: "dashboard",
+        },
+        {
           name: "Attendance",
           href: "/dashboard/attendance",
           icon: DocumentTextIcon,
           moduleId: "attendance",
+        },
+        {
+          name: "Report Builder",
+          href: "/dashboard/report-builder",
+          icon: ChartBarIcon,
+          moduleId: "dashboard",
         },
         {
           name: "Communication",
@@ -256,10 +269,22 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           moduleId: "finances",
         },
         {
+          name: "Assets",
+          href: "/dashboard/assets",
+          icon: CubeIcon,
+          moduleId: "dashboard",
+        },
+        {
           name: "Attendance",
           href: "/dashboard/attendance",
           icon: DocumentTextIcon,
           moduleId: "attendance",
+        },
+        {
+          name: "Report Builder",
+          href: "/dashboard/report-builder",
+          icon: ChartBarIcon,
+          moduleId: "dashboard",
         },
         {
           name: "Communication",

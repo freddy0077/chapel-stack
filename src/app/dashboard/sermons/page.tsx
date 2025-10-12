@@ -424,15 +424,15 @@ export default function SermonsPage() {
   const { canCreate, canEdit, canDelete } = usePermissions();
   const { organizationId, branchId } = useOrganizationBranchFilter();
 
-  // GraphQL hooks
+  // GraphQL hooks with branch and organization filters
   const {
     data: sermonsData,
     loading: sermonsLoading,
     error: sermonsError,
     refetch: refetchSermons,
-  } = useSermons();
-  const { data: speakersData, loading: speakersLoading } = useGetSpeakers();
-  const { data: seriesData, loading: seriesLoading } = useGetSeries();
+  } = useSermons({ branchId, organisationId: organizationId });
+  const { data: speakersData, loading: speakersLoading } = useGetSpeakers(branchId);
+  const { data: seriesData, loading: seriesLoading } = useGetSeries(branchId);
   const { data: categoriesData, loading: categoriesLoading } = useCategories();
   const [createSermon, { loading: createLoading }] = useCreateSermon();
   const [updateSermon, { loading: updateLoading }] = useUpdateSermon();

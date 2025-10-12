@@ -11,6 +11,14 @@ import {
   FileText,
   Sparkles,
   Search,
+  Filter as FunnelIcon,
+  Search as MagnifyingGlassIcon,
+  Users as UserGroupIcon,
+  MapPin as MapPinIcon,
+  Sparkles as SparklesIcon,
+  FileText as DocumentTextIcon,
+  Calendar as CalendarIcon,
+  X as XMarkIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

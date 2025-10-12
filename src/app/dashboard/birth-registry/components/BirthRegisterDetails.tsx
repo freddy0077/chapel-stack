@@ -9,6 +9,9 @@ import {
   Pencil,
   Printer,
   Share,
+  Calendar as CalendarDaysIcon,
+  Heart as HeartIcon,
+  FileText as DocumentTextIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

@@ -9,6 +9,11 @@ import {
   Pencil,
   Trash2,
   Filter,
+  Plus as PlusIcon,
+  Heart as HeartIcon,
+  Eye as EyeIcon,
+  Pencil as PencilIcon,
+  Trash2 as TrashIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

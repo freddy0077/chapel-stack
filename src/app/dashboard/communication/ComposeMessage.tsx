@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import RecipientSelector from "./RecipientSelector";
 import {
   useSendEmail,
+  useSendEmailWithTracking,
   useSendSms,
+  useSendSmsWithTracking,
   useSendNotification,
 } from "@/graphql/hooks/useSendMessage";
+import { useRecipientCount } from "@/graphql/hooks/useRecipientCount";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
@@ -17,6 +20,7 @@ import MessageContent from "./components/MessageContent";
 import SchedulingSection from "./components/SchedulingSection";
 import CustomPlaceholders from "./components/CustomPlaceholders";
 import { EmailTemplate } from "./components/RichHtmlEditor";
+import { UsersIcon, UserGroupIcon, FunnelIcon, CakeIcon } from "@heroicons/react/24/outline";
 
 // SMS constants
 const SMS_CHAR_LIMIT_SINGLE = 160;
@@ -163,8 +167,29 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
 
   // GraphQL mutations
   const { sendEmail } = useSendEmail();
+  const { sendEmailWithTracking } = useSendEmailWithTracking();
   const { sendSms } = useSendSms();
+  const { sendSmsWithTracking } = useSendSmsWithTracking();
   const { sendNotification } = useSendNotification();
+
+  // Prepare recipient count input
+  const recipientCountInput = useMemo(() => {
+    const memberIds = recipients.filter(r => r.type === 'member').map(r => r.id);
+    const groupIds = recipients.filter(r => r.type === 'group').map(r => r.id);
+    const filters = recipients.filter(r => r.type === 'filter').map(r => r.key);
+    
+    return {
+      memberIds: memberIds.length > 0 ? memberIds : undefined,
+      groupIds: groupIds.length > 0 ? groupIds : undefined,
+      filters: filters.length > 0 ? filters : undefined,
+      birthdayRange: birthdayRange || undefined,
+      branchId,
+      organisationId,
+    };
+  }, [recipients, birthdayRange, branchId, organisationId]);
+
+  // Get real-time recipient count
+  const { recipientCount, loading: countLoading } = useRecipientCount(recipientCountInput);
 
   // Helper functions
   const toggleChannel = (channel: string) => {
@@ -233,6 +258,7 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
       }
 
       let action = "";
+      let messageIds: string[] = [];
 
       // Email
       if (selectedChannels.includes("email")) {
@@ -244,7 +270,7 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
           resolveFrontendPlaceholders(body, user),
           customPlaceholders,
         );
-        await sendEmail({
+        const result = await sendEmailWithTracking({
           variables: {
             input: {
               subject: resolvedSubject,
@@ -261,7 +287,14 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
             },
           },
         });
-        action = "Email sent";
+        
+        const response = result.data?.sendEmailWithTracking;
+        if (response?.success && response.messageId) {
+          messageIds.push(response.messageId);
+          action = `Email ${response.status.toLowerCase()} to ${response.recipientCount} recipient(s)`;
+        } else {
+          action = "Email sent";
+        }
       }
 
       // SMS
@@ -271,7 +304,7 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
           customPlaceholders,
         );
         const plainTextBody = stripHtmlTags(resolvedBody);
-        await sendSms({
+        const result = await sendSmsWithTracking({
           variables: {
             input: {
               message: plainTextBody,
@@ -285,7 +318,15 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
             },
           },
         });
-        action = action ? `${action} and SMS sent` : "SMS sent";
+        
+        const response = result.data?.sendSmsWithTracking;
+        if (response?.success && response.messageId) {
+          messageIds.push(response.messageId);
+          const smsAction = `SMS ${response.status.toLowerCase()} to ${response.recipientCount} recipient(s)`;
+          action = action ? `${action} and ${smsAction}` : smsAction;
+        } else {
+          action = action ? `${action} and SMS sent` : "SMS sent";
+        }
       }
 
       // In-App Notification
@@ -314,11 +355,16 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
           : "Notification sent";
       }
 
-      setSuccess(
-        isScheduled
-          ? `${action} and scheduled successfully!`
-          : `${action} successfully!`,
-      );
+      // Build success message with message IDs
+      let successMsg = isScheduled
+        ? `${action} and scheduled successfully!`
+        : `${action} successfully!`;
+      
+      if (messageIds.length > 0) {
+        successMsg += ` Message ID(s): ${messageIds.join(", ")}`;
+      }
+      
+      setSuccess(successMsg);
 
       // Reset form
       setSubject("");
@@ -398,6 +444,95 @@ export default function ComposeMessage({ onBack }: { onBack?: () => void }) {
               branchId={branchId}
             />
           </Card>
+
+          {/* Recipient Count Display */}
+          {(recipients.length > 0 || birthdayRange) && (
+            <Card className="p-6 rounded-3xl shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <UsersIcon className="w-5 h-5 text-blue-600" />
+                    Recipients Summary
+                  </h3>
+                  {countLoading && (
+                    <Badge variant="outline" className="text-blue-600">
+                      Calculating...
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Count Display */}
+                {recipientCount && !countLoading && (
+                  <div className="space-y-3">
+                    {/* Total Count */}
+                    <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+                      <span className="text-sm font-medium text-gray-600">
+                        Total Recipients
+                      </span>
+                      <span className="text-2xl font-bold text-blue-600">
+                        {recipientCount.uniqueMembers}
+                      </span>
+                    </div>
+
+                    {/* Duplicate Warning */}
+                    {recipientCount.duplicateCount > 0 && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-sm text-amber-800">
+                          ⚠️ {recipientCount.message}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Breakdown */}
+                    {recipientCount.breakdown.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-semibold text-gray-700">
+                          Breakdown:
+                        </h4>
+                        <div className="space-y-2">
+                          {recipientCount.breakdown.map((item, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-center gap-2">
+                                {item.source === "group" && (
+                                  <UserGroupIcon className="w-4 h-4 text-purple-600" />
+                                )}
+                                {item.source === "filter" && (
+                                  <FunnelIcon className="w-4 h-4 text-green-600" />
+                                )}
+                                {item.source === "birthday" && (
+                                  <CakeIcon className="w-4 h-4 text-pink-600" />
+                                )}
+                                {item.source === "individual" && (
+                                  <UsersIcon className="w-4 h-4 text-blue-600" />
+                                )}
+                                <span className="text-sm text-gray-700">
+                                  {item.name}
+                                </span>
+                              </div>
+                              <Badge variant="secondary" className="font-semibold">
+                                {item.count}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {countLoading && (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Message Content */}
           <MessageContent

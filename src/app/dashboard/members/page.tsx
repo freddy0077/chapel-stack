@@ -141,8 +141,24 @@ const MembersPage: React.FC = () => {
   } = useMemberManagement();
 
   // Group and Ministry queries
-  const { data: groupsData } = useQuery(GET_ALL_SMALL_GROUPS);
-  const { data: ministriesData } = useQuery(LIST_MINISTRIES);
+  const { data: groupsData } = useQuery(GET_ALL_SMALL_GROUPS, {
+    variables: {
+      filters: {
+        organisationId,
+        branchId,
+      },
+    },
+    skip: !organisationId || !branchId,
+  });
+  const { data: ministriesData } = useQuery(LIST_MINISTRIES, {
+    variables: {
+      filters: {
+        organisationId,
+        branchId,
+      },
+    },
+    skip: !organisationId || !branchId,
+  });
 
   // Lazy query to fetch full member details on demand for the detail modal
   const [
@@ -321,13 +337,35 @@ const MembersPage: React.FC = () => {
           setIsSelectionDialogOpen(true);
           break;
         case "removeFromGroup":
+          // Filter groups to only show those where selected members are actually members
+          const memberGroupIds = new Set<string>();
+          
+          // Collect all group IDs that the selected members belong to
+          groupsData?.smallGroups.forEach((group: any) => {
+            const hasSelectedMember = group.members?.some((member: any) => 
+              selectedMembers.includes(member.memberId) && member.status === 'ACTIVE'
+            );
+            if (hasSelectedMember) {
+              memberGroupIds.add(group.id);
+            }
+          });
+          
+          // Filter to only groups where selected members are active members
+          const memberGroups = groupsData?.smallGroups
+            .filter((g: any) => memberGroupIds.has(g.id))
+            .map((g: any) => ({
+              id: g.id,
+              name: g.name,
+            })) || [];
+          
+          if (memberGroups.length === 0) {
+            toast.error("Selected members are not in any groups");
+            return;
+          }
+          
           setSelectionDialogData({
             actionType,
-            options:
-              groupsData?.smallGroups.map((g: any) => ({
-                id: g.id,
-                name: g.name,
-              })) || [],
+            options: memberGroups,
             title: "Remove Members from Group",
             label: "Select a group",
           });
@@ -347,13 +385,35 @@ const MembersPage: React.FC = () => {
           setIsSelectionDialogOpen(true);
           break;
         case "removeFromMinistry":
+          // Filter ministries to only show those where selected members are actually members
+          const memberMinistryIds = new Set<string>();
+          
+          // Collect all ministry IDs that the selected members belong to
+          ministriesData?.ministries.forEach((ministry: any) => {
+            const hasSelectedMember = ministry.members?.some((member: any) => 
+              selectedMembers.includes(member.memberId) && member.status === 'ACTIVE'
+            );
+            if (hasSelectedMember) {
+              memberMinistryIds.add(ministry.id);
+            }
+          });
+          
+          // Filter to only ministries where selected members are active members
+          const memberMinistries = ministriesData?.ministries
+            .filter((m: any) => memberMinistryIds.has(m.id))
+            .map((m: any) => ({
+              id: m.id,
+              name: m.name,
+            })) || [];
+          
+          if (memberMinistries.length === 0) {
+            toast.error("Selected members are not in any ministries");
+            return;
+          }
+          
           setSelectionDialogData({
             actionType,
-            options:
-              ministriesData?.ministries.map((m: any) => ({
-                id: m.id,
-                name: m.name,
-              })) || [],
+            options: memberMinistries,
             title: "Remove Members from Ministry",
             label: "Select a ministry",
           });

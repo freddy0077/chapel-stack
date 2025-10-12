@@ -21,6 +21,8 @@ interface GroupMembership {
   smallGroupName?: string;
   role: string;
   joinDate: string;
+  leaveDate?: string;
+  leaveReason?: string;
   isActive: boolean;
   responsibilities: string[];
 }
@@ -127,21 +129,26 @@ const GroupMembershipsSection: React.FC<GroupMembershipsSectionProps> = ({
         </div>
       ) : (
         <div>
+          {/* Active Memberships */}
           <h4 className="text-md font-medium text-gray-900 mb-3 flex items-center gap-2">
-            <UserGroupIcon className="h-4 w-4 text-blue-600" />
-            Small Groups (
+            <CheckCircleIcon className="h-4 w-4 text-green-600" />
+            Active Small Groups (
             {
-              groupMemberships.filter((membership) => membership.smallGroupId)
-                .length
+              groupMemberships.filter(
+                (membership) => membership.smallGroupId && membership.isActive
+              ).length
             }
             )
           </h4>
 
-          {groupMemberships.filter((membership) => membership.smallGroupId)
-            .length > 0 ? (
-            <div className="space-y-3">
+          {groupMemberships.filter(
+            (membership) => membership.smallGroupId && membership.isActive
+          ).length > 0 ? (
+            <div className="space-y-3 mb-6">
               {groupMemberships
-                .filter((membership) => membership.smallGroupId)
+                .filter(
+                  (membership) => membership.smallGroupId && membership.isActive
+                )
                 .map((membership) => (
                   <div
                     key={membership.id}
@@ -171,18 +178,125 @@ const GroupMembershipsSection: React.FC<GroupMembershipsSectionProps> = ({
                           Joined{" "}
                           {new Date(membership.joinDate).toLocaleDateString()}
                         </span>
+                        {membership.leaveDate && (
+                          <span className="flex items-center gap-1 text-red-600">
+                            <ClockIcon className="h-3 w-3" />
+                            Left{" "}
+                            {new Date(membership.leaveDate).toLocaleDateString()}
+                          </span>
+                        )}
                       </div>
+                      {membership.leaveReason && (
+                        <div className="mt-2 text-xs text-gray-600 italic">
+                          Reason: {membership.leaveReason}
+                        </div>
+                      )}
+                      {membership.leaveDate && (
+                        <div className="mt-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          Duration: {membership.joinDate && membership.leaveDate
+                            ? `${Math.floor(
+                                (new Date(membership.leaveDate).getTime() -
+                                  new Date(membership.joinDate).getTime()) /
+                                  (1000 * 60 * 60 * 24 * 30)
+                              )} months`
+                            : "N/A"}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
             </div>
           ) : (
-            <div className="text-center py-6 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-center py-6 bg-blue-50 rounded-lg border border-blue-200 mb-6">
               <UserGroupIcon className="h-8 w-8 text-blue-300 mx-auto mb-2" />
               <p className="text-blue-600 text-sm">
-                No small group memberships
+                No active small group memberships
               </p>
             </div>
+          )}
+
+          {/* Historical/Past Memberships */}
+          {groupMemberships.filter(
+            (membership) => membership.smallGroupId && !membership.isActive
+          ).length > 0 && (
+            <>
+              <h4 className="text-md font-medium text-gray-900 mb-3 mt-6 flex items-center gap-2">
+                <ClockIcon className="h-4 w-4 text-gray-600" />
+                Past Small Groups (
+                {
+                  groupMemberships.filter(
+                    (membership) =>
+                      membership.smallGroupId && !membership.isActive
+                  ).length
+                }
+                )
+              </h4>
+
+              <div className="space-y-3">
+                {groupMemberships
+                  .filter(
+                    (membership) =>
+                      membership.smallGroupId && !membership.isActive
+                  )
+                  .map((membership) => (
+                    <div
+                      key={membership.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 opacity-75"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h5 className="font-medium text-gray-700">
+                            {membership.smallGroupName}
+                          </h5>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getRoleColor(membership.role)}`}
+                          >
+                            {getRoleIcon(membership.role)}
+                            {formatRole(membership.role)}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-gray-100 text-gray-700 border-gray-300">
+                            Past Member
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="h-3 w-3" />
+                            Joined{" "}
+                            {new Date(membership.joinDate).toLocaleDateString()}
+                          </span>
+                          {membership.leaveDate && (
+                            <span className="flex items-center gap-1 text-red-600">
+                              <ClockIcon className="h-3 w-3" />
+                              Left{" "}
+                              {new Date(
+                                membership.leaveDate
+                              ).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        {membership.leaveReason && (
+                          <div className="mt-2 text-xs text-gray-600 italic">
+                            Reason: {membership.leaveReason}
+                          </div>
+                        )}
+                        {membership.leaveDate && (
+                          <div className="mt-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            Duration:{" "}
+                            {membership.joinDate && membership.leaveDate
+                              ? `${Math.floor(
+                                  (new Date(membership.leaveDate).getTime() -
+                                    new Date(membership.joinDate).getTime()) /
+                                    (1000 * 60 * 60 * 24 * 30)
+                                )} months`
+                              : "N/A"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -190,15 +304,27 @@ const GroupMembershipsSection: React.FC<GroupMembershipsSectionProps> = ({
       {/* Summary */}
       {groupMemberships.filter((membership) => membership.smallGroupId).length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">
-              {
-                groupMemberships.filter(
-                  (membership) => membership.smallGroupId,
-                ).length
-              }
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="text-2xl font-bold text-green-600">
+                {
+                  groupMemberships.filter(
+                    (membership) => membership.smallGroupId && membership.isActive
+                  ).length
+                }
+              </div>
+              <div className="text-green-700 text-sm">Active Groups</div>
             </div>
-            <div className="text-blue-700">Small Groups</div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-2xl font-bold text-gray-600">
+                {
+                  groupMemberships.filter(
+                    (membership) => membership.smallGroupId && !membership.isActive
+                  ).length
+                }
+              </div>
+              <div className="text-gray-700 text-sm">Past Groups</div>
+            </div>
           </div>
         </div>
       )}

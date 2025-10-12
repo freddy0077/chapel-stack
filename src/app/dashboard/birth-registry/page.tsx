@@ -23,9 +23,22 @@ import {
   Sparkles,
   MapPin,
   Calendar as CalendarIcon,
+  Calendar as CalendarDaysIcon,
   Scale,
   Hash,
   Lightbulb,
+  FileText as DocumentTextIcon,
+  BarChart3 as ChartBarIcon,
+  Users as UserGroupIcon,
+  CheckCircle as CheckCircleIcon,
+  Filter as FunnelIcon,
+  Heart as HeartIcon,
+  MapPin as MapPinIcon,
+  Sparkles as SparklesIcon,
+  Scale as ScaleIcon,
+  Hash as HashtagIcon,
+  Plus as PlusIcon,
+  Lightbulb as LightBulbIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';

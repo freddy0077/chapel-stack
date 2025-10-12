@@ -27,6 +27,7 @@ import {
   HeartIcon,
   CreditCardIcon,
   UserMinusIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 
 import { isModuleEnabled } from "../onboarding/ModulePreferences";
@@ -181,6 +182,13 @@ const fullNavigation = [
         moduleId: "branch-finances",
       },
       {
+        name: "Assets",
+        href: "/dashboard/assets",
+        icon: CubeIcon,
+        badge: null,
+        moduleId: "dashboard", // Asset management is part of core operations
+      },
+      {
         name: "Communication",
         href: "/dashboard/communication",
         icon: ChatBubbleLeftRightIcon,
@@ -193,6 +201,13 @@ const fullNavigation = [
         icon: ChartBarIcon,
         badge: null,
         moduleId: "dashboard", // Basic reporting is included in core dashboard
+      },
+      {
+        name: "Report Builder",
+        href: "/dashboard/report-builder",
+        icon: DocumentTextIcon,
+        badge: null,
+        moduleId: "dashboard", // Report builder is included in core dashboard
       },
       {
         name: "Workflows",
@@ -347,7 +362,10 @@ export default function DynamicNavigation({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      if (!target.closest(".profile-dropdown-btn")) {
+      if (
+        !target.closest(".profile-dropdown-btn") &&
+        !target.closest(".profile-dropdown-menu")
+      ) {
         setProfileDropdownOpen(false);
       }
     }
@@ -684,7 +702,7 @@ export default function DynamicNavigation({
                   </svg>
                 </button>
                 {profileDropdownOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in">
+                  <div className="profile-dropdown-menu absolute right-0 z-50 mt-2 w-56 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="flex items-center gap-3">
                         <span className="h-10 w-10 rounded-full bg-indigo-700 flex items-center justify-center text-lg font-bold text-white">
@@ -701,18 +719,20 @@ export default function DynamicNavigation({
                       </div>
                     </div>
                     <div className="py-1">
-                      <a
+                      <Link
                         href="/dashboard/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition"
+                        onClick={() => setProfileDropdownOpen(false)}
                       >
                         Profile
-                      </a>
-                      <a
+                      </Link>
+                      <Link
                         href="/dashboard/settings"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition"
+                        onClick={() => setProfileDropdownOpen(false)}
                       >
                         Settings
-                      </a>
+                      </Link>
                       <button
                         onMouseDown={async (e) => {
                           e.preventDefault(); // Prevent document mousedown from closing dropdown

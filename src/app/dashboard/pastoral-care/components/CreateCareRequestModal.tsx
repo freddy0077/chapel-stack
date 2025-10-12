@@ -63,6 +63,7 @@ const requestTypes = [
   { value: "SPIRITUAL_GUIDANCE", label: "Spiritual Guidance" },
   { value: "FAMILY_CRISIS", label: "Family Crisis" },
   { value: "GENERAL_SUPPORT", label: "General Support" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const priorities = [

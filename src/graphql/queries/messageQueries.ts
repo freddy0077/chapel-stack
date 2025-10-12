@@ -186,9 +186,37 @@ export const SEND_EMAIL_MUTATION = gql`
   }
 `;
 
+export const SEND_EMAIL_WITH_TRACKING_MUTATION = gql`
+  mutation SendEmailWithTracking($input: SendEmailInput!) {
+    sendEmailWithTracking(input: $input) {
+      success
+      messageId
+      recipientCount
+      scheduledFor
+      status
+      estimatedDelivery
+      message
+    }
+  }
+`;
+
 export const SEND_SMS_MUTATION = gql`
   mutation SendSms($input: SendSmsInput!) {
     sendSms(input: $input)
+  }
+`;
+
+export const SEND_SMS_WITH_TRACKING_MUTATION = gql`
+  mutation SendSmsWithTracking($input: SendSmsInput!) {
+    sendSmsWithTracking(input: $input) {
+      success
+      messageId
+      recipientCount
+      scheduledFor
+      status
+      estimatedDelivery
+      message
+    }
   }
 `;
 
@@ -199,6 +227,23 @@ export const SEND_NOTIFICATION_MUTATION = gql`
       title
       message
       createdAt
+    }
+  }
+`;
+
+export const GET_RECIPIENT_COUNT_QUERY = gql`
+  query GetRecipientCount($input: GetRecipientCountInput!) {
+    getRecipientCount(input: $input) {
+      totalMembers
+      uniqueMembers
+      duplicateCount
+      breakdown {
+        source
+        name
+        count
+        id
+      }
+      message
     }
   }
 `;

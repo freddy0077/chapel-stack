@@ -1,7 +1,9 @@
 import { useMutation } from "@apollo/client";
 import {
   SEND_EMAIL_MUTATION,
+  SEND_EMAIL_WITH_TRACKING_MUTATION,
   SEND_SMS_MUTATION,
+  SEND_SMS_WITH_TRACKING_MUTATION,
   SEND_NOTIFICATION_MUTATION,
 } from "../queries/messageQueries";
 
@@ -11,9 +13,23 @@ export function useSendEmail() {
   return { sendEmail, data, loading, error };
 }
 
+export function useSendEmailWithTracking() {
+  const [sendEmailWithTracking, { data, loading, error }] = useMutation(
+    SEND_EMAIL_WITH_TRACKING_MUTATION,
+  );
+  return { sendEmailWithTracking, data, loading, error };
+}
+
 export function useSendSms() {
   const [sendSms, { data, loading, error }] = useMutation(SEND_SMS_MUTATION);
   return { sendSms, data, loading, error };
+}
+
+export function useSendSmsWithTracking() {
+  const [sendSmsWithTracking, { data, loading, error }] = useMutation(
+    SEND_SMS_WITH_TRACKING_MUTATION,
+  );
+  return { sendSmsWithTracking, data, loading, error };
 }
 
 export function useSendNotification() {

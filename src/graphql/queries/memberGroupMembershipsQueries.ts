@@ -19,6 +19,8 @@ export const GET_MEMBER_GROUP_MEMBERSHIPS = gql`
         role
         status
         joinDate
+        leaveDate
+        leaveReason
         createdAt
         updatedAt
       }
@@ -41,6 +43,8 @@ export const GET_MEMBER_GROUP_MEMBERSHIPS = gql`
         role
         status
         joinDate
+        leaveDate
+        leaveReason
         createdAt
         updatedAt
       }

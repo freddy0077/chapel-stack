@@ -15,6 +15,8 @@ import {
   ArrowRightIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { useQuery } from "@apollo/client";
+import { GET_ZONES } from "@/graphql/queries/zoneQueries";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useCreateMember } from "@/hooks/useCreateMember";
 import {
@@ -55,6 +57,14 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const { createMember, loading } = useCreateMember();
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Fetch zones
+  const { data: zonesData } = useQuery(GET_ZONES, {
+    variables: { organisationId, branchId },
+    skip: !organisationId,
+  });
+
+  const zones = zonesData?.zones || [];
+
   const [formData, setFormData] = useState<CreateMemberInput>({
     firstName: "",
     lastName: "",
@@ -90,8 +100,29 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    // Prevent Enter key from submitting the form on steps 1-3
+    if (e.key === 'Enter' && currentStep < steps.length) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Move to next step without triggering form submission
+      if (currentStep < steps.length) {
+        setCurrentStep(currentStep + 1);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // If not on the last step, just move to next step
+    if (currentStep < steps.length) {
+      nextStep();
+      return;
+    }
+    
+    // Only submit on the last step
     if (!formData.firstName || !formData.lastName) {
       alert("Please fill in required fields (First Name and Last Name)");
       return;
@@ -144,7 +175,9 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     onClose();
   };
 
-  const nextStep = () => {
+  const nextStep = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -613,6 +646,25 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">
+                  Zone / Community
+                </label>
+                <select
+                  value={formData.zoneId || ""}
+                  onChange={(e) =>
+                    handleInputChange("zoneId", e.target.value || undefined)
+                  }
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">No Zone Assigned</option>
+                  {zones.map((zone: any) => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name} {zone.location ? `(${zone.location})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </motion.div>
         );
@@ -634,7 +686,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="bg-gray-50 rounded-2xl shadow-2xl w-full max-w-3xl mx-auto overflow-hidden"
+            className="bg-gray-50 rounded-2xl shadow-2xl w-full max-w-3xl mx-auto overflow-hidden max-h-[90vh] flex flex-col"
           >
             <div className="p-8 flex justify-between items-start">
               <div>
@@ -684,8 +736,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
               </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="p-8 min-h-[300px]">
+            <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-8 overflow-y-auto flex-1">
                 <AnimatePresence mode="wait">
                   {renderStepContent()}
                 </AnimatePresence>
@@ -706,7 +758,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 {currentStep < steps.length ? (
                   <button
                     type="button"
-                    onClick={nextStep}
+                    onClick={(e) => nextStep(e)}
                     className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 flex items-center transition-colors"
                   >
                     Next
