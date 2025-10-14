@@ -20,7 +20,7 @@ export default function LoginTestPage() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [testCredentials, setTestCredentials] = useState({
-    email: "admin@chapel-stack.com",
+    email: "admin@chapel-stack-fe.com",
     password: "password123",
   });
 

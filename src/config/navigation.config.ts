@@ -182,6 +182,17 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
       ],
     },
     {
+      category: "Administration",
+      items: [
+        {
+          name: "User Management",
+          href: "/dashboard/user-management",
+          icon: ShieldCheckIcon,
+          moduleId: "user_management",
+        },
+      ],
+    },
+    {
       category: "Ministry",
       items: [
         {

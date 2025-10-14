@@ -237,7 +237,7 @@ export async function testLogin(email: string, password: string) {
  */
 export async function quickLoginTest() {
   const defaultConfig: LoginTestConfig = {
-    email: "admin@chapel-stack.com",
+    email: "admin@chapel-stack-fe.com",
     password: "password123",
   };
 

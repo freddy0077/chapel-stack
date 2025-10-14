@@ -161,7 +161,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <UsersIcon className="h-5 w-5 mr-2 text-blue-500" />
+            <Users className="h-5 w-5 mr-2 text-blue-500" />
             Family Relationships
           </h3>
         </div>
@@ -178,7 +178,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900 flex items-center">
-          <UsersIcon className="h-5 w-5 mr-2 text-blue-500" />
+          <Users className="h-5 w-5 mr-2 text-blue-500" />
           Family Relationships
         </h3>
         <Button
@@ -187,7 +187,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
           size="sm"
           className="bg-blue-600 hover:bg-blue-700"
         >
-          <PlusIcon className="h-4 w-4 mr-1" />
+          <Plus className="h-4 w-4 mr-1" />
           Add Relationship
         </Button>
       </div>
@@ -202,7 +202,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
 
       {relationships.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <HeartIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <Heart className="h-12 w-12 text-gray-400 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">No family relationships added yet</p>
           <p className="text-gray-400 text-xs mt-1">Click "Add Relationship" to get started</p>
         </div>
@@ -228,7 +228,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
                         />
                       ) : (
                         <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                          <UserIcon className="h-6 w-6 text-gray-500" />
+                          <User className="h-6 w-6 text-gray-500" />
                         </div>
                       )}
                     </div>
@@ -258,7 +258,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
                       variant="outline"
                       className="h-8 w-8 p-0"
                     >
-                      <PencilIcon className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       type="button"
@@ -268,7 +268,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                       disabled={removing}
                     >
-                      <TrashIcon className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
               <div className="space-y-2">
                 <Label htmlFor="member-search">Search Family Member</Label>
                 <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="member-search"
                     type="text"
@@ -377,7 +377,7 @@ const FamilyRelationshipManager: React.FC<FamilyRelationshipManagerProps> = ({
                         variant="outline"
                         className="h-6 w-6 p-0"
                       >
-                        <XMarkIcon className="h-3 w-3" />
+                        <X className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>

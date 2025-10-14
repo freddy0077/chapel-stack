@@ -36,7 +36,36 @@ export const ROLE_DASHBOARD_MAP: Record<string, RoleConfig> = {
     ],
     defaultRoute: "/dashboard/branch",
     allowedRoutes: [
-      "/dashboard/*",
+      "/dashboard/branch",
+      "/dashboard/branch/*",
+      "/dashboard/user-management",
+      "/dashboard/user-management/*",
+      "/dashboard/members",
+      "/dashboard/members/*",
+      "/dashboard/groups",
+      "/dashboard/groups/*",
+      "/dashboard/calendar",
+      "/dashboard/calendar/*",
+      "/dashboard/branch-finances",
+      "/dashboard/branch-finances/*",
+      "/dashboard/assets",
+      "/dashboard/assets/*",
+      "/dashboard/attendance",
+      "/dashboard/attendance/*",
+      "/dashboard/report-builder",
+      "/dashboard/report-builder/*",
+      "/dashboard/communication",
+      "/dashboard/communication/*",
+      "/dashboard/pastoral-care",
+      "/dashboard/pastoral-care/*",
+      "/dashboard/death-register",
+      "/dashboard/death-register/*",
+      "/dashboard/birth-registry",
+      "/dashboard/birth-registry/*",
+      "/dashboard/sacraments",
+      "/dashboard/sacraments/*",
+      "/dashboard/sermons",
+      "/dashboard/sermons/*",
       "/members/*",
       "/finances/*",
       "/attendance/*",
@@ -106,13 +135,21 @@ export function getRoleConfig(role: string): RoleConfig | null {
   return ROLE_DASHBOARD_MAP[role] || null;
 }
 
-export function canAccessRoute(userRole: string, route: string): boolean {
+export function canAccessRoute(route: string, userRole: string): boolean {
   const roleConfig = getRoleConfig(userRole);
   if (!roleConfig) return false;
 
-  return roleConfig.allowedRoutes.some((pattern) =>
-    route.match(new RegExp(pattern.replace("*", ".*"))),
-  );
+  return roleConfig.allowedRoutes.some((pattern) => {
+    // Convert wildcard pattern to regex
+    // Escape special regex characters except *
+    const regexPattern = pattern
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')  // Escape special chars
+      .replace(/\*/g, '.*');  // Convert * to .*
+    
+    // Add anchors to match the entire route
+    const regex = new RegExp(`^${regexPattern}$`);
+    return regex.test(route);
+  });
 }
 
 export function canAccessDashboard(

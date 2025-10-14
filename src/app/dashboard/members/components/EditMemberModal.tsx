@@ -162,6 +162,12 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Only save on the last step (step 7)
+    if (currentStep !== steps.length) {
+      return;
+    }
+    
     try {
       setLoading(true);
       const sanitizedFormData = { ...formData };
@@ -239,6 +245,12 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
             <form
               onSubmit={handleSubmit}
+              onKeyDown={(e) => {
+                // Prevent Enter key from submitting the form
+                if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                  e.preventDefault();
+                }
+              }}
               className="modal-content p-6 space-y-6 overflow-y-auto flex-1"
             >
               {currentStep === 1 && (
