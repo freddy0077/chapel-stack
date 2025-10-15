@@ -7,6 +7,7 @@ import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 import { CreateUserModal } from "./components/CreateUserModal";
 import { EditUserModal } from "./components/EditUserModal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
+import { CreateUserFromMemberModal } from "./components/CreateUserFromMemberModal";
 import {
   ShieldCheckIcon,
   PlusIcon,
@@ -34,6 +35,13 @@ interface User {
   lastLoginAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  member?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    phoneNumber: string | null;
+  } | null;
   roles?: Array<{ id: string; name: string; description: string | null }>;
   userBranches?: Array<{
     userId: string;
@@ -47,6 +55,7 @@ interface User {
 export default function UsersPage() {
   const { organisationId, branchId } = useOrganisationBranch();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateFromMemberModalOpen, setIsCreateFromMemberModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -160,15 +169,26 @@ export default function UsersPage() {
                   <p className="text-sm text-gray-500 mt-0.5">Manage system users and their roles</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5"
-              >
-                <div className="flex items-center space-x-2">
-                  <PlusIcon className="w-5 h-5" />
-                  <span>Create User</span>
-                </div>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setIsCreateFromMemberModalOpen(true)}
+                  className="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <div className="flex items-center space-x-2">
+                    <UserCircleIcon className="w-5 h-5" />
+                    <span>From Member</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <div className="flex items-center space-x-2">
+                    <PlusIcon className="w-5 h-5" />
+                    <span>Create User</span>
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Stats Cards */}
@@ -469,6 +489,11 @@ export default function UsersPage() {
         <CreateUserModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={handleSuccess}
+        />
+        <CreateUserFromMemberModal
+          isOpen={isCreateFromMemberModalOpen}
+          onClose={() => setIsCreateFromMemberModalOpen(false)}
           onSuccess={handleSuccess}
         />
         <EditUserModal

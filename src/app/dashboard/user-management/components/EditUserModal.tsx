@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
 import {
   UPDATE_USER_ACTIVE_STATUS,
   ASSIGN_ROLE_TO_USER,
   REMOVE_ROLE_FROM_USER,
   ASSIGN_BRANCH_ROLE_TO_USER,
   REMOVE_BRANCH_ROLE_FROM_USER,
+  LINK_MEMBER_TO_USER,
+  UNLINK_MEMBER_FROM_USER,
 } from "@/graphql/mutations/userManagementMutations";
 import { GET_ALL_ROLES, GET_BRANCHES } from "@/graphql/queries/userManagementQueries";
+import { SEARCH_MEMBERS } from "@/graphql/queries/memberQueries";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
-import { XMarkIcon, PlusIcon, TrashIcon, ShieldCheckIcon, BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, PlusIcon, TrashIcon, ShieldCheckIcon, BuildingOfficeIcon, UserCircleIcon, LinkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 
 interface User {
@@ -20,6 +23,13 @@ interface User {
   firstName: string | null;
   lastName: string | null;
   isActive: boolean;
+  member?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    phoneNumber: string | null;
+  } | null;
   roles?: Array<{ id: string; name: string }>;
   userBranches?: Array<{
     userId: string;
@@ -45,6 +55,8 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
   const [isActive, setIsActive] = useState(true);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const [memberSearchQuery, setMemberSearchQuery] = useState<string>("");
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("");
 
   // Set current branch as default when modal opens
   useEffect(() => {
@@ -58,6 +70,8 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
     variables: { organisationId },
     skip: !organisationId,
   });
+
+  const [searchMembers, { data: membersData, loading: searchingMembers }] = useLazyQuery(SEARCH_MEMBERS);
 
   // Filter to only manageable roles
   const manageableRoles = rolesData?.adminRoles?.filter((role: any) =>
@@ -128,6 +142,30 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
     refetchQueries: ["GetAllUsers", "GetUserById"],
   });
 
+  const [linkMember] = useMutation(LINK_MEMBER_TO_USER, {
+    onCompleted: () => {
+      toast.success("Member linked successfully!");
+      setMemberSearchQuery("");
+      setSelectedMemberId("");
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to link member");
+    },
+    refetchQueries: ["GetAllUsers", "GetUserById"],
+  });
+
+  const [unlinkMember] = useMutation(UNLINK_MEMBER_FROM_USER, {
+    onCompleted: () => {
+      toast.success("Member unlinked successfully!");
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to unlink member");
+    },
+    refetchQueries: ["GetAllUsers", "GetUserById"],
+  });
+
   const handleUpdateStatus = async () => {
     if (!user) return;
     await updateActiveStatus({
@@ -189,6 +227,45 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
           userId: user.id,
           branchId,
           roleId,
+        },
+      });
+    }
+  };
+
+  const handleSearchMembers = () => {
+    if (memberSearchQuery.trim().length < 2) {
+      toast.error("Please enter at least 2 characters to search");
+      return;
+    }
+    searchMembers({
+      variables: {
+        query: memberSearchQuery,
+        branchId,
+      },
+    });
+  };
+
+  const handleLinkMember = async () => {
+    if (!user || !selectedMemberId) {
+      toast.error("Please select a member to link");
+      return;
+    }
+
+    await linkMember({
+      variables: {
+        userId: user.id,
+        memberId: selectedMemberId,
+      },
+    });
+  };
+
+  const handleUnlinkMember = async () => {
+    if (!user) return;
+
+    if (confirm("Are you sure you want to unlink this member? This will not delete the member record.")) {
+      await unlinkMember({
+        variables: {
+          userId: user.id,
         },
       });
     }
@@ -325,91 +402,116 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
               </div>
             </div>
 
-            {/* Branch Roles */}
-            {/*<div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-6 border border-purple-200">*/}
-            {/*  <div className="flex items-center space-x-3 mb-4">*/}
-            {/*    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">*/}
-            {/*      <BuildingOfficeIcon className="w-5 h-5 text-purple-600" />*/}
-            {/*    </div>*/}
-            {/*    <h3 className="text-lg font-semibold text-gray-900">Branch Roles</h3>*/}
-            {/*  </div>*/}
+            {/* Linked Member */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-6 border border-green-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <UserCircleIcon className="w-5 h-5 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Linked Member</h3>
+              </div>
 
-            {/*  /!* Current Branch Roles *!/*/}
-            {/*  <div className="mb-4">*/}
-            {/*    <p className="text-sm font-medium text-gray-700 mb-3">Current Branch Assignments:</p>*/}
-            {/*    <div className="space-y-2">*/}
-            {/*      {user.userBranches && user.userBranches.length > 0 ? (*/}
-            {/*        user.userBranches.map((userBranch) => (*/}
-            {/*          <div*/}
-            {/*            key={`${userBranch.userId}-${userBranch.branchId}-${userBranch.roleId}`}*/}
-            {/*            className="group flex items-center justify-between bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-300 transition-all"*/}
-            {/*          >*/}
-            {/*            <div>*/}
-            {/*              <p className="text-sm font-semibold text-gray-900">{userBranch.branch.name}</p>*/}
-            {/*              <p className="text-xs text-gray-500 mt-0.5">{userBranch.role.name}</p>*/}
-            {/*            </div>*/}
-            {/*            <button*/}
-            {/*              onClick={() => handleRemoveBranchRole(userBranch.branchId, userBranch.role.id)}*/}
-            {/*              className="opacity-0 group-hover:opacity-100 text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all"*/}
-            {/*            >*/}
-            {/*              <TrashIcon className="w-4 h-4" />*/}
-            {/*            </button>*/}
-            {/*          </div>*/}
-            {/*        ))*/}
-            {/*      ) : (*/}
-            {/*        <p className="text-sm text-gray-500">No branch roles assigned</p>*/}
-            {/*      )}*/}
-            {/*    </div>*/}
-            {/*  </div>*/}
+              {/* Current Linked Member */}
+              {user.member ? (
+                <div className="mb-4">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Current Linked Member:</p>
+                  <div className="group flex items-center justify-between bg-white p-4 rounded-lg border border-green-200 hover:border-green-300 transition-all">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user.member.firstName} {user.member.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {user.member.email} {user.member.phoneNumber && `• ${user.member.phoneNumber}`}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleUnlinkMember}
+                      className="opacity-0 group-hover:opacity-100 text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all flex items-center space-x-1"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                      <span className="text-xs">Unlink</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">No member linked to this user account</p>
+                </div>
+              )}
 
-            {/*  /!* Assign New Branch Role *!/*/}
-            {/*  <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-3">*/}
-            {/*    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">*/}
-            {/*      <div>*/}
-            {/*        <label className="block text-sm font-medium text-gray-700 mb-2">*/}
-            {/*          Select Branch*/}
-            {/*        </label>*/}
-            {/*        <select*/}
-            {/*          value={selectedBranchId}*/}
-            {/*          onChange={(e) => setSelectedBranchId(e.target.value)}*/}
-            {/*          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"*/}
-            {/*        >*/}
-            {/*          <option value="">Select a branch</option>*/}
-            {/*          {branchesData?.branches?.map((branch: any) => (*/}
-            {/*            <option key={branch.id} value={branch.id}>*/}
-            {/*              {branch.name}*/}
-            {/*            </option>*/}
-            {/*          ))}*/}
-            {/*        </select>*/}
-            {/*      </div>*/}
-            {/*      <div>*/}
-            {/*        <label className="block text-sm font-medium text-gray-700 mb-2">*/}
-            {/*          Select Role*/}
-            {/*        </label>*/}
-            {/*        <select*/}
-            {/*          value={selectedRoleId}*/}
-            {/*          onChange={(e) => setSelectedRoleId(e.target.value)}*/}
-            {/*          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"*/}
-            {/*        >*/}
-            {/*          <option value="">Select a role</option>*/}
-            {/*          {manageableRoles.map((role: any) => (*/}
-            {/*            <option key={role.id} value={role.id}>*/}
-            {/*              {role.name}*/}
-            {/*            </option>*/}
-            {/*          ))}*/}
-            {/*        </select>*/}
-            {/*      </div>*/}
-            {/*    </div>*/}
-            {/*    <button*/}
-            {/*      onClick={handleAssignBranchRole}*/}
-            {/*      disabled={!selectedRoleId || !selectedBranchId}*/}
-            {/*      className="w-full px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-md hover:shadow-lg"*/}
-            {/*    >*/}
-            {/*      <PlusIcon className="w-4 h-4" />*/}
-            {/*      <span>Assign Branch Role</span>*/}
-            {/*    </button>*/}
-            {/*  </div>*/}
-            {/*</div>*/}
+              {/* Link New Member */}
+              {!user.member && (
+                <div className="bg-white rounded-lg p-4 border border-green-200 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Search for Member to Link
+                    </label>
+                    <div className="flex space-x-2">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={memberSearchQuery}
+                          onChange={(e) => setMemberSearchQuery(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSearchMembers()}
+                          placeholder="Search by name, email, or phone..."
+                          className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                        />
+                        <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-3" />
+                      </div>
+                      <button
+                        onClick={handleSearchMembers}
+                        disabled={searchingMembers}
+                        className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      >
+                        {searchingMembers ? 'Searching...' : 'Search'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search Results */}
+                  {membersData?.searchMembers && membersData.searchMembers.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Member ({membersData.searchMembers.length} found)
+                      </label>
+                      <div className="max-h-48 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-2">
+                        {membersData.searchMembers.map((member: any) => (
+                          <div
+                            key={member.id}
+                            onClick={() => setSelectedMemberId(member.id)}
+                            className={`p-3 rounded-lg cursor-pointer transition-all ${
+                              selectedMemberId === member.id
+                                ? 'bg-green-100 border-2 border-green-500'
+                                : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                            }`}
+                          >
+                            <p className="text-sm font-semibold text-gray-900">
+                              {member.firstName} {member.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {member.email} {member.phoneNumber && `• ${member.phoneNumber}`}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {membersData?.searchMembers && membersData.searchMembers.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-2">No members found. Try a different search.</p>
+                  )}
+
+                  <button
+                    onClick={handleLinkMember}
+                    disabled={!selectedMemberId}
+                    className="w-full px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-md hover:shadow-lg"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    <span>Link Selected Member</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer */}

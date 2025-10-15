@@ -18,6 +18,13 @@ export const GET_ALL_USERS = gql`
         lastLoginAt
         createdAt
         updatedAt
+        member {
+          id
+          firstName
+          lastName
+          email
+          phoneNumber
+        }
         roles {
           id
           name

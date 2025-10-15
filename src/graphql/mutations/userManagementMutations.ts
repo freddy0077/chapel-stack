@@ -134,3 +134,90 @@ export const CREATE_USERS_WITH_ROLE = gql`
     }
   }
 `;
+
+// Link existing member to user
+export const LINK_MEMBER_TO_USER = gql`
+  mutation LinkMemberToUser($userId: ID!, $memberId: ID!) {
+    linkMemberToUser(userId: $userId, memberId: $memberId) {
+      id
+      email
+      firstName
+      lastName
+      member {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+      }
+      roles {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+// Unlink member from user
+export const UNLINK_MEMBER_FROM_USER = gql`
+  mutation UnlinkMemberFromUser($userId: ID!) {
+    unlinkMemberFromUser(userId: $userId) {
+      id
+      email
+      firstName
+      lastName
+      member {
+        id
+        firstName
+        lastName
+        email
+      }
+      roles {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+// Create user from existing member
+export const CREATE_USER_FROM_MEMBER = gql`
+  mutation CreateUserFromMember($input: CreateUserFromMemberInput!) {
+    createUserFromMember(input: $input) {
+      id
+      email
+      firstName
+      lastName
+      phoneNumber
+      isActive
+      isEmailVerified
+      member {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+      }
+      roles {
+        id
+        name
+        description
+      }
+      userBranches {
+        userId
+        branchId
+        roleId
+        branch {
+          id
+          name
+        }
+        role {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
