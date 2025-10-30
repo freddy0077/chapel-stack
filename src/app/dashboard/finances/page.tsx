@@ -343,7 +343,7 @@ function FinancialHealthIndicator({
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${color}`}
-      title={`Balance: ₵${balance.toLocaleString()} | Monthly Expenses: ₵${monthlyExpenses.toLocaleString()}`}
+      title={`Balance: ₵${(balance ?? 0).toLocaleString()} | Monthly Expenses: ₵${(monthlyExpenses ?? 0).toLocaleString()}`}
     >
       {icon}
       {status}

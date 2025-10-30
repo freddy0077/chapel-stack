@@ -29,7 +29,9 @@ import {
 } from "../types/member.types";
 import ImageUpload from "@/components/ui/ImageUpload";
 import PhoneInput from "@/components/ui/PhoneInput";
+import SelectWithAdd from "@/components/ui/SelectWithAdd";
 import { SORTED_COUNTRIES } from "@/constants/countries";
+import { STANDARD_OCCUPATIONS, GHANA_REGIONS } from "@/constants/occupations";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -452,6 +454,26 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              <div className="col-span-2 sm:col-span-1">
+                <SelectWithAdd
+                  label="Region"
+                  value={formData.region || ""}
+                  onChange={(value) => handleInputChange("region", value)}
+                  options={GHANA_REGIONS}
+                  placeholder="Select region"
+                  allowCustom={true}
+                />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <SelectWithAdd
+                  label="Occupation"
+                  value={formData.occupation || ""}
+                  onChange={(value) => handleInputChange("occupation", value)}
+                  options={STANDARD_OCCUPATIONS}
+                  placeholder="Select occupation"
+                  allowCustom={true}
+                />
+              </div>
             </div>
           </motion.div>
         );
@@ -491,29 +513,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">
-                  Father's Occupation
-                </label>
-                <input
-                  type="text"
+                <SelectWithAdd
+                  label="Father's Occupation"
                   value={formData.fatherOccupation || ""}
-                  onChange={(e) =>
-                    handleInputChange("fatherOccupation", e.target.value)
-                  }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(value) => handleInputChange("fatherOccupation", value)}
+                  options={STANDARD_OCCUPATIONS}
+                  placeholder="Select father's occupation"
+                  allowCustom={true}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">
-                  Mother's Occupation
-                </label>
-                <input
-                  type="text"
+                <SelectWithAdd
+                  label="Mother's Occupation"
                   value={formData.motherOccupation || ""}
-                  onChange={(e) =>
-                    handleInputChange("motherOccupation", e.target.value)
-                  }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(value) => handleInputChange("motherOccupation", value)}
+                  options={STANDARD_OCCUPATIONS}
+                  placeholder="Select mother's occupation"
+                  allowCustom={true}
                 />
               </div>
               <div className="col-span-2 pt-4">
