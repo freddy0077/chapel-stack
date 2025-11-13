@@ -403,12 +403,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: MicrophoneIcon,
           moduleId: "sermons",
         },
-        {
-          name: "Branch Finances",
-          href: "/dashboard/branch-finances",
-          icon: CurrencyDollarIcon,
-          moduleId: "finances",
-        },
+        // {
+        //   name: "Branch Finances",
+        //   href: "/dashboard/branch-finances",
+        //   icon: CurrencyDollarIcon,
+        //   moduleId: "finances",
+        // },
       ],
     },
   ],
