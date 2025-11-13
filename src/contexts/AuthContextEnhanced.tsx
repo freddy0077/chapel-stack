@@ -243,7 +243,7 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
         const result = await authApi.login(credentials);
 
         if (result.success && result.user && result.tokens) {
-          // Store authentication data
+          // Store authentication data FIRST
           const rememberMe = credentials.rememberMe || false;
           storage.setTokens(result.tokens, rememberMe);
           storage.setUser(result.user);
@@ -252,6 +252,17 @@ export function AuthProvider({ children, config = {} }: AuthProviderProps) {
           // Update state
           dispatch({ type: AuthActionType.SET_USER, payload: result.user });
           dispatch({ type: AuthActionType.SET_TOKENS, payload: result.tokens });
+
+          // Clear Apollo Client cache to ensure authenticated requests work
+          // This is critical because the auth link needs to pick up the new token
+          // We need to do this AFTER storing tokens but BEFORE any authenticated requests
+          try {
+            await apolloClient.clearStore();
+            // Also reset the cache to ensure fresh data
+            apolloClient.cache.reset();
+          } catch (error) {
+            console.error("Failed to clear Apollo cache:", error);
+          }
 
           // Broadcast login to other tabs
           if (multiTab) {

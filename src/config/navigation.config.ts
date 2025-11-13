@@ -19,6 +19,10 @@ import {
   UserMinusIcon,
   UserPlusIcon,
   CubeIcon,
+  ClipboardDocumentListIcon,
+  EnvelopeIcon,
+  GiftIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
@@ -53,7 +57,158 @@ export const baseNavigation: NavigationCategory[] = [
 
 // Role-specific navigation configurations
 export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
-  SUPER_ADMIN: [
+  GOD_MODE: [
+    {
+      category: "Main",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard/god-mode",
+          icon: HomeIcon,
+          // moduleId: "dashboard",
+        },
+      ],
+    },
+    {
+      category: "System Management",
+      items: [
+        {
+          name: "Role Assignment",
+          href: "/dashboard/god-mode/role-assignment",
+          icon: ShieldCheckIcon,
+          description: "Manage role assignments for users",
+        },
+        {
+          name: "Permission Assignment",
+          href: "/dashboard/god-mode/permission-assignment",
+          icon: LockClosedIcon,
+          description: "Manage permission assignments for roles",
+        },
+        {
+          name: "Audit Logs",
+          href: "/dashboard/god-mode/audit-logs",
+          icon: ClipboardDocumentListIcon,
+          description: "View system audit logs",
+        },
+        {
+          name: "System Config",
+          href: "/dashboard/god-mode/config",
+          icon: Cog6ToothIcon,
+          description: "Configure system settings",
+        },
+      ],
+    },
+    {
+      category: "Administration",
+      items: [
+        {
+          name: "Organizations",
+          href: "/dashboard/god-mode/organizations",
+          icon: BuildingOfficeIcon,
+          description: "Manage organizations and their branches",
+        },
+        {
+          name: "Users",
+          href: "/dashboard/god-mode/users",
+          icon: UsersIcon,
+          description: "Manage system users",
+        },
+      ],
+    },
+    {
+      category: "Phase 1: Core Pages",
+      items: [
+        {
+          name: "Licenses",
+          href: "/dashboard/god-mode/licenses",
+          icon: LockClosedIcon,
+          description: "Manage system licenses",
+        },
+        {
+          name: "Subscriptions",
+          href: "/dashboard/god-mode/subscriptions",
+          icon: CurrencyDollarIcon,
+          description: "Manage subscriptions and billing",
+        },
+        {
+          name: "Backups",
+          href: "/dashboard/god-mode/backups",
+          icon: CubeIcon,
+          description: "Manage system backups",
+        },
+      ],
+    },
+    {
+      category: "Phase 3: Advanced",
+      items: [
+        {
+          name: "Data Operations",
+          href: "/dashboard/god-mode/data-operations",
+          icon: BoltIcon,
+          description: "Import, export, and bulk operations",
+        },
+        {
+          name: "Module Settings",
+          href: "/dashboard/god-mode/module-settings",
+          icon: Cog6ToothIcon,
+          description: "Enable/disable modules and configure",
+        },
+      ],
+    },
+  ],
+
+  SYSTEM_ADMIN: [
+    {
+      category: "Main",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard/god-mode",
+          icon: HomeIcon,
+          moduleId: "dashboard",
+        },
+      ],
+    },
+    {
+      category: "System Management",
+      items: [
+        {
+          name: "Role Assignment",
+          href: "/dashboard/god-mode/role-assignment",
+          icon: ShieldCheckIcon,
+        },
+        {
+          name: "Permission Assignment",
+          href: "/dashboard/god-mode/permission-assignment",
+          icon: LockClosedIcon,
+        },
+        {
+          name: "Audit Logs",
+          href: "/dashboard/god-mode/audit-logs",
+          icon: ClipboardDocumentListIcon,
+        },
+      ],
+    },
+    {
+      category: "Administration",
+      items: [
+        {
+          name: "Organizations",
+          href: "/dashboard/god-mode/organizations",
+          icon: BuildingOfficeIcon,
+          description: "Manage organizations and their branches",
+        },
+        {
+          name: "Users",
+          href: "/dashboard/god-mode/users",
+          icon: UsersIcon,
+          description: "Manage system users",
+        },
+      ],
+    },
+  ],
+
+  ADMIN: [
     {
       category: "Administration",
       items: [
@@ -87,12 +242,6 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: ShieldCheckIcon,
           moduleId: "staff",
         },
-        {
-          name: "Settings",
-          href: "/admin/settings",
-          icon: Cog6ToothIcon,
-          moduleId: "settings",
-        },
       ],
     },
   ],
@@ -121,6 +270,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: HomeIcon,
           moduleId: "dashboard",
         },
+        // {
+        //   name: "My Profile",
+        //   href: "/dashboard/profile",
+        //   icon: UsersIcon,
+        //   moduleId: "profile",
+        // },
       ],
     },
     {
@@ -155,12 +310,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: CurrencyDollarIcon,
           moduleId: "branch-finances",
         },
-        {
-          name: "Assets",
-          href: "/dashboard/assets",
-          icon: CubeIcon,
-          moduleId: "dashboard",
-        },
+        // {
+        //   name: "Assets",
+        //   href: "/dashboard/assets",
+        //   icon: CubeIcon,
+        //   moduleId: "dashboard",
+        // },
         {
           name: "Attendance",
           href: "/dashboard/attendance",
@@ -179,6 +334,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: ChatBubbleLeftRightIcon,
           moduleId: "communication",
         },
+        {
+          name: "Broadcasts",
+          href: "/dashboard/broadcasts",
+          icon: MicrophoneIcon,
+          
+        },
       ],
     },
     {
@@ -189,6 +350,23 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           href: "/dashboard/user-management",
           icon: ShieldCheckIcon,
           moduleId: "user_management",
+        },
+        {
+          name: "Zones",
+          href: "/dashboard/zones",
+          icon: GlobeAltIcon,
+          // moduleId: "zones",
+        },
+        {
+          name: "Audits",
+          href: "/dashboard/audits",
+          icon: ClipboardDocumentListIcon,
+        },
+        {
+          name: "Settings",
+          href: "/dashboard/settings",
+          icon: Cog6ToothIcon,
+          
         },
       ],
     },
@@ -245,6 +423,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: HomeIcon,
           moduleId: "dashboard",
         },
+        {
+          name: "My Profile",
+          href: "/dashboard/profile",
+          icon: UsersIcon,
+          moduleId: "profile",
+        },
       ],
     },
     {
@@ -279,12 +463,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: CurrencyDollarIcon,
           moduleId: "finances",
         },
-        {
-          name: "Assets",
-          href: "/dashboard/assets",
-          icon: CubeIcon,
-          moduleId: "dashboard",
-        },
+        // {
+        //   name: "Assets",
+        //   href: "/dashboard/assets",
+        //   icon: CubeIcon,
+        //   moduleId: "dashboard",
+        // },
         {
           name: "Attendance",
           href: "/dashboard/attendance",
@@ -305,17 +489,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
         },
       ],
     },
-    {
-      category: "Settings",
-      items: [
-        {
-          name: "Branch Settings",
-          href: "/admin/settings",
-          icon: Cog6ToothIcon,
-          moduleId: "settings",
-        },
-      ],
-    },
+    // Removed Settings menu for ADMIN role per requirement
   ],
 
   FINANCE_MANAGER: [
@@ -468,6 +642,11 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: UsersIcon,
           moduleId: "profile",
         },
+      ],
+    },
+    {
+      category: "Community",
+      items: [
         {
           name: "Events",
           href: "/member/events",
@@ -480,6 +659,29 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           icon: UserGroupIcon,
           moduleId: "groups",
         },
+        {
+          name: "Announcements",
+          href: "/member/announcements",
+          icon: EnvelopeIcon,
+          moduleId: "announcements",
+        },
+      ],
+    },
+    {
+      category: "Personal",
+      items: [
+        {
+          name: "Give / Donate",
+          href: "/member/give",
+          icon: GiftIcon,
+          moduleId: "giving",
+        },
+        {
+          name: "Prayer Requests",
+          href: "/member/prayer-requests",
+          icon: HeartIcon,
+          moduleId: "prayer",
+        },
       ],
     },
   ],
@@ -487,6 +689,13 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
 
 // Utility function to get navigation for a specific role
 export function getNavigationForRole(role: string): NavigationCategory[] {
+  if (!roleNavigationConfig[role]) {
+    console.warn(
+      `[Navigation] Role "${role}" not found in navigation config. ` +
+      `Available roles: ${Object.keys(roleNavigationConfig).join(', ')}. ` +
+      `Defaulting to MEMBER navigation.`
+    );
+  }
   return roleNavigationConfig[role] || roleNavigationConfig.MEMBER;
 }
 

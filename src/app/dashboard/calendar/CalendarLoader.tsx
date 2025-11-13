@@ -27,10 +27,10 @@ export function CalendarLoader({
 
   // Prepare filters based on user role and selected organization/branch
   const filters = {
-    // Use branchId if available (for regular users or when a SUPER_ADMIN selects a branch)
+    // Use branchId if available (for regular users or when a ADMIN selects a branch)
     ...(orgBranchFilter.branchId ? { branchId: orgBranchFilter.branchId } : {}),
 
-    // Use organisationId if available and no branchId (for SUPER_ADMIN users)
+    // Use organisationId if available and no branchId (for ADMIN users)
     ...(orgBranchFilter.organisationId && !orgBranchFilter.branchId
       ? { organisationId: orgBranchFilter.organisationId }
       : {}),

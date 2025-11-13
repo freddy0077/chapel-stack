@@ -7,41 +7,94 @@ import {
   EnvelopeIcon,
   UserIcon,
   BellIcon,
+  DevicePhoneMobileIcon,
+  CreditCardIcon,
+  Squares2X2Icon,
+  CircleStackIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 import BranchSettingsEnhanced from "./components/BranchSettingsEnhanced";
 import CommunicationSettings from "./components/CommunicationSettings";
 import ProfileSettings from "./components/ProfileSettings";
 import NotificationSettings from "./components/NotificationSettings";
+import EmailSettings from "./components/EmailSettings";
+import SmsSettings from "./components/SmsSettings";
+import ModuleSettings from "./components/ModuleSettings";
+import PaymentSettings from "./components/PaymentSettings";
+import BackupSettings from "./components/BackupSettings";
+import BroadcastSettings from "./components/BroadcastSettings";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 
 const allTabs = [
   { 
+    name: "Broadcast Settings", 
+    icon: VideoCameraIcon, 
+    component: BroadcastSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Manage streaming platforms and broadcast defaults"
+  },
+  { 
     name: "Branch Information", 
     icon: BuildingOfficeIcon, 
     component: BranchSettingsEnhanced, 
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
     description: "Manage branch details and contact information"
+  },
+  { 
+    name: "Email Settings", 
+    icon: EnvelopeIcon, 
+    component: EmailSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Configure SMTP settings for sending emails"
+  },
+  { 
+    name: "SMS Settings", 
+    icon: DevicePhoneMobileIcon, 
+    component: SmsSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Configure SMS provider for text messaging"
+  },
+  { 
+    name: "Module Settings", 
+    icon: Squares2X2Icon, 
+    component: ModuleSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Enable or disable system features"
+  },
+  { 
+    name: "Payment Settings", 
+    icon: CreditCardIcon, 
+    component: PaymentSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Configure payment gateways and options"
+  },
+  { 
+    name: "Backup Settings", 
+    icon: CircleStackIcon, 
+    component: BackupSettings, 
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Manage automated backups and history"
   },
   { 
     name: "Communication", 
     icon: EnvelopeIcon, 
     component: CommunicationSettings, 
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_ADMIN"],
-    description: "Configure email and SMS settings for automated messages"
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+    description: "Configure email and SMS display settings"
   },
   { 
     name: "My Profile", 
     icon: UserIcon, 
     component: ProfileSettings, 
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_ADMIN", "USER"],
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN", "USER"],
     description: "Update your personal information"
   },
   { 
     name: "Notifications", 
     icon: BellIcon, 
     component: NotificationSettings, 
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_ADMIN", "USER"],
+    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN", "USER"],
     description: "Manage notification preferences"
   },
 ];

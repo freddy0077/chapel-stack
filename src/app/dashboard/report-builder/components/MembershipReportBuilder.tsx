@@ -53,6 +53,7 @@ interface ReportResults {
     femaleCount: number;
     byZone: Record<string, number>;
     byType: Record<string, number>;
+    byStatus: Record<string, number>;
   };
   data: any[];
 }
@@ -526,6 +527,26 @@ export default function MembershipReportBuilder() {
                       ([type, count]) => (
                         <div key={type} className="p-3 bg-gray-50 rounded-lg">
                           <p className="text-xs text-gray-600">{type}</p>
+                          <p className="text-xl font-bold">{count}</p>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* By Status Breakdown */}
+              {Object.keys(reportResults.summary.byStatus || {}).length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <UsersIcon className="h-5 w-5" />
+                    Members by Status
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {Object.entries(reportResults.summary.byStatus).map(
+                      ([status, count]) => (
+                        <div key={status} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-600">{status}</p>
                           <p className="text-xl font-bold">{count}</p>
                         </div>
                       ),

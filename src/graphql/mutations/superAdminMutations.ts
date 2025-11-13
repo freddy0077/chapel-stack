@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const CREATE_SUPER_ADMIN_USER = gql`
+export const CREATE_ADMIN_USER = gql`
   mutation CreateSuperAdminUser(
     $email: String!
     $password: String!

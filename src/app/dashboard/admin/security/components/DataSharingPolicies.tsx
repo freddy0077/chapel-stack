@@ -22,7 +22,7 @@ const mockMinistries = [
 
 // Mock roles data
 const mockRoles = [
-  { id: "super_admin", name: "Super Admin" },
+  { id: "admin", name: "Super Admin" },
   { id: "branch_admin", name: "Branch Admin" },
   { id: "pastor", name: "Pastor" },
   { id: "ministry_leader", name: "Ministry Leader" },

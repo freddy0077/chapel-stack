@@ -3,6 +3,8 @@ import { createUploadLink } from "apollo-upload-client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
 import { CachePersistor, LocalStorageWrapper } from "apollo3-cache-persist";
+import toast from "react-hot-toast";
+import { shouldSuppressErrorToast } from "./graphql-error-handler";
 
 // Define the backend GraphQL API endpoint
 const API_URL =
@@ -32,13 +34,19 @@ const authLink = setContext((operation, { headers }) => {
   };
 });
 
-// Streamlined error handling
-const errorLink = onError(({ graphQLErrors, networkError }) => {
+// Enhanced error handling with toast notifications
+const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+  // Check if error toasts should be suppressed for this operation
+  const suppressToast = shouldSuppressErrorToast(operation);
+
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message }) => {
-      // Handle authentication errors
-      if (message.includes("Unauthorized") || message.includes("Token")) {
+    graphQLErrors.forEach(({ message, extensions }) => {
+      console.error(`[GraphQL error]: ${message}`, extensions);
+
+      // Handle authentication errors (always show these)
+      if (message.includes("Unauthorized") || message.includes("Token") || message.includes("Not authenticated")) {
         if (typeof window !== "undefined") {
+          toast.error("Session expired. Please login again.");
           localStorage.removeItem("chapel_access_token");
           localStorage.removeItem("userData");
 
@@ -49,23 +57,42 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
             }, 100);
           }
         }
+      } else if (!suppressToast) {
+        // Show toast for all other GraphQL errors (unless suppressed)
+        if (typeof window !== "undefined") {
+          // Extract user-friendly error message
+          const errorMessage = extensions?.originalError?.message || message;
+          toast.error(errorMessage, {
+            duration: 5000,
+            position: "top-right",
+          });
+        }
       }
     });
   }
 
-  if (
-    networkError &&
-    "statusCode" in networkError &&
-    networkError.statusCode === 401
-  ) {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("chapel_access_token");
-      localStorage.removeItem("userData");
+  if (networkError) {
+    console.error(`[Network error]: ${networkError.message}`);
+    
+    if ("statusCode" in networkError && networkError.statusCode === 401) {
+      if (typeof window !== "undefined") {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("chapel_access_token");
+        localStorage.removeItem("userData");
 
-      if (!window.location.pathname.includes("/auth/login")) {
-        setTimeout(() => {
-          window.location.href = "/auth/login";
-        }, 100);
+        if (!window.location.pathname.includes("/auth/login")) {
+          setTimeout(() => {
+            window.location.href = "/auth/login";
+          }, 100);
+        }
+      }
+    } else if (!suppressToast) {
+      // Show toast for network errors (unless suppressed)
+      if (typeof window !== "undefined") {
+        toast.error("Network error. Please check your connection.", {
+          duration: 5000,
+          position: "top-right",
+        });
       }
     }
   }

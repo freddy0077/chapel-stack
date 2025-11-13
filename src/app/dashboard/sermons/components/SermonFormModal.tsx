@@ -79,8 +79,47 @@ export function SermonFormModal({
         : new Date().toISOString().split("T")[0],
       duration: initialData.duration?.toString() || "",
       tags: initialData.tags?.map((tag) => tag.name) || [],
+      speakerId: initialData.speaker?.id || "",
+      seriesId: initialData.series?.id || "",
+      categoryId: initialData.category?.id || "",
     };
   });
+
+  // Update form when initialData changes (for edit mode)
+  useEffect(() => {
+    if (initialData && isEditMode) {
+      setForm({
+        ...initialData,
+        datePreached: initialData.datePreached
+          ? new Date(initialData.datePreached).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        duration: initialData.duration?.toString() || "",
+        tags: initialData.tags?.map((tag) => tag.name) || [],
+        speakerId: initialData.speaker?.id || "",
+        seriesId: initialData.series?.id || "",
+        categoryId: initialData.category?.id || "",
+      });
+    } else if (!isEditMode) {
+      // Reset form for create mode
+      setForm({
+        title: "",
+        description: "",
+        datePreached: new Date().toISOString().split("T")[0],
+        speakerId: "",
+        seriesId: "",
+        categoryId: "",
+        mainScripture: "",
+        duration: "",
+        audioUrl: "",
+        videoUrl: "",
+        transcriptUrl: "",
+        notesUrl: "",
+        transcriptText: "",
+        status: ContentStatus.DRAFT,
+        tags: [] as string[],
+      });
+    }
+  }, [initialData, isEditMode]);
 
   const [newTag, setNewTag] = useState("");
   const [uploading, setUploading] = useState({

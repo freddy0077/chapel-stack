@@ -321,3 +321,8 @@ export const useEventActions = (eventId: string) => {
     },
   };
 };
+
+/**
+ * Alias for useEventRSVPMutations for backward compatibility
+ */
+export const useEventRegistrationRSVP = useEventRSVPMutations;

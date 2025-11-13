@@ -79,12 +79,12 @@ export default function NewMarriageRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
     useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isAdmin = user?.primaryRole === "admin";
   const organisationId = orgIdFromFilter;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined,
+    isAdmin ? { organisationId } : undefined,
   );
-  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
+  const branchId = isAdmin ? selectedBranchId : branchIdFromFilter;
   const { createMatrimonyRecord } = useCreateMatrimonyRecord();
 
   // Handlers for spouse 1
@@ -256,7 +256,7 @@ export default function NewMarriageRecord() {
           </h2>
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Branch Selection Logic */}
-            {isSuperAdmin ? (
+            {isAdmin ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Branch<span className="text-red-500">*</span>

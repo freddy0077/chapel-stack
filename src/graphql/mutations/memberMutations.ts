@@ -176,3 +176,31 @@ export const GET_PRESIGNED_UPLOAD_URL = gql`
     }
   }
 `;
+
+// Mutation to update communication preferences
+export const UPDATE_COMMUNICATION_PREFS = gql`
+  mutation UpdateCommunicationPreferences($memberId: ID!, $input: CommunicationPreferencesInput!) {
+    updateCommunicationPreferences(memberId: $memberId, input: $input) {
+      id
+      communicationPreferences {
+        emailNotifications
+        smsNotifications
+        pushNotifications
+        weeklyDigest
+        eventUpdates
+        announcements
+      }
+    }
+  }
+`;
+
+// Mutation to upload member profile image
+export const UPLOAD_MEMBER_IMAGE = gql`
+  mutation UploadMemberImage($memberId: ID!, $imageUrl: String!) {
+    uploadMemberImage(memberId: $memberId, imageUrl: $imageUrl) {
+      id
+      profileImageUrl
+      updatedAt
+    }
+  }
+`;

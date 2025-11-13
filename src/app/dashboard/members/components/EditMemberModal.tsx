@@ -97,6 +97,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         nationality: member.nationality || "",
         nlbNumber: member.nlbNumber || "",
         occupation: member.occupation || "",
+        education: member.education || "",
         emergencyContactName: member.emergencyContactName || "",
         emergencyContactPhone: member.emergencyContactPhone || "",
         emergencyContactRelation: member.emergencyContactRelation || "",
@@ -455,6 +456,42 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                         }
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Occupation
+                      </label>
+                      <input
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.occupation || ""}
+                        onChange={(e) =>
+                          handleChange("occupation", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Education Level
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.education || ""}
+                        onChange={(e) =>
+                          handleChange("education", e.target.value)
+                        }
+                      >
+                        <option value="">Select Education Level</option>
+                        <option value="No Formal Education">No Formal Education</option>
+                        <option value="Primary School">Primary School</option>
+                        <option value="Junior High School">Junior High School</option>
+                        <option value="Senior High School">Senior High School</option>
+                        <option value="Vocational/Technical">Vocational/Technical</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Bachelor's Degree">Bachelor's Degree</option>
+                        <option value="Master's Degree">Master's Degree</option>
+                        <option value="Doctorate">Doctorate</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               )}
@@ -746,19 +783,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                         }
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        Profession
-                      </label>
-                      <input
-                        className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        value={formData.occupation || ""}
-                        onChange={(e) =>
-                          handleChange("occupation", e.target.value)
-                        }
-                      />
-                    </div>
-
                     {/* Special Gifts Field */}
                     <div className="sm:col-span-2">
                       <label className="block text-sm text-gray-600 mb-1">

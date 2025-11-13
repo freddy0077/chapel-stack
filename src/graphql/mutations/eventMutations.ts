@@ -228,6 +228,35 @@ export const DELETE_EVENT_REGISTRATION = gql`
 `;
 
 /**
+ * Mutation to approve an event registration
+ */
+export const APPROVE_REGISTRATION = gql`
+  mutation ApproveRegistration($id: ID!, $notes: String) {
+    approveRegistration(id: $id, notes: $notes) {
+      id
+      approvalStatus
+      approvedBy
+      approvedAt
+      status
+    }
+  }
+`;
+
+/**
+ * Mutation to reject an event registration
+ */
+export const REJECT_REGISTRATION = gql`
+  mutation RejectRegistration($id: ID!, $reason: String!) {
+    rejectRegistration(id: $id, reason: $reason) {
+      id
+      approvalStatus
+      rejectionReason
+      status
+    }
+  }
+`;
+
+/**
  * Mutation to create a new event RSVP
  */
 export const CREATE_EVENT_RSVP = gql`
@@ -294,44 +323,6 @@ export const DELETE_EVENT_RSVP = gql`
       id
       eventId
       memberId
-    }
-  }
-`;
-
-/**
- * Query to get event registrations
- */
-export const GET_EVENT_REGISTRATIONS = gql`
-  query GetEventRegistrations($filter: EventRegistrationFilterInput) {
-    eventRegistrations(filter: $filter) {
-      id
-      eventId
-      memberId
-      guestName
-      guestEmail
-      guestPhone
-      status
-      registrationDate
-      notes
-      numberOfGuests
-      specialRequests
-      checkInTime
-      checkOutTime
-      event {
-        id
-        title
-        startDate
-        endDate
-        location
-      }
-      member {
-        id
-        firstName
-        lastName
-        email
-      }
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -471,6 +462,89 @@ export const CHECK_OUT_ATTENDEE = gql`
         firstName
         lastName
       }
+    }
+  }
+`;
+
+/**
+ * Mutation to verify Paystack payment and register for paid event
+ */
+export const VERIFY_AND_REGISTER_FOR_EVENT = gql`
+  mutation VerifyAndRegisterForEvent(
+    $paymentReference: String!
+    $eventId: String!
+    $guestName: String!
+    $guestEmail: String!
+    $guestPhone: String
+    $numberOfGuests: Int
+    $specialRequests: String
+    $memberId: String
+  ) {
+    verifyAndRegisterForEvent(
+      paymentReference: $paymentReference
+      eventId: $eventId
+      guestName: $guestName
+      guestEmail: $guestEmail
+      guestPhone: $guestPhone
+      numberOfGuests: $numberOfGuests
+      specialRequests: $specialRequests
+      memberId: $memberId
+    ) {
+      id
+      eventId
+      memberId
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      transactionId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Mutation to register for free event
+ */
+export const REGISTER_FOR_FREE_EVENT = gql`
+  mutation RegisterForFreeEvent(
+    $eventId: String!
+    $guestName: String!
+    $guestEmail: String!
+    $guestPhone: String
+    $numberOfGuests: Int
+    $specialRequests: String
+    $memberId: String
+  ) {
+    registerForFreeEvent(
+      eventId: $eventId
+      guestName: $guestName
+      guestEmail: $guestEmail
+      guestPhone: $guestPhone
+      numberOfGuests: $numberOfGuests
+      specialRequests: $specialRequests
+      memberId: $memberId
+    ) {
+      id
+      eventId
+      memberId
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      paymentStatus
+      createdAt
+      updatedAt
     }
   }
 `;

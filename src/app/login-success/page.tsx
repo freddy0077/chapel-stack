@@ -58,12 +58,14 @@ export default function LoginSuccessPage() {
             "member",
             "volunteer",
             "content_manager",
-            "finance_manager",
+            "pastoral_staff",
             "ministry_leader",
+            "finance_manager",
+            "admin",
             "pastor",
             "branch_admin",
             "subscription_manager",
-            "super_admin",
+            "admin",
           ];
 
           let highestRoleIndex = -1;
@@ -136,24 +138,30 @@ export default function LoginSuccessPage() {
     // Helper function to get dashboard route based on role
     const getDashboardRouteForRole = (role: string): string => {
       switch (role) {
-        case "super_admin":
-          return "/dashboard";
+        case "admin":
+          return "/dashboard/admin";
         case "subscription_manager":
           return "/dashboard/subscription-manager";
         case "branch_admin":
           return "/dashboard/branch";
-        case "pastor":
-          return "/dashboard/pastor";
-        case "ministry_leader":
-          return "/dashboard/ministries";
+        case "admin":
+          return "/dashboard/admin";
         case "finance_manager":
-          return "/dashboard/finances";
+          return "/dashboard/finance";
+        case "pastoral_staff":
+          return "/dashboard/pastoral";
+        case "ministry_leader":
+          return "/dashboard/ministry";
+        case "member":
+          return "/dashboard/member";
+        case "pastor":
+          return "/dashboard/pastoral";
         case "content_manager":
           return "/dashboard/content";
         case "volunteer":
           return "/dashboard/volunteer";
         default:
-          return "/dashboard";
+          return "/dashboard/member";
       }
     };
 

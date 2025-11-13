@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
 import {
+  UPDATE_USER,
   UPDATE_USER_ACTIVE_STATUS,
   ASSIGN_ROLE_TO_USER,
   REMOVE_ROLE_FROM_USER,
@@ -53,6 +54,10 @@ const MANAGEABLE_ROLE_NAMES = ['MEMBER', 'FINANCE', 'PASTORAL', 'BRANCH_ADMIN'];
 export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModalProps) {
   const { organisationId, branchId } = useOrganisationBranch();
   const [isActive, setIsActive] = useState(true);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [memberSearchQuery, setMemberSearchQuery] = useState<string>("");
@@ -81,8 +86,23 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
   useEffect(() => {
     if (user) {
       setIsActive(user.isActive);
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setEmail(user.email || "");
+      setPhoneNumber(user.phoneNumber || "");
     }
   }, [user]);
+
+  const [updateUser] = useMutation(UPDATE_USER, {
+    onCompleted: () => {
+      toast.success("User details updated successfully!");
+      onSuccess();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update user details");
+    },
+    refetchQueries: ["GetAllUsers"],
+  });
 
   const [updateActiveStatus] = useMutation(UPDATE_USER_ACTIVE_STATUS, {
     onCompleted: () => {
@@ -165,6 +185,21 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
     },
     refetchQueries: ["GetAllUsers", "GetUserById"],
   });
+
+  const handleUpdateUser = async () => {
+    if (!user) return;
+    await updateUser({
+      variables: {
+        id: user.id,
+        input: {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+        },
+      },
+    });
+  };
 
   const handleUpdateStatus = async () => {
     if (!user) return;
@@ -303,6 +338,74 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
           </div>
 
           <div className="p-8 space-y-6">
+            {/* User Details */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <UserCircleIcon className="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">User Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Enter first name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Enter last name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Enter email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleUpdateUser}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all text-sm font-medium shadow-md hover:shadow-lg"
+                >
+                  Update Details
+                </button>
+              </div>
+            </div>
+
             {/* Active Status */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-6 border border-gray-200">
               <div className="flex items-center space-x-3 mb-4">
@@ -313,9 +416,9 @@ export function EditUserModal({ isOpen, onClose, onSuccess, user }: EditUserModa
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Active Status</p>
+                  <p className="text-sm font-medium text-gray-700">Account Status</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {isActive ? "User can access the system" : "User is blocked from accessing the system"}
+                    {isActive ? "✅ Active - User can access the system" : "❌ Inactive - User cannot access the system"}
                   </p>
                 </div>
                 <div className="flex items-center space-x-4">

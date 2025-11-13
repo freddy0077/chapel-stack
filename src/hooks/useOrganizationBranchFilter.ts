@@ -12,7 +12,7 @@ export interface OrganizationBranchFilter {
 
 /**
  * Hook to determine whether to filter by organization ID or branch ID based on user role
- * For SUPER_ADMIN users with an organisationId, it will return a filter with organisationId
+ * For ADMIN users with an organisationId, it will return a filter with organisationId
  * For all other users, it will return a filter with branchId
  */
 export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
@@ -28,8 +28,8 @@ export const useOrganizationBranchFilter = (): OrganizationBranchFilter => {
         ? user.userBranches[0]?.branch?.id
         : undefined;
 
-    // For SUPER_ADMIN with organisationId, filter by organisation instead of branch
-    if (user?.primaryRole === "super_admin" && user?.organisationId) {
+    // For ADMIN with organisationId, filter by organisation instead of branch
+    if (user?.primaryRole === "admin" && user?.organisationId) {
       filter.organisationId = String(user.organisationId);
     } else {
       // For all other users, filter by branchId and only include organisationId if it's valid

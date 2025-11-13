@@ -19,6 +19,21 @@ export const CREATE_BRANCH_ADMIN = gql`
   }
 `;
 
+// Update user details
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      id
+      email
+      firstName
+      lastName
+      phoneNumber
+      isActive
+      updatedAt
+    }
+  }
+`;
+
 // Update user active status
 export const UPDATE_USER_ACTIVE_STATUS = gql`
   mutation UpdateUserActiveStatus($id: ID!, $isActive: Boolean!) {

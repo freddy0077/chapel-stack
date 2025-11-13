@@ -17,6 +17,16 @@ export function NavigationSidebar({ className = "" }: NavigationSidebarProps) {
     return null;
   }
 
+  // Debug: Log current user roles and selected primary role for navigation
+  // Remove after verification
+  // eslint-disable-next-line no-console
+  console.log("[NavigationSidebar] Role debug:", {
+    primaryRole,
+    userPrimaryRole: user?.primaryRole,
+    roles: (user as any)?.roles,
+    email: user?.email,
+  });
+
   const navigation = getUserNavigation(primaryRole, enabledModules);
 
   return (

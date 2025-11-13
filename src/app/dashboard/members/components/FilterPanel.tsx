@@ -564,6 +564,26 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               {filterStats.isRegularAttendee.true}
             </span>
           </label>
+
+          <label className="flex items-center justify-between cursor-pointer">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={filters.isDeactivated === true}
+                onChange={(e) =>
+                  updateFilter(
+                    "isDeactivated",
+                    e.target.checked ? true : undefined,
+                  )
+                }
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Deactivated Members</span>
+            </div>
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {members.filter((m) => m.isDeactivated).length}
+            </span>
+          </label>
         </div>
       </FilterSection>
 

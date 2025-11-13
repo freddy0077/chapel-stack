@@ -487,7 +487,7 @@ export default function CreateEvent() {
   };
 
   // Update branch/organisation logic for event creation
-  // If SUPER_ADMIN, use organisationId, else use branchId
+  // If ADMIN, use organisationId, else use branchId
   const prepareEventData = (): CreateEventInput => {
     const startDateTime =
       formFields.date && formFields.startTime
@@ -556,7 +556,7 @@ export default function CreateEvent() {
       });
     }
 
-    // Prefer branchId if present, else organisationId for super_admin
+    // Prefer branchId if present, else organisationId for admin
     if (orgBranchFilter.branchId) {
       return { ...base, branchId: orgBranchFilter.branchId };
     } else if (orgBranchFilter.organisationId) {
@@ -829,7 +829,7 @@ export default function CreateEvent() {
                 Branch *
               </label>
               <div className="mt-1">
-                {user?.primaryRole === "super_admin" ? (
+                {user?.primaryRole === "admin" ? (
                   <select
                     id="branchId"
                     name="branchId"

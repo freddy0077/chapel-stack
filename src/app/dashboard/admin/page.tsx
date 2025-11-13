@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Protect this route - requires ADMIN role
-  useProtectedRoute({ requiredRole: "SUPER_ADMIN" });
+  useProtectedRoute({ requiredRole: "ADMIN" });
 
   // Set loading to false after initial render
   useEffect(() => {

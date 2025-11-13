@@ -8,7 +8,8 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useModulePreferences } from "@/hooks/useModulePreferences";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useModuleContext } from "@/context/ModuleContext";
+import { Bars3Icon, XMarkIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
   UsersIcon,
@@ -28,10 +29,11 @@ import {
   CreditCardIcon,
   UserMinusIcon,
   CubeIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 
 import { isModuleEnabled } from "../onboarding/ModulePreferences";
-import { getNavigationForRole } from "@/config/navigation.config";
+import { getNavigationForRole, roleNavigationConfig } from "@/config/navigation.config";
 import { getUserNavigation } from "@/utils/navigation.utils";
 
 // The full navigation structure with module dependencies
@@ -154,6 +156,13 @@ const fullNavigation = [
         icon: DocumentTextIcon,
         badge: null,
         moduleId: "sermons",
+      },
+      {
+        name: "Broadcasts",
+        href: "/dashboard/broadcasts",
+        icon: VideoCameraIcon,
+        badge: null,
+        moduleId: "dashboard", // Core feature
       },
     ],
   },
@@ -332,6 +341,7 @@ export default function DynamicNavigation({
   const user = state.user;
   const { canCustomizeModules } = usePermissions();
   const { enabledModules } = useModulePreferences();
+  const { isModuleEnabled } = useModuleContext(); // Get module context
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -339,25 +349,77 @@ export default function DynamicNavigation({
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const userRole = user?.primaryRole?.toUpperCase() || "MEMBER";
+    // Get user's highest role from roles array
+    // Roles are now consistently role IDs (strings): ['GOD_MODE', 'SYSTEM_ADMIN', etc.]
+    let userRole = "MEMBER";
+    
+    if (user?.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+      // Check for highest privilege role first
+      const roleHierarchy = ['GOD_MODE', 'SYSTEM_ADMIN', 'ADMIN', 'SUBSCRIPTION_MANAGER', 'BRANCH_ADMIN'];
+      
+      for (const role of roleHierarchy) {
+        if (user.roles.includes(role)) {
+          userRole = role;
+          break;
+        }
+      }
+    }
+
+    console.log('=== NAVIGATION DEBUG START ===');
+    console.log('👤 User object:', user);
+    console.log('👤 User roles array:', user?.roles);
+    console.log('🔍 Navigation: User role detected:', userRole, 'Available roles:', user?.roles);
+    console.log('📋 Available roles in config:', Object.keys(roleNavigationConfig));
+    console.log('📋 roleNavigationConfig["GOD_MODE"] exists?', !!roleNavigationConfig['GOD_MODE']);
+    console.log('📋 roleNavigationConfig["GOD_MODE"] items count:', roleNavigationConfig['GOD_MODE']?.length || 0);
 
     // Use our new role-based navigation configuration
-    const roleBasedNavigation = getUserNavigation(userRole, enabledModules);
+    // Don't pass enabledModules here, we'll filter with ModuleContext instead
+    const roleBasedNavigation = getUserNavigation(userRole, []);
+    
+    console.log('📊 roleBasedNavigation categories:', roleBasedNavigation.length);
+    console.log('📊 roleBasedNavigation:', roleBasedNavigation);
+    console.log('📊 Total items in roleBasedNavigation:', roleBasedNavigation.reduce((sum, cat) => sum + cat.items.length, 0));
 
     // Convert our new navigation format to the existing format expected by the UI
+    // Filter by ModuleContext to ensure only enabled modules are shown
     const convertedNavigation = roleBasedNavigation.map((category) => ({
       category: category.category,
-      items: category.items.map((item) => ({
+      items: category.items.filter((item) => {
+        const moduleId = item.moduleId;
+        
+        // Always show items without moduleId (admin pages, system pages)
+        if (!moduleId) {
+          console.log(`📌 Navigation: Item "${item.name}" shown (admin/system page, no module)`);
+          return true;
+        }
+        
+        // Always show dashboard
+        if (moduleId === 'dashboard') {
+          console.log(`📌 Navigation: Item "${item.name}" shown (dashboard)`);
+          return true;
+        }
+        
+        // Check if feature module is enabled in ModuleContext
+        const enabled = isModuleEnabled(moduleId);
+        console.log(`📌 Navigation: Item "${item.name}" (module: ${moduleId}) enabled: ${enabled}`);
+        return enabled;
+      }).map((item) => ({
         name: item.name,
         href: item.href,
         icon: item.icon,
         badge: item.badge || null,
         moduleId: item.moduleId,
       })),
-    }));
+    })).filter((category) => category.items.length > 0); // Remove empty categories
+
+    console.log('📋 Navigation: Filtered navigation categories:', convertedNavigation.length);
+    console.log('📋 Navigation: Categories:', convertedNavigation.map(c => `${c.category} (${c.items.length} items)`).join(', '));
+    console.log('📋 Final convertedNavigation:', convertedNavigation);
+    console.log('=== NAVIGATION DEBUG END ===');
 
     setFilteredNavigation(convertedNavigation);
-  }, [user?.primaryRole, enabledModules]);
+  }, [user?.roles, isModuleEnabled]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -400,7 +462,7 @@ export default function DynamicNavigation({
 
   const getUserRole = () => {
     const role = user?.primaryRole || "member";
-    // Convert snake_case to Title Case, e.g. 'super_admin' → 'Super Admin'
+    // Convert snake_case to Title Case, e.g. 'admin' → 'Super Admin'
     return role
       .replace(/_/g, " ")
       .split(" ")
@@ -505,36 +567,36 @@ export default function DynamicNavigation({
                           </div>
 
                           <ul className="space-y-1">
-                            {section.items.map((item) => (
-                              <li key={item.name}>
-                                <Link
-                                  href={item.href}
-                                  className={`
-                                    group flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium
-                                    ${
-                                      pathname === item.href
-                                        ? "bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm"
-                                        : "text-indigo-100 hover:text-white hover:bg-indigo-700/40"
-                                    }
-                                  `}
-                                >
-                                  <span className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-indigo-800/40 group-hover:bg-indigo-800/60">
-                                    <item.icon
-                                      className="h-5 w-5"
-                                      aria-hidden="true"
-                                    />
-                                  </span>
-                                  <span className="flex-1">{item.name}</span>
-                                  {item.badge && (
-                                    <span
-                                      className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${item.badge.color} text-white`}
-                                    >
-                                      {item.badge.count}
+                            {section.items.map((item) => {
+                              const IconComponent = item?.icon || Cog6ToothIcon;
+                              return (
+                                <li key={item.name}>
+                                  <Link
+                                    href={item.href}
+                                    className={`
+                                      group flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium
+                                      ${
+                                        pathname === item.href
+                                          ? "bg-indigo-700/70 text-white backdrop-blur-sm shadow-sm"
+                                          : "text-indigo-100 hover:text-white hover:bg-indigo-700/40"
+                                      }
+                                    `}
+                                  >
+                                    <span className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-indigo-800/40 group-hover:bg-indigo-800/60">
+                                      <IconComponent className="h-5 w-5" aria-hidden="true" />
                                     </span>
-                                  )}
-                                </Link>
-                              </li>
-                            ))}
+                                    <span className="flex-1">{item.name}</span>
+                                    {item.badge && (item as any).badge?.count && (
+                                      <span
+                                        className={`inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-medium ${(item as any).badge?.color || "bg-indigo-500"} text-white`}
+                                      >
+                                        {(item as any).badge?.count}
+                                      </span>
+                                    )}
+                                  </Link>
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       ))}
@@ -600,34 +662,34 @@ export default function DynamicNavigation({
                     {section.category}
                   </div>
                   <ul className="mt-2 space-y-1">
-                    {section.items.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={`
-                            group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-medium
-                            ${
-                              pathname === item.href
-                                ? "bg-indigo-700 text-white"
-                                : "text-indigo-200 hover:text-white hover:bg-indigo-700/40"
-                            }
-                          `}
-                        >
-                          <item.icon
-                            className="h-5 w-5 shrink-0"
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                          {item.badge && (
-                            <span
-                              className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color} text-white leading-none`}
-                            >
-                              {item.badge.count}
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    ))}
+                    {section.items.map((item) => {
+                      const IconComponent = item?.icon || Cog6ToothIcon;
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            className={`
+                              group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-medium
+                              ${
+                                pathname === item.href
+                                  ? "bg-indigo-700 text-white"
+                                  : "text-indigo-200 hover:text-white hover:bg-indigo-700/40"
+                              }
+                            `}
+                          >
+                            <IconComponent className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            {item.name}
+                            {item.badge && item.badge.count && (
+                              <span
+                                className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${item.badge.color || "bg-indigo-500"} text-white leading-none`}
+                              >
+                                {item.badge.count}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
               ))}
@@ -672,6 +734,15 @@ export default function DynamicNavigation({
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex-1"></div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
+              {/* Notifications */}
+              <Link
+                href="/dashboard/notifications"
+                className="text-gray-700 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors"
+                title="Notifications"
+              >
+                <EnvelopeIcon className="h-6 w-6" aria-hidden="true" />
+              </Link>
+
               {/* Profile dropdown */}
               <div className="relative">
                 <button

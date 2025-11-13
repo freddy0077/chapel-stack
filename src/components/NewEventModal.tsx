@@ -60,14 +60,14 @@ export default function NewEventModal({
   const filter = useOrganizationBranchFilter();
   const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
 
-  // For SUPER_ADMIN, fetch branches for dropdown
+  // For ADMIN, fetch branches for dropdown
   const { branches, loading: branchesLoading } = useFilteredBranches(
-    user?.primaryRole === "super_admin" ? { organisationId } : undefined,
+    user?.primaryRole === "admin" ? { organisationId } : undefined,
   );
 
   // Determine branchId for event creation - super admin can select, others use default
   const eventBranchId =
-    user?.primaryRole === "super_admin"
+    user?.primaryRole === "admin"
       ? selectedBranchId || defaultBranchId
       : defaultBranchId;
 
@@ -498,7 +498,7 @@ export default function NewEventModal({
                 </div>
               </div>
             )}
-            {user?.primaryRole === "super_admin" ? (
+            {user?.primaryRole === "admin" ? (
               <div>
                 <label className="block text-sm font-medium text-indigo-800 mb-1">
                   Branch<span className="text-red-500">*</span>

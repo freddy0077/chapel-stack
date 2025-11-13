@@ -53,13 +53,13 @@ export default function OnboardingPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Only allow onboarding for SUPER_ADMIN
-  const isSuperAdmin =
+  // Only allow onboarding for ADMIN
+  const isAdmin =
     user && typeof user === "object" && user.roles && Array.isArray(user.roles)
       ? user.roles.some((role: unknown) => {
           if (typeof role === "string")
             return (
-              role.toLowerCase() === "super_admin" ||
+              role.toLowerCase() === "admin" ||
               role.toLowerCase() === "superadmin"
             );
           if (
@@ -69,14 +69,14 @@ export default function OnboardingPage() {
             typeof role.name === "string"
           )
             return (
-              role.name.toLowerCase() === "super_admin" ||
+              role.name.toLowerCase() === "admin" ||
               role.name.toLowerCase() === "superadmin"
             );
           return false;
         })
       : false;
 
-  if (!isSuperAdmin && !authLoading && isAuthenticated) {
+  if (!isAdmin && !authLoading && isAuthenticated) {
     if (typeof window !== "undefined") router.replace("/dashboard");
     return null;
   }
@@ -94,8 +94,8 @@ export default function OnboardingPage() {
     );
   }
 
-  // Render the onboarding flow directly for SUPER_ADMIN
-  if (isSuperAdmin) {
+  // Render the onboarding flow directly for ADMIN
+  if (isAdmin) {
     // Determine the branchId from accessibleBranches
     const branchId =
       user?.userBranches &&

@@ -26,13 +26,13 @@ export function SacramentStatsLoader({
   // we need to ensure we always have a branchId to filter by
   const filter = {
     period,
-    // For SUPER_ADMIN users, we'll use their branchId if available
+    // For ADMIN users, we'll use their branchId if available
     // For regular users, we'll always use their branchId
     branchId: orgBranchFilter.branchId || undefined,
   };
 
   // If we don't have a branchId, we can't filter the stats
-  // This will happen for SUPER_ADMIN users who have selected an organisation but not a branch
+  // This will happen for ADMIN users who have selected an organisation but not a branch
   const skipQuery = !filter.branchId;
 
   const { stats, loading, error } = useFilteredSacramentStats({

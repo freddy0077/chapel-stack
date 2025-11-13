@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpotifyProvider } from "@/lib/spotify/spotifyContext";
 import { AuthProvider } from "@/contexts/AuthContextEnhanced";
 import { ApolloWrapper } from "@/lib/apollo-provider";
 import { SubscriptionValidationProvider } from "@/components/subscription/SubscriptionValidationProvider";
 import { ServiceWorkerInit } from "@/components/ServiceWorkerInit";
+import { RoleServiceProvider } from "@/components/RoleServiceProvider";
+import { ModuleProvider } from "@/context/ModuleContext";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
@@ -28,7 +30,6 @@ export const metadata: Metadata = {
   description:
     "A comprehensive, scalable solution designed to streamline church operations, enhance member engagement, and support ministry growth.",
   manifest: "/manifest.json",
-  themeColor: "#3b82f6",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -48,6 +49,10 @@ export const metadata: Metadata = {
     title: "ChapelStack - Church Management System",
     description: "Comprehensive church management platform for modern ministries",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#3b82f6",
 };
 
 export default function RootLayout({
@@ -98,9 +103,13 @@ export default function RootLayout({
         <ServiceWorkerInit />
         <ApolloWrapper>
           <AuthProvider>
-            <SubscriptionValidationProvider>
-              <SpotifyProvider>{children}</SpotifyProvider>
-            </SubscriptionValidationProvider>
+            <ModuleProvider>
+              <RoleServiceProvider>
+                <SubscriptionValidationProvider>
+                  <SpotifyProvider>{children}</SpotifyProvider>
+                </SubscriptionValidationProvider>
+              </RoleServiceProvider>
+            </ModuleProvider>
           </AuthProvider>
         </ApolloWrapper>
       </body>

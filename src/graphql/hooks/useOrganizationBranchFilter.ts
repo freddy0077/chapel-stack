@@ -18,7 +18,7 @@ export const useOrganizationBranchFilter = () => {
   if (user?.primaryRole === "SUBSCRIPTION_MANAGER") {
     organisationId = organisationIdFromQuery || user.organisationId || "";
     branchId = branchIdFromQuery || "";
-  } else if (user?.primaryRole === "super_admin") {
+  } else if (user?.primaryRole === "admin") {
     organisationId = organisationIdFromQuery || user.organisationId || "";
     branchId = branchIdFromQuery || "";
   } else {

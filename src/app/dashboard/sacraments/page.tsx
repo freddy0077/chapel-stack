@@ -42,6 +42,7 @@ import SacramentModalManager from "./components/SacramentModalManager";
 
 // Import new Priority 2 components
 import SacramentDetailModal from "./components/SacramentDetailModal";
+import EditSacramentalRecordModal from "./components/EditSacramentalRecordModal";
 import SacramentAnalytics from "./components/SacramentAnalytics";
 import CertificateManagementDashboard from "./components/CertificateManagementDashboard";
 
@@ -492,27 +493,13 @@ export default function SacramentsPage() {
 
         {/* Edit Modal for Editing Records */}
         {modalManager.showEditModal && modalManager.selectedRecord && (
-          <SacramentDetailModal
+          <EditSacramentalRecordModal
             record={modalManager.selectedRecord}
             isOpen={modalManager.showEditModal}
-            isEditMode={true}
             onClose={() => {
               modalManager.closeModal(MODAL_TYPES.EDIT);
             }}
-            onEdit={(record) => {
-              // Already in edit mode, so just update the record
-              modalManager.setSelectedRecord(record);
-            }}
-            onDelete={(recordId) => {
-              handleDeleteRecord(recordId);
-              modalManager.closeModal(MODAL_TYPES.EDIT);
-            }}
-            onGenerateCertificate={(record) => {
-              modalManager.setSelectedRecord(record);
-              modalManager.closeModal(MODAL_TYPES.EDIT);
-              modalManager.openModal(MODAL_TYPES.CERTIFICATE);
-            }}
-            onSave={() => {
+            onSuccess={() => {
               // Trigger refetch for all sacrament types using unified system
               refetchManager.refetchAll();
               modalManager.closeModal(MODAL_TYPES.EDIT);

@@ -197,6 +197,7 @@ export interface MemberFilters {
   hasEmail?: boolean;
   hasPhone?: boolean;
   isRegularAttendee?: boolean;
+  isDeactivated?: boolean;
 }
 
 // Filter options for UI

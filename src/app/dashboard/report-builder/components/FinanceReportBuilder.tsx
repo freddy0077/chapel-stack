@@ -20,8 +20,19 @@ import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
+  DocumentTextIcon,
+  BanknotesIcon,
+  PresentationChartLineIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import {
+  BarChart3,
+  TrendingUp,
+  DollarSign,
+  FileSpreadsheet,
+  FileText,
+  PieChart,
+} from 'lucide-react';
 
 // Shared components
 import ReportFilterPanel from './shared/ReportFilterPanel';
@@ -32,14 +43,13 @@ import EmptyState from './shared/EmptyState';
 import ReportLoadingSkeleton from './shared/LoadingSkeleton';
 
 interface FinanceFilters {
+  reportType: string;
   startDate: string;
   endDate: string;
   transactionType: string;
-  fundType: string;
-  paymentMethod: string;
-  minAmount: string;
-  maxAmount: string;
-  category: string;
+  accountType: string;
+  includeSubAccounts: boolean;
+  comparisonPeriod: string;
 }
 
 interface ReportResults {
@@ -58,15 +68,61 @@ export default function FinanceReportBuilder() {
   const [reportResults, setReportResults] = useState<ReportResults | null>(null);
 
   const [filters, setFilters] = useState<FinanceFilters>({
-    startDate: '',
-    endDate: '',
+    reportType: 'balance-sheet',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
     transactionType: 'ALL',
-    fundType: 'ALL',
-    paymentMethod: 'ALL',
-    minAmount: '',
-    maxAmount: '',
-    category: 'ALL',
+    accountType: 'ALL',
+    includeSubAccounts: true,
+    comparisonPeriod: 'NONE',
   });
+
+  const reportTypes = [
+    {
+      value: 'balance-sheet',
+      label: 'Balance Sheet',
+      icon: <BarChart3 className="h-4 w-4" />,
+      description: 'Assets, Liabilities, and Equity at a point in time',
+      color: 'from-blue-500 to-indigo-600',
+    },
+    {
+      value: 'income-statement',
+      label: 'Income Statement',
+      icon: <TrendingUp className="h-4 w-4" />,
+      description: 'Revenue and Expenses over a period',
+      color: 'from-green-500 to-emerald-600',
+    },
+    {
+      value: 'cash-flow',
+      label: 'Cash Flow Statement',
+      icon: <DollarSign className="h-4 w-4" />,
+      description: 'Cash Inflows and Outflows',
+      color: 'from-cyan-500 to-blue-600',
+    },
+    {
+      value: 'trial-balance',
+      label: 'Trial Balance',
+      icon: <FileSpreadsheet className="h-4 w-4" />,
+      description: 'All account balances with debits and credits',
+      color: 'from-purple-500 to-pink-600',
+    },
+    {
+      value: 'general-ledger',
+      label: 'General Ledger',
+      icon: <FileText className="h-4 w-4" />,
+      description: 'Detailed transaction history by account',
+      color: 'from-orange-500 to-amber-600',
+    },
+    {
+      value: 'offering-summary',
+      label: 'Offering Summary',
+      icon: <PieChart className="h-4 w-4" />,
+      description: 'Summary of offering collections and distributions',
+      color: 'from-teal-500 to-green-600',
+    },
+  ];
+
+  const selectedReport = reportTypes.find(r => r.value === filters.reportType);
 
   const [executeReport, { loading }] = useMutation(EXECUTE_REPORT, {
     onCompleted: (data) => {
@@ -101,14 +157,13 @@ export default function FinanceReportBuilder() {
 
   const handleReset = () => {
     setFilters({
-      startDate: '',
-      endDate: '',
+      reportType: 'balance-sheet',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
       transactionType: 'ALL',
-      fundType: 'ALL',
-      paymentMethod: 'ALL',
-      minAmount: '',
-      maxAmount: '',
-      category: 'ALL',
+      accountType: 'ALL',
+      includeSubAccounts: true,
+      comparisonPeriod: 'NONE',
     });
     setShowResults(false);
     setReportResults(null);
@@ -156,9 +211,48 @@ export default function FinanceReportBuilder() {
 
   return (
     <div className="space-y-6">
+      {/* Report Type Selection Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {reportTypes.map((report) => (
+          <motion.div
+            key={report.value}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleFilterChange('reportType', report.value)}
+            className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 ${
+              filters.reportType === report.value
+                ? `bg-gradient-to-r ${report.color} text-white border-transparent shadow-lg`
+                : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`p-2 rounded-lg ${
+                filters.reportType === report.value
+                  ? 'bg-white/20'
+                  : 'bg-gray-100'
+              }`}>
+                {report.icon}
+              </div>
+              <div className="flex-1">
+                <h3 className={`font-semibold mb-1 ${
+                  filters.reportType === report.value ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {report.label}
+                </h3>
+                <p className={`text-xs ${
+                  filters.reportType === report.value ? 'text-white/90' : 'text-gray-600'
+                }`}>
+                  {report.description}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
       {/* Filters Panel */}
       <ReportFilterPanel
-        title="Report Filters"
+        title={`${selectedReport?.label} Configuration`}
         colorScheme="from-green-50 to-emerald-50"
         onReset={handleReset}
       >
@@ -196,130 +290,65 @@ export default function FinanceReportBuilder() {
               </div>
             </div>
 
-            {/* Transaction Type */}
+            {/* Account Type */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700">
-                💰 Transaction Type
+                📊 Account Type
               </Label>
               <Select
-                value={filters.transactionType}
-                onValueChange={(value) =>
-                  handleFilterChange('transactionType', value)
-                }
+                value={filters.accountType}
+                onValueChange={(value) => handleFilterChange('accountType', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 hover:border-green-300">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="INCOME">Income</SelectItem>
-                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                <SelectContent className="rounded-xl border-2">
+                  <SelectItem value="ALL" className="rounded-lg">All Accounts</SelectItem>
+                  <SelectItem value="ASSET" className="rounded-lg">Assets</SelectItem>
+                  <SelectItem value="LIABILITY" className="rounded-lg">Liabilities</SelectItem>
+                  <SelectItem value="EQUITY" className="rounded-lg">Equity</SelectItem>
+                  <SelectItem value="REVENUE" className="rounded-lg">Revenue</SelectItem>
+                  <SelectItem value="EXPENSE" className="rounded-lg">Expenses</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Fund Type */}
+            {/* Comparison Period */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700">
-                🏦 Fund Type
+                📈 Comparison Period
               </Label>
               <Select
-                value={filters.fundType}
-                onValueChange={(value) => handleFilterChange('fundType', value)}
+                value={filters.comparisonPeriod}
+                onValueChange={(value) => handleFilterChange('comparisonPeriod', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 hover:border-blue-300">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Funds</SelectItem>
-                  <SelectItem value="GENERAL">General Fund</SelectItem>
-                  <SelectItem value="BUILDING">Building Fund</SelectItem>
-                  <SelectItem value="MISSIONS">Missions Fund</SelectItem>
-                  <SelectItem value="BENEVOLENCE">Benevolence Fund</SelectItem>
+                <SelectContent className="rounded-xl border-2">
+                  <SelectItem value="NONE" className="rounded-lg">No Comparison</SelectItem>
+                  <SelectItem value="PREVIOUS_PERIOD" className="rounded-lg">Previous Period</SelectItem>
+                  <SelectItem value="PREVIOUS_YEAR" className="rounded-lg">Previous Year</SelectItem>
+                  <SelectItem value="BUDGET" className="rounded-lg">Budget vs Actual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Payment Method */}
+            {/* Include Sub-Accounts */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700">
-                💳 Payment Method
+                🔍 Detail Level
               </Label>
               <Select
-                value={filters.paymentMethod}
-                onValueChange={(value) =>
-                  handleFilterChange('paymentMethod', value)
-                }
+                value={filters.includeSubAccounts ? 'DETAILED' : 'SUMMARY'}
+                onValueChange={(value) => handleFilterChange('includeSubAccounts', value === 'DETAILED')}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 hover:border-purple-300">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Methods</SelectItem>
-                  <SelectItem value="CASH">Cash</SelectItem>
-                  <SelectItem value="CHEQUE">Cheque</SelectItem>
-                  <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-                  <SelectItem value="MOBILE_MONEY">Mobile Money</SelectItem>
-                  <SelectItem value="CARD">Card</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Amount Range */}
-            <div className="space-y-2 md:col-span-2">
-              <Label className="text-sm font-semibold text-gray-700">
-                💵 Amount Range
-              </Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="minAmount" className="text-xs text-gray-600">
-                    Min Amount
-                  </Label>
-                  <Input
-                    id="minAmount"
-                    type="number"
-                    value={filters.minAmount}
-                    onChange={(e) => handleFilterChange('minAmount', e.target.value)}
-                    placeholder="0.00"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="maxAmount" className="text-xs text-gray-600">
-                    Max Amount
-                  </Label>
-                  <Input
-                    id="maxAmount"
-                    type="number"
-                    value={filters.maxAmount}
-                    onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
-                    placeholder="10000.00"
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700">
-                📂 Category
-              </Label>
-              <Select
-                value={filters.category}
-                onValueChange={(value) => handleFilterChange('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Categories</SelectItem>
-                  <SelectItem value="TITHES">Tithes</SelectItem>
-                  <SelectItem value="OFFERINGS">Offerings</SelectItem>
-                  <SelectItem value="DONATIONS">Donations</SelectItem>
-                  <SelectItem value="SALARIES">Salaries</SelectItem>
-                  <SelectItem value="UTILITIES">Utilities</SelectItem>
-                  <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+                <SelectContent className="rounded-xl border-2">
+                  <SelectItem value="SUMMARY" className="rounded-lg">Summary Only</SelectItem>
+                  <SelectItem value="DETAILED" className="rounded-lg">Include Sub-Accounts</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,19 +388,19 @@ export default function FinanceReportBuilder() {
               />
               <StatCard
                 label="Total Income"
-                value={`$${reportResults.summary.totalIncome.toLocaleString()}`}
+                value={`GH₵ ${reportResults.summary.totalIncome.toLocaleString()}`}
                 colorScheme="green"
                 icon={<ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />}
               />
               <StatCard
                 label="Total Expenses"
-                value={`$${reportResults.summary.totalExpenses.toLocaleString()}`}
+                value={`GH₵ ${reportResults.summary.totalExpenses.toLocaleString()}`}
                 colorScheme="red"
                 icon={<ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />}
               />
               <StatCard
                 label="Net Balance"
-                value={`$${reportResults.summary.netBalance.toLocaleString()}`}
+                value={`GH₵ ${reportResults.summary.netBalance.toLocaleString()}`}
                 colorScheme={reportResults.summary.netBalance >= 0 ? 'emerald' : 'orange'}
               />
             </div>
@@ -407,7 +436,7 @@ export default function FinanceReportBuilder() {
               {
                 key: 'amount',
                 label: 'Amount',
-                render: (value) => `$${Number(value).toLocaleString()}`,
+                render: (value) => `GH₵ ${Number(value).toLocaleString()}`,
               },
             ]}
             data={reportResults.data}

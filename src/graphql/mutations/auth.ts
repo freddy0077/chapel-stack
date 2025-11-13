@@ -211,3 +211,19 @@ export const VERIFY_EMAIL_MUTATION = gql`
     }
   }
 `;
+
+// Member linking query for registration
+export const CHECK_EMAIL_FOR_MEMBER_LINKING = gql`
+  query CheckEmailForMemberLinking($email: String!, $organisationId: String!) {
+    checkEmailForMemberLinking(email: $email, organisationId: $organisationId) {
+      isMember
+      canLink
+      memberInfo {
+        firstName
+        lastName
+        status
+      }
+      message
+    }
+  }
+`;

@@ -19,6 +19,7 @@ import {
   Cog6ToothIcon,
   BuildingLibraryIcon,
   SparklesIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 
 // Import new accounting components
@@ -29,6 +30,7 @@ import OfferingManagement from "@/components/finance/accounting/OfferingManageme
 import FinancialReports from "@/components/finance/accounting/FinancialReports";
 import FiscalPeriods from "@/components/finance/accounting/FiscalPeriods";
 import BankAccounts from "@/components/finance/accounting/BankAccounts";
+import AssetManagement from "@/components/finance/accounting/AssetManagement";
 
 // Import modals
 import OfferingCounterModal from "@/components/finance/accounting/modals/OfferingCounterModal";
@@ -36,7 +38,7 @@ import CreateJournalEntryModal from "@/components/finance/accounting/modals/Crea
 import BankReconciliationModal from "@/components/finance/accounting/modals/BankReconciliationModal";
 
 /**
- * Branch Finances Page - New Accounting Module
+ * Branch Finances Page - Comprehensive Accounting Module
  * 
  * This is the main finance page with full double-entry accounting system
  * Features:
@@ -44,9 +46,10 @@ import BankReconciliationModal from "@/components/finance/accounting/modals/Bank
  * - Chart of Accounts
  * - Journal Entries
  * - Offering Management
+ * - Bank Accounts & Reconciliation
+ * - Asset Management (Fixed Assets)
  * - Financial Reports
  * - Fiscal Period Management
- * - Bank Accounts & Reconciliation
  */
 export default function BranchFinancesPage() {
   const { state } = useAuth();
@@ -104,7 +107,7 @@ export default function BranchFinancesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           {/* Modern Navigation Tabs */}
           <div className="bg-white/60 backdrop-blur-lg rounded-2xl p-2 shadow-xl border border-white/20">
-            <TabsList className="grid w-full grid-cols-7 gap-2 bg-transparent">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent">
               <TabsTrigger 
                 value="dashboard"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
@@ -136,6 +139,13 @@ export default function BranchFinancesPage() {
               >
                 <BuildingLibraryIcon className="h-4 w-4 mr-2" />
                 Bank
+              </TabsTrigger>
+              <TabsTrigger 
+                value="assets"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+              >
+                <CubeIcon className="h-4 w-4 mr-2" />
+                Assets
               </TabsTrigger>
               <TabsTrigger 
                 value="reports"
@@ -203,6 +213,16 @@ export default function BranchFinancesPage() {
                 setSelectedBankAccount({ id: accountId, name: "Bank Account" });
                 setIsReconciliationOpen(true);
               }}
+            />
+          </TabsContent>
+
+          {/* Assets Tab */}
+          <TabsContent value="assets" className="space-y-6">
+            <AssetManagement
+              organisationId={organisationId}
+              branchId={branchId}
+              userId={user?.id || ""}
+              onNavigateToJournal={() => setActiveTab('journal')}
             />
           </TabsContent>
 

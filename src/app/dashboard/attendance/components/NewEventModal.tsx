@@ -79,7 +79,7 @@ export default function NewEventModal({
   });
 
   // Branch selection logic
-  const isSuperAdmin = user?.primaryRole === "SUPER_ADMIN";
+  const isSuperAdmin = user?.primaryRole === "ADMIN";
   const organisationId = orgIdFromFilter;
 
   const { branches = [], loading: branchesLoading } = useFilteredBranches(

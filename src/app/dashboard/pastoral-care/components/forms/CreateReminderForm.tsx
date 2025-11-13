@@ -9,7 +9,7 @@ import {
   UserIcon,
   CalendarDaysIcon,
   ClockIcon,
-  BellIcon,
+  EnvelopeIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { useCreateFollowUpReminder } from "@/graphql/hooks/usePastoralCare";
@@ -132,7 +132,7 @@ export default function CreateReminderForm({
         <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium text-gray-900 flex items-center">
-              <BellIcon className="h-5 w-5 mr-2 text-indigo-600" />
+              <EnvelopeIcon className="h-5 w-5 mr-2 text-indigo-600" />
               Create Follow-up Reminder
             </h3>
             <button
@@ -218,7 +218,7 @@ export default function CreateReminderForm({
                   htmlFor="reminderDate"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  <BellIcon className="h-4 w-4 inline mr-1" />
+                  <EnvelopeIcon className="h-4 w-4 inline mr-1" />
                   Reminder Date & Time
                 </label>
                 <input
@@ -379,7 +379,7 @@ export default function CreateReminderForm({
                   </>
                 ) : (
                   <>
-                    <BellIcon className="h-4 w-4 mr-2" />
+                    <EnvelopeIcon className="h-4 w-4 mr-2" />
                     Create Reminder
                   </>
                 )}

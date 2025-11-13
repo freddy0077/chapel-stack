@@ -102,14 +102,14 @@ function AddMinistryModal({
   const { state } = useAuth();
   const user = state.user;
   const { organisationId } = useOrganisationBranch();
-  const { isSuperAdmin } = usePermissions();
+  const { isAdmin } = usePermissions();
   const [selectedBranchId, setSelectedBranchId] = useState<string>(
     propBranchId || "",
   );
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined,
+    isAdmin ? { organisationId } : undefined,
   );
-  const branchId = isSuperAdmin ? selectedBranchId : propBranchId;
+  const branchId = isAdmin ? selectedBranchId : propBranchId;
   const { createMinistry, loading, error } = useCreateMinistry();
   const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
@@ -185,7 +185,7 @@ function AddMinistryModal({
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Branch Selection Logic */}
-          {isSuperAdmin && (
+          {isAdmin && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Branch<span className="text-red-500">*</span>
@@ -308,13 +308,13 @@ export default function Ministries() {
   const { state } = useAuth();
   const user = state.user;
   const orgBranchFilter = useOrganizationBranchFilter();
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isAdmin = user?.primaryRole === "admin";
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const organisationId = orgBranchFilter.organisationId;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined,
+    isAdmin ? { organisationId } : undefined,
   );
-  const branchId = isSuperAdmin ? selectedBranchId : orgBranchFilter.branchId;
+  const branchId = isAdmin ? selectedBranchId : orgBranchFilter.branchId;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
@@ -374,7 +374,7 @@ export default function Ministries() {
       {/* Search & Filter Bar */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur px-4 md:px-8 py-4 flex flex-col md:flex-row md:items-center gap-3 shadow-sm rounded-xl mx-4 md:mx-8 -mt-8 mb-8">
         {/* Branch Selection Logic */}
-        {isSuperAdmin ? (
+        {isAdmin ? (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Branch<span className="text-red-500">*</span>

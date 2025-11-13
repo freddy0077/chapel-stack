@@ -123,7 +123,7 @@ export default function BranchPerformanceComparison() {
       case "attendance":
         return `${value.toLocaleString()} people`;
       case "giving":
-        return `$${value.toLocaleString()}`;
+        return `GH₵ ${value.toLocaleString()}`;
       case "volunteerRate":
       case "retention":
         return `${value.toFixed(1)}%`;

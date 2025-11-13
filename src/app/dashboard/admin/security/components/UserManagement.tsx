@@ -12,31 +12,31 @@ const mockUsers: User[] = [
     id: "1",
     email: "admin@church.org",
     name: "Admin User",
-    roles: ["super_admin"],
+    roles: ["admin"],
     primaryBranchId: "main",
     accessibleBranches: [
       {
         userId: "1",
         branchId: "main",
-        role: "super_admin",
+        role: "admin",
         isHomeBranch: true,
       },
       {
         userId: "1",
         branchId: "east",
-        role: "super_admin",
+        role: "admin",
         isHomeBranch: false,
       },
       {
         userId: "1",
         branchId: "west",
-        role: "super_admin",
+        role: "admin",
         isHomeBranch: false,
       },
       {
         userId: "1",
         branchId: "south",
-        role: "super_admin",
+        role: "admin",
         isHomeBranch: false,
       },
     ],
@@ -125,7 +125,7 @@ const mockBranches: Branch[] = [
 
 // Available roles for assignment
 const availableRoles: { value: UserRole; label: string }[] = [
-  { value: "super_admin", label: "Super Admin" },
+  { value: "admin", label: "Super Admin" },
   { value: "branch_admin", label: "Branch Admin" },
   { value: "pastor", label: "Pastor" },
   { value: "ministry_leader", label: "Ministry Leader" },

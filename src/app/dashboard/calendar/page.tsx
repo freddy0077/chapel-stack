@@ -124,7 +124,7 @@ function CalendarContent() {
   const [showAttendeesView, setShowAttendeesView] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const { canManageEvents, isBranchAdmin, isSuperAdmin } = usePermissions();
+  const { canManageEvents, isBranchAdmin, isAdmin } = usePermissions();
 
   const { state } = useAuth();
   const user = state.user;
@@ -464,7 +464,7 @@ function CalendarContent() {
             </div>
 
             {/* Filter Toggle - Only show for Super Admin */}
-            {isSuperAdmin && (
+            {isAdmin && (
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm border ${
@@ -501,7 +501,7 @@ function CalendarContent() {
         </div>
 
         {/* Filters Panel - Only show for Super Admin */}
-        {showFilters && isSuperAdmin && (
+        {showFilters && isAdmin && (
           <div className="relative mt-6 pt-6 border-t border-gray-200/50">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* Event Type Filter */}

@@ -12,7 +12,7 @@ import { SuperAdminSubscriptionManagement } from "@/components/dashboard/SuperAd
 import { useOrganizationBranchFilter } from "@/graphql/hooks/useOrganizationBranchFilter";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useQuery } from "@apollo/client";
-import { GET_SUPER_ADMIN_DASHBOARD } from "@/graphql/queries/dashboardQueries";
+import { GET_ADMIN_DASHBOARD } from "@/graphql/queries/dashboardQueries";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
 
 export default function SuperAdminDashboard() {
@@ -22,13 +22,13 @@ export default function SuperAdminDashboard() {
 
   // Debug authentication state
 
-  const { data, loading, error } = useQuery(GET_SUPER_ADMIN_DASHBOARD, {
+  const { data, loading, error } = useQuery(GET_ADMIN_DASHBOARD, {
     variables: { organisationId },
   });
   const dashboard = data?.superAdminDashboardData;
 
   return (
-    <RoleRoute requiredRole="SUPER_ADMIN">
+    <RoleRoute requiredRole="ADMIN">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex">
         {/* Main content */}
         <main className="flex-1 flex flex-col p-4 lg:p-10 max-w-full">

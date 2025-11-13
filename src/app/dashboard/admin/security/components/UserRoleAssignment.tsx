@@ -27,7 +27,7 @@ import { useAdminUsers } from "@/graphql/hooks/useAdminUsers";
 
 // Available roles for selection
 const availableRoles: { value: UserRole; label: string }[] = [
-  { value: "SUPER_ADMIN", label: "Super Admin" },
+  { value: "ADMIN", label: "Super Admin" },
   { value: "BRANCH_ADMIN", label: "Branch Admin" },
   { value: "PASTOR", label: "Pastor" },
   { value: "MINISTRY_LEADER", label: "Ministry Leader" },
@@ -690,7 +690,7 @@ export default function UserRoleAssignment() {
 
   // Get main role label for display
   const getUserRoleLabel = (user: User): string => {
-    if (user.roles && user.roles.includes("super_admin")) {
+    if (user.roles && user.roles.includes("admin")) {
       return "Super Admin";
     }
     const primaryBranchAccess = user.accessibleBranches?.find(

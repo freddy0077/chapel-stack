@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import {
   UsersIcon,
   UserGroupIcon,
@@ -129,7 +130,7 @@ export default function BranchStatistics({
     {
       title: "Annual Budget",
       value: statistics.annualBudget
-        ? `$${statistics.annualBudget.toLocaleString()}`
+        ? `GH₵ ${statistics.annualBudget.toLocaleString()}`
         : "N/A",
       icon: CurrencyDollarIcon,
       color: "bg-emerald-100 dark:bg-emerald-900/20",
@@ -140,12 +141,22 @@ export default function BranchStatistics({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-        Statistics for {branchName}
-      </h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        Overview of key metrics and performance indicators
-      </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+            Statistics for {branchName}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Overview of key metrics and performance indicators
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/report-builder?branch=${branchId}&type=analytics`}
+          className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
+        >
+          View detailed reports →
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (

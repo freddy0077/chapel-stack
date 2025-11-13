@@ -28,6 +28,7 @@ import {
 import EventTypeIcon from "./EventTypeIcon";
 import { format } from "date-fns";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 // Extended interface to include recurring fields
 interface ExtendedCreateEventInput extends CreateEventInput {
@@ -54,13 +55,14 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
   const { createEvent, createRecurringEvent, loading } = useEventMutations();
   const { branchId, organisationId } = useOrganisationBranch();
 
+  const [useImageUpload, setUseImageUpload] = useState(true);
+
   const [formData, setFormData] = useState<ExtendedCreateEventInput>({
     title: "",
     description: "",
     startDate: "",
     endDate: "",
     location: "",
-    category: "",
     eventType: EventType.WORSHIP_SERVICE,
     status: EventStatus.DRAFT,
     capacity: undefined,
@@ -78,7 +80,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
     organizerPhone: "",
     isFree: true,
     ticketPrice: undefined,
-    currency: "USD",
+    currency: "GHS",
     isRecurring: false,
     recurrenceType: "WEEKLY",
     recurrenceInterval: 1,
@@ -171,12 +173,11 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
         description: formData.description?.trim() || undefined,
         endDate: formData.endDate || undefined,
         location: formData.location?.trim() || undefined,
-        category: formData.category?.trim() || undefined,
         eventImageUrl: formData.eventImageUrl?.trim() || undefined,
         organizerPhone: formData.organizerPhone?.trim() || undefined,
         registrationDeadline: formData.registrationDeadline || undefined,
         capacity: formData.capacity || undefined,
-        ticketPrice: formData.isFree ? undefined : formData.ticketPrice,
+        ticketPrice: formData.isFree ? undefined : (formData.ticketPrice ? parseFloat(formData.ticketPrice.toString()) : undefined),
         tags: formData.tags?.length ? formData.tags : undefined,
       };
 
@@ -195,7 +196,6 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
         startDate: "",
         endDate: "",
         location: "",
-        category: "",
         eventType: EventType.WORSHIP_SERVICE,
         status: EventStatus.DRAFT,
         capacity: undefined,
@@ -213,7 +213,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
         organizerPhone: "",
         isFree: true,
         ticketPrice: undefined,
-        currency: "USD",
+        currency: "GHS",
         isRecurring: false,
         recurrenceType: "WEEKLY",
         recurrenceInterval: 1,
@@ -342,21 +342,6 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) =>
-                      handleInputChange("category", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., Worship, Fellowship, Education"
-                  />
                 </div>
 
                 <div>
@@ -669,24 +654,30 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Ticket Price *
+                        Ticket Price (GHS) *
                       </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.ticketPrice || ""}
-                        onChange={(e) =>
-                          handleInputChange(
-                            "ticketPrice",
-                            e.target.value
-                              ? parseFloat(e.target.value)
-                              : undefined,
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required={!formData.isFree}
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                          GHS
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.ticketPrice || ""}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "ticketPrice",
+                              e.target.value
+                                ? parseFloat(e.target.value)
+                                : undefined,
+                            )
+                          }
+                          className="w-full pl-14 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0.00"
+                          required={!formData.isFree}
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -700,10 +691,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
+                        <option value="GHS">GHS (₵)</option>
                         <option value="USD">USD ($)</option>
                         <option value="EUR">EUR (€)</option>
                         <option value="GBP">GBP (£)</option>
-                        <option value="CAD">CAD ($)</option>
                       </select>
                     </div>
                   </div>
@@ -795,19 +786,54 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <PhotoIcon className="h-4 w-4 inline mr-1 text-purple-500" />
-                    Event Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.eventImageUrl}
-                    onChange={(e) =>
-                      handleInputChange("eventImageUrl", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com/event-image.jpg"
-                  />
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      <PhotoIcon className="h-4 w-4 inline mr-1 text-purple-500" />
+                      Event Image
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setUseImageUpload(!useImageUpload)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                    >
+                      {useImageUpload ? (
+                        <>
+                          <DocumentTextIcon className="h-3.5 w-3.5" />
+                          Use URL instead
+                        </>
+                      ) : (
+                        <>
+                          <PhotoIcon className="h-3.5 w-3.5" />
+                          Upload image instead
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {useImageUpload ? (
+                    <ImageUpload
+                      value={formData.eventImageUrl || null}
+                      onChange={(imageUrl) =>
+                        handleInputChange("eventImageUrl", imageUrl || "")
+                      }
+                      placeholder="Upload event image"
+                      description="Event cover image"
+                      branchId={branchId}
+                      organisationId={organisationId}
+                      size="lg"
+                      maxSizeInMB={10}
+                    />
+                  ) : (
+                    <input
+                      type="url"
+                      value={formData.eventImageUrl}
+                      onChange={(e) =>
+                        handleInputChange("eventImageUrl", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://example.com/event-image.jpg"
+                    />
+                  )}
                 </div>
 
                 <div>

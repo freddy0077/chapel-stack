@@ -73,7 +73,6 @@ export const useMembers = (
       branchId: backendFilters.branchId || branchId,
       skip: (currentPage - 1) * currentPageSize,
       take: currentPageSize,
-      includeDeactivated: false, // Exclude deactivated members by default
       ...backendFilters, // All filters are now sent to backend
     };
 
@@ -119,7 +118,8 @@ export const useMembers = (
     if (currentSearch && searchData?.searchMembers) {
       return searchData.searchMembers;
     }
-    return data?.members || [];
+    // Backend now returns paginated structure: { data, total, page, ... }
+    return data?.members?.data || [];
   }, [data?.members, searchData?.searchMembers, currentSearch]);
 
   // Since all filtering is now server-side, members from API are the final result
@@ -130,8 +130,10 @@ export const useMembers = (
     if (currentSearch && searchData?.searchMembers) {
       return filteredMembers.length; // Use filtered count for search results
     }
-    return data?.membersCount || 0;
+    // Use total from paginated response, fallback to membersCount
+    return data?.members?.total || data?.membersCount || 0;
   }, [
+    data?.members?.total,
     data?.membersCount,
     searchData?.searchMembers,
     currentSearch,

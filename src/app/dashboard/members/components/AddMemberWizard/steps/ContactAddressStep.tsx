@@ -24,7 +24,28 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
   const validateStep = (): boolean => {
     const newErrors: ValidationError[] = [];
 
-    // Email validation
+    // Phone number is MANDATORY
+    if (!formData.phoneNumber || formData.phoneNumber.trim() === "") {
+      newErrors.push({
+        field: "phoneNumber",
+        message: "Phone number is required",
+      });
+    } else if (formData.phoneNumber.length < 10) {
+      newErrors.push({
+        field: "phoneNumber",
+        message: "Please enter a valid phone number (at least 10 digits)",
+      });
+    }
+
+    // Address is MANDATORY
+    if (!formData.address || formData.address.trim() === "") {
+      newErrors.push({
+        field: "address",
+        message: "Address is required",
+      });
+    }
+
+    // Email validation (optional but if provided must be valid)
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.push({
         field: "email",
@@ -41,14 +62,6 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
       newErrors.push({
         field: "confirmEmail",
         message: "Email addresses do not match",
-      });
-    }
-
-    // Phone number basic validation
-    if (formData.phoneNumber && formData.phoneNumber.length < 10) {
-      newErrors.push({
-        field: "phoneNumber",
-        message: "Please enter a valid phone number",
       });
     }
 
@@ -141,7 +154,7 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
         {/* Primary Phone */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number
+            Phone Number <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <input
@@ -154,6 +167,7 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
                   : "border-gray-300"
               }`}
               placeholder="+233 XX XXX XXXX"
+              required
             />
             <PhoneIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
           </div>
@@ -186,18 +200,26 @@ const ContactAddressStep: React.FC<WizardStepProps> = ({
         {/* Address */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Street Address
+            Street Address <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <input
               type="text"
               value={formData.address || ""}
               onChange={(e) => handleInputChange("address", e.target.value)}
-              className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className={`w-full px-4 py-3 pl-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                getFieldError("address") ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="House number and street name"
+              required
             />
             <MapPinIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
           </div>
+          {getFieldError("address") && (
+            <p className="text-red-500 text-sm mt-1">
+              {getFieldError("address")}
+            </p>
+          )}
         </div>
 
         {/* City */}

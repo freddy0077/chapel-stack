@@ -33,7 +33,7 @@ export default function EditGroupModal({
   // Fetch branches for super admin
   const { data: branchesData } = useQuery(GET_BRANCHES, {
     variables: { filter: organisationId ? { organisationId } : undefined },
-    skip: user?.primaryRole !== "super_admin",
+    skip: user?.primaryRole !== "admin",
   });
 
   const { updateSmallGroup } = useSmallGroupMutations();
@@ -61,7 +61,7 @@ export default function EditGroupModal({
         status: group.status || SmallGroupStatus.ACTIVE,
       });
       // Set branch for super admin
-      if (user?.primaryRole === "super_admin" && group.branchId) {
+      if (user?.primaryRole === "admin" && group.branchId) {
         setSelectedBranchId(group.branchId);
       }
     }
@@ -153,7 +153,7 @@ export default function EditGroupModal({
                 </div>
               )}
               {/* Branch Selector for Super Admin */}
-              {user?.primaryRole === "super_admin" && (
+              {user?.primaryRole === "admin" && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-900 mb-1">
                     Branch<span className="text-red-500">*</span>

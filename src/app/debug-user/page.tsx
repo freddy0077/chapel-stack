@@ -55,8 +55,8 @@ export default function DebugUserPage() {
               <h3 className="font-semibold">Role Checks:</h3>
               <ul className="space-y-2">
                 <li>
-                  <strong>Is SUPER_ADMIN:</strong>{" "}
-                  {user?.primaryRole === "SUPER_ADMIN" ? "Yes" : "No"}
+                  <strong>Is ADMIN:</strong>{" "}
+                  {user?.primaryRole === "ADMIN" ? "Yes" : "No"}
                 </li>
                 <li>
                   <strong>Is SUBSCRIPTION_MANAGER:</strong>{" "}
@@ -64,7 +64,7 @@ export default function DebugUserPage() {
                 </li>
                 <li>
                   <strong>Allowed Roles Check:</strong>{" "}
-                  {["SUPER_ADMIN", "SUBSCRIPTION_MANAGER"].includes(
+                  {["ADMIN", "SUBSCRIPTION_MANAGER"].includes(
                     user?.primaryRole || "",
                   )
                     ? "Pass"

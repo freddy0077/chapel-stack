@@ -1,7 +1,7 @@
 // src/graphql/hooks/useOnboarding.ts
 import { useMutation, useQuery } from "@apollo/client";
 import {
-  CREATE_SUPER_ADMIN_USER,
+  CREATE_ADMIN_USER,
   COMPLETE_ONBOARDING_STEP,
   INITIALIZE_ONBOARDING,
   RESET_ONBOARDING,
@@ -36,7 +36,7 @@ export const useCreateSuperAdminUser = () => {
   const [mutate, { data, loading, error }] = useMutation<
     boolean,
     CreateSuperAdminUserVars
-  >(CREATE_SUPER_ADMIN_USER);
+  >(CREATE_ADMIN_USER);
 
   return {
     createSuperAdmin: mutate,

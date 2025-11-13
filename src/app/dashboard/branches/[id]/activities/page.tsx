@@ -14,7 +14,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 export default function BranchActivitiesPage() {
   const params = useParams();
   const branchId = params?.id as string;
-  const { isSuperAdmin, isBranchAdmin } = usePermissions();
+  const { isAdmin, isBranchAdmin } = usePermissions();
 
   const { data: branchData, loading: branchLoading } = useQuery(GET_BRANCH, {
     variables: { id: branchId },
@@ -293,7 +293,7 @@ export default function BranchActivitiesPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900">
                         {activity.description}
-                        {(isSuperAdmin || isBranchAdmin) &&
+                        {(isAdmin || isBranchAdmin) &&
                           activity.metadata?.entityId && (
                             <span className="ml-1 text-xs text-gray-500">
                               (ID: {activity.metadata.entityId})

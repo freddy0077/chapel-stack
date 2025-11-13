@@ -295,7 +295,7 @@ export class AuthApiService {
 
     // Priority order for roles
     const rolePriority = [
-      "SUPER_ADMIN",
+      "ADMIN",
       "BRANCH_ADMIN",
       "SUBSCRIPTION_MANAGER",
       "FINANCE_MANAGER",

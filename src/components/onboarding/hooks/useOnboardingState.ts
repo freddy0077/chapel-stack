@@ -409,7 +409,7 @@ export const useOnboardingState = ({
   // Finish the onboarding process
   const handleFinish = () => {
     if (onComplete) {
-      const isSuperAdmin = user?.primaryRole === "super_admin";
+      const isSuperAdmin = user?.primaryRole === "admin";
 
       // For super admins, we don't need to save module preferences as they see all modules.
       // For other users, we save their actual selections.

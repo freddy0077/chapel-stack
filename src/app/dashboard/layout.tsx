@@ -24,7 +24,7 @@ export default function DashboardLayout({
       ? user.roles.some((role: unknown) => {
           if (typeof role === "string")
             return (
-              role.toLowerCase() === "super_admin" ||
+              role.toLowerCase() === "admin" ||
               role.toLowerCase() === "superadmin"
             );
           if (
@@ -34,7 +34,7 @@ export default function DashboardLayout({
             typeof role.name === "string"
           )
             return (
-              role.name.toLowerCase() === "super_admin" ||
+              role.name.toLowerCase() === "admin" ||
               role.name.toLowerCase() === "superadmin"
             );
           return false;

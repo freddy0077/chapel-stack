@@ -11,6 +11,7 @@ import {
   CalendarIcon,
   UserIcon,
   ArrowTopRightOnSquareIcon,
+  CogIcon,
 } from "@heroicons/react/24/outline";
 
 interface BranchHeaderProps {
@@ -104,6 +105,17 @@ export default function BranchHeader({ branch }: BranchHeaderProps) {
                 </h1>
 
                 <div className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard/settings"
+                    className="inline-flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    title="Settings"
+                  >
+                    <CogIcon
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    />
+                  </Link>
+
                   <Link
                     href={`/dashboard/branches/${branch.id}/edit`}
                     className="inline-flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

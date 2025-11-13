@@ -396,8 +396,8 @@ export default function BranchFinancesPage({
   });
 
   const [memberSearch, setMemberSearch] = useState("");
-  const isSuperAdmin = user?.roles?.some((role) => role.name === "SUPER_ADMIN");
-  const branchId = isSuperAdmin
+  const isAdmin = user?.roles?.some((role) => role.name === "ADMIN");
+  const branchId = isAdmin
     ? selectedBranchId
     : selectedBranchId || defaultBranchId;
 

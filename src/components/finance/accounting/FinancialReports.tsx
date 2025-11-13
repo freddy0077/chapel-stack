@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery } from "@apollo/client";
 import {
   FileText,
   Download,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GET_ASSET_STATISTICS } from "@/graphql/queries/assetQueries";
 
 interface FinancialReportsProps {
   organisationId: string;
@@ -38,6 +40,23 @@ export default function FinancialReports({
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Fetch asset statistics for Balance Sheet
+  const { data: assetStatsData, loading: assetStatsLoading } = useQuery(GET_ASSET_STATISTICS, {
+    variables: { organisationId, branchId },
+    skip: !organisationId,
+  });
+
+  const assetStats = assetStatsData?.assetStatistics;
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const reportTypes = [
     {
@@ -267,17 +286,48 @@ export default function FinancialReports({
                       <div>
                         <h5 className="font-semibold mb-2">ASSETS</h5>
                         <div className="space-y-1 ml-4">
-                          <div className="flex justify-between">
-                            <span>Cash and Bank</span>
-                            <span className="font-mono">GHS 50,000</span>
+                          {/* Current Assets */}
+                          <div className="mb-3">
+                            <div className="font-medium text-sm text-gray-600 mb-1">Current Assets</div>
+                            <div className="flex justify-between ml-2">
+                              <span>Cash and Bank</span>
+                              <span className="font-mono">GHS 50,000</span>
+                            </div>
+                            <div className="flex justify-between ml-2">
+                              <span>Accounts Receivable</span>
+                              <span className="font-mono">GHS 5,000</span>
+                            </div>
+                            <div className="flex justify-between ml-2 font-medium border-t pt-1 mt-1">
+                              <span>Total Current Assets</span>
+                              <span className="font-mono">GHS 55,000</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Accounts Receivable</span>
-                            <span className="font-mono">GHS 5,000</span>
-                          </div>
-                          <div className="flex justify-between font-semibold border-t pt-1">
-                            <span>Total Assets</span>
-                            <span className="font-mono">GHS 55,000</span>
+
+                          {/* Fixed Assets */}
+                          {assetStats && (
+                            <div className="mb-3">
+                              <div className="font-medium text-sm text-gray-600 mb-1">Fixed Assets</div>
+                              <div className="flex justify-between ml-2">
+                                <span>Fixed Assets at Cost</span>
+                                <span className="font-mono">{formatCurrency(assetStats.totalPurchaseValue || 0)}</span>
+                              </div>
+                              <div className="flex justify-between ml-2 text-red-600">
+                                <span>Less: Accumulated Depreciation</span>
+                                <span className="font-mono">({formatCurrency(assetStats.totalDepreciation || 0)})</span>
+                              </div>
+                              <div className="flex justify-between ml-2 font-medium border-t pt-1 mt-1">
+                                <span>Net Fixed Assets</span>
+                                <span className="font-mono">{formatCurrency(assetStats.totalValue || 0)}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Total Assets */}
+                          <div className="flex justify-between font-semibold border-t-2 pt-2 text-lg">
+                            <span>TOTAL ASSETS</span>
+                            <span className="font-mono">
+                              {formatCurrency(55000 + (assetStats?.totalValue || 0))}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -347,9 +397,17 @@ export default function FinancialReports({
                             <span>Maintenance</span>
                             <span className="font-mono">GHS 3,000</span>
                           </div>
+                          {assetStats && assetStats.totalDepreciation > 0 && (
+                            <div className="flex justify-between">
+                              <span>Depreciation Expense</span>
+                              <span className="font-mono">{formatCurrency(assetStats.totalDepreciation || 0)}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between font-semibold border-t pt-1">
                             <span>Total Expenses</span>
-                            <span className="font-mono">GHS 28,000</span>
+                            <span className="font-mono">
+                              {formatCurrency(28000 + (assetStats?.totalDepreciation || 0))}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -357,7 +415,9 @@ export default function FinancialReports({
                       <div className="border-t-2 pt-2">
                         <div className="flex justify-between font-bold text-lg">
                           <span>NET INCOME</span>
-                          <span className="font-mono text-green-600">GHS 17,000</span>
+                          <span className="font-mono text-green-600">
+                            {formatCurrency(45000 - (28000 + (assetStats?.totalDepreciation || 0)))}
+                          </span>
                         </div>
                       </div>
                     </div>

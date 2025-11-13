@@ -29,7 +29,7 @@ interface RoleConfigurationScreenProps {
 
 const initialRoles: Role[] = [
   {
-    name: "SUPER_ADMIN",
+    name: "ADMIN",
     description: "Highest level, manages all settings and users.",
     permissions: [...DEFAULT_PERMISSIONS],
     isDefault: true,

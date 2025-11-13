@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContextEnhanced";
 export default function AuthTestPage() {
   const { login, logout, user, isAuthenticated, isLoading, primaryRole } =
     useAuth();
-  const [email, setEmail] = useState("super_admin@chapelstack.com");
+  const [email, setEmail] = useState("admin@chapelstack.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 

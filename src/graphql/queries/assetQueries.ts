@@ -58,6 +58,7 @@ export const GET_ASSETS = gql`
         category
         icon
         color
+        defaultDepreciationRate
       }
       purchaseDate
       purchasePrice
@@ -65,12 +66,6 @@ export const GET_ASSETS = gql`
       depreciationRate
       location
       assignedToMemberId
-      assignedToMember {
-        id
-        firstName
-        lastName
-        email
-      }
       assignedToDepartment
       status
       condition
@@ -111,12 +106,6 @@ export const GET_ASSET = gql`
       depreciationRate
       location
       assignedToMemberId
-      assignedToMember {
-        id
-        firstName
-        lastName
-        email
-      }
       assignedToDepartment
       status
       condition
@@ -155,8 +144,8 @@ export const GET_ASSET_STATISTICS = gql`
 // ============================================
 
 export const GET_ASSET_DISPOSALS = gql`
-  query GetAssetDisposals($filters: AssetDisposalFilterInput!) {
-    assetDisposals(filters: $filters) {
+  query GetAssetDisposals($organisationId: String!, $branchId: String) {
+    assetDisposals(filters: { organisationId: $organisationId, branchId: $branchId }) {
       id
       assetId
       asset {
@@ -178,6 +167,7 @@ export const GET_ASSET_DISPOSALS = gql`
         id
         firstName
         lastName
+        email
       }
       disposalNotes
       bookValueAtDisposal

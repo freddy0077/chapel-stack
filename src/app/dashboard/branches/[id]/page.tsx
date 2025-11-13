@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import BranchPastoralCarePanel from "../components/BranchPastoralCarePanel";
 import BranchSacramentsPanel from "../components/BranchSacramentsPanel";
 import BranchSermonsPanel from "../components/BranchSermonsPanel";
+import BranchFinancialOverview from "../components/BranchFinancialOverview";
 import {
   HomeIcon,
   UsersIcon,
@@ -125,7 +126,7 @@ export default function BranchDetailPage() {
 
   const { branch, loading, error, refetch } = useBranch(branchId);
 
-  const { isSuperAdmin, isBranchAdmin, canManageEvents } = usePermissions();
+  const { isAdmin, isBranchAdmin, canManageEvents } = usePermissions();
 
   // Initialize edit form data when branch loads
   useEffect(() => {
@@ -266,6 +267,9 @@ export default function BranchDetailPage() {
               </div>
             </div>
 
+            {/* Financial Overview */}
+            <BranchFinancialOverview branchId={branch.id} />
+
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -329,7 +333,7 @@ export default function BranchDetailPage() {
                       </p>
                     </div>
                   </div>
-                  {(isSuperAdmin || isBranchAdmin) && (
+                  {(isAdmin || isBranchAdmin) && (
                     <Link
                       href={`/dashboard/branches/${branch.id}/activities`}
                       className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
@@ -563,9 +567,9 @@ export default function BranchDetailPage() {
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
               {navigationItems
                 .filter((item) => {
-                  // Hide members and ministries from SUPER_ADMIN
+                  // Hide members and ministries from ADMIN
                   if (
-                    isSuperAdmin &&
+                    isAdmin &&
                     (item.id === "members" || item.id === "ministries")
                   ) {
                     return false;

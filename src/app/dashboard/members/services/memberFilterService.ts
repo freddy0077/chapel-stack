@@ -55,6 +55,8 @@ export class MemberFilterService {
       backendFilters.hasPhone = filters.hasPhone;
     if (filters.isRegularAttendee !== undefined)
       backendFilters.isRegularAttendee = filters.isRegularAttendee;
+    if (filters.isDeactivated !== undefined)
+      backendFilters.isDeactivated = filters.isDeactivated;
 
     // Handle age range
     if (filters.ageRange) {
@@ -162,7 +164,8 @@ export class MemberFilterService {
       filters.hasProfileImage !== undefined ||
       filters.hasEmail !== undefined ||
       filters.hasPhone !== undefined ||
-      filters.isRegularAttendee !== undefined
+      filters.isRegularAttendee !== undefined ||
+      filters.isDeactivated !== undefined
     );
   }
 
@@ -185,6 +188,7 @@ export class MemberFilterService {
       hasEmail: undefined,
       hasPhone: undefined,
       isRegularAttendee: undefined,
+      isDeactivated: undefined,
     };
   }
 
@@ -212,6 +216,7 @@ export class MemberFilterService {
     if (filters.hasEmail !== undefined) count++;
     if (filters.hasPhone !== undefined) count++;
     if (filters.isRegularAttendee !== undefined) count++;
+    if (filters.isDeactivated !== undefined) count++;
 
     return count;
   }

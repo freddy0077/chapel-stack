@@ -1,7 +1,7 @@
 // src/graphql/mutations/onboardingMutations.ts
 import { gql } from "@apollo/client"; // Assuming Apollo Client
 
-export const CREATE_SUPER_ADMIN_USER = gql`
+export const CREATE_ADMIN_USER = gql`
   mutation CreateSuperAdminUser(
     $email: String!
     $password: String!

@@ -10,6 +10,25 @@ import { SacramentRecord } from "../page";
 import SearchableMemberInput from "@/components/ui/SearchableMemberInput";
 import { useOrganizationBranchFilter } from "@/hooks/useOrganizationBranchFilter";
 
+interface Member {
+  id: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string | null;
+  email?: string;
+  phoneNumber?: string;
+  memberId?: string;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  profileImageUrl?: string | null;
+  membershipDate?: string | null;
+  status?: string | null;
+  branch?: {
+    id: string;
+    name: string;
+  };
+}
+
 interface SacramentRecord {
   id: string;
   memberId: string;
@@ -32,21 +51,9 @@ interface SacramentRecord {
   organisationId?: string | null;
   createdAt: string;
   updatedAt: string;
+  member?: Member;
   memberName?: string;
   displayName?: string;
-}
-
-interface Member {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phoneNumber?: string;
-  memberId?: string;
-  branch?: {
-    id: string;
-    name: string;
-  };
 }
 
 interface EditSacramentalRecordModalProps {
@@ -172,7 +179,19 @@ export default function EditSacramentalRecordModal({
         notes: record.notes || "",
       });
 
-      if (record.memberId && record.memberName) {
+      // Pre-populate member from record
+      if (record.member) {
+        // Use full member object if available
+        setSelectedMember({
+          id: record.member.id || record.memberId,
+          firstName: record.member.firstName,
+          lastName: record.member.lastName,
+          email: record.member.email || undefined,
+          phoneNumber: record.member.phoneNumber || undefined,
+          memberId: record.memberId,
+        });
+      } else if (record.memberId && record.memberName) {
+        // Fallback to parsing memberName if member object not available
         const [firstName, ...lastNameParts] = record.memberName.split(" ");
         setSelectedMember({
           id: record.memberId,
@@ -197,8 +216,8 @@ export default function EditSacramentalRecordModal({
     try {
       await updateRecord({
         variables: {
-          id: record.id,
           input: {
+            id: record.id, // ID must be inside input object
             memberId: selectedMember.id,
             dateOfSacrament: new Date(formData.dateOfSacrament),
             locationOfSacrament: formData.locationOfSacrament,
@@ -381,7 +400,8 @@ export default function EditSacramentalRecordModal({
                       Member *
                     </label>
                     <SearchableMemberInput
-                      value={selectedMember}
+                      value={selectedMember ? `${selectedMember.firstName} ${selectedMember.lastName}` : ""}
+                      selectedMember={selectedMember}
                       onChange={handleMemberChange}
                       placeholder="Search for a member"
                     />
@@ -494,7 +514,8 @@ export default function EditSacramentalRecordModal({
                             Groom Name
                           </label>
                           <SearchableMemberInput
-                            value={selectedGroomMember}
+                            value={selectedGroomMember ? `${selectedGroomMember.firstName} ${selectedGroomMember.lastName}` : ""}
+                            selectedMember={selectedGroomMember}
                             onChange={handleGroomMemberChange}
                             placeholder="Search for the groom"
                           />
@@ -504,7 +525,8 @@ export default function EditSacramentalRecordModal({
                             Bride Name
                           </label>
                           <SearchableMemberInput
-                            value={selectedBrideMember}
+                            value={selectedBrideMember ? `${selectedBrideMember.firstName} ${selectedBrideMember.lastName}` : ""}
+                            selectedMember={selectedBrideMember}
                             onChange={handleBrideMemberChange}
                             placeholder="Search for the bride"
                           />

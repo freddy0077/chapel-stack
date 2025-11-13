@@ -178,7 +178,7 @@ export default function BranchUserRolesPanel({
   // Get role badge color
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case "SUPER_ADMIN":
+      case "ADMIN":
         return "bg-red-100 text-red-800";
       case "ADMIN":
         return "bg-purple-100 text-purple-800";

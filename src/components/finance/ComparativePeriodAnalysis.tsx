@@ -88,7 +88,7 @@ const ComparativePeriodAnalysis: React.FC<ComparativePeriodAnalysisProps> = ({
   console.log("ComparativePeriodAnalysis OrganisationId", organisationId);
 
   // Use the same super admin logic as the branch-finances page
-  const isSuperAdmin = user?.roles?.some((role) => role.name === "SUPER_ADMIN");
+  const isSuperAdmin = user?.roles?.some((role) => role.name === "ADMIN");
   const effectiveBranchId = isSuperAdmin ? undefined : defaultBranchId; // For super admin, don't restrict by branch
 
   // Memoize GraphQL input to prevent unnecessary re-renders - only when we have valid data

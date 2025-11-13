@@ -687,7 +687,7 @@ export default function BillingPage() {
 
   return (
     <RoleRoute
-      allowedRoles={["SUPER_ADMIN", "SUBSCRIPTION_MANAGER", "BRANCH_ADMIN"]}
+      allowedRoles={["ADMIN", "SUBSCRIPTION_MANAGER", "BRANCH_ADMIN"]}
     >
       <div className="space-y-6">
         {/* Header */}

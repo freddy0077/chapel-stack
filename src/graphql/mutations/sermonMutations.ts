@@ -42,7 +42,7 @@ export const CREATE_SERMON = gql`
 
 export const UPDATE_SERMON = gql`
   mutation UpdateSermon($updateSermonInput: UpdateSermonInput!) {
-    updateSermon(updateSermonInput: $updateSermonInput) {
+    update(updateSermonInput: $updateSermonInput) {
       id
       title
       description
@@ -81,7 +81,7 @@ export const UPDATE_SERMON = gql`
 
 export const DELETE_SERMON = gql`
   mutation DeleteSermon($id: ID!) {
-    removeSermon(id: $id) {
+    remove(id: $id) {
       id
       title
     }

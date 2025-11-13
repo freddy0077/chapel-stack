@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 // Define role constants for consistency
 const ROLES = {
-  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
   BRANCH_ADMIN: "BRANCH_ADMIN",
   // Add other roles here as the application grows
 };
@@ -15,10 +15,10 @@ const ROLES = {
  * @returns {object} An object containing user information and permission flags.
  * - `user`: The authenticated user object from useAuth.
  * - `role`: The user's primary role in uppercase.
- * - `isSuperAdmin`: True if the user is a SUPER_ADMIN.
+ * - `isSuperAdmin`: True if the user is a ADMIN.
  * - `isBranchAdmin`: True if the user is a BRANCH_ADMIN.
- * - `canManageEvents`: True if the user can manage calendar events (SUPER_ADMIN or BRANCH_ADMIN).
- * - `canCustomizeModules`: True if the user can customize modules (SUPER_ADMIN only).
+ * - `canManageEvents`: True if the user can manage calendar events (ADMIN or BRANCH_ADMIN).
+ * - `canCustomizeModules`: True if the user can customize modules (ADMIN only).
  */
 export const usePermissions = () => {
   const { state } = useAuth();
@@ -28,7 +28,7 @@ export const usePermissions = () => {
     [user?.primaryRole],
   );
 
-  const isSuperAdmin = useMemo(() => role === ROLES.SUPER_ADMIN, [role]);
+  const isSuperAdmin = useMemo(() => role === ROLES.ADMIN, [role]);
   const isBranchAdmin = useMemo(() => role === ROLES.BRANCH_ADMIN, [role]);
 
   // --- Permission sets based on roles ---

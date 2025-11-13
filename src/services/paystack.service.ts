@@ -78,7 +78,14 @@ class PaystackService {
   constructor() {
     this.publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
     if (!this.publicKey) {
-      console.warn("Paystack public key not found in environment variables");
+      console.warn("⚠️ [PAYSTACK FRONTEND] Public key not found in environment variables");
+    } else {
+      // Log masked key for debugging (show first 8 and last 4 characters)
+      const maskedKey = this.publicKey.length > 12 
+        ? `${this.publicKey.substring(0, 8)}...${this.publicKey.substring(this.publicKey.length - 4)}`
+        : "***";
+      console.log(`✅ [PAYSTACK FRONTEND] Public key loaded: ${maskedKey}`);
+      console.log(`🔑 [PAYSTACK FRONTEND] Key type: ${this.publicKey.startsWith('pk_live') ? 'LIVE' : this.publicKey.startsWith('pk_test') ? 'TEST' : 'UNKNOWN'}`);
     }
   }
 
@@ -204,11 +211,14 @@ class PaystackService {
   ): void {
     // Check if PaystackPop is available (loaded from CDN)
     if (typeof (window as any).PaystackPop === "undefined") {
-      console.error("Paystack popup script not loaded");
+      console.error("❌ [PAYSTACK FRONTEND] Paystack popup script not loaded");
       throw new Error(
         "Payment system not available. Please refresh the page and try again.",
       );
     }
+
+    console.log(`💳 [PAYSTACK FRONTEND] Initiating payment popup for ${paymentData.email}`);
+    console.log(`💰 [PAYSTACK FRONTEND] Amount: ${paymentData.currency} ${paymentData.amount}`);
 
     const handler = (window as any).PaystackPop.setup({
       key: this.publicKey,

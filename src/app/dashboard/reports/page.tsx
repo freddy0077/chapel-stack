@@ -134,7 +134,7 @@ export default function ReportsPage() {
 
   // Get organization/branch filter based on user role
   const orgBranchFilter = useOrganisationBranch();
-  const isSuperAdmin = user?.primaryRole === "SUPER_ADMIN";
+  const isAdmin = user?.primaryRole === "ADMIN";
 
   // Update the query to include organizationId from the filter
   const { data: filterOptions, loading: loadingFilters } =
@@ -841,8 +841,8 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              {/* Only show branch selector for SUPER_ADMIN users */}
-              {isSuperAdmin && (
+              {/* Only show branch selector for ADMIN users */}
+              {isAdmin && (
                 <div>
                   <Label
                     htmlFor="branch-select"

@@ -129,6 +129,11 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
       alert("Please fill in required fields (First Name and Last Name)");
       return;
     }
+    // Enforce required contact details
+    if (!formData.phoneNumber || !formData.address) {
+      alert("Please provide both Phone Number and Address");
+      return;
+    }
 
     try {
       await createMember({
@@ -180,6 +185,13 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const nextStep = (e?: React.MouseEvent<HTMLButtonElement>) => {
     e?.preventDefault();
     e?.stopPropagation();
+    // Validate required fields on Contact step before proceeding
+    if (currentStep === 2) {
+      if (!formData.phoneNumber || !formData.address) {
+        alert("Please provide both Phone Number and Address before proceeding.");
+        return;
+      }
+    }
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -399,6 +411,38 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                     ))}
                   </select>
                 </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <SelectWithAdd
+                    label="Occupation"
+                    value={formData.occupation || ""}
+                    onChange={(value) => handleInputChange("occupation", value)}
+                    options={STANDARD_OCCUPATIONS}
+                    placeholder="Select occupation"
+                    allowCustom={true}
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Education Level
+                  </label>
+                  <select
+                    value={formData.education || ""}
+                    onChange={(e) => handleInputChange("education", e.target.value)}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Education Level</option>
+                    <option value="No Formal Education">No Formal Education</option>
+                    <option value="Primary School">Primary School</option>
+                    <option value="Junior High School">Junior High School</option>
+                    <option value="Senior High School">Senior High School</option>
+                    <option value="Vocational/Technical">Vocational/Technical</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                    <option value="Master's Degree">Master's Degree</option>
+                    <option value="Doctorate">Doctorate</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -430,17 +474,19 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                   label="Phone Number"
                   placeholder="Enter phone number"
                   className=""
+                  required
                 />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-600">
-                  Address
+                  Address *
                 </label>
                 <input
                   type="text"
                   value={formData.address || ""}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
@@ -461,16 +507,6 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                   onChange={(value) => handleInputChange("region", value)}
                   options={GHANA_REGIONS}
                   placeholder="Select region"
-                  allowCustom={true}
-                />
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <SelectWithAdd
-                  label="Occupation"
-                  value={formData.occupation || ""}
-                  onChange={(value) => handleInputChange("occupation", value)}
-                  options={STANDARD_OCCUPATIONS}
-                  placeholder="Select occupation"
                   allowCustom={true}
                 />
               </div>

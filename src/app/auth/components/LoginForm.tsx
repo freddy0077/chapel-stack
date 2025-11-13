@@ -462,12 +462,31 @@ export default function LoginForm({
                 </motion.div>
               </form>
 
-              {/* Footer text */}
+              {/* Registration Link */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1, duration: 0.5 }}
-                className="mt-8 text-center"
+                className="mt-8 text-center border-t border-white/10 pt-6"
+              >
+                <p className="text-blue-200 text-sm mb-4">
+                  Don't have an account?
+                </p>
+                <Link
+                  href="/auth/register"
+                  className="inline-flex items-center justify-center w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 border border-white/20 hover:border-white/40 group"
+                >
+                  <span>Create Account</span>
+                  <ArrowRightIcon className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+
+              {/* Footer text */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.05, duration: 0.5 }}
+                className="mt-6 text-center"
               >
                 <p className="text-blue-200 text-sm">
                   Protected by enterprise-grade security

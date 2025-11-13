@@ -42,12 +42,12 @@ export default function NewPrayerRequestModal({
     }
   }, [user?.member?.id, canManagePrayerRequests]);
 
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isSuperAdmin = user?.primaryRole === "admin";
   const [selectedBranchId, setSelectedBranchId] = useState(
     defaultBranchId || "",
   );
 
-  // Fetch branches for super_admins only
+  // Fetch branches for admins only
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
     isSuperAdmin ? { organisationId } : undefined,
   );

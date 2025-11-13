@@ -238,9 +238,9 @@ export const GET_SECURITY_OVERVIEW = gql`
   }
 `;
 
-export const GET_SUPER_ADMIN_DASHBOARD = gql`
+export const GET_ADMIN_DASHBOARD = gql`
   query SuperAdminDashboard($organisationId: ID) {
-    superAdminDashboardData(organisationId: $organisationId) {
+    adminDashboardData(organisationId: $organisationId) {
       organisationOverview {
         total
         organisations {

@@ -169,9 +169,9 @@ export default function SacramentsReportBuilder() {
                 </div>
                 <div>
                   <Label className="text-base font-semibold text-gray-900">
-                    Sacrament Date Range
+                    📅 Sacrament Date Range
                   </Label>
-                  <p className="text-xs text-gray-500">Filter records by sacrament date period</p>
+                  <p className="text-sm text-gray-600 font-medium">Select the start and end dates for sacrament records</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -212,9 +212,9 @@ export default function SacramentsReportBuilder() {
                 </div>
                 <div>
                   <Label className="text-base font-semibold text-gray-900">
-                    Sacrament Type
+                    ⛪ Sacrament Type
                   </Label>
-                  <p className="text-xs text-gray-500">Filter by sacrament category</p>
+                  <p className="text-sm text-gray-600 font-medium">Choose specific sacrament (Baptism, Marriage, etc.) or select "All Types"</p>
                 </div>
               </div>
               <Select
@@ -274,9 +274,9 @@ export default function SacramentsReportBuilder() {
                 </div>
                 <div>
                   <Label className="text-base font-semibold text-gray-900">
-                    Gender
+                    👤 Gender Filter
                   </Label>
-                  <p className="text-xs text-gray-500">Filter by recipient gender</p>
+                  <p className="text-sm text-gray-600 font-medium">Filter records by recipient's gender (Male, Female, or All)</p>
                 </div>
               </div>
               <Select
@@ -319,9 +319,9 @@ export default function SacramentsReportBuilder() {
                 </div>
                 <div>
                   <Label className="text-base font-semibold text-gray-900">
-                    Zone / Community
+                    📍 Zone / Community
                   </Label>
-                  <p className="text-xs text-gray-500">Filter by geographical zone</p>
+                  <p className="text-sm text-gray-600 font-medium">Filter by specific geographical zone or select "All Zones"</p>
                 </div>
               </div>
               <Select
@@ -359,9 +359,9 @@ export default function SacramentsReportBuilder() {
                 </div>
                 <div>
                   <Label className="text-base font-semibold text-gray-900">
-                    Certificate Status
+                    📜 Certificate Status
                   </Label>
-                  <p className="text-xs text-gray-500">Filter by certificate availability</p>
+                  <p className="text-sm text-gray-600 font-medium">Show records with certificates, without certificates, or all records</p>
                 </div>
               </div>
               <Select

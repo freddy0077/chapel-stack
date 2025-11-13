@@ -7,6 +7,8 @@ import Inbox from "./Inbox";
 import Scheduler from "./Scheduler";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import ConversationView from "./ConversationView";
+import AutomationsPage from "./automations/page";
+import AnnouncementsPage from "./announcements/page";
 
 const TABS = [
   {
@@ -122,6 +124,53 @@ const TABS = [
       </svg>
     ),
   },
+  {
+    key: "automations",
+    label: "Automations",
+    icon: (
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+        <rect x="2" y="4" width="16" height="12" rx="4" fill="url(#f)" />
+        <defs>
+          <linearGradient
+            id="f"
+            x1="2"
+            y1="4"
+            x2="18"
+            y2="16"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#10b981" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
+  {
+    key: "announcements",
+    label: "Announcements",
+    icon: (
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+        <path
+          d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 7h2v6H9V7zm0 8h2v2H9v-2z"
+          fill="url(#g)"
+        />
+        <defs>
+          <linearGradient
+            id="g"
+            x1="2"
+            y1="4"
+            x2="18"
+            y2="16"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#ec4899" />
+            <stop offset="1" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ),
+  },
 ];
 
 export default function CommunicationPage() {
@@ -183,6 +232,8 @@ export default function CommunicationPage() {
             ))}
           {tab === "scheduler" && <Scheduler />}
           {tab === "analytics" && <AnalyticsDashboard />}
+          {tab === "automations" && <AutomationsPage />}
+          {tab === "announcements" && <AnnouncementsPage />}
         </div>
       </div>
     </div>

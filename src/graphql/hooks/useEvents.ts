@@ -33,12 +33,18 @@ export const useBranchEvents = (branchId?: string) => {
     variables: { branchId },
     skip: !branchId,
     fetchPolicy: "cache-and-network",
+    ssr: false, // Disable SSR for this query to prevent iteration errors
   });
+
+  // Always return an array, even if data is undefined
+  const events = useMemo(() => {
+    return Array.isArray(data?.events) ? data.events : [];
+  }, [data?.events]);
 
   return {
     loading,
     error,
-    events: data?.events || [],
+    events,
     refetch,
   };
 };

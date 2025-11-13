@@ -149,7 +149,7 @@ const FinancialStatements: React.FC<FinancialStatementsProps> = ({
   const { user } = useAuth();
 
   // Determine effective branch ID (super admin can see all branches)
-  const effectiveBranchId = user?.roles?.includes("SUPER_ADMIN")
+  const effectiveBranchId = user?.roles?.includes("ADMIN")
     ? branchId
     : branchId;
 

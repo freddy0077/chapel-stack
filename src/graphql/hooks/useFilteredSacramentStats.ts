@@ -24,7 +24,7 @@ export function useFilteredSacramentStats(filter: SacramentStatsFilter) {
     variables.period = filter.period;
   }
 
-  // For SUPER_ADMIN users with organisationId, we need to handle this differently
+  // For ADMIN users with organisationId, we need to handle this differently
   // since the backend doesn't support organisationId filtering for stats yet
   // For now, we'll just use branchId if available
   if (filter.branchId) {

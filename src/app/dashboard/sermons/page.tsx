@@ -219,6 +219,15 @@ function ModernSermonCard({
                   Edit
                 </Button>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => onDelete(sermon)}
+                >
+                  <TrashIcon className="w-4 h-4 mr-1" />
+                  Delete
+                </Button>
+                <Button
                   variant="default"
                   size="sm"
                   onClick={() => onViewDetails(sermon)}
@@ -382,6 +391,15 @@ function ModernSermonCard({
             <Button
               variant="outline"
               size="sm"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={() => onDelete(sermon)}
+            >
+              <TrashIcon className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onViewDetails(sermon)}
             >
               <EyeIcon className="w-4 h-4 mr-1" />
@@ -431,9 +449,9 @@ export default function SermonsPage() {
     error: sermonsError,
     refetch: refetchSermons,
   } = useSermons({ branchId, organisationId: organizationId });
-  const { data: speakersData, loading: speakersLoading } = useGetSpeakers(branchId);
-  const { data: seriesData, loading: seriesLoading } = useGetSeries(branchId);
-  const { data: categoriesData, loading: categoriesLoading } = useCategories();
+  const { data: speakersData, loading: speakersLoading, refetch: refetchSpeakers } = useGetSpeakers(branchId);
+  const { data: seriesData, loading: seriesLoading, refetch: refetchSeries } = useGetSeries(branchId);
+  const { data: categoriesData, loading: categoriesLoading, refetch: refetchCategories } = useCategories();
   const [createSermon, { loading: createLoading }] = useCreateSermon();
   const [updateSermon, { loading: updateLoading }] = useUpdateSermon();
   const [deleteSermon, { loading: deleteLoading }] = useDeleteSermon();
@@ -1034,17 +1052,26 @@ export default function SermonsPage() {
 
       <SpeakerManagerModal
         open={isSpeakerManagerOpen}
-        onClose={() => setIsSpeakerManagerOpen(false)}
+        onClose={() => {
+          setIsSpeakerManagerOpen(false);
+          refetchSpeakers();
+        }}
       />
 
       <CategoryManagerModal
         open={isCategoryManagerOpen}
-        onClose={() => setIsCategoryManagerOpen(false)}
+        onClose={() => {
+          setIsCategoryManagerOpen(false);
+          refetchCategories();
+        }}
       />
 
       <SeriesManagerModal
         open={isSeriesManagerOpen}
-        onClose={() => setIsSeriesManagerOpen(false)}
+        onClose={() => {
+          setIsSeriesManagerOpen(false);
+          refetchSeries();
+        }}
       />
     </div>
   );

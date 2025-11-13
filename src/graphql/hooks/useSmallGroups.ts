@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, gql } from "@apollo/client";
 import {
   GET_ALL_SMALL_GROUPS,
   GET_SINGLE_SMALL_GROUP,
@@ -67,6 +67,35 @@ export interface SmallGroupMember {
   updatedAt?: string;
 }
 
+export enum GroupExecutiveRole {
+  LEADER = "LEADER",
+  ASSISTANT_LEADER = "ASSISTANT_LEADER",
+  SECRETARY = "SECRETARY",
+  TREASURER = "TREASURER",
+  ORGANIZER = "ORGANIZER",
+  COORDINATOR = "COORDINATOR",
+  OTHER = "OTHER",
+}
+
+export enum GroupExecutiveStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+}
+
+export interface GroupExecutive {
+  id: string;
+  role: GroupExecutiveRole;
+  appointedAt: string;
+  removedAt?: string | null;
+  status: GroupExecutiveStatus;
+  memberId: string;
+  ministryId?: string | null;
+  smallGroupId?: string | null;
+  member?: Member;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SmallGroup {
   id: string;
   name: string;
@@ -81,6 +110,7 @@ export interface SmallGroup {
   ministryId?: string;
   ministry?: Ministry;
   members?: SmallGroupMember[];
+  executives?: GroupExecutive[];
   createdAt: string;
   updatedAt: string;
 }
@@ -356,3 +386,8 @@ export const useFilteredSmallGroupsSearch = (
     refetch,
   };
 };
+
+/**
+ * Alias for useAllSmallGroups for backward compatibility
+ */
+export const useSmallGroups = useAllSmallGroups;

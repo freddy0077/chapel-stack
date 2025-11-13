@@ -29,14 +29,14 @@ export default function CreateGroupModal({
   const { organisationId, branchId: defaultBranchId } = useOrganisationBranch();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const branchId =
-    user?.primaryRole === "super_admin"
+    user?.primaryRole === "admin"
       ? selectedBranchId
       : propBranchId || defaultBranchId;
 
   // Fetch branches for super admin
   const { data: branchesData } = useQuery(GET_BRANCHES, {
     variables: { filter: organisationId ? { organisationId } : undefined },
-    skip: user?.primaryRole !== "super_admin",
+    skip: user?.primaryRole !== "admin",
   });
 
   const { createSmallGroup } = useSmallGroupMutations();
@@ -140,7 +140,7 @@ export default function CreateGroupModal({
                 </div>
               )}
               {/* Branch Selector for Super Admin */}
-              {user?.primaryRole === "super_admin" && (
+              {user?.primaryRole === "admin" && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-900 mb-1">
                     Branch<span className="text-red-500">*</span>

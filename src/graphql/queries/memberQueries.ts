@@ -149,8 +149,7 @@ export const GET_MEMBERS_LIST = gql`
     $hasEmail: Boolean
     $hasPhone: Boolean
     $isRegularAttendee: Boolean
-    $includeDeactivated: Boolean
-    $onlyDeactivated: Boolean
+    $isDeactivated: Boolean
   ) {
     members(
       organisationId: $organisationId
@@ -171,99 +170,106 @@ export const GET_MEMBERS_LIST = gql`
       hasEmail: $hasEmail
       hasPhone: $hasPhone
       isRegularAttendee: $isRegularAttendee
-      includeDeactivated: $includeDeactivated
-      onlyDeactivated: $onlyDeactivated
+      isDeactivated: $isDeactivated
     ) {
-      id
-      firstName
-      middleName
-      lastName
-      preferredName
-      title
-      email
-      phoneNumber
-      alternativeEmail
-      alternatePhone
-      address
-      addressLine2
-      city
-      state
-      postalCode
-      country
-      district
-      region
-      digitalAddress
-      landmark
-      placeOfBirth
-      nationality
-      nlbNumber
-      occupation
-      emergencyContactName
-      emergencyContactPhone
-      emergencyContactRelation
-      membershipStatus
-      membershipType
-      gender
-      maritalStatus
-      privacyLevel
-      organisationId
-      branchId
-      dateOfBirth
-      membershipDate
-      baptismDate
-      headOfHousehold
-      isRegularAttendee
-      rfidCardId
-      nfcId
-      consentDate
-      consentVersion
-      status
-      isDeactivated
-      deactivatedAt
-      deactivatedBy
-      deactivationReason
-      profileImageUrl
-      createdAt
-      memberId
-      memberIdGeneratedAt
-      cardIssued
-      cardIssuedAt
-      cardType
-      familyId
-      communicationPrefs {
-        emailEnabled
-        emailNewsletter
-        emailEvents
-        emailReminders
-        smsEnabled
-        smsReminders
-        smsEmergency
-        phoneCallsEnabled
-        physicalMail
-        preferredCallTime
-        doNotDisturbDays
-      }
-      branch {
-        id
-        name
-      }
-      spouse {
+      data {
         id
         firstName
+        middleName
         lastName
+        preferredName
+        title
+        email
+        phoneNumber
+        alternativeEmail
+        alternatePhone
+        address
+        addressLine2
+        city
+        state
+        postalCode
+        country
+        district
+        region
+        digitalAddress
+        landmark
+        placeOfBirth
+        nationality
+        nlbNumber
+        occupation
+        emergencyContactName
+        emergencyContactPhone
+        emergencyContactRelation
+        membershipStatus
+        membershipType
+        gender
+        maritalStatus
+        privacyLevel
+        organisationId
+        branchId
+        dateOfBirth
+        membershipDate
+        baptismDate
+        headOfHousehold
+        isRegularAttendee
+        rfidCardId
+        nfcId
+        consentDate
+        consentVersion
+        status
+        isDeactivated
+        deactivatedAt
+        deactivatedBy
+        deactivationReason
+        profileImageUrl
+        createdAt
+        memberId
+        memberIdGeneratedAt
+        cardIssued
+        cardIssuedAt
+        cardType
+        familyId
+        communicationPrefs {
+          emailEnabled
+          emailNewsletter
+          emailEvents
+          emailReminders
+          smsEnabled
+          smsReminders
+          smsEmergency
+          phoneCallsEnabled
+          physicalMail
+          preferredCallTime
+          doNotDisturbDays
+        }
+        branch {
+          id
+          name
+        }
+        spouse {
+          id
+          firstName
+          lastName
+        }
+        parent {
+          id
+          firstName
+          lastName
+        }
+        children {
+          id
+          firstName
+          lastName
+        }
       }
-      parent {
-        id
-        firstName
-        lastName
-      }
-      children {
-        id
-        firstName
-        lastName
-      }
+      total
+      page
+      limit
+      totalPages
+      hasNextPage
+      hasPreviousPage
     }
-    membersCount(organisationId: $organisationId, branchId: $branchId, includeDeactivated: $includeDeactivated)
+    membersCount(organisationId: $organisationId, branchId: $branchId, isDeactivated: $isDeactivated)
   }
 `;
 
@@ -786,7 +792,7 @@ export const GET_MEMBERS_WITH_DEACTIVATED = gql`
     $skip: Int
     $take: Int
     $search: String
-    $includeDeactivated: Boolean
+    $isDeactivated: Boolean
   ) {
     members(
       organisationId: $organisationId
@@ -794,7 +800,7 @@ export const GET_MEMBERS_WITH_DEACTIVATED = gql`
       skip: $skip
       take: $take
       search: $search
-      includeDeactivated: $includeDeactivated
+      isDeactivated: $isDeactivated
     ) {
       id
       firstName

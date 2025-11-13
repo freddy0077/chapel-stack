@@ -44,7 +44,7 @@ export default function CreateConfirmationModal({
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
     useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isSuperAdmin = user?.primaryRole === "admin";
   const organisationId = user?.organisationId || orgIdFromFilter;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
     isSuperAdmin ? { organisationId } : undefined,

@@ -22,13 +22,13 @@ export default function NewConfirmationRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
     useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isAdmin = user?.primaryRole === "admin";
   // Only use orgIdFromFilter for super admins. For all others, always use user's organisationId
-  const organisationId = isSuperAdmin ? orgIdFromFilter : user?.organisationId;
+  const organisationId = isAdmin ? orgIdFromFilter : user?.organisationId;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined,
+    isAdmin ? { organisationId } : undefined,
   );
-  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
+  const branchId = isAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -244,7 +244,7 @@ export default function NewConfirmationRecord() {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Branch Selection Logic */}
-          {isSuperAdmin ? (
+          {isAdmin ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Branch<span className="text-red-500">*</span>

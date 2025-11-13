@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContextEnhanced";
  * This eliminates the need to define these values repeatedly across components
  */
 export function useOrganisationBranch() {
-  const { state } = useAuth();
+  const { state, currentBranch } = useAuth();
   const user = state.user;
 
   const values = useMemo(() => {
@@ -20,7 +20,8 @@ export function useOrganisationBranch() {
     }
 
     const organisationId = user.organisationId || undefined;
-    const branchId = user.userBranches?.[0]?.branch?.id || undefined;
+    // Prefer explicitly selected branch via BranchSwitcher
+    const branchId = currentBranch?.id || user.userBranches?.[0]?.branch?.id || undefined;
 
 
     return {
@@ -29,7 +30,7 @@ export function useOrganisationBranch() {
       hasAccess: !!(organisationId && branchId),
       user,
     };
-  }, [user]);
+  }, [user, currentBranch?.id]);
 
   return values;
 }

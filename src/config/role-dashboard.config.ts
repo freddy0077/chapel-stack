@@ -6,7 +6,7 @@ export enum DashboardType {
   MINISTRY = "MINISTRY",
   MEMBER = "MEMBER",
   BRANCH_ADMIN = "BRANCH_ADMIN",
-  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
 }
 
 export interface RoleConfig {
@@ -17,10 +17,10 @@ export interface RoleConfig {
 }
 
 export const ROLE_DASHBOARD_MAP: Record<string, RoleConfig> = {
-  SUPER_ADMIN: {
-    defaultDashboard: DashboardType.SUPER_ADMIN,
+  ADMIN: {
+    defaultDashboard: DashboardType.ADMIN,
     allowedDashboards: [
-      DashboardType.SUPER_ADMIN,
+      DashboardType.ADMIN,
       DashboardType.ADMIN,
       DashboardType.FINANCE,
     ],
@@ -113,13 +113,28 @@ export const ROLE_DASHBOARD_MAP: Record<string, RoleConfig> = {
     defaultDashboard: DashboardType.MEMBER,
     allowedDashboards: [DashboardType.MEMBER],
     defaultRoute: "/dashboard/member",
-    allowedRoutes: ["/dashboard/member/*", "/profile/*", "/giving/*"],
+    allowedRoutes: [
+      "/dashboard/member",
+      "/dashboard/member/*",
+      "/member/profile",
+      "/member/profile/*",
+      "/member/events",
+      "/member/events/*",
+      "/member/groups",
+      "/member/groups/*",
+      "/member/announcements",
+      "/member/announcements/*",
+      "/member/give",
+      "/member/give/*",
+      "/member/prayer-requests",
+      "/member/prayer-requests/*",
+    ],
   },
 };
 
 export function getDashboardRoute(dashboard: DashboardType): string {
   const routes = {
-    [DashboardType.SUPER_ADMIN]: "/dashboard/super-admin",
+    [DashboardType.ADMIN]: "/dashboard/super-admin",
     [DashboardType.BRANCH_ADMIN]: "/dashboard/branch",
     [DashboardType.ADMIN]: "/dashboard/admin",
     [DashboardType.FINANCE]: "/dashboard/finance",

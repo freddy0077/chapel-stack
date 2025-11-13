@@ -68,9 +68,19 @@ export default function ZonesPage() {
   });
 
   const [updateZone] = useMutation(UPDATE_ZONE, {
+    refetchQueries: [
+      {
+        query: GET_ZONES,
+        variables: { organisationId, branchId },
+      },
+      {
+        query: GET_ZONE_STATS,
+        variables: { organisationId, branchId },
+      },
+    ],
+    awaitRefetchQueries: true,
     onCompleted: () => {
       toast.success('Zone updated successfully!');
-      refetch();
       setShowFormModal(false);
       setSelectedZone(null);
     },
@@ -112,10 +122,19 @@ export default function ZonesPage() {
 
   const handleUpdateZone = (input: any) => {
     if (!selectedZone) return;
+    // Keep status in update (unlike create), but ensure all fields are included
     updateZone({
       variables: {
         id: selectedZone.id,
-        input,
+        input: {
+          name: input.name,
+          description: input.description,
+          location: input.location,
+          leaderName: input.leaderName,
+          leaderPhone: input.leaderPhone,
+          leaderEmail: input.leaderEmail,
+          status: input.status,
+        },
       },
     });
   };

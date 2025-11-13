@@ -129,7 +129,7 @@ export default function FamilyRelationshipModal({
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      <UserGroupIcon className="h-6 w-6 text-blue-600" />
+                      <Users className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
                       <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900">
@@ -145,7 +145,7 @@ export default function FamilyRelationshipModal({
                     className="rounded-md p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
                     onClick={onClose}
                   >
-                    <XMarkIcon className="h-5 w-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
 
@@ -192,7 +192,7 @@ export default function FamilyRelationshipModal({
                         disabled={!selectedMember || creating}
                         className="flex items-center gap-2"
                       >
-                        <PlusIcon className="h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                         {creating ? 'Adding...' : 'Add Relationship'}
                       </Button>
                     </div>
@@ -209,7 +209,7 @@ export default function FamilyRelationshipModal({
                       </div>
                     ) : relationships.length === 0 ? (
                       <div className="text-center py-8 bg-gray-50 rounded-lg">
-                        <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                        <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                         <p className="text-sm text-gray-500">No family relationships found</p>
                         <p className="text-xs text-gray-400 mt-1">Add relationships using the form above</p>
                       </div>
@@ -243,7 +243,7 @@ export default function FamilyRelationshipModal({
                               disabled={removing}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                             >
-                              <TrashIcon className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         ))}

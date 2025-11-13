@@ -42,8 +42,8 @@ export default function LoginPage() {
           case "SUBSCRIPTION_MANAGER":
             redirectUrl = "/dashboard/subscription-manager";
             break;
-          case "SUPER_ADMIN":
-            redirectUrl = "/dashboard/super-admin";
+          case "ADMIN":
+            redirectUrl = "/dashboard/admin";
             break;
           case "BRANCH_ADMIN":
             redirectUrl = "/dashboard/branch";

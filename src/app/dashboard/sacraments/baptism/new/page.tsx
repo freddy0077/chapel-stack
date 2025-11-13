@@ -34,12 +34,12 @@ export default function NewBaptismRecord() {
   const { organisationId: orgIdFromFilter, branchId: branchIdFromFilter } =
     useOrganizationBranchFilter();
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const isSuperAdmin = user?.primaryRole === "super_admin";
+  const isAdmin = user?.primaryRole === "admin";
   const organisationId = user?.organisationId || orgIdFromFilter;
   const { branches = [], loading: branchesLoading } = useFilteredBranches(
-    isSuperAdmin ? { organisationId } : undefined,
+    isAdmin ? { organisationId } : undefined,
   );
-  const branchId = isSuperAdmin ? selectedBranchId : branchIdFromFilter;
+  const branchId = isAdmin ? selectedBranchId : branchIdFromFilter;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     memberId: "", // will be set from search/autocomplete
@@ -188,7 +188,7 @@ export default function NewBaptismRecord() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Branch Selection Logic */}
-        {isSuperAdmin ? (
+        {isAdmin ? (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Branch<span className="text-red-500">*</span>

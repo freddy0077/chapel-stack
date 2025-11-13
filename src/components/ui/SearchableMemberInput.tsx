@@ -8,6 +8,7 @@ import {
   MagnifyingGlassIcon,
   UserIcon,
   XMarkIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/20/solid";
 
@@ -27,28 +28,34 @@ interface Member {
 
 interface SearchableMemberInputProps {
   value?: string;
-  onChange: (memberId: string, member?: Member) => void;
+  onChange: (value: string, member?: Member) => void;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
   className?: string;
   label?: string;
   error?: string;
+  allowTextInput?: boolean;
+  selectedMember?: Member | null; // Pre-selected member object
 }
 
 export default function SearchableMemberInput({
   value,
   onChange,
-  placeholder = "Search for a member...",
+  placeholder = "Search for a member or enter name...",
   required = false,
   disabled = false,
   className = "",
   label,
   error,
+  allowTextInput = false,
+  selectedMember: preSelectedMember,
 }: SearchableMemberInputProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [isTextMode, setIsTextMode] = useState(false);
+  const [textValue, setTextValue] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,11 +69,27 @@ export default function SearchableMemberInput({
       query: searchTerm,
       branchId: orgBranchFilter.branchId,
     },
-    skip: !searchTerm || searchTerm.length < 2,
+    skip: !searchTerm || searchTerm.length < 2 || isTextMode,
     fetchPolicy: "cache-and-network",
   });
 
   const members: Member[] = data?.searchMembers || [];
+
+  // Initialize from preSelectedMember prop
+  useEffect(() => {
+    if (preSelectedMember && !selectedMember) {
+      setSelectedMember(preSelectedMember);
+      setSearchTerm(`${preSelectedMember.firstName} ${preSelectedMember.lastName}`);
+    }
+  }, [preSelectedMember]);
+
+  // Initialize from value prop
+  useEffect(() => {
+    if (value && !selectedMember && !isTextMode && !preSelectedMember) {
+      setTextValue(value);
+      setSearchTerm(value);
+    }
+  }, [value, selectedMember, isTextMode, preSelectedMember]);
 
   // Handle member selection
   const handleSelectMember = (member: Member) => {
@@ -74,25 +97,34 @@ export default function SearchableMemberInput({
     setSearchTerm(`${member.firstName} ${member.lastName}`);
     setIsOpen(false);
     setHighlightedIndex(-1);
-    onChange(member.id, member);
+    setIsTextMode(false);
+    onChange(`${member.firstName} ${member.lastName}`, member);
   };
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setSearchTerm(newValue);
-    setIsOpen(true);
-    setHighlightedIndex(-1);
 
-    // If input is cleared, reset selection
-    if (!newValue) {
-      setSelectedMember(null);
-      onChange("");
+    if (isTextMode) {
+      setTextValue(newValue);
+      onChange(newValue);
+    } else {
+      setSearchTerm(newValue);
+      setIsOpen(true);
+      setHighlightedIndex(-1);
+
+      // If input is cleared, reset selection
+      if (!newValue) {
+        setSelectedMember(null);
+        onChange("");
+      }
     }
   };
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isTextMode) return;
+
     if (!isOpen || members.length === 0) return;
 
     switch (e.key) {
@@ -126,9 +158,22 @@ export default function SearchableMemberInput({
   const handleClear = () => {
     setSelectedMember(null);
     setSearchTerm("");
+    setTextValue("");
     setIsOpen(false);
+    setIsTextMode(false);
     onChange("");
     inputRef.current?.focus();
+  };
+
+  // Toggle between member search and text input
+  const toggleTextMode = () => {
+    setIsTextMode(!isTextMode);
+    setIsOpen(false);
+    setSelectedMember(null);
+    setSearchTerm("");
+    setTextValue("");
+    onChange("");
+    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   // Close dropdown when clicking outside
@@ -166,29 +211,54 @@ export default function SearchableMemberInput({
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          {allowTextInput && (
+            <button
+              type="button"
+              onClick={toggleTextMode}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              {isTextMode ? (
+                <>
+                  <UserIcon className="h-3 w-3 mr-1" />
+                  Search Members
+                </>
+              ) : (
+                <>
+                  <PencilIcon className="h-3 w-3 mr-1" />
+                  Enter Manually
+                </>
+              )}
+            </button>
+          )}
+        </div>
       )}
 
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+          {isTextMode ? (
+            <PencilIcon className="h-5 w-5 text-gray-400" />
+          ) : (
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+          )}
         </div>
 
         <input
           ref={inputRef}
           type="text"
-          value={searchTerm}
+          value={isTextMode ? textValue : searchTerm}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (searchTerm.length >= 2) {
+            if (!isTextMode && searchTerm.length >= 2) {
               setIsOpen(true);
             }
           }}
-          placeholder={placeholder}
+          placeholder={isTextMode ? "Enter name manually..." : placeholder}
           disabled={disabled}
           required={required}
           className={`block w-full pl-10 pr-10 py-2 border rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:border-blue-500 ${
@@ -198,7 +268,7 @@ export default function SearchableMemberInput({
           } ${disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
 
-        {selectedMember && (
+        {(selectedMember || textValue) && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
             <button
               type="button"
@@ -224,7 +294,7 @@ export default function SearchableMemberInput({
             </div>
             <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-blue-900">
-                {formatMemberName(selectedMember)}
+                {formatMemberName(selectedMember)} (Member)
               </p>
               <p className="text-xs text-blue-700">
                 {formatMemberDetails(selectedMember)}
@@ -237,8 +307,29 @@ export default function SearchableMemberInput({
         </div>
       )}
 
+      {/* Text mode display */}
+      {isTextMode && textValue && (
+        <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                <PencilIcon className="h-5 w-5 text-gray-600" />
+              </div>
+            </div>
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium text-gray-900">
+                {textValue} (Manual Entry)
+              </p>
+              <p className="text-xs text-gray-600">
+                Not linked to a member record
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dropdown */}
-      {isOpen && (
+      {isOpen && !isTextMode && (
         <div
           ref={dropdownRef}
           className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none"
@@ -252,37 +343,64 @@ export default function SearchableMemberInput({
             </div>
           ) : members.length === 0 ? (
             <div className="px-4 py-2 text-sm text-gray-500">
-              {searchTerm.length < 2
-                ? "Type at least 2 characters to search"
-                : "No members found"}
+              {searchTerm.length < 2 ? (
+                "Type at least 2 characters to search"
+              ) : (
+                <div>
+                  <p>No members found</p>
+                  {allowTextInput && (
+                    <button
+                      type="button"
+                      onClick={toggleTextMode}
+                      className="mt-1 text-blue-600 hover:text-blue-800 text-xs"
+                    >
+                      Enter name manually instead
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            members.map((member, index) => (
-              <button
-                key={member.id}
-                type="button"
-                onClick={() => handleSelectMember(member)}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                  index === highlightedIndex ? "bg-gray-100" : ""
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <UserIcon className="h-4 w-4 text-gray-600" />
+            <>
+              {members.map((member, index) => (
+                <button
+                  key={member.id}
+                  type="button"
+                  onClick={() => handleSelectMember(member)}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
+                    index === highlightedIndex ? "bg-gray-100" : ""
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <UserIcon className="h-4 w-4 text-gray-600" />
+                      </div>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="font-medium text-gray-900">
+                        {formatMemberName(member)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatMemberDetails(member)}
+                      </p>
                     </div>
                   </div>
-                  <div className="ml-3 flex-1">
-                    <p className="font-medium text-gray-900">
-                      {formatMemberName(member)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatMemberDetails(member)}
-                    </p>
-                  </div>
+                </button>
+              ))}
+              {allowTextInput && (
+                <div className="border-t border-gray-200 px-4 py-2">
+                  <button
+                    type="button"
+                    onClick={toggleTextMode}
+                    className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    <PencilIcon className="h-3 w-3 mr-1" />
+                    Enter name manually instead
+                  </button>
                 </div>
-              </button>
-            ))
+              )}
+            </>
           )}
         </div>
       )}

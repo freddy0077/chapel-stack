@@ -165,10 +165,50 @@ export const GET_EVENT_BY_ID = gql`
 export const GET_EVENT = GET_EVENT_BY_ID;
 
 /**
+ * Query to fetch event statistics for dashboard
+ */
+export const GET_EVENT_STATISTICS = gql`
+  query GetEventStatistics($days: Int) {
+    eventStatistics(days: $days) {
+      totalEvents
+      totalRegistrations
+      totalRevenue
+      pendingApprovals
+      confirmedRegistrations
+      averageAttendanceRate
+    }
+  }
+`;
+
+/**
+ * Query to fetch recent registrations
+ */
+export const GET_RECENT_REGISTRATIONS = gql`
+  query GetRecentRegistrations($limit: Int) {
+    recentRegistrations(limit: $limit) {
+      id
+      registrationDate
+      status
+      paymentStatus
+      guestName
+      member {
+        id
+        firstName
+        lastName
+      }
+      event {
+        id
+        title
+      }
+    }
+  }
+`;
+
+/**
  * Query to fetch event registrations for a specific event
  */
 export const GET_EVENT_REGISTRATIONS = gql`
-  query GetEventRegistrations($eventId: ID!) {
+  query GetEventRegistrations($eventId: String!) {
     eventRegistrations(filter: { eventId: $eventId }) {
       id
       eventId
@@ -178,7 +218,7 @@ export const GET_EVENT_REGISTRATIONS = gql`
         firstName
         lastName
         email
-        phone
+        phoneNumber
       }
       guestName
       guestEmail
@@ -190,12 +230,70 @@ export const GET_EVENT_REGISTRATIONS = gql`
       amountPaid
       paymentStatus
       paymentMethod
+      transactionId
       approvalStatus
       approvedBy
-      approvalDate
+      approvedAt
       rejectionReason
       registrationSource
       notes
+      createdBy
+      updatedBy
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * Query to fetch event registrations with flexible filter
+ */
+export const GET_EVENT_REGISTRATIONS_FILTERED = gql`
+  query GetEventRegistrationsFiltered($filter: EventRegistrationFilterInput) {
+    eventRegistrations(filter: $filter) {
+      id
+      eventId
+      memberId
+      member {
+        id
+        firstName
+        lastName
+        email
+        phoneNumber
+      }
+      guestName
+      guestEmail
+      guestPhone
+      status
+      registrationDate
+      numberOfGuests
+      specialRequests
+      amountPaid
+      paymentStatus
+      paymentMethod
+      transactionId
+      approvalStatus
+      approvedBy
+      approvedAt
+      rejectionReason
+      registrationSource
+      notes
+      createdBy
+      updatedBy
+      event {
+        id
+        title
+        startDate
+        endDate
+        location
+      }
       createdAt
       updatedAt
     }
@@ -206,7 +304,7 @@ export const GET_EVENT_REGISTRATIONS = gql`
  * Query to fetch event RSVPs for a specific event
  */
 export const GET_EVENT_RSVPS = gql`
-  query GetEventRSVPs($eventId: ID!) {
+  query GetEventRSVPs($eventId: String!) {
     eventRSVPs(filter: { eventId: $eventId }) {
       id
       eventId
@@ -216,7 +314,7 @@ export const GET_EVENT_RSVPS = gql`
         firstName
         lastName
         email
-        phone
+        phoneNumber
       }
       guestName
       guestEmail
@@ -228,31 +326,6 @@ export const GET_EVENT_RSVPS = gql`
       rsvpSource
       createdAt
       updatedAt
-    }
-  }
-`;
-
-/**
- * Query to get event statistics
- */
-export const GET_EVENT_STATISTICS = gql`
-  query GetEventStatistics($eventId: ID!) {
-    eventStatistics(eventId: $eventId) {
-      totalRegistrations
-      totalRSVPs
-      attendingCount
-      maybeCount
-      notAttendingCount
-      pendingCount
-      capacityUtilization
-      registrationsByStatus {
-        status
-        count
-      }
-      rsvpsByStatus {
-        status
-        count
-      }
     }
   }
 `;
@@ -271,7 +344,7 @@ export const GET_ALL_EVENT_REGISTRATIONS = gql`
         firstName
         lastName
         email
-        phone
+        phoneNumber
       }
       guestName
       guestEmail
@@ -283,9 +356,10 @@ export const GET_ALL_EVENT_REGISTRATIONS = gql`
       amountPaid
       paymentStatus
       paymentMethod
+      transactionId
       approvalStatus
       approvedBy
-      approvalDate
+      approvedAt
       rejectionReason
       registrationSource
       notes
@@ -309,7 +383,7 @@ export const GET_EVENT_REGISTRATION = gql`
         firstName
         lastName
         email
-        phone
+        phoneNumber
       }
       guestName
       guestEmail
@@ -321,9 +395,10 @@ export const GET_EVENT_REGISTRATION = gql`
       amountPaid
       paymentStatus
       paymentMethod
+      transactionId
       approvalStatus
       approvedBy
-      approvalDate
+      approvedAt
       rejectionReason
       registrationSource
       notes

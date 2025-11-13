@@ -33,6 +33,21 @@ export const GET_ALL_SMALL_GROUPS = gql`
         createdAt
         updatedAt
       }
+      executives {
+        id
+        role
+        appointedAt
+        status
+        memberId
+        member {
+          id
+          firstName
+          lastName
+          email
+          phoneNumber
+          profileImageUrl
+        }
+      }
     }
   }
 `;
@@ -69,6 +84,21 @@ export const GET_SINGLE_SMALL_GROUP = gql`
         memberId
         createdAt
         updatedAt
+      }
+      executives {
+        id
+        role
+        appointedAt
+        status
+        memberId
+        member {
+          id
+          firstName
+          lastName
+          email
+          phoneNumber
+          profileImageUrl
+        }
       }
     }
   }
@@ -114,6 +144,21 @@ export const GET_FILTERED_SMALL_GROUPS = gql`
           gender
           phoneNumber
           status
+        }
+      }
+      executives {
+        id
+        role
+        appointedAt
+        status
+        memberId
+        member {
+          id
+          firstName
+          lastName
+          email
+          phoneNumber
+          profileImageUrl
         }
       }
     }

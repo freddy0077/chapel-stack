@@ -130,8 +130,8 @@ export default function TestAuthPage() {
                 </h2>
                 <div className="space-y-2">
                   <p>
-                    <strong>SUPER_ADMIN:</strong>{" "}
-                    {canAccessDashboard("SUPER_ADMIN")
+                    <strong>ADMIN:</strong>{" "}
+                    {canAccessDashboard("ADMIN")
                       ? "✅ Allowed"
                       : "❌ Denied"}
                   </p>

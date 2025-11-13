@@ -12,10 +12,8 @@ import {
   UserPlusIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import {
-  GET_EVENT_REGISTRATIONS,
-  GET_EVENT_REGISTRATION_STATS,
-} from "../../graphql/mutations/eventMutations";
+import { GET_EVENT_REGISTRATIONS_FILTERED } from "../../graphql/queries/eventQueries";
+import { GET_EVENT_REGISTRATION_STATS } from "../../graphql/mutations/eventMutations";
 import { EventRegistrationStatus } from "../../graphql/types/event";
 import { Badge } from "@tremor/react";
 
@@ -44,7 +42,7 @@ const EventAttendeesView: React.FC<EventAttendeesViewProps> = ({
     loading,
     error,
     refetch,
-  } = useQuery(GET_EVENT_REGISTRATIONS, {
+  } = useQuery(GET_EVENT_REGISTRATIONS_FILTERED, {
     variables: { filter: { eventId } },
     fetchPolicy: "cache-and-network",
   });

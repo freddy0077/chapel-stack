@@ -31,7 +31,9 @@ import ReportLoadingSkeleton from './shared/LoadingSkeleton';
 interface AttendanceFilters {
   gender: string;
   attendanceType: string;
-  timeRange: string;
+  startTime: string;
+  endTime: string;
+  attendanceStatus: string;
   startDate: string;
   endDate: string;
   membershipType: string;
@@ -66,7 +68,9 @@ export default function AttendanceReportBuilder() {
   const [filters, setFilters] = useState<AttendanceFilters>({
     gender: 'ALL',
     attendanceType: 'ALL',
-    timeRange: 'ALL',
+    startTime: '',
+    endTime: '',
+    attendanceStatus: 'ALL',
     startDate: '',
     endDate: '',
     membershipType: 'ALL',
@@ -119,7 +123,9 @@ export default function AttendanceReportBuilder() {
     setFilters({
       gender: 'ALL',
       attendanceType: 'ALL',
-      timeRange: 'ALL',
+      startTime: '',
+      endTime: '',
+      attendanceStatus: 'ALL',
       startDate: '',
       endDate: '',
       membershipType: 'ALL',
@@ -255,22 +261,54 @@ export default function AttendanceReportBuilder() {
             </div>
 
             {/* Time Range */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label className="text-sm font-semibold text-gray-700">
                 🕐 Time Range
               </Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime" className="text-xs text-gray-600">
+                    Start Time
+                  </Label>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    value={filters.startTime}
+                    onChange={(e) => handleFilterChange('startTime', e.target.value)}
+                    className="pl-4 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 hover:border-purple-300"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endTime" className="text-xs text-gray-600">
+                    End Time
+                  </Label>
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={filters.endTime}
+                    onChange={(e) => handleFilterChange('endTime', e.target.value)}
+                    className="pl-4 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 hover:border-purple-300"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Attendance Status */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700">
+                ✓ Attendance Status
+              </Label>
               <Select
-                value={filters.timeRange}
-                onValueChange={(value) => handleFilterChange('timeRange', value)}
+                value={filters.attendanceStatus}
+                onValueChange={(value) => handleFilterChange('attendanceStatus', value)}
               >
-                <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 hover:border-purple-300">
+                <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200 hover:border-emerald-300">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-2">
-                  <SelectItem value="ALL" className="rounded-lg">All Times</SelectItem>
-                  <SelectItem value="MORNING" className="rounded-lg">Morning</SelectItem>
-                  <SelectItem value="AFTERNOON" className="rounded-lg">Afternoon</SelectItem>
-                  <SelectItem value="EVENING" className="rounded-lg">Evening</SelectItem>
+                  <SelectItem value="ALL" className="rounded-lg">All Status</SelectItem>
+                  <SelectItem value="PRESENT" className="rounded-lg">Present Only</SelectItem>
+                  <SelectItem value="ABSENT" className="rounded-lg">Absent Only</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -490,14 +528,24 @@ export default function AttendanceReportBuilder() {
                   `${row.member?.firstName || ''} ${row.member?.lastName || ''}`.trim() ||
                   'N/A',
               },
+              { 
+                key: 'member.phoneNumber', 
+                label: 'Phone',
+                render: (_, row) => row.member?.phoneNumber || 'N/A',
+              },
               { key: 'member.gender', label: 'Gender' },
               { key: 'member.membershipType', label: 'Type' },
               { key: 'member.zone.name', label: 'Zone' },
               {
-                key: 'createdAt',
-                label: 'Date',
+                key: 'checkInTime',
+                label: 'Date & Time',
                 render: (value) =>
-                  value ? new Date(value).toLocaleDateString() : 'N/A',
+                  value ? new Date(value).toLocaleString() : 'N/A',
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                render: (value) => value || 'PRESENT',
               },
             ]}
             data={reportResults.data}

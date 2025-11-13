@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContextEnhanced";
+import { useCheckEmailForMember } from "@/graphql/hooks/useRegisterUser";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -12,6 +13,7 @@ import {
   LockClosedIcon,
   BuildingOfficeIcon,
   CheckIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import AuthCard from "../components/AuthCard";
 import FormInput from "../components/FormInput";
@@ -37,8 +39,15 @@ export default function RegisterPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [organisationId, setOrganisationId] = useState("org_default");
 
   const { register, error, isLoading } = useAuth();
+  
+  // Check if email exists in members database
+  const { memberInfo, loading: checkingMember } = useCheckEmailForMember(
+    email,
+    organisationId
+  );
 
   // Fetch branches (in a real app, this would be an API call)
   useEffect(() => {
@@ -141,6 +150,7 @@ export default function RegisterPage() {
         email,
         password,
         branchId: selectedBranchId,
+        organisationId,
       });
       // If successful, register will redirect to dashboard
     } catch (err) {
@@ -207,6 +217,40 @@ export default function RegisterPage() {
             error={formErrors.email}
             required
           />
+
+          {/* Member Linking Info */}
+          {memberInfo && memberInfo.isMember && (
+            <div
+              className={`p-4 rounded-lg border-2 flex items-start gap-3 ${
+                memberInfo.canLink
+                  ? "bg-blue-50 border-blue-200"
+                  : "bg-amber-50 border-amber-200"
+              }`}
+            >
+              <SparklesIcon
+                className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
+                  memberInfo.canLink ? "text-blue-600" : "text-amber-600"
+                }`}
+              />
+              <div>
+                <p
+                  className={`font-semibold ${
+                    memberInfo.canLink ? "text-blue-900" : "text-amber-900"
+                  }`}
+                >
+                  {memberInfo.memberInfo?.firstName}{" "}
+                  {memberInfo.memberInfo?.lastName}
+                </p>
+                <p
+                  className={`text-sm ${
+                    memberInfo.canLink ? "text-blue-700" : "text-amber-700"
+                  }`}
+                >
+                  {memberInfo.message}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Password field with strength indicator */}
           <div>

@@ -21,10 +21,10 @@ export function BranchLoader({ children, pagination }: BranchLoaderProps) {
   const orgBranchFilter = useOrganizationBranchFilter();
 
   // For branches, we only need to filter by organisationId
-  // SUPER_ADMIN users will see branches filtered by organisation
+  // ADMIN users will see branches filtered by organisation
   // Regular users will see only their assigned branches
   const filters = {
-    // Only use organisationId if it's available (for SUPER_ADMIN users)
+    // Only use organisationId if it's available (for ADMIN users)
     ...(orgBranchFilter.organisationId
       ? { organisationId: orgBranchFilter.organisationId }
       : {}),

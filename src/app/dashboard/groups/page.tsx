@@ -92,7 +92,9 @@ export default function Groups() {
   );
 
   // Save refetch for after create
-  if (groupRefetch !== refetch) setGroupRefetch(() => refetch);
+  useEffect(() => {
+    setGroupRefetch(() => refetch);
+  }, [refetch]);
 
   // Log query results for debugging
 

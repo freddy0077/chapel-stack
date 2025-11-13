@@ -472,7 +472,7 @@ export default function SubscriptionOrganisationsPage() {
   }
 
   return (
-    <RoleRoute requiredRole={["SUBSCRIPTION_MANAGER", "SUPER_ADMIN"]}>
+    <RoleRoute requiredRole={["SUBSCRIPTION_MANAGER", "ADMIN"]}>
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
         <SubscriptionSidebar
