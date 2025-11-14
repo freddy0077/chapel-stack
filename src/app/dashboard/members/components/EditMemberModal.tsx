@@ -32,6 +32,8 @@ import ImageUpload from "@/components/ui/ImageUpload";
 import PhoneInput from "@/components/ui/PhoneInput";
 import { SORTED_COUNTRIES } from "@/constants/countries";
 import FamilyRelationshipManager from "@/components/members/FamilyRelationshipManager";
+import { useQuery } from "@apollo/client";
+import { GET_ZONES } from "@/graphql/queries/zoneQueries";
 
 interface EditMemberModalProps {
   isOpen: boolean;
@@ -73,6 +75,14 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     },
     !branchId || !organisationId,
   );
+
+  // Fetch zones for the branch
+  const { data: zonesData, loading: zonesLoading } = useQuery(GET_ZONES, {
+    variables: { organisationId, branchId },
+    skip: !organisationId || !branchId,
+  });
+
+  const zones = zonesData?.zones || [];
 
   useEffect(() => {
     if (isOpen) {
@@ -121,6 +131,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         specialGifts: member.specialGifts || "",
         groupIds: member.groupIds || [],
         profileImageUrl: member.profileImageUrl || "",
+        zoneId: member.zoneId || "",
       });
     }
   }, [isOpen, member]);
@@ -877,6 +888,37 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       )}
                       <p className="text-xs text-gray-500 mt-1">
                         Select all groups this member belongs to
+                      </p>
+                    </div>
+
+                    {/* Zone Selection Field */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Zone
+                      </label>
+                      {zonesLoading ? (
+                        <div className="text-sm text-gray-500 py-2">
+                          Loading zones...
+                        </div>
+                      ) : (
+                        <select
+                          className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                          value={formData.zoneId || ""}
+                          onChange={(e) =>
+                            handleChange("zoneId", e.target.value || undefined)
+                          }
+                        >
+                          <option value="">No Zone Assigned</option>
+                          {zones.map((zone: any) => (
+                            <option key={zone.id} value={zone.id}>
+                              {zone.name}
+                              {zone.location ? ` (${zone.location})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Assign member to a geographical zone or community group
                       </p>
                     </div>
                   </div>

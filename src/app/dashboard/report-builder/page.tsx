@@ -91,7 +91,7 @@ const reportCategories = [
     gradient: 'from-cyan-500 via-blue-600 to-sky-600',
     bgGradient: 'from-cyan-50 to-blue-50',
     path: '/dashboard/report-builder/zones',
-    comingSoon: true,
+    stats: { filters: 5, metrics: 6 },
   },
   {
     id: 'groups',

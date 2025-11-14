@@ -51,6 +51,7 @@ export interface Member {
   // Church Information
   organisationId: string;
   branchId?: string;
+  zoneId?: string;
   membershipDate?: Date;
   joinDate?: Date;
   baptismDate?: Date;
@@ -342,6 +343,7 @@ export interface CreateMemberInput {
   // Church Information
   organisationId: string;
   branchId?: string;
+  zoneId?: string;
   membershipDate?: Date;
   baptismDate?: Date;
   confirmationDate?: Date;
