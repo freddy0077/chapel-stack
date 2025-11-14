@@ -93,11 +93,57 @@ export default function EventsReportBuilder() {
   };
 
   const handleGenerateReport = () => {
+    // Normalize filters to match backend expectations
+    const eventTypeMap: Record<string, string> = {
+      // UI value -> Backend enum value
+      SERVICE: 'WORSHIP_SERVICE',
+      PRAYER_MEETING: 'PRAYER_MEETING',
+      BIBLE_STUDY: 'BIBLE_STUDY',
+      FELLOWSHIP: 'FELLOWSHIP',
+      CONFERENCE: 'CONFERENCE',
+      SEMINAR: 'SEMINAR',
+      OUTREACH: 'OUTREACH',
+      YOUTH_EVENT: 'YOUTH_EVENT',
+      CHILDREN_EVENT: 'CHILDREN_EVENT',
+      ALL: 'ALL',
+    };
+
+    // Build a clean filters object: drop 'ALL' and empty strings
+    const normalized: Record<string, any> = {};
+    if (filters.startDate) normalized.startDate = filters.startDate;
+    if (filters.endDate) normalized.endDate = filters.endDate;
+
+    // Event type mapping
+    if (filters.eventType && filters.eventType !== 'ALL') {
+      const mapped = eventTypeMap[filters.eventType] || filters.eventType;
+      if (mapped !== 'ALL') normalized.eventType = mapped;
+    }
+
+    // Event status: map UI values to backend-understood fields
+    // - CANCELLED maps directly to status
+    // - UPCOMING/ONGOING/COMPLETED become a logical time-based range handled by backend
+    if (filters.eventStatus && filters.eventStatus !== 'ALL') {
+      if (filters.eventStatus === 'CANCELLED') {
+        normalized.eventStatus = 'CANCELLED';
+      } else if (
+        filters.eventStatus === 'UPCOMING' ||
+        filters.eventStatus === 'ONGOING' ||
+        filters.eventStatus === 'COMPLETED'
+      ) {
+        normalized.statusRange = filters.eventStatus; // handled in backend
+      }
+    }
+
+    if (filters.minAttendance) normalized.minAttendance = String(filters.minAttendance);
+    if (filters.maxAttendance) normalized.maxAttendance = String(filters.maxAttendance);
+
+    // Note: zoneId and organizerId are currently not supported by backend events report
+
     executeReport({
       variables: {
         input: {
           category: 'EVENTS',
-          filters,
+          filters: normalized,
           organisationId,
           branchId,
         },
