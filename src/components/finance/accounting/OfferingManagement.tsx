@@ -20,6 +20,7 @@ export default function OfferingManagement({
 }: OfferingManagementProps) {
   const [showCounterModal, setShowCounterModal] = useState(false);
   const [activeTab, setActiveTab] = useState("batches");
+  const [refreshFlag, setRefreshFlag] = useState(0);
 
   return (
     <div className="space-y-6">
@@ -52,6 +53,7 @@ export default function OfferingManagement({
 
         <TabsContent value="batches" className="mt-6">
           <OfferingBatchList
+            key={refreshFlag}
             organisationId={organisationId}
             branchId={branchId}
             userId={userId}
@@ -82,7 +84,8 @@ export default function OfferingManagement({
         userId={userId}
         onSuccess={() => {
           setShowCounterModal(false);
-          // TODO: Refetch batches
+          setActiveTab("batches");
+          setRefreshFlag((v) => v + 1);
         }}
       />
     </div>

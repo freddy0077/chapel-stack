@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { GET_OFFERING_BATCHES } from "@/graphql/finance/queries";
 
 const CREATE_OFFERING_BATCH = gql`
   mutation CreateOfferingBatch($input: CreateOfferingBatchInput!) {
@@ -70,7 +71,15 @@ export default function OfferingCounterModal({
   const [mobileMoneyAmount, setMobileMoneyAmount] = useState(0);
   const [bankTransferAmount, setBankTransferAmount] = useState(0);
 
-  const [createBatch, { loading }] = useMutation(CREATE_OFFERING_BATCH);
+  const [createBatch, { loading }] = useMutation(CREATE_OFFERING_BATCH, {
+    refetchQueries: [
+      {
+        query: GET_OFFERING_BATCHES,
+        variables: { organisationId, branchId },
+      },
+    ],
+    awaitRefetchQueries: true,
+  });
 
   // TODO: Fetch real staff members from GraphQL
   // For now, just show current user
