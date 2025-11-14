@@ -120,26 +120,30 @@ export default function TakeAttendancePage() {
 
   // Filter members by selected group and apply client-side pagination
   const { members, filteredTotalCount, paginatedMembers } = useMemo(() => {
-    if (!selectedGroupFilter || !smallGroups) {
+    // Ensure allMembers is always an array
+    const safeAllMembers = Array.isArray(allMembers) ? allMembers : [];
+    const safeSmallGroups = Array.isArray(smallGroups) ? smallGroups : [];
+    
+    if (!selectedGroupFilter || safeSmallGroups.length === 0) {
       // Show all members if no group filter selected - use backend pagination
       return {
-        members: allMembers,
+        members: safeAllMembers,
         filteredTotalCount: membersTotalCount || 0,
-        paginatedMembers: allMembers
+        paginatedMembers: safeAllMembers
       };
     }
 
-    const selectedGroup = smallGroups.find((group: any) => group.id === selectedGroupFilter);
+    const selectedGroup = safeSmallGroups.find((group: any) => group.id === selectedGroupFilter);
     if (!selectedGroup) {
       return {
-        members: allMembers,
+        members: safeAllMembers,
         filteredTotalCount: membersTotalCount || 0,
-        paginatedMembers: allMembers
+        paginatedMembers: safeAllMembers
       };
     }
 
     const groupMemberIds = selectedGroup.members?.map((member: any) => member.memberId) || [];
-    const filteredMembers = allMembers.filter((member: any) => groupMemberIds.includes(member.id));
+    const filteredMembers = safeAllMembers.filter((member: any) => groupMemberIds.includes(member.id));
     
     // Apply client-side pagination to filtered members
     const startIndex = (memberPage - 1) * memberItemsPerPage;
@@ -228,18 +232,20 @@ export default function TakeAttendancePage() {
 
   // Filter sessions and events based on search
   const filteredSessions = useMemo(() => {
-    if (!sessionSearch.trim()) return sessions;
+    const safeSessions = Array.isArray(sessions) ? sessions : [];
+    if (!sessionSearch.trim()) return safeSessions;
     const s = sessionSearch.trim().toLowerCase();
-    return sessions.filter((session: any) =>
+    return safeSessions.filter((session: any) =>
       session.name?.toLowerCase().includes(s) ||
       session.location?.toLowerCase().includes(s)
     );
   }, [sessionSearch, sessions]);
 
   const filteredEvents = useMemo(() => {
-    if (!eventSearch.trim()) return events;
+    const safeEvents = Array.isArray(events) ? events : [];
+    if (!eventSearch.trim()) return safeEvents;
     const s = eventSearch.trim().toLowerCase();
-    return events.filter((event: any) =>
+    return safeEvents.filter((event: any) =>
       event.title?.toLowerCase().includes(s) ||
       event.location?.toLowerCase().includes(s)
     );
@@ -264,9 +270,12 @@ export default function TakeAttendancePage() {
   // Select All / Deselect All functionality (works on current page)
   const handleSelectAll = () => {
     const newAttendance = { ...attendance };
-    const availableMembersOnPage = paginatedMembers.filter((member: any) => {
+    const safePaginatedMembersLocal = Array.isArray(paginatedMembers) ? paginatedMembers : [];
+    const safeAttendanceRecordsLocal = Array.isArray(attendanceRecords) ? attendanceRecords : [];
+    
+    const availableMembersOnPage = safePaginatedMembersLocal.filter((member: any) => {
       // Don't include members who already have attendance marked
-      return !(attendanceRecords || []).some((r: any) => r.member?.id === member.id);
+      return !safeAttendanceRecordsLocal.some((r: any) => r.member?.id === member.id);
     });
 
     const allSelected = availableMembersOnPage.every((member: any) => attendance[member.id]);
@@ -297,8 +306,11 @@ export default function TakeAttendancePage() {
   };
 
   // Calculate selection state for the select all checkbox (use paginated members for current page)
-  const availableMembers = paginatedMembers.filter((member: any) => {
-    return !(attendanceRecords || []).some((r: any) => r.member?.id === member.id);
+  const safePaginatedMembers = Array.isArray(paginatedMembers) ? paginatedMembers : [];
+  const safeAttendanceRecords = Array.isArray(attendanceRecords) ? attendanceRecords : [];
+  
+  const availableMembers = safePaginatedMembers.filter((member: any) => {
+    return !safeAttendanceRecords.some((r: any) => r.member?.id === member.id);
   });
   const selectedCount = availableMembers.filter((member: any) => attendance[member.id]).length;
   const isAllSelected = availableMembers.length > 0 && selectedCount === availableMembers.length;
