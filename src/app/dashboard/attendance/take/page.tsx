@@ -111,6 +111,11 @@ export default function TakeAttendancePage() {
     take: memberTake,
   });
 
+  // Calculate total pages based on whether we're using backend or client-side pagination
+  const totalPages = shouldFetchAll 
+    ? Math.ceil(membersTotalCount / memberItemsPerPage) // Client-side pagination for filtered groups
+    : Math.ceil(membersTotalCount / memberItemsPerPage); // Backend pagination - same calculation but data is already paginated
+
   // Fetch groups for group-based selection
   const { smallGroups, loading: loadingGroups, error: groupsError } = useFilteredSmallGroups({
     branchId: orgBranchFilter.branchId,
@@ -937,13 +942,13 @@ export default function TakeAttendancePage() {
                       <span className="text-gray-500"> (filtered)</span>
                     )}
                   </span>
-                  {Math.ceil(filteredTotalCount / memberItemsPerPage) > 1 && (
-                    <span>Page {memberPage} of {Math.ceil(filteredTotalCount / memberItemsPerPage)}</span>
+                  {totalPages > 1 && (
+                    <span>Page {memberPage} of {totalPages}</span>
                   )}
                 </div>
                 <Pagination
                   currentPage={memberPage}
-                  totalPages={Math.ceil(filteredTotalCount / memberItemsPerPage)}
+                  totalPages={totalPages}
                   totalItems={filteredTotalCount}
                   itemsPerPage={memberItemsPerPage}
                   onPageChange={setMemberPage}
