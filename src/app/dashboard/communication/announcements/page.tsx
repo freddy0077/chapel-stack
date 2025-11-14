@@ -53,12 +53,7 @@ interface Announcement {
   updatedAt: string;
 }
 
-interface AnnouncementsResponse {
-  announcements: Announcement[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+// Using flat array response from server
 
 export default function AnnouncementsPage() {
   const router = useRouter();
@@ -67,24 +62,21 @@ export default function AnnouncementsPage() {
   const [limit] = useState(10);
   const [offset, setOffset] = useState(0);
 
-  const {
-    data,
-    loading,
-    error,
-    refetch,
-  } = useQuery<{ announcements: AnnouncementsResponse }>(GET_ANNOUNCEMENTS, {
-    variables: {
-      branchId,
-      filters: { status: statusFilter },
-      limit,
-      offset,
-    },
-    skip: !branchId,
-  });
+  const { data, loading, error, refetch } = useQuery<{ announcements: Announcement[] }>(
+    GET_ANNOUNCEMENTS,
+    {
+      variables: { branchId },
+      skip: !branchId,
+    }
+  );
 
-  const response = data?.announcements;
-  const announcements: Announcement[] = response?.announcements || [];
-  const total = response?.total || 0;
+  const rawAnnouncements: Announcement[] = data?.announcements || [];
+  const filteredAnnouncements =
+    statusFilter === "PUBLISHED"
+      ? rawAnnouncements
+      : rawAnnouncements.filter((a) => a.status === statusFilter);
+  const total = filteredAnnouncements.length;
+  const announcements: Announcement[] = filteredAnnouncements.slice(offset, offset + limit);
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toUpperCase()) {

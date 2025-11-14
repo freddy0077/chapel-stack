@@ -223,7 +223,7 @@ export default function AnnouncementForm({
         refetchQueries: [
           {
             query: GET_ANNOUNCEMENTS,
-            variables: { branchId, limit: 10, offset: 0 },
+            variables: { branchId },
           },
         ],
       });
@@ -233,7 +233,7 @@ export default function AnnouncementForm({
         refetchQueries: [
           {
             query: GET_ANNOUNCEMENTS,
-            variables: { branchId, limit: 10, offset: 0 },
+            variables: { branchId },
           },
         ],
       });
@@ -275,7 +275,7 @@ export default function AnnouncementForm({
           refetchQueries: [
             {
               query: GET_ANNOUNCEMENTS,
-              variables: { branchId, limit: 10, offset: 0 },
+              variables: { branchId },
             },
           ],
         });
