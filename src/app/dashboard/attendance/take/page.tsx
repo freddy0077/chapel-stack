@@ -770,15 +770,16 @@ export default function TakeAttendancePage() {
                             <div className="flex items-center justify-between">
                               <span>All Members</span>
                               <span className="text-xs text-gray-500">
-                                {allMembers.length} total
+                                {Array.isArray(allMembers) ? allMembers.length : 0} total
                               </span>
                             </div>
                           </button>
                           
                           {/* Individual Groups */}
-                          {smallGroups.map((group: any) => {
+                          {Array.isArray(smallGroups) && smallGroups.map((group: any) => {
                             const groupMemberIds = group.members?.map((member: any) => member.memberId) || [];
-                            const groupMemberCount = allMembers.filter((member: any) => 
+                            const safeAllMembersLocal = Array.isArray(allMembers) ? allMembers : [];
+                            const groupMemberCount = safeAllMembersLocal.filter((member: any) => 
                               groupMemberIds.includes(member.id)
                             ).length;
                             
