@@ -37,29 +37,19 @@ interface AnnouncementsResponse {
   total: number;
 }
 
+// Unified: use flat list announcements query and filter/paginate client-side
 const GET_ANNOUNCEMENTS = gql`
-  query GetAnnouncements($branchId: ID!, $filters: AnnouncementFiltersInput, $limit: Int, $offset: Int) {
-    announcements(branchId: $branchId, filters: $filters, limit: $limit, offset: $offset) {
-      announcements {
-        id
-        title
-        content
-        category
-        priority
-        status
-        publishedAt
-        creator {
-          firstName
-          lastName
-        }
-        _count {
-          reads
-          deliveries
-        }
-      }
-      total
-      limit
-      offset
+  query GetAnnouncementsList($branchId: ID!) {
+    announcements(branchId: $branchId) {
+      id
+      title
+      content
+      category
+      priority
+      status
+      publishedAt
+      creator { firstName lastName }
+      _count { reads deliveries }
     }
   }
 `;
@@ -71,18 +61,30 @@ export default function AnnouncementsPage() {
   const [limit] = useState(10);
   const [offset, setOffset] = useState(0);
 
-  const { data, loading, error, refetch } = useQuery(GET_ANNOUNCEMENTS, {
-    variables: {
-      branchId,
-      filters: { status: statusFilter },
-      limit,
-      offset,
-    },
+  const {
+    data,
+    loading,
+    error,
+    refetch,
+  } = useQuery(GET_ANNOUNCEMENTS, {
+    variables: { branchId },
     skip: !branchId,
   });
 
-  const announcements: Announcement[] = data?.announcements?.announcements || [];
-  const total = data?.announcements?.total || 0;
+  // Support both wrapper and list shapes
+  const rawAnnouncements: Announcement[] = Array.isArray(data?.announcements)
+    ? (data?.announcements as Announcement[])
+    : (data?.announcements?.announcements || []);
+
+  // For non-PUBLISHED, the list query may not support server-side filters/pagination
+  const filteredAnnouncements =
+    statusFilter === "PUBLISHED"
+      ? rawAnnouncements
+      : rawAnnouncements.filter((a) => a.status === statusFilter);
+
+  const total = filteredAnnouncements.length;
+
+  const announcements: Announcement[] = filteredAnnouncements.slice(offset, offset + limit);
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toUpperCase()) {
