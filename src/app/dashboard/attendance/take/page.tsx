@@ -126,10 +126,11 @@ export default function TakeAttendancePage() {
     
     if (!selectedGroupFilter || safeSmallGroups.length === 0) {
       // Show all members if no group filter selected - use backend pagination
+      // Backend already handles pagination via skip/take, so just return the fetched members
       return {
         members: safeAllMembers,
         filteredTotalCount: membersTotalCount || 0,
-        paginatedMembers: safeAllMembers
+        paginatedMembers: safeAllMembers // Backend pagination already applied
       };
     }
 
@@ -138,14 +139,14 @@ export default function TakeAttendancePage() {
       return {
         members: safeAllMembers,
         filteredTotalCount: membersTotalCount || 0,
-        paginatedMembers: safeAllMembers
+        paginatedMembers: safeAllMembers // Backend pagination already applied
       };
     }
 
     const groupMemberIds = selectedGroup.members?.map((member: any) => member.memberId) || [];
     const filteredMembers = safeAllMembers.filter((member: any) => groupMemberIds.includes(member.id));
     
-    // Apply client-side pagination to filtered members
+    // Apply client-side pagination to filtered members (because we fetched all members for group filtering)
     const startIndex = (memberPage - 1) * memberItemsPerPage;
     const endIndex = startIndex + memberItemsPerPage;
     const paginatedFilteredMembers = filteredMembers.slice(startIndex, endIndex);

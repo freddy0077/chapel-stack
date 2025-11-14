@@ -318,6 +318,7 @@ export const useMembers = (
         search: filters?.search || undefined, // <-- ensure search is sent
       },
       notifyOnNetworkStatusChange: true,
+      fetchPolicy: "cache-and-network", // Always fetch fresh data when pagination/filters change
     },
   );
 
