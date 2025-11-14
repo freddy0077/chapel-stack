@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTransactionsQuery } from "@/graphql/hooks/useTransactionQueries";
+import { useBankAccounts } from "@/hooks/finance/useBankAccounts";
 
 // Optionally, you can pass additional props for customizing the display
 export default function BranchFinanceStats({
@@ -34,6 +35,18 @@ export default function BranchFinanceStats({
     take: 1, // Only need stats
   });
   const stats = transactionsData?.transactions?.stats;
+
+  // Bank accounts for balances KPI and list
+  const {
+    bankAccounts,
+    loading: bankLoading,
+    error: bankError,
+  } = useBankAccounts({ organisationId, branchId });
+
+  const totalBankBalance = bankAccounts?.reduce(
+    (sum: number, acc: any) => sum + (acc.bankBalance || 0),
+    0,
+  ) || 0;
 
   return (
     <div className="space-y-6">
@@ -84,95 +97,86 @@ export default function BranchFinanceStats({
           </div>
         )}
       </div>
-      <div>
-        <h3 className="text-lg font-bold mb-2">Fund Balances</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {funds.length === 0 ? (
-            <div className="col-span-full text-gray-500">No funds found.</div>
-          ) : (
-            funds.map((fund) => (
-              <FundBalanceCard
-                key={fund.id}
-                organisationId={organisationId}
-                fund={fund}
-                startDate={startDate}
-                endDate={endDate}
-              />
-            ))
-          )}
+      {/* Bank Accounts KPI */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 bg-blue-50 rounded-xl shadow">
+          <div className="text-xs text-gray-500">Total Bank Balance</div>
+          <div className="text-2xl font-semibold text-blue-700">
+            {bankLoading ? 'Loading…' : `₵${totalBankBalance.toLocaleString()}`}
+          </div>
         </div>
       </div>
+
+      <BankAccountBalances
+        bankAccounts={bankAccounts}
+        loading={bankLoading}
+        error={bankError}
+      />
       <br />
     </div>
   );
 }
 
-function FundBalanceCard({
-  organisationId,
-  fund,
-  startDate,
-  endDate,
+// Helper component: Bank account balances grid
+function BankAccountBalances({
+  bankAccounts,
+  loading,
+  error,
 }: {
-  organisationId: string;
-  fund: any;
-  startDate?: string;
-  endDate?: string;
+  bankAccounts: any[];
+  loading: boolean;
+  error: any;
 }) {
-  const { data, loading, error } = useTransactionsQuery({
-    organisationId,
-    fundId: fund.id,
-    branchId: fund.branchId,
-    startDate,
-    endDate,
-    skip: 0,
-    take: 1,
-  });
-  const stats = data?.transactions?.stats;
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl shadow-lg border border-indigo-100 p-6 flex flex-col gap-3 items-start hover:shadow-xl transition-shadow duration-200">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center shadow">
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            className="text-indigo-500"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
+    <div>
+      <h3 className="text-lg font-bold mb-2">Bank Account Balances</h3>
+      {loading ? (
+        <div className="text-gray-500">Loading bank accounts...</div>
+      ) : error ? (
+        <div className="text-red-500">Error loading bank accounts.</div>
+      ) : bankAccounts?.length === 0 ? (
+        <div className="text-gray-500">No bank accounts found.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {bankAccounts?.map((acc: any) => (
+            <div
+              key={acc.id}
+              className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-lg border border-blue-100 p-6 flex flex-col gap-3 items-start hover:shadow-xl transition-shadow duration-200"
+            >
+              <div className="flex items-center justify-between w-full">
+                <div>
+                  <div className="text-sm font-semibold text-blue-900">
+                    {acc.accountName}
+                  </div>
+                  <div className="text-xs text-gray-500">{acc.bankName}</div>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                  {acc.currency || "GHS"}
+                </span>
+              </div>
+
+              <div className="w-full grid grid-cols-2 gap-3 mt-2">
+                <div>
+                  <div className="text-xs text-gray-500">Book Balance</div>
+                  <div className="text-lg font-bold text-blue-700">
+                    {(acc.bookBalance ?? 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Bank Balance</div>
+                  <div className="text-lg font-bold text-blue-700">
+                    {(acc.bankBalance ?? 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 w-full text-right">
+                {acc.accountNumber}
+              </div>
+            </div>
+          ))}
         </div>
-        <span
-          className="text-lg font-bold text-indigo-900 truncate max-w-[120px]"
-          title={fund.name}
-        >
-          {fund.name}
-        </span>
-      </div>
-      <div className="flex flex-col gap-1 w-full">
-        <span className="text-xs text-gray-500">Net Balance</span>
-        <span className="text-2xl font-extrabold text-indigo-700">
-          {loading ? (
-            <span className="animate-pulse text-gray-400">Loading...</span>
-          ) : error ? (
-            <span className="text-red-500">Error</span>
-          ) : (
-            `₵${stats?.netBalance?.toLocaleString?.() ?? "0"}`
-          )}
-        </span>
-      </div>
-      <div className="mt-2 w-full flex justify-end">
-        <span className="inline-block px-3 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-600 font-semibold">
-          Fund
-        </span>
-      </div>
+      )}
     </div>
   );
 }

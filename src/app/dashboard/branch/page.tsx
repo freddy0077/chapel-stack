@@ -290,23 +290,7 @@ export default function UltraModernBranchDashboard() {
     skip: !branchId,
   });
 
-  // Fetch funds for this branch
-  const { data: fundsData } = useQuery(
-    gql`
-      query GetFunds($organisationId: String!, $branchId: String) {
-        funds(organisationId: $organisationId, branchId: $branchId) {
-          id
-          name
-          description
-          branchId
-        }
-      }
-    `,
-    {
-      variables: { organisationId, branchId },
-      skip: !organisationId || !branchId,
-    },
-  );
+  // Fund balances removed in favor of bank account balances (see BranchFinanceStats)
 
   if (loading) return <ModernLoader />;
   if (error) return <ModernError error={error} />;
@@ -538,11 +522,7 @@ export default function UltraModernBranchDashboard() {
               </div>
 
               <div className="space-y-6">
-                <BranchFinanceStats
-                  organisationId={organisationId}
-                  branchId={branchId}
-                  funds={fundsData?.funds || []}
-                />
+                <BranchFinanceStats organisationId={organisationId} branchId={branchId} />
                 <FinancialBreakdown
                   financeStats={branchDashboard.financeStats}
                 />
