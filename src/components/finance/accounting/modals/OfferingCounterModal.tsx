@@ -68,6 +68,7 @@ export default function OfferingCounterModal({
     coins: 0,
   });
   const [mobileMoneyAmount, setMobileMoneyAmount] = useState(0);
+  const [bankTransferAmount, setBankTransferAmount] = useState(0);
 
   const [createBatch, { loading }] = useMutation(CREATE_OFFERING_BATCH);
 
@@ -85,7 +86,7 @@ export default function OfferingCounterModal({
   };
 
   const cashTotal = calculateCashTotal();
-  const grandTotal = cashTotal + mobileMoneyAmount;
+  const grandTotal = cashTotal + mobileMoneyAmount + bankTransferAmount;
 
   const handleSubmit = async () => {
     // Validation
@@ -117,7 +118,7 @@ export default function OfferingCounterModal({
             offeringType: offeringType.toUpperCase(),
             cashAmount: cashTotal,
             mobileMoneyAmount,
-            chequeAmount: 0,
+            chequeAmount: bankTransferAmount,
             foreignCurrencyAmount: 0,
             cashDenominations: denominations,
             counters: counters,
@@ -317,8 +318,8 @@ export default function OfferingCounterModal({
           <div className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-4">Mobile Money</h3>
-                <div className="space-y-3">
+                <h3 className="font-semibold mb-4">Non-Cash Collections</h3>
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="momo">Total Mobile Money Amount</Label>
                     <Input
@@ -332,6 +333,21 @@ export default function OfferingCounterModal({
                       }
                       placeholder="0.00"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="bankTransfer">Total Bank Transfer Amount</Label>
+                    <Input
+                      id="bankTransfer"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={bankTransferAmount || ""}
+                      onChange={(e) =>
+                        setBankTransferAmount(parseFloat(e.target.value) || 0)
+                      }
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Bank transfers will be recorded as cheque/non-cash amounts for this batch.</p>
                   </div>
                 </div>
               </CardContent>
@@ -352,6 +368,10 @@ export default function OfferingCounterModal({
                   <div className="flex justify-between">
                     <span>Mobile Money:</span>
                     <span>GHS {mobileMoneyAmount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Bank Transfer:</span>
+                    <span>GHS {bankTransferAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>Total:</span>
