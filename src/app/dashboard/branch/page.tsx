@@ -277,6 +277,7 @@ export default function UltraModernBranchDashboard() {
   const userName = user?.firstName || user?.lastName;
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const router = useRouter();
 
   // Update time every minute
   useEffect(() => {
@@ -392,9 +393,9 @@ export default function UltraModernBranchDashboard() {
                     </span>
                   </button>
 
-                  <button className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200">
+                  <Link href="/dashboard/settings" className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200">
                     <Cog6ToothIcon className="w-5 h-5" />
-                  </button>
+                  </Link>
 
                   <button className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200">
                     <EllipsisHorizontalIcon className="w-5 h-5" />
@@ -455,7 +456,10 @@ export default function UltraModernBranchDashboard() {
                   </div>
                 </div>
 
-                <button className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => router.push('/dashboard/report-builder')}
+                  className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
                   <EyeIcon className="w-5 h-5" />
                   <span>View Detailed Report</span>
                   <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
