@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import {
   BellIcon,
   PlusIcon,
@@ -13,6 +13,19 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { useOrganisationBranch } from "@/hooks/useOrganisationBranch";
+import { GET_ANNOUNCEMENTS } from "@/graphql/queries/announcementQueries";
+
+interface AnnouncementCreator {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}
+
+interface AnnouncementCounts {
+  reads: number;
+  deliveries: number;
+}
 
 interface Announcement {
   id: string;
@@ -22,41 +35,34 @@ interface Announcement {
   priority: string;
   status: string;
   publishedAt?: string;
-  creator: {
-    firstName: string;
-    lastName: string;
-  };
-  _count?: {
-    reads: number;
-    deliveries: number;
-  };
+  scheduledFor?: string;
+  expiresAt?: string;
+  targetAudience: string;
+  targetGroupIds: string[];
+  imageUrl?: string;
+  attachmentUrl?: string;
+  sendEmail: boolean;
+  sendPush: boolean;
+  displayOnBoard: boolean;
+  displayOnDashboard: boolean;
+  createdBy: string;
+  creator: AnnouncementCreator;
+  branchId: string;
+  _count?: AnnouncementCounts;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AnnouncementsResponse {
   announcements: Announcement[];
   total: number;
+  limit: number;
+  offset: number;
 }
-
-// Unified: use flat list announcements query and filter/paginate client-side
-const GET_ANNOUNCEMENTS = gql`
-  query GetAnnouncementsList($branchId: ID!) {
-    announcements(branchId: $branchId) {
-      id
-      title
-      content
-      category
-      priority
-      status
-      publishedAt
-      creator { firstName lastName }
-      _count { reads deliveries }
-    }
-  }
-`;
 
 export default function AnnouncementsPage() {
   const router = useRouter();
-  const { branchId } = useOrganisationBranch();
+  const { branchId, organisationId } = useOrganisationBranch();
   const [statusFilter, setStatusFilter] = useState<string>("PUBLISHED");
   const [limit] = useState(10);
   const [offset, setOffset] = useState(0);
@@ -66,25 +72,19 @@ export default function AnnouncementsPage() {
     loading,
     error,
     refetch,
-  } = useQuery(GET_ANNOUNCEMENTS, {
-    variables: { branchId },
+  } = useQuery<{ announcements: AnnouncementsResponse }>(GET_ANNOUNCEMENTS, {
+    variables: {
+      branchId,
+      filters: { status: statusFilter },
+      limit,
+      offset,
+    },
     skip: !branchId,
   });
 
-  // Support both wrapper and list shapes
-  const rawAnnouncements: Announcement[] = Array.isArray(data?.announcements)
-    ? (data?.announcements as Announcement[])
-    : (data?.announcements?.announcements || []);
-
-  // For non-PUBLISHED, the list query may not support server-side filters/pagination
-  const filteredAnnouncements =
-    statusFilter === "PUBLISHED"
-      ? rawAnnouncements
-      : rawAnnouncements.filter((a) => a.status === statusFilter);
-
-  const total = filteredAnnouncements.length;
-
-  const announcements: Announcement[] = filteredAnnouncements.slice(offset, offset + limit);
+  const response = data?.announcements;
+  const announcements: Announcement[] = response?.announcements || [];
+  const total = response?.total || 0;
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toUpperCase()) {
@@ -119,10 +119,15 @@ export default function AnnouncementsPage() {
     return text.length > length ? text.substring(0, length) + "..." : text;
   };
 
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setOffset(0);
+  };
+
   if (!branchId) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">Loading branch information...</p>
       </div>
     );
   }
@@ -147,14 +152,11 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"].map((status) => (
           <button
             key={status}
-            onClick={() => {
-              setStatusFilter(status);
-              setOffset(0);
-            }}
+            onClick={() => handleStatusFilterChange(status)}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               statusFilter === status
                 ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg"
@@ -208,12 +210,15 @@ export default function AnnouncementsPage() {
                     {truncateContent(announcement.content)}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
                     <span>Category: {announcement.category}</span>
                     <span>
-                      By: {announcement.creator.firstName}{" "}
-                      {announcement.creator.lastName}
+                      By: {announcement.creator?.firstName || ""}{" "}
+                      {announcement.creator?.lastName || ""}
                     </span>
+                    {announcement.targetAudience && (
+                      <span>Target: {announcement.targetAudience}</span>
+                    )}
                     {announcement._count && (
                       <>
                         <span>Reads: {announcement._count.reads}</span>
@@ -249,7 +254,7 @@ export default function AnnouncementsPage() {
       )}
 
       {/* Pagination */}
-      {!loading && !error && announcements.length > 0 && (
+      {!loading && !error && announcements.length > 0 && total > limit && (
         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-600">
             Showing {offset + 1} to {Math.min(offset + limit, total)} of {total}

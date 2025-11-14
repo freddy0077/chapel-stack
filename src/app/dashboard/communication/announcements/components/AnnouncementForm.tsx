@@ -13,6 +13,13 @@ import SchedulingSection from "./SchedulingSection";
 import TargetingSection from "./TargetingSection";
 import MediaUploadSection from "./MediaUploadSection";
 import PreviewSection from "./PreviewSection";
+import {
+  CREATE_ANNOUNCEMENT,
+  UPDATE_ANNOUNCEMENT,
+  PUBLISH_ANNOUNCEMENT,
+} from "@/graphql/mutations/announcementMutations";
+import { GET_ANNOUNCEMENT, GET_ANNOUNCEMENTS, GET_ANNOUNCEMENT_TEMPLATES } from "@/graphql/queries/announcementQueries";
+import { toast } from "react-hot-toast";
 
 interface AnnouncementFormProps {
   announcementId?: string;
@@ -45,50 +52,7 @@ const TARGET_AUDIENCES = [
   { value: "SPECIFIC_GROUPS", label: "Specific Groups" },
 ];
 
-const CREATE_ANNOUNCEMENT = `
-  mutation CreateAnnouncement($input: CreateAnnouncementInput!) {
-    createAnnouncement(input: $input) {
-      id
-      title
-      status
-      createdAt
-    }
-  }
-`;
-
-const UPDATE_ANNOUNCEMENT = `
-  mutation UpdateAnnouncement($id: ID!, $input: UpdateAnnouncementInput!) {
-    updateAnnouncement(id: $id, input: $input) {
-      id
-      title
-      status
-      updatedAt
-    }
-  }
-`;
-
-const GET_ANNOUNCEMENT = `
-  query GetAnnouncement($id: ID!) {
-    announcement(id: $id) {
-      id
-      title
-      content
-      category
-      priority
-      status
-      targetAudience
-      targetGroupIds
-      imageUrl
-      attachmentUrl
-      sendEmail
-      sendPush
-      displayOnBoard
-      displayOnDashboard
-      scheduledFor
-      expiresAt
-    }
-  }
-`;
+// GraphQL documents are now imported from centralized files above
 
 export default function AnnouncementForm({
   announcementId,
@@ -112,6 +76,7 @@ export default function AnnouncementForm({
   const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tab, setTab] = useState<"content" | "settings" | "preview">("content");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   // Load existing announcement if editing
   const { data: existingData, loading: loadingExisting } = useQuery(
@@ -119,6 +84,15 @@ export default function AnnouncementForm({
     {
       variables: { id: announcementId },
       skip: !announcementId,
+    }
+  );
+
+  // Load templates for apply-template feature
+  const { data: templatesData, loading: loadingTemplates } = useQuery(
+    GET_ANNOUNCEMENT_TEMPLATES,
+    {
+      variables: { branchId },
+      skip: !branchId,
     }
   );
 
@@ -152,7 +126,7 @@ export default function AnnouncementForm({
   const [createAnnouncement, { loading: creatingAnnouncement }] = useMutation(
     CREATE_ANNOUNCEMENT,
     {
-      onSuccess: () => {
+      onCompleted: () => {
         setFormData({
           title: "",
           content: "",
@@ -165,10 +139,12 @@ export default function AnnouncementForm({
           displayOnBoard: true,
           displayOnDashboard: true,
         });
+        toast.success("Announcement created");
         onSuccess?.();
       },
       onError: (error) => {
         setErrors({ submit: error.message });
+        toast.error(error.message);
       },
     }
   );
@@ -177,11 +153,27 @@ export default function AnnouncementForm({
   const [updateAnnouncement, { loading: updatingAnnouncement }] = useMutation(
     UPDATE_ANNOUNCEMENT,
     {
-      onSuccess: () => {
+      onCompleted: () => {
+        toast.success("Announcement updated");
         onSuccess?.();
       },
       onError: (error) => {
         setErrors({ submit: error.message });
+        toast.error(error.message);
+      },
+    }
+  );
+
+  // Publish mutation
+  const [publishAnnouncement, { loading: publishing }] = useMutation(
+    PUBLISH_ANNOUNCEMENT,
+    {
+      onCompleted: () => {
+        toast.success("Announcement published");
+      },
+      onError: (error) => {
+        setErrors({ submit: error.message });
+        toast.error(error.message);
       },
     }
   );
@@ -228,12 +220,86 @@ export default function AnnouncementForm({
     if (announcementId) {
       await updateAnnouncement({
         variables: { id: announcementId, input },
+        refetchQueries: [
+          {
+            query: GET_ANNOUNCEMENTS,
+            variables: { branchId, limit: 10, offset: 0 },
+          },
+        ],
       });
     } else {
       await createAnnouncement({
         variables: { input },
+        refetchQueries: [
+          {
+            query: GET_ANNOUNCEMENTS,
+            variables: { branchId, limit: 10, offset: 0 },
+          },
+        ],
       });
     }
+  };
+
+  // Create & Publish flow
+  const handleCreateAndPublish = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    const input = {
+      title: formData.title,
+      content: formData.content,
+      category: formData.category,
+      priority: formData.priority,
+      targetAudience: formData.targetAudience,
+      targetGroupIds: formData.targetGroupIds,
+      imageUrl: formData.imageUrl,
+      attachmentUrl: formData.attachmentUrl,
+      sendEmail: formData.sendEmail,
+      sendPush: formData.sendPush,
+      displayOnBoard: formData.displayOnBoard,
+      displayOnDashboard: formData.displayOnDashboard,
+      scheduledFor: formData.scheduledFor,
+      expiresAt: formData.expiresAt,
+    };
+
+    try {
+      const result = await createAnnouncement({
+        variables: { input },
+      });
+
+      const newId = result?.data?.createAnnouncement?.id;
+      if (newId) {
+        await publishAnnouncement({
+          variables: { id: newId },
+          refetchQueries: [
+            {
+              query: GET_ANNOUNCEMENTS,
+              variables: { branchId, limit: 10, offset: 0 },
+            },
+          ],
+        });
+      }
+
+      onSuccess?.();
+    } catch (err: any) {
+      setErrors({ submit: err?.message || "Failed to create and publish" });
+      toast.error(err?.message || "Failed to create and publish");
+    }
+  };
+
+  // Apply selected template to form
+  const handleApplyTemplate = () => {
+    if (!selectedTemplateId) return;
+    const tpl = templatesData?.announcementTemplates?.find((t: any) => t.id === selectedTemplateId);
+    if (!tpl) return;
+    setFormData((prev) => ({
+      ...prev,
+      title: tpl.name || prev.title,
+      content: tpl.content || prev.content,
+      category: tpl.category || prev.category,
+    }));
+    toast.success("Template applied");
   };
 
   if (loadingExisting) {
@@ -297,11 +363,41 @@ export default function AnnouncementForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Content Tab */}
         {tab === "content" && (
-          <AnnouncementFormEditor
-            formData={formData}
-            setFormData={setFormData}
-            errors={errors}
-          />
+          <div className="space-y-4">
+            {/* Templates selector */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Template</label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  disabled={loadingTemplates || !templatesData?.announcementTemplates?.length}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
+                >
+                  <option value="">Select a template</option>
+                  {templatesData?.announcementTemplates?.map((t: any) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleApplyTemplate}
+                disabled={!selectedTemplateId}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
+              >
+                Apply
+              </button>
+            </div>
+
+            <AnnouncementFormEditor
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+            />
+          </div>
         )}
 
         {/* Settings Tab */}
@@ -415,6 +511,26 @@ export default function AnnouncementForm({
           >
             Preview
           </button>
+          {!announcementId && (
+            <button
+              type="button"
+              onClick={handleCreateAndPublish}
+              disabled={isLoading || publishing}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {publishing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Creating & Publishing...
+                </>
+              ) : (
+                <>
+                  <CheckIcon className="w-5 h-5" />
+                  Create & Publish
+                </>
+              )}
+            </button>
+          )}
           <button
             type="submit"
             disabled={isLoading}

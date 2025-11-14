@@ -152,7 +152,7 @@ export default function AnnouncementDetailPage() {
   const [deleteAnnouncement, { loading: deleting }] = useMutation(
     DELETE_ANNOUNCEMENT,
     {
-      onSuccess: () => {
+      onCompleted: () => {
         router.push("/dashboard/communication?tab=announcements");
       },
     }
