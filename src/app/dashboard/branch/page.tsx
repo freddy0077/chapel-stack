@@ -4,7 +4,6 @@ import { RoleRoute } from "@/components/auth/RoleRoute";
 import { BranchOverviewWidgets } from "@/components/dashboard/BranchOverviewWidgets";
 import { BranchAnalyticsTrends } from "@/components/dashboard/BranchAnalyticsTrends";
 import { BranchActivityFeed } from "@/components/dashboard/BranchActivityFeed";
-import { FinancialBreakdown } from "@/components/dashboard/FinancialBreakdown";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { BranchAnnouncements } from "@/components/dashboard/BranchAnnouncements";
 import { BranchAdminTools } from "@/components/dashboard/BranchAdminTools";
@@ -523,9 +522,6 @@ export default function UltraModernBranchDashboard() {
 
               <div className="space-y-6">
                 <BranchFinanceStats organisationId={organisationId} branchId={branchId} />
-                <FinancialBreakdown
-                  financeStats={branchDashboard.financeStats}
-                />
               </div>
             </div>
           </section>
