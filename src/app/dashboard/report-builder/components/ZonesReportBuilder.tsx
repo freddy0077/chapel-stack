@@ -303,7 +303,7 @@ export default function ZonesReportBuilder() {
               <StatCard
                 label="Largest Zone"
                 value={reportResults.summary.largestZone}
-                colorScheme="sky"
+                colorScheme="amber"
               />
             </div>
           </ReportSummaryCard>
