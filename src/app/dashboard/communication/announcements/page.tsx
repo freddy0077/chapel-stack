@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import {
   BellIcon,
   PlusIcon,
@@ -37,7 +37,7 @@ interface AnnouncementsResponse {
   total: number;
 }
 
-const GET_ANNOUNCEMENTS = `
+const GET_ANNOUNCEMENTS = gql`
   query GetAnnouncements($branchId: String!, $status: String, $limit: Int, $offset: Int) {
     announcements(branchId: $branchId, status: $status, limit: $limit, offset: $offset) {
       announcements {
