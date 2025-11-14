@@ -7,7 +7,6 @@ import {
   BellIcon,
   PlusIcon,
   EyeIcon,
-  TrashIcon,
   CheckIcon,
   ClockIcon,
   ExclamationTriangleIcon,
@@ -57,26 +56,21 @@ interface Announcement {
 
 export default function AnnouncementsPage() {
   const router = useRouter();
-  const { branchId, organisationId } = useOrganisationBranch();
+  const { branchId } = useOrganisationBranch();
   const [statusFilter, setStatusFilter] = useState<string>("PUBLISHED");
   const [limit] = useState(10);
   const [offset, setOffset] = useState(0);
 
-  const { data, loading, error, refetch } = useQuery<{ announcements: Announcement[] }>(
-    GET_ANNOUNCEMENTS,
-    {
-      variables: { branchId },
-      skip: !branchId,
-    }
-  );
+  const { data, loading, error, refetch } = useQuery<{
+    announcements: { announcements: Announcement[]; total: number; limit: number; offset: number };
+  }>(GET_ANNOUNCEMENTS, {
+    variables: { branchId, filters: { status: statusFilter }, limit, offset },
+    skip: !branchId,
+  });
 
-  const rawAnnouncements: Announcement[] = data?.announcements || [];
-  const filteredAnnouncements =
-    statusFilter === "PUBLISHED"
-      ? rawAnnouncements
-      : rawAnnouncements.filter((a) => a.status === statusFilter);
-  const total = filteredAnnouncements.length;
-  const announcements: Announcement[] = filteredAnnouncements.slice(offset, offset + limit);
+  const response = data?.announcements;
+  const announcements: Announcement[] = response?.announcements || [];
+  const total = response?.total || 0;
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toUpperCase()) {
@@ -139,7 +133,6 @@ export default function AnnouncementsPage() {
           className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
         >
           <PlusIcon className="w-5 h-5" />
-          New Announcement
         </button>
       </div>
 
@@ -179,7 +172,6 @@ export default function AnnouncementsPage() {
         <div className="space-y-4">
           {announcements.map((announcement) => (
             <div
-              key={announcement.id}
               className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all"
             >
               <div className="flex items-start justify-between">
@@ -205,8 +197,7 @@ export default function AnnouncementsPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
                     <span>Category: {announcement.category}</span>
                     <span>
-                      By: {announcement.creator?.firstName || ""}{" "}
-                      {announcement.creator?.lastName || ""}
+                      By: {announcement.creator?.firstName || ""} {announcement.creator?.lastName || ""}
                     </span>
                     {announcement.targetAudience && (
                       <span>Target: {announcement.targetAudience}</span>

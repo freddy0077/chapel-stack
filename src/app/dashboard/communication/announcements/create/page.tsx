@@ -8,7 +8,7 @@ export default function CreateAnnouncementPage() {
   const router = useRouter();
 
   const handleSuccess = () => {
-    router.push("/dashboard/communication?tab=announcements");
+    router.push("/dashboard/communication/announcements");
   };
 
   const handleCancel = () => {

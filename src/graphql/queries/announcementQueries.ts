@@ -4,39 +4,54 @@ import { gql } from '@apollo/client';
  * Get all announcements for a branch with optional filters and pagination
  */
 export const GET_ANNOUNCEMENTS = gql`
-  query GetAnnouncements($branchId: ID!) {
-    announcements(branchId: $branchId) {
-      id
-      title
-      content
-      category
-      priority
-      status
-      publishedAt
-      scheduledFor
-      expiresAt
-      targetAudience
-      targetGroupIds
-      imageUrl
-      attachmentUrl
-      sendEmail
-      sendPush
-      displayOnBoard
-      displayOnDashboard
-      createdBy
-      creator {
+  query GetAnnouncements(
+    $branchId: ID!
+    $filters: AnnouncementFiltersInput
+    $limit: Int
+    $offset: Int
+  ) {
+    announcements(
+      branchId: $branchId
+      filters: $filters
+      limit: $limit
+      offset: $offset
+    ) {
+      announcements {
         id
-        firstName
-        lastName
-        email
+        title
+        content
+        category
+        priority
+        status
+        publishedAt
+        scheduledFor
+        expiresAt
+        targetAudience
+        targetGroupIds
+        imageUrl
+        attachmentUrl
+        sendEmail
+        sendPush
+        displayOnBoard
+        displayOnDashboard
+        createdBy
+        creator {
+          id
+          firstName
+          lastName
+          email
+        }
+        branchId
+        _count {
+          reads
+          deliveries
+        }
+        createdAt
+        updatedAt
       }
-      branchId
-      _count {
-        reads
-        deliveries
-      }
-      createdAt
-      updatedAt
+      total
+      limit
+      offset
     }
   }
 `;
