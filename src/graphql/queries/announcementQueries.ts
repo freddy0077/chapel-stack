@@ -185,7 +185,6 @@ export const GET_ANNOUNCEMENT_TEMPLATES = gql`
     announcementTemplates(branchId: $branchId) {
       id
       name
-      description
       content
       category
       isSystem
@@ -204,7 +203,6 @@ export const GET_ANNOUNCEMENT_TEMPLATE = gql`
     announcementTemplate(id: $id) {
       id
       name
-      description
       content
       category
       isSystem
