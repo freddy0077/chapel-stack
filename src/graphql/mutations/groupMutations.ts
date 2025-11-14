@@ -82,10 +82,7 @@ export const UPDATE_SMALL_GROUP = gql`
 // Mutation to delete a small group
 export const DELETE_SMALL_GROUP = gql`
   mutation DeleteSmallGroup($id: ID!) {
-    deleteSmallGroup(id: $id) {
-      success
-      message
-    }
+    deleteSmallGroup(id: $id)
   }
 `;
 
