@@ -38,8 +38,8 @@ interface AnnouncementsResponse {
 }
 
 const GET_ANNOUNCEMENTS = gql`
-  query GetAnnouncements($branchId: String!, $status: String, $limit: Int, $offset: Int) {
-    announcements(branchId: $branchId, status: $status, limit: $limit, offset: $offset) {
+  query GetAnnouncements($branchId: ID!, $filters: AnnouncementFiltersInput, $limit: Int, $offset: Int) {
+    announcements(branchId: $branchId, filters: $filters, limit: $limit, offset: $offset) {
       announcements {
         id
         title
@@ -58,6 +58,8 @@ const GET_ANNOUNCEMENTS = gql`
         }
       }
       total
+      limit
+      offset
     }
   }
 `;
@@ -72,7 +74,7 @@ export default function AnnouncementsPage() {
   const { data, loading, error, refetch } = useQuery(GET_ANNOUNCEMENTS, {
     variables: {
       branchId,
-      status: statusFilter,
+      filters: { status: statusFilter },
       limit,
       offset,
     },
