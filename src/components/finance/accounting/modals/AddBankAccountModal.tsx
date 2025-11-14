@@ -33,11 +33,12 @@ interface AddBankAccountModalProps {
   branchId: string;
 }
 
+// Use backend-supported enum values, with Ghana-friendly labels
 const ACCOUNT_TYPES = [
-  { value: "Current", label: "Current Account" },
-  { value: "Savings", label: "Savings Account" },
-  { value: "Fixed Deposit", label: "Fixed Deposit" },
-  { value: "Money Market", label: "Money Market" },
+  { value: "CHECKING", label: "Current Account (Checking)" },
+  { value: "SAVINGS", label: "Savings Account" },
+  { value: "MONEY_MARKET", label: "Money Market" },
+  { value: "CREDIT_CARD", label: "Credit Card" },
 ];
 
 const CURRENCIES = [
@@ -61,7 +62,7 @@ export default function AddBankAccountModal({
   const [accountName, setAccountName] = useState("");
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [accountType, setAccountType] = useState("Current");
+  const [accountType, setAccountType] = useState("CHECKING");
   const [currency, setCurrency] = useState("GHS");
 
   // Fetch GL accounts (Cash/Bank type only)
@@ -115,7 +116,7 @@ export default function AddBankAccountModal({
     setAccountName("");
     setBankName("");
     setAccountNumber("");
-    setAccountType("Current");
+    setAccountType("CHECKING");
     setCurrency("GHS");
     onClose();
   };
