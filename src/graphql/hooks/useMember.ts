@@ -321,7 +321,9 @@ export const useMembers = (
     },
   );
 
-  const items = data?.members || [];
+  // Extract members from paginated response structure
+  // The API returns { members: { data: [...], total, page, ... }, membersCount: ... }
+  const items = data?.members?.data || [];
   // Use the actual total count from the GraphQL response
   const totalCount = data?.membersCount || 0;
 
