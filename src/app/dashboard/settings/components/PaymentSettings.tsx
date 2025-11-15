@@ -67,10 +67,16 @@ export default function PaymentSettings() {
   useEffect(() => {
     if (data?.paymentSettings) {
       const settings: PaymentSettingsType = data.paymentSettings;
+      // Filter enabled methods to only Ghana-supported methods (CARD, MOBILE_MONEY)
+      const ghanaaSupportedMethods = ['CARD', 'MOBILE_MONEY'];
+      const filteredMethods = (settings.enabledMethods || []).filter((method: string) =>
+        ghanaaSupportedMethods.includes(method)
+      );
+      
       setFormData({
         autoReceipt: settings.autoReceipt,
         feeBearer: settings.feeBearer || "CUSTOMER",
-        enabledMethods: settings.enabledMethods || [],
+        enabledMethods: filteredMethods,
       });
 
       // Load gateway config if exists
