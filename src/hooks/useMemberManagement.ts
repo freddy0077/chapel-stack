@@ -19,6 +19,7 @@ import {
   BULK_ADD_TO_MINISTRY,
   BULK_REMOVE_FROM_MINISTRY,
 } from "../graphql/queries/memberQueries";
+import { BULK_ACTIVATE_MEMBERS } from "../graphql/mutations/bulkOperationsMutations";
 
 // Hook for deactivating a member
 export const useDeactivateMember = () => {
@@ -165,6 +166,23 @@ export const useBulkDeactivateMembers = () => {
   });
 };
 
+// Hook for bulk activating members
+export const useBulkActivateMembers = () => {
+  return useMutation(BULK_ACTIVATE_MEMBERS, {
+    onCompleted: (data) => {},
+    onError: (error) => {},
+    refetchQueries: [
+      "GetMembersList",
+      "GetMembersWithDeactivated", 
+      "GetMemberStatistics",
+      "GetMemberStatisticsDetailed",
+      "GetTotalMembersCount",
+      "MemberStatisticsEnhanced"
+    ],
+    awaitRefetchQueries: true,
+  });
+};
+
 // Hook for bulk assigning RFID cards
 export const useBulkAssignRfidCards = () => {
   return useMutation(BULK_ASSIGN_RFID_CARDS, {
@@ -255,6 +273,8 @@ export const useMemberManagement = () => {
     useBulkTransferMembers();
   const [bulkDeactivateMembers, { loading: bulkDeactivateMembersLoading }] =
     useBulkDeactivateMembers();
+  const [bulkActivateMembers, { loading: bulkActivateMembersLoading }] =
+    useBulkActivateMembers();
   const [bulkAssignRfidCards, { loading: bulkAssignRfidCardsLoading }] =
     useBulkAssignRfidCards();
   const [bulkExportMembers, { loading: bulkExportMembersLoading }] =
@@ -276,6 +296,7 @@ export const useMemberManagement = () => {
     bulkUpdateMemberStatus,
     bulkTransferMembers,
     bulkDeactivateMembers,
+    bulkActivateMembers,
     bulkAssignRfidCards,
     bulkExportMembers,
     bulkAddToGroup,
@@ -290,6 +311,7 @@ export const useMemberManagement = () => {
       bulkUpdateStatusLoading,
       bulkTransferMembersLoading,
       bulkDeactivateMembersLoading,
+      bulkActivateMembersLoading,
       bulkAssignRfidCardsLoading,
       bulkExportMembersLoading,
       bulkAddToGroupLoading,

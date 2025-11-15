@@ -276,19 +276,64 @@ export default function DeathRegisterReportBuilder() {
             title="Death Records"
             columns={[
               {
-                key: 'firstName',
-                label: 'Name',
-                render: (_, row) =>
-                  `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'N/A',
+                key: 'memberId',
+                label: 'Member ID',
+                render: (value) => value || 'N/A',
               },
-              { key: 'gender', label: 'Gender' },
               {
-                key: 'deathDate',
-                label: 'Death Date',
-                render: (value) => new Date(value).toLocaleDateString(),
+                key: 'gender',
+                label: 'Gender',
+                render: (_, row) => row.member?.gender || 'N/A',
               },
-              { key: 'ageAtDeath', label: 'Age' },
-              { key: 'causeOfDeath', label: 'Cause' },
+              {
+                key: 'dateOfDeath',
+                label: 'Date of Death',
+                render: (value) => {
+                  if (!value) return 'N/A';
+                  try {
+                    return new Date(value).toLocaleDateString();
+                  } catch {
+                    return 'Invalid Date';
+                  }
+                },
+              },
+              {
+                key: 'timeOfDeath',
+                label: 'Time of Death',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'placeOfDeath',
+                label: 'Place of Death',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'causeOfDeath',
+                label: 'Cause of Death',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'funeralLocation',
+                label: 'Funeral Location',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'funeralDate',
+                label: 'Funeral Date',
+                render: (value) => {
+                  if (!value) return 'N/A';
+                  try {
+                    return new Date(value).toLocaleDateString();
+                  } catch {
+                    return 'Invalid Date';
+                  }
+                },
+              },
+              {
+                key: 'nextOfKin',
+                label: 'Next of Kin',
+                render: (value) => value || 'N/A',
+              },
             ]}
             data={reportResults.data}
             pageSize={50}

@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContextEnhanced";
 import { useQuery, useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 import { toast } from "react-hot-toast";
+import ImageUpload from "@/components/ui/ImageUpload";
 
 const GET_BRANCH = gql`
   query GetBranch($id: String!) {
@@ -28,6 +29,7 @@ const GET_BRANCH = gql`
       email
       website
       description
+      logoUrl
     }
   }
 `;
@@ -77,6 +79,7 @@ export default function BranchSettingsEnhanced() {
     email: "",
     website: "",
     description: "",
+    logoUrl: "",
   });
 
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -94,6 +97,7 @@ export default function BranchSettingsEnhanced() {
         email: data.branch.email || "",
         website: data.branch.website || "",
         description: data.branch.description || "",
+        logoUrl: data.branch.logoUrl || "",
       });
     }
   }, [data]);
@@ -190,43 +194,17 @@ export default function BranchSettingsEnhanced() {
         
         {/* Logo Upload Section */}
         <div className="mb-6 pb-6 border-b border-gray-200">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Branch Logo
-          </label>
-          <div className="flex items-center gap-6">
-            <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 border-2 border-gray-200">
-              {formData.name ? (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-                  <span className="text-3xl font-bold text-white">
-                    {formData.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <BuildingOfficeIcon className="h-12 w-12 text-gray-400" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  Upload Logo
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  Remove
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-gray-500">
-                JPG, PNG or SVG. Max size 2MB. Recommended: 400x400px
-              </p>
-            </div>
-          </div>
+          <ImageUpload
+            value={formData.logoUrl}
+            onChange={(url) => setFormData((prev) => ({ ...prev, logoUrl: url }))}
+            placeholder="Upload branch logo"
+            size="lg"
+            showPreview={true}
+            maxSizeInMB={2}
+            acceptedFormats={["image/jpeg", "image/png", "image/svg+xml"]}
+            branchId={branchId}
+            description="Branch logo"
+          />
         </div>
 
         {/* Basic Information */}

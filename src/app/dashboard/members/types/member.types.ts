@@ -241,6 +241,7 @@ export type BulkActionType =
   | "assignRfid"
   | "export"
   | "deactivate"
+  | "activate"
   | "addToGroup"
   | "removeFromGroup"
   | "addToMinistry"

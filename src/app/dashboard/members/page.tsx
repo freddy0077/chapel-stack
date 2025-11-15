@@ -511,6 +511,41 @@ const MembersPage: React.FC = () => {
           } catch (error) {
             toast.error("Failed to deactivate members");
           }
+        case "activate":
+          try {
+            await bulkActivateMembers({
+              variables: {
+                bulkActivateInput: { memberIds: selectedMembers },
+              },
+            });
+            
+            // Immediately refresh both member list and statistics after activation
+            toast.success("Members activated successfully!");
+            
+            // Clear selections first
+            setSelectedMembers([]);
+            
+            // Force a complete cache reset and refetch all queries
+            try {
+              // Reset the entire Apollo cache - this will refetch all active queries
+              await apolloClient.resetStore();
+            } catch (refetchError) {
+              // Fallback to manual refetch
+              try {
+                await Promise.all([
+                  refetch?.(),
+                  refetchStatistics?.()
+                ]);
+              } catch (manualRefetchError) {
+                // Force a page reload as last resort
+                window.location.reload();
+              }
+            }
+            
+            return; // Early return to avoid duplicate refetch
+          } catch (error) {
+            toast.error("Failed to activate members");
+          }
         default:
           toast.error("This bulk action is not yet implemented.");
       }

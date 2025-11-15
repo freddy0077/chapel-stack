@@ -8,6 +8,7 @@ import {
   ClockIcon,
   StarIcon,
   ShieldCheckIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import {
   Member,
@@ -83,7 +84,7 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Member Status */}
+        {/* Member Status & Zone */}
         <div className="space-y-4">
           <h4 className="text-md font-medium text-gray-900">Member Status</h4>
 
@@ -112,6 +113,18 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
                 <p className="text-sm text-gray-900">
                   {member.isRegularAttendee ? "Yes" : "No"}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {member.zoneId && (
+            <div>
+              <label className="text-sm font-medium text-gray-500">
+                Zone ID
+              </label>
+              <div className="flex items-center">
+                <MapPinIcon className="w-4 h-4 text-gray-400 mr-2" />
+                <p className="text-sm text-gray-900 font-mono">{member.zoneId}</p>
               </div>
             </div>
           )}
@@ -240,6 +253,111 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
               <p className="text-sm text-gray-900">{member.baptismLocation}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Location Information */}
+      {(member.address ||
+        member.city ||
+        member.state ||
+        member.country ||
+        member.landmark) && (
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
+            <MapPinIcon className="w-5 h-5 text-indigo-500 mr-2" />
+            Location Information
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {member.address && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Address
+                </label>
+                <p className="text-sm text-gray-900">{member.address}</p>
+              </div>
+            )}
+
+            {member.addressLine2 && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Address Line 2
+                </label>
+                <p className="text-sm text-gray-900">{member.addressLine2}</p>
+              </div>
+            )}
+
+            {member.city && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  City
+                </label>
+                <p className="text-sm text-gray-900">{member.city}</p>
+              </div>
+            )}
+
+            {member.state && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  State/Province
+                </label>
+                <p className="text-sm text-gray-900">{member.state}</p>
+              </div>
+            )}
+
+            {member.postalCode && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Postal Code
+                </label>
+                <p className="text-sm text-gray-900">{member.postalCode}</p>
+              </div>
+            )}
+
+            {member.country && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Country
+                </label>
+                <p className="text-sm text-gray-900">{member.country}</p>
+              </div>
+            )}
+
+            {member.district && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  District
+                </label>
+                <p className="text-sm text-gray-900">{member.district}</p>
+              </div>
+            )}
+
+            {member.region && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Region
+                </label>
+                <p className="text-sm text-gray-900">{member.region}</p>
+              </div>
+            )}
+
+            {member.landmark && (
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Landmark
+                </label>
+                <p className="text-sm text-gray-900">{member.landmark}</p>
+              </div>
+            )}
+
+            {member.digitalAddress && (
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Digital Address
+                </label>
+                <p className="text-sm text-gray-900 font-mono">{member.digitalAddress}</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

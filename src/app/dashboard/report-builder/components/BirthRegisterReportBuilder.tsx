@@ -327,17 +327,55 @@ export default function BirthRegisterReportBuilder() {
           <ReportTable
             title="Birth Records"
             columns={[
-              { key: 'childName', label: 'Child Name' },
-              { key: 'gender', label: 'Gender' },
               {
-                key: 'birthDate',
-                label: 'Birth Date',
-                render: (value) => new Date(value).toLocaleDateString(),
+                key: 'childName',
+                label: 'Child Name',
+                render: (_, row) => {
+                  const names = [row.childFirstName, row.childMiddleName, row.childLastName]
+                    .filter(Boolean)
+                    .join(' ');
+                  return names || 'N/A';
+                },
               },
               {
-                key: 'fatherName',
+                key: 'childGender',
+                label: 'Gender',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'dateOfBirth',
+                label: 'Birth Date',
+                render: (value) => {
+                  if (!value) return 'N/A';
+                  try {
+                    return new Date(value).toLocaleDateString();
+                  } catch {
+                    return 'Invalid Date';
+                  }
+                },
+              },
+              {
+                key: 'placeOfBirth',
+                label: 'Place of Birth',
+                render: (value) => value || 'N/A',
+              },
+              {
+                key: 'parents',
                 label: 'Parents',
-                render: (_, row) => `${row.fatherName} & ${row.motherName}`,
+                render: (_, row) => {
+                  const father = [row.fatherFirstName, row.fatherLastName]
+                    .filter(Boolean)
+                    .join(' ') || 'Unknown';
+                  const mother = [row.motherFirstName, row.motherLastName]
+                    .filter(Boolean)
+                    .join(' ') || 'Unknown';
+                  return `${father} & ${mother}`;
+                },
+              },
+              {
+                key: 'hospitalName',
+                label: 'Hospital',
+                render: (value) => value || 'N/A',
               },
             ]}
             data={reportResults.data}

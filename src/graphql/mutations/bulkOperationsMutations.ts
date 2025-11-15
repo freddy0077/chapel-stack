@@ -72,6 +72,12 @@ export const BULK_DELETE_MEMBERS = gql`
   }
 `;
 
+export const BULK_ACTIVATE_MEMBERS = gql`
+  mutation BulkActivateMembers($bulkActivateInput: BulkDeactivateInput!) {
+    bulkActivateMembers(bulkActivateInput: $bulkActivateInput)
+  }
+`;
+
 export const BULK_EXPORT_MEMBERS = gql`
   mutation BulkExportMembers($bulkExportInput: BulkExportInput!) {
     bulkExportMembers(bulkExportInput: $bulkExportInput)

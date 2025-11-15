@@ -111,6 +111,21 @@ export default function EditGroupModal({
     setError(null);
   };
 
+  // Ensure dialog closes when isOpen becomes false
+  useEffect(() => {
+    if (!isOpen) {
+      setError(null);
+      setFormData({
+        name: "",
+        description: "",
+        type: "BIBLE_STUDY",
+        meetingSchedule: "",
+        meetingLocation: "",
+        status: SmallGroupStatus.ACTIVE,
+      });
+    }
+  }, [isOpen]);
+
   return (
     <Dialog
       as="div"
@@ -118,7 +133,7 @@ export default function EditGroupModal({
       open={isOpen}
       onClose={handleClose}
     >
-      <div className="fixed inset-0 z-50 bg-gray-700 bg-opacity-70 transition-opacity" />
+      <div className="fixed inset-0 z-50 bg-gray-700 bg-opacity-70 transition-opacity" onClick={handleClose} />
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center">
           <Dialog.Panel className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl p-6">

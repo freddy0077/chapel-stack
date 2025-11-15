@@ -91,6 +91,14 @@ const bulkActions: BulkActionOption[] = [
     requiresConfirmation: true,
     description: "Deactivate selected members",
   },
+  {
+    type: "activate",
+    label: "Activate Members",
+    icon: UserPlusIcon,
+    color: "green",
+    requiresConfirmation: true,
+    description: "Reactivate deactivated members",
+  },
 ];
 
 const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
@@ -222,10 +230,12 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
               <div className="mb-6">
                 <p className="text-gray-700">
                   Are you sure you want to{" "}
-                  <span className="font-medium text-red-600">
+                  <span className={`font-medium ${showConfirmation === "deactivate" ? "text-red-600" : showConfirmation === "activate" ? "text-green-600" : "text-gray-600"}`}>
                     {showConfirmation === "deactivate"
                       ? "deactivate"
-                      : "perform this action on"}
+                      : showConfirmation === "activate"
+                        ? "activate"
+                        : "perform this action on"}
                   </span>{" "}
                   {selectedCount} selected member
                   {selectedCount !== 1 ? "s" : ""}?
