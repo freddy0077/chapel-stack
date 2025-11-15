@@ -109,15 +109,16 @@ export class ReportExporter {
       doc.text('Detailed Records', 14, yPosition);
       yPosition += 8;
 
-      // Prepare table data
+      // Prepare table data with serial number, excluding ID fields
       const headers = this.getTableHeaders(exportData.data[0]);
-      const rows = exportData.data.map((record) =>
-        this.getTableRow(record, headers),
-      );
+      const rows = exportData.data.map((record, idx) => [
+        String(idx + 1),
+        ...this.getTableRow(record, headers),
+      ]);
 
       autoTable(doc, {
         startY: yPosition,
-        head: [headers.map((h) => this.formatKey(h))],
+        head: [["No", ...headers.map((h) => this.formatKey(h))]],
         body: rows,
         theme: 'striped',
         headStyles: { fillColor: [37, 99, 235] },
@@ -262,6 +263,8 @@ export class ReportExporter {
     const addHeaders = (obj: any, prefix = '') => {
       Object.keys(obj).forEach((key) => {
         if (key === '__typename') return;
+        // Skip id-like fields: id, Id, _id, nested ...Id
+        if (/^id$/i.test(key) || /Id$/.test(key) || /_id$/i.test(key)) return;
 
         const fullKey = prefix ? `${prefix}.${key}` : key;
 
@@ -306,8 +309,10 @@ export class ReportExporter {
    * Helper: Prepare data for Excel/CSV export
    */
   private static prepareDataForExcel(data: any[]): any[] {
-    return data.map((record) => {
+    return data.map((record, idx) => {
       const flatRecord: any = {};
+      // Add leading serial number column
+      flatRecord['No'] = idx + 1;
 
       const flatten = (obj: any, prefix = '') => {
         Object.keys(obj).forEach((key) => {
@@ -323,6 +328,8 @@ export class ReportExporter {
           ) {
             flatten(obj[key], fullKey);
           } else if (!Array.isArray(obj[key])) {
+            // Skip id-like fields in exports
+            if (/(^|_)id$/i.test(fullKey) || /Id$/.test(fullKey)) return;
             flatRecord[this.formatKey(fullKey)] =
               obj[key] instanceof Date
                 ? obj[key].toLocaleDateString()

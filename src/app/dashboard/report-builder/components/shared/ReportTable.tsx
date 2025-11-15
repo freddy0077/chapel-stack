@@ -98,6 +98,11 @@ export default function ReportTable({
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      #
+                    </th>
                     {columns.map((column) => (
                       <th
                         key={column.key}
@@ -111,6 +116,9 @@ export default function ReportTable({
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {currentData.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {startIndex + index + 1}
+                      </td>
                       {columns.map((column) => (
                         <td key={column.key} className="px-4 py-3 text-sm text-gray-900">
                           {column.render
