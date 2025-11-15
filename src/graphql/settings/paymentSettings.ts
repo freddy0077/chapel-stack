@@ -7,6 +7,8 @@ export const GET_PAYMENT_SETTINGS = gql`
     paymentSettings {
       id
       branchId
+      country
+      currency
       autoReceipt
       feeBearer
       gateways
@@ -60,6 +62,8 @@ export const VALIDATE_PAYMENT_GATEWAY = gql`
 export interface PaymentSettings {
   id: string;
   branchId: string;
+  country: string;
+  currency: string;
   autoReceipt: boolean;
   feeBearer?: string;
   gateways?: Record<string, any>;

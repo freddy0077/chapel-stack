@@ -20,8 +20,9 @@ import { Event, CreateEventRegistrationInput } from "@/graphql/types/event";
 import EventTypeIcon from "./EventTypeIcon";
 import { format } from "date-fns";
 import { paystackService } from "@/services/paystack.service";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { VERIFY_AND_REGISTER_FOR_EVENT, REGISTER_FOR_FREE_EVENT } from "@/graphql/mutations/eventMutations";
+import { GET_PAYMENT_SETTINGS } from "@/graphql/settings/paymentSettings";
 
 interface EventRegistrationProps {
   open: boolean;
@@ -46,6 +47,12 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
   const [verifyAndRegister] = useMutation(VERIFY_AND_REGISTER_FOR_EVENT);
   const [registerForFree] = useMutation(REGISTER_FOR_FREE_EVENT);
 
+  // Fetch payment settings for the branch
+  const { data: paymentSettingsData, loading: paymentSettingsLoading } = useQuery(GET_PAYMENT_SETTINGS, {
+    skip: !user?.branchId,
+  });
+  const paymentSettings = paymentSettingsData?.paymentSettings;
+
   // For public pages, always treat as guest. For internal, check if user is logged in
   const [isGuest, setIsGuest] = useState(isPublicPage ? true : !user);
   const [formData, setFormData] = useState({
@@ -56,6 +63,7 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
     specialRequests: "",
     notes: "",
   });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('CARD');
   const [error, setError] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
@@ -125,25 +133,50 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
   const handlePaymentAndRegistration = () => {
     setPaymentProcessing(true);
     
+    // Validate payment settings
+    if (!paymentSettings) {
+      setError("Payment settings not configured. Please contact administrator.");
+      setPaymentProcessing(false);
+      return;
+    }
+
+    const enabledMethods = paymentSettings.enabledMethods || [];
+    if (enabledMethods.length === 0) {
+      setError("No payment methods configured. Please contact administrator.");
+      setPaymentProcessing(false);
+      return;
+    }
+
+    // Validate selected payment method is enabled
+    if (!enabledMethods.includes(selectedPaymentMethod)) {
+      setError(`Payment method ${selectedPaymentMethod} is not enabled.`);
+      setPaymentProcessing(false);
+      return;
+    }
+    
     const email = isGuest ? formData.guestEmail : (user?.email || "");
     const totalAmount = (event.ticketPrice || 0) * formData.numberOfGuests;
+    const currency = paymentSettings.currency || "GHS";
 
     console.log(`🎫 [EVENT REGISTRATION] Initiating payment for event registration`);
     console.log(`📧 [EVENT REGISTRATION] User email: ${email}`);
-    console.log(`💰 [EVENT REGISTRATION] Total amount: ${event.currency || 'GHS'} ${totalAmount} (${formData.numberOfGuests} x ${event.ticketPrice})`);
+    console.log(`💰 [EVENT REGISTRATION] Total amount: ${currency} ${totalAmount} (${formData.numberOfGuests} x ${event.ticketPrice})`);
+    console.log(`💳 [EVENT REGISTRATION] Payment method: ${selectedPaymentMethod}`);
+    console.log(`🌍 [EVENT REGISTRATION] Country: ${paymentSettings.country}, Currency: ${currency}`);
 
     try {
       paystackService.openPaystackPopup(
         {
           email,
           amount: totalAmount,
-          currency: event.currency || "GHS",
+          currency: currency,
           reference: `event-${event.id}-${Date.now()}`,
           metadata: {
             eventId: event.id,
             eventTitle: event.title,
             numberOfGuests: formData.numberOfGuests,
             registrationType: isGuest ? "guest" : "member",
+            paymentMethod: selectedPaymentMethod,
           },
         },
         async (response: any) => {
@@ -550,6 +583,47 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
                   />
                 </div>
 
+                {/* Payment Method Selection for Paid Events */}
+                {!event.isFree && event.ticketPrice && paymentSettings && (
+                  <div className="bg-white/60 rounded-xl p-4 border border-white/30 space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Payment Method
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {paymentSettings.enabledMethods?.includes('CARD') && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod('CARD')}
+                          className={`p-4 rounded-lg border-2 transition-all text-left ${
+                            selectedPaymentMethod === 'CARD'
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-2xl mb-2">💳</div>
+                          <p className="font-medium text-gray-900">Credit/Debit Card</p>
+                          <p className="text-xs text-gray-500 mt-1">Visa, Mastercard</p>
+                        </button>
+                      )}
+                      {paymentSettings.enabledMethods?.includes('MOBILE_MONEY') && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod('MOBILE_MONEY')}
+                          className={`p-4 rounded-lg border-2 transition-all text-left ${
+                            selectedPaymentMethod === 'MOBILE_MONEY'
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-2xl mb-2">📱</div>
+                          <p className="font-medium text-gray-900">Mobile Money</p>
+                          <p className="text-xs text-gray-500 mt-1">MTN, Vodafone, AirtelTigo</p>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Payment Summary for Paid Events */}
                 {!event.isFree && event.ticketPrice && (
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
@@ -557,11 +631,11 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
                       <div>
                         <p className="text-sm font-medium text-gray-700">Total Amount</p>
                         <p className="text-xs text-gray-500">
-                          {formData.numberOfGuests} × {event.currency || "GHS"} {event.ticketPrice}
+                          {formData.numberOfGuests} × {paymentSettings?.currency || "GHS"} {event.ticketPrice}
                         </p>
                       </div>
                       <div className="text-2xl font-bold text-green-700">
-                        {event.currency || "GHS"} {((event.ticketPrice || 0) * formData.numberOfGuests).toFixed(2)}
+                        {paymentSettings?.currency || "GHS"} {((event.ticketPrice || 0) * formData.numberOfGuests).toFixed(2)}
                       </div>
                     </div>
                     <p className="text-xs text-gray-600 mt-2">
