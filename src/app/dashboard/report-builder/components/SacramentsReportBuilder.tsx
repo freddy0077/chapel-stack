@@ -90,7 +90,7 @@ export default function SacramentsReportBuilder() {
       variables: {
         input: {
           category: 'SACRAMENTS',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

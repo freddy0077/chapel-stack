@@ -111,7 +111,7 @@ export default function AttendanceReportBuilder() {
       variables: {
         input: {
           category: 'ATTENDANCE',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

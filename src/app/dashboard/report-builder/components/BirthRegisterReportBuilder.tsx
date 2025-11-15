@@ -86,7 +86,7 @@ export default function BirthRegisterReportBuilder() {
       variables: {
         input: {
           category: 'BIRTH_REGISTER',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

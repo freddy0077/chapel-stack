@@ -91,7 +91,7 @@ export default function ZonesReportBuilder() {
       variables: {
         input: {
           category: 'ZONES',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

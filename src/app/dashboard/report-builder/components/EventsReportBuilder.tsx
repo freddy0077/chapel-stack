@@ -143,7 +143,7 @@ export default function EventsReportBuilder() {
       variables: {
         input: {
           category: 'EVENTS',
-          filters: normalized,
+          filtersJson: JSON.stringify(normalized),
           organisationId,
           branchId,
         },

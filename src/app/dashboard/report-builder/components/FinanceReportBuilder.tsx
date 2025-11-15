@@ -147,7 +147,7 @@ export default function FinanceReportBuilder() {
       variables: {
         input: {
           category: 'FINANCE',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

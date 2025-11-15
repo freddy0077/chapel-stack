@@ -95,7 +95,7 @@ export default function GroupsReportBuilder() {
       variables: {
         input: {
           category: 'GROUPS',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

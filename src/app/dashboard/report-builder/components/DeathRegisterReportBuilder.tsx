@@ -86,7 +86,7 @@ export default function DeathRegisterReportBuilder() {
       variables: {
         input: {
           category: 'DEATH_REGISTER',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },

@@ -113,7 +113,7 @@ export default function MembershipReportBuilder() {
       variables: {
         input: {
           category: 'MEMBERSHIP',
-          filters,
+          filtersJson: JSON.stringify(filters),
           organisationId,
           branchId,
         },
