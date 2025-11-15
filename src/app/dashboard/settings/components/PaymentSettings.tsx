@@ -29,32 +29,15 @@ const PAYMENT_GATEWAYS = [
   {
     id: "PAYSTACK",
     name: "Paystack",
-    description: "Accept payments across Africa",
-    logo: "🇳🇬",
+    description: "Paystack - Ghana Payment Processing",
+    logo: "🇬🇭",
     fields: ["publicKey", "secretKey", "webhookSecret"],
-  },
-  {
-    id: "STRIPE",
-    name: "Stripe",
-    description: "Global payment processing",
-    logo: "💳",
-    fields: ["publicKey", "secretKey", "webhookSecret"],
-  },
-  {
-    id: "FLUTTERWAVE",
-    name: "Flutterwave",
-    description: "Pan-African payment gateway",
-    logo: "🌍",
-    fields: ["publicKey", "secretKey"],
   },
 ];
 
 const PAYMENT_METHODS = [
   { id: "CARD", name: "Credit/Debit Card", icon: "💳" },
-  { id: "BANK_TRANSFER", name: "Bank Transfer", icon: "🏦" },
   { id: "MOBILE_MONEY", name: "Mobile Money", icon: "📱" },
-  { id: "USSD", name: "USSD", icon: "📞" },
-  { id: "QR_CODE", name: "QR Code", icon: "📷" },
 ];
 
 export default function PaymentSettings() {
@@ -69,7 +52,8 @@ export default function PaymentSettings() {
     enabledMethods: [],
   });
 
-  const [selectedGateway, setSelectedGateway] = useState<string>("PAYSTACK");
+  // Paystack is the only gateway for Ghana
+  const selectedGateway = "PAYSTACK";
   const [gatewayConfig, setGatewayConfig] = useState<GatewayConfig>({
     publicKey: "",
     secretKey: "",
@@ -319,34 +303,25 @@ export default function PaymentSettings() {
           Payment Gateway Configuration
         </h3>
 
-        {/* Gateway Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {PAYMENT_GATEWAYS.map((gateway) => (
-            <button
-              key={gateway.id}
-              type="button"
-              onClick={() => setSelectedGateway(gateway.id)}
-              className={`p-4 rounded-lg border-2 transition-all text-left ${
-                selectedGateway === gateway.id
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="text-3xl mb-2">{gateway.logo}</div>
-              <p className="text-sm font-semibold text-gray-900">
-                {gateway.name}
+        {/* Ghana Configuration Info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">🇬🇭</span>
+            <div>
+              <p className="text-sm font-semibold text-blue-900">
+                Configured for Ghana
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {gateway.description}
+              <p className="text-xs text-blue-700 mt-1">
+                Currency: <span className="font-medium">GHS (Ghana Cedis)</span> • Gateway: <span className="font-medium">Paystack</span>
               </p>
-            </button>
-          ))}
+            </div>
+          </div>
         </div>
 
         {/* Gateway Configuration Form */}
         <div className="space-y-4 border-t pt-6">
           <h4 className="text-md font-semibold text-gray-900">
-            Configure {selectedGateway}
+            Paystack Credentials
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

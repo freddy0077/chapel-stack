@@ -132,6 +132,7 @@ export default function EditGroupModal({
       className="relative z-50"
       open={isOpen}
       onClose={handleClose}
+      static
     >
       <div className="fixed inset-0 z-50 bg-gray-700 bg-opacity-70 transition-opacity" onClick={handleClose} />
       <div className="fixed inset-0 z-50 overflow-y-auto">
