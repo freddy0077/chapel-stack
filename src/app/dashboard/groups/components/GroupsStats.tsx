@@ -15,7 +15,16 @@ interface GroupsStatsProps {
   loading?: boolean;
 }
 
-export default function GroupsStats({ groups, loading }: GroupsStatsProps) {
+export default function GroupsStats({ groups = [], loading }: GroupsStatsProps) {
+  // Validate input is array
+  if (!Array.isArray(groups)) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Loading statistics...
+      </div>
+    );
+  }
+
   // Calculate statistics
   const totalGroups = groups.length;
   const activeGroups = groups.filter(

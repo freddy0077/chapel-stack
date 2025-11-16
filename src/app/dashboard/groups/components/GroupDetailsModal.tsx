@@ -52,6 +52,9 @@ export default function GroupDetailsModal({
         onClose();
       } catch (error) {
         console.error("Error deleting group:", error);
+        // Show error feedback to user
+        const errorMessage = error instanceof Error ? error.message : "Failed to delete group. Please try again.";
+        alert(`Error: ${errorMessage}`);
       } finally {
         setIsDeleting(false);
       }
@@ -415,9 +418,9 @@ export default function GroupDetailsModal({
       {/* Edit Modal */}
       <EditGroupModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        setIsOpen={setIsEditModalOpen}
         group={group}
-        onUpdate={() => {
+        afterUpdate={() => {
           setIsEditModalOpen(false);
           if (onUpdate) onUpdate();
         }}

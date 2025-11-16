@@ -99,11 +99,12 @@ export default function Groups() {
   // Log query results for debugging
 
   // Pagination calculations
-  const totalGroups = smallGroups?.length || 0;
+  const totalGroups = Array.isArray(smallGroups) ? smallGroups.length : 0;
   const paginatedGroups = useMemo(() => {
+    if (!Array.isArray(smallGroups)) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return smallGroups?.slice(startIndex, endIndex) || [];
+    return smallGroups.slice(startIndex, endIndex);
   }, [smallGroups, currentPage, itemsPerPage]);
 
   // Handle clicking on a group
@@ -117,9 +118,8 @@ export default function Groups() {
   };
 
   // Find selected group details
-  const selectedGroup = selectedGroupId
-    ? smallGroups.find((group: SmallGroup) => group.id === selectedGroupId) ||
-      null
+  const selectedGroup = selectedGroupId && Array.isArray(smallGroups)
+    ? smallGroups.find((group: SmallGroup) => group.id === selectedGroupId) || null
     : null;
 
   // Render appropriate view component based on selected view mode
@@ -199,18 +199,22 @@ export default function Groups() {
         </div>
 
         {/* Modals */}
-        <CreateGroupModal
-          isOpen={isAddModalOpen}
-          setIsOpen={setIsAddModalOpen}
-          branchId={orgBranchFilter.branchId}
-          afterCreate={() => groupRefetch && groupRefetch()}
-        />
-        <GroupDetailsModal
-          isOpen={!!selectedGroupId}
-          onClose={handleCloseDetails}
-          group={selectedGroup}
-          onUpdate={() => groupRefetch && groupRefetch()}
-        />
+        {isAddModalOpen && (
+          <CreateGroupModal
+            isOpen={isAddModalOpen}
+            setIsOpen={setIsAddModalOpen}
+            branchId={orgBranchFilter.branchId}
+            afterCreate={() => groupRefetch && groupRefetch()}
+          />
+        )}
+        {selectedGroupId && (
+          <GroupDetailsModal
+            isOpen={!!selectedGroupId}
+            onClose={handleCloseDetails}
+            group={selectedGroup}
+            onUpdate={() => groupRefetch && groupRefetch()}
+          />
+        )}
 
         {/* Content area */}
         <div className="mt-8 flow-root">
@@ -220,7 +224,7 @@ export default function Groups() {
                 <LoadingState />
               ) : error ? (
                 <ErrorState error={error} />
-              ) : smallGroups.length === 0 ? (
+              ) : !Array.isArray(smallGroups) || smallGroups.length === 0 ? (
                 <EmptyState setIsAddModalOpen={setIsAddModalOpen} />
               ) : (
                 renderGroupsView()
@@ -230,7 +234,7 @@ export default function Groups() {
         </div>
 
         {/* Pagination */}
-        {!loading && smallGroups.length > 0 && (
+        {!loading && Array.isArray(smallGroups) && smallGroups.length > 0 && (
           <Pagination
             currentPage={currentPage}
             totalItems={totalGroups}

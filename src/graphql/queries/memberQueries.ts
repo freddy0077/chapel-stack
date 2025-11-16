@@ -80,6 +80,7 @@ export const CREATE_MEMBER = gql`
         name
       }
       branchId
+      zoneId
       spouse {
         id
         firstName
@@ -207,6 +208,7 @@ export const GET_MEMBERS_LIST = gql`
         privacyLevel
         organisationId
         branchId
+        zoneId
         dateOfBirth
         membershipDate
         baptismDate
@@ -315,6 +317,7 @@ export const GET_MEMBER = gql`
       preferredLanguage
       notes
       branchId
+      zoneId
       organisationId
       spouseId
       parentId

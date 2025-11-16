@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { Dialog } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -33,8 +33,17 @@ export default function CreateGroupModal({
       ? selectedBranchId
       : propBranchId || defaultBranchId;
 
+  // Validate branchId on modal open
+  useEffect(() => {
+    if (isOpen && !branchId) {
+      setError("Branch information is missing. Please refresh the page and try again.");
+    } else if (isOpen) {
+      setError(null);
+    }
+  }, [isOpen, branchId]);
+
   // Fetch branches for super admin
-  const { data: branchesData } = useQuery(GET_BRANCHES, {
+  const { data: branchesData, loading: branchesLoading } = useQuery(GET_BRANCHES, {
     variables: { filter: organisationId ? { organisationId } : undefined },
     skip: user?.primaryRole !== "admin",
   });
@@ -69,7 +78,12 @@ export default function CreateGroupModal({
     setLoading(true);
     setError(null);
     if (!branchId) {
-      setError("Cannot create group: No branch selected");
+      setError("Cannot create group: Branch information is missing. Please refresh and try again.");
+      setLoading(false);
+      return;
+    }
+    if (!organisationId) {
+      setError("Cannot create group: Organization information is missing.");
       setLoading(false);
       return;
     }
@@ -150,9 +164,10 @@ export default function CreateGroupModal({
                     value={selectedBranchId}
                     onChange={(e) => setSelectedBranchId(e.target.value)}
                     className="block w-full rounded-lg border border-gray-200 py-2 px-3 text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm"
+                    disabled={branchesLoading}
                     required
                   >
-                    <option value="">Select Branch</option>
+                    <option value="">{branchesLoading ? "Loading branches..." : "Select Branch"}</option>
                     {branchesData?.branches?.items?.map((branch: any) => (
                       <option key={branch.id} value={branch.id}>
                         {branch.name}

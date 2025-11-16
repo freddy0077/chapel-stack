@@ -19,7 +19,6 @@ import ProfileSettings from "./components/ProfileSettings";
 import NotificationSettings from "./components/NotificationSettings";
 import EmailSettings from "./components/EmailSettings";
 import SmsSettings from "./components/SmsSettings";
-import ModuleSettings from "./components/ModuleSettings";
 import PaymentSettings from "./components/PaymentSettings";
 import BackupSettings from "./components/BackupSettings";
 import BroadcastSettings from "./components/BroadcastSettings";
@@ -56,26 +55,19 @@ const allTabs = [
     description: "Configure SMS provider for text messaging"
   },
   { 
-    name: "Module Settings", 
-    icon: Squares2X2Icon, 
-    component: ModuleSettings, 
-    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
-    description: "Enable or disable system features"
-  },
-  { 
     name: "Payment Settings", 
     icon: CreditCardIcon, 
     component: PaymentSettings, 
     roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
     description: "Configure payment gateways and options"
   },
-  { 
-    name: "Backup Settings", 
-    icon: CircleStackIcon, 
-    component: BackupSettings, 
-    roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
-    description: "Manage automated backups and history"
-  },
+  // {
+  //   name: "Backup Settings",
+  //   icon: CircleStackIcon,
+  //   component: BackupSettings,
+  //   roles: ["ADMIN", "ADMIN", "BRANCH_ADMIN"],
+  //   description: "Manage automated backups and history"
+  // },
   { 
     name: "Communication", 
     icon: EnvelopeIcon, 

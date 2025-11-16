@@ -326,7 +326,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Report Builder",
           href: "/dashboard/report-builder",
           icon: ChartBarIcon,
-          moduleId: "dashboard",
+          moduleId: "report-builder",
         },
         {
           name: "Communication",
@@ -338,7 +338,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Broadcasts",
           href: "/dashboard/broadcasts",
           icon: MicrophoneIcon,
-          
+          moduleId: "broadcasts",
         },
       ],
     },
@@ -355,18 +355,19 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Zones",
           href: "/dashboard/zones",
           icon: GlobeAltIcon,
-          // moduleId: "zones",
+          moduleId: "zones",
         },
         {
           name: "Audits",
           href: "/dashboard/audits",
           icon: ClipboardDocumentListIcon,
+          moduleId: "audits",
         },
         {
           name: "Settings",
           href: "/dashboard/settings",
           icon: Cog6ToothIcon,
-          
+          moduleId: "settings",
         },
       ],
     },
@@ -383,13 +384,13 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Death Register",
           href: "/dashboard/death-register",
           icon: UserMinusIcon,
-          moduleId: "pastoral_care",
+          moduleId: "death-registry",
         },
         {
           name: "Birth Registry",
           href: "/dashboard/birth-registry",
           icon: UserPlusIcon,
-          moduleId: "pastoral_care",
+          moduleId: "birth-registry",
         },
         {
           name: "Sacraments",
@@ -467,7 +468,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
         //   name: "Assets",
         //   href: "/dashboard/assets",
         //   icon: CubeIcon,
-        //   moduleId: "dashboard",
+        //   moduleId: "assets",
         // },
         {
           name: "Attendance",
@@ -479,7 +480,7 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Report Builder",
           href: "/dashboard/report-builder",
           icon: ChartBarIcon,
-          moduleId: "dashboard",
+          moduleId: "report-builder",
         },
         {
           name: "Communication",

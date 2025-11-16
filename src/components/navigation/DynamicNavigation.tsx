@@ -28,6 +28,7 @@ import {
   HeartIcon,
   CreditCardIcon,
   UserMinusIcon,
+  UserPlusIcon,
   CubeIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/outline";
@@ -101,7 +102,14 @@ const fullNavigation = [
         href: "/dashboard/death-register",
         icon: UserMinusIcon,
         badge: null,
-        moduleId: "pastoral-care",
+        moduleId: "death-registry",
+      },
+      {
+        name: "Birth Registry",
+        href: "/dashboard/birth-registry",
+        icon: UserPlusIcon,
+        badge: null,
+        moduleId: "birth-registry",
       },
     ],
   },
@@ -141,7 +149,7 @@ const fullNavigation = [
         href: "/dashboard/ministries",
         icon: UserGroupIcon,
         badge: null,
-        moduleId: "groups",
+        moduleId: "ministries",
       },
       // {
       //   name: "Worship",
@@ -162,7 +170,7 @@ const fullNavigation = [
         href: "/dashboard/broadcasts",
         icon: VideoCameraIcon,
         badge: null,
-        moduleId: "dashboard", // Core feature
+        moduleId: "broadcasts",
       },
     ],
   },
@@ -195,7 +203,7 @@ const fullNavigation = [
         href: "/dashboard/assets",
         icon: CubeIcon,
         badge: null,
-        moduleId: "dashboard", // Asset management is part of core operations
+        moduleId: "assets",
       },
       {
         name: "Communication",
@@ -209,14 +217,14 @@ const fullNavigation = [
         href: "/dashboard/reports",
         icon: ChartBarIcon,
         badge: null,
-        moduleId: "dashboard", // Basic reporting is included in core dashboard
+        moduleId: "reports",
       },
       {
         name: "Report Builder",
         href: "/dashboard/report-builder",
         icon: DocumentTextIcon,
         badge: null,
-        moduleId: "dashboard", // Report builder is included in core dashboard
+        moduleId: "report-builder",
       },
       {
         name: "Workflows",
@@ -301,7 +309,7 @@ const fullNavigation = [
         href: "/dashboard/admin",
         icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard",
+        moduleId: "admin",
       },
       // {
       //   name: "Security",
@@ -315,7 +323,7 @@ const fullNavigation = [
         href: "/dashboard/settings",
         icon: Cog6ToothIcon,
         badge: null,
-        moduleId: "dashboard",
+        moduleId: "settings",
       },
       // {
       //   name: "Website",
