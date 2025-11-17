@@ -374,12 +374,12 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
     {
       category: "Ministry",
       items: [
-        {
-          name: "Pastoral Care",
-          href: "/dashboard/pastoral-care",
-          icon: HeartIcon,
-          moduleId: "pastoral-care",
-        },
+        // {
+        //   name: "Pastoral Care",
+        //   href: "/dashboard/pastoral-care",
+        //   icon: HeartIcon,
+        //   moduleId: "pastoral-care",
+        // },
         {
           name: "Death Register",
           href: "/dashboard/death-register",
