@@ -378,13 +378,13 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Pastoral Care",
           href: "/dashboard/pastoral-care",
           icon: HeartIcon,
-          moduleId: "pastoral_care",
+          moduleId: "pastoral-care",
         },
         {
           name: "Death Register",
           href: "/dashboard/death-register",
           icon: UserMinusIcon,
-          moduleId: "death-registry",
+          moduleId: "death-register",
         },
         {
           name: "Birth Registry",
@@ -555,13 +555,13 @@ export const roleNavigationConfig: Record<string, NavigationCategory[]> = {
           name: "Pastoral Care",
           href: "/dashboard/pastoral-care",
           icon: HeartIcon,
-          moduleId: "pastoral_care",
+          moduleId: "pastoral-care",
         },
         {
           name: "Birth Registry",
           href: "/dashboard/birth-registry",
           icon: UserPlusIcon,
-          moduleId: "pastoral_care",
+          moduleId: "birth-registry",
         },
         {
           name: "Sacraments",
