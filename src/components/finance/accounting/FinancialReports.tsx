@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GET_ASSET_STATISTICS } from "@/graphql/queries/assetQueries";
+import { FINANCIAL_STATEMENTS_QUERY, FinancialStatements } from "@/graphql/queries/financialStatements";
 
 interface FinancialReportsProps {
   organisationId: string;
@@ -40,6 +41,34 @@ export default function FinancialReports({
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Fetch financial statements
+  const { data: financialData, loading: financialLoading, refetch: refetchFinancials } = useQuery(
+    FINANCIAL_STATEMENTS_QUERY,
+    {
+      variables: {
+        input: {
+          organisationId,
+          branchId,
+          dateRange: {
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+          },
+          statementType: reportType === "balance-sheet" 
+            ? "BALANCE_SHEET" 
+            : reportType === "income-statement"
+            ? "INCOME_STATEMENT"
+            : reportType === "cash-flow"
+            ? "CASH_FLOW_STATEMENT"
+            : "STATEMENT_OF_NET_ASSETS",
+          includeComparative: true,
+        },
+      },
+      skip: !organisationId || !branchId,
+    }
+  );
+
+  const financialStatements: FinancialStatements | undefined = financialData?.financialStatements;
 
   // Fetch asset statistics for Balance Sheet
   const { data: assetStatsData, loading: assetStatsLoading } = useQuery(GET_ASSET_STATISTICS, {
@@ -99,10 +128,30 @@ export default function FinancialReports({
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
-    // TODO: Implement report generation
-    setTimeout(() => {
+    try {
+      await refetchFinancials({
+        input: {
+          organisationId,
+          branchId,
+          dateRange: {
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+          },
+          statementType: reportType === "balance-sheet" 
+            ? "BALANCE_SHEET" 
+            : reportType === "income-statement"
+            ? "INCOME_STATEMENT"
+            : reportType === "cash-flow"
+            ? "CASH_FLOW_STATEMENT"
+            : "STATEMENT_OF_NET_ASSETS",
+          includeComparative: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const handleExport = (format: string) => {
@@ -281,52 +330,32 @@ export default function FinancialReports({
 
                 {/* Report Content Placeholder */}
                 <div className="space-y-6">
-                  {reportType === "balance-sheet" && (
+                  {reportType === "balance-sheet" && financialStatements?.balanceSheet && (
                     <div className="space-y-4">
                       <div>
                         <h5 className="font-semibold mb-2">ASSETS</h5>
                         <div className="space-y-1 ml-4">
-                          {/* Current Assets */}
-                          <div className="mb-3">
-                            <div className="font-medium text-sm text-gray-600 mb-1">Current Assets</div>
-                            <div className="flex justify-between ml-2">
-                              <span>Cash and Bank</span>
-                              <span className="font-mono">GHS 50,000</span>
-                            </div>
-                            <div className="flex justify-between ml-2">
-                              <span>Accounts Receivable</span>
-                              <span className="font-mono">GHS 5,000</span>
-                            </div>
-                            <div className="flex justify-between ml-2 font-medium border-t pt-1 mt-1">
-                              <span>Total Current Assets</span>
-                              <span className="font-mono">GHS 55,000</span>
-                            </div>
-                          </div>
-
-                          {/* Fixed Assets */}
-                          {assetStats && (
-                            <div className="mb-3">
-                              <div className="font-medium text-sm text-gray-600 mb-1">Fixed Assets</div>
-                              <div className="flex justify-between ml-2">
-                                <span>Fixed Assets at Cost</span>
-                                <span className="font-mono">{formatCurrency(assetStats.totalPurchaseValue || 0)}</span>
-                              </div>
-                              <div className="flex justify-between ml-2 text-red-600">
-                                <span>Less: Accumulated Depreciation</span>
-                                <span className="font-mono">({formatCurrency(assetStats.totalDepreciation || 0)})</span>
-                              </div>
+                          {financialStatements.balanceSheet.assets.map((asset, idx) => (
+                            <div key={idx} className="mb-3">
+                              <div className="font-medium text-sm text-gray-600 mb-1">{asset.category}</div>
+                              {asset.subItems?.map((subItem, subIdx) => (
+                                <div key={subIdx} className="flex justify-between ml-2">
+                                  <span>{subItem.description}</span>
+                                  <span className="font-mono">{formatCurrency(subItem.currentPeriod || 0)}</span>
+                                </div>
+                              ))}
                               <div className="flex justify-between ml-2 font-medium border-t pt-1 mt-1">
-                                <span>Net Fixed Assets</span>
-                                <span className="font-mono">{formatCurrency(assetStats.totalValue || 0)}</span>
+                                <span>Total {asset.category}</span>
+                                <span className="font-mono">{formatCurrency(asset.currentPeriod || 0)}</span>
                               </div>
                             </div>
-                          )}
+                          ))}
 
                           {/* Total Assets */}
                           <div className="flex justify-between font-semibold border-t-2 pt-2 text-lg">
                             <span>TOTAL ASSETS</span>
                             <span className="font-mono">
-                              {formatCurrency(55000 + (assetStats?.totalValue || 0))}
+                              {formatCurrency(financialStatements.balanceSheet.totalAssets || 0)}
                             </span>
                           </div>
                         </div>
@@ -335,49 +364,51 @@ export default function FinancialReports({
                       <div>
                         <h5 className="font-semibold mb-2">LIABILITIES</h5>
                         <div className="space-y-1 ml-4">
-                          <div className="flex justify-between">
-                            <span>Accounts Payable</span>
-                            <span className="font-mono">GHS 2,000</span>
-                          </div>
+                          {financialStatements.balanceSheet.liabilities.map((liability, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span>{liability.description}</span>
+                              <span className="font-mono">{formatCurrency(liability.currentPeriod || 0)}</span>
+                            </div>
+                          ))}
                           <div className="flex justify-between font-semibold border-t pt-1">
                             <span>Total Liabilities</span>
-                            <span className="font-mono">GHS 2,000</span>
+                            <span className="font-mono">{formatCurrency(financialStatements.balanceSheet.totalLiabilities || 0)}</span>
                           </div>
                         </div>
                       </div>
 
                       <div>
-                        <h5 className="font-semibold mb-2">EQUITY</h5>
+                        <h5 className="font-semibold mb-2">NET ASSETS</h5>
                         <div className="space-y-1 ml-4">
-                          <div className="flex justify-between">
-                            <span>Retained Earnings</span>
-                            <span className="font-mono">GHS 53,000</span>
-                          </div>
+                          {financialStatements.balanceSheet.netAssets.map((netAsset, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span>{netAsset.description}</span>
+                              <span className="font-mono">{formatCurrency(netAsset.currentPeriod || 0)}</span>
+                            </div>
+                          ))}
                           <div className="flex justify-between font-semibold border-t pt-1">
-                            <span>Total Equity</span>
-                            <span className="font-mono">GHS 53,000</span>
+                            <span>Total Net Assets</span>
+                            <span className="font-mono">{formatCurrency(financialStatements.balanceSheet.totalNetAssets || 0)}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {reportType === "income-statement" && (
+                  {reportType === "income-statement" && financialStatements?.incomeStatement && (
                     <div className="space-y-4">
                       <div>
                         <h5 className="font-semibold mb-2">REVENUE</h5>
                         <div className="space-y-1 ml-4">
-                          <div className="flex justify-between">
-                            <span>Tithes</span>
-                            <span className="font-mono">GHS 30,000</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Offerings</span>
-                            <span className="font-mono">GHS 15,000</span>
-                          </div>
+                          {financialStatements.incomeStatement.revenue.map((rev, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span>{rev.description}</span>
+                              <span className="font-mono">{formatCurrency(rev.currentPeriod || 0)}</span>
+                            </div>
+                          ))}
                           <div className="flex justify-between font-semibold border-t pt-1">
                             <span>Total Revenue</span>
-                            <span className="font-mono">GHS 45,000</span>
+                            <span className="font-mono">{formatCurrency(financialStatements.incomeStatement.totalRevenue || 0)}</span>
                           </div>
                         </div>
                       </div>
@@ -385,28 +416,16 @@ export default function FinancialReports({
                       <div>
                         <h5 className="font-semibold mb-2">EXPENSES</h5>
                         <div className="space-y-1 ml-4">
-                          <div className="flex justify-between">
-                            <span>Salaries</span>
-                            <span className="font-mono">GHS 20,000</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Utilities</span>
-                            <span className="font-mono">GHS 5,000</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Maintenance</span>
-                            <span className="font-mono">GHS 3,000</span>
-                          </div>
-                          {assetStats && assetStats.totalDepreciation > 0 && (
-                            <div className="flex justify-between">
-                              <span>Depreciation Expense</span>
-                              <span className="font-mono">{formatCurrency(assetStats.totalDepreciation || 0)}</span>
+                          {financialStatements.incomeStatement.expenses.map((exp, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <span>{exp.description}</span>
+                              <span className="font-mono">{formatCurrency(exp.currentPeriod || 0)}</span>
                             </div>
-                          )}
+                          ))}
                           <div className="flex justify-between font-semibold border-t pt-1">
                             <span>Total Expenses</span>
                             <span className="font-mono">
-                              {formatCurrency(28000 + (assetStats?.totalDepreciation || 0))}
+                              {formatCurrency(financialStatements.incomeStatement.totalExpenses || 0)}
                             </span>
                           </div>
                         </div>
@@ -415,8 +434,8 @@ export default function FinancialReports({
                       <div className="border-t-2 pt-2">
                         <div className="flex justify-between font-bold text-lg">
                           <span>NET INCOME</span>
-                          <span className="font-mono text-green-600">
-                            {formatCurrency(45000 - (28000 + (assetStats?.totalDepreciation || 0)))}
+                          <span className={`font-mono ${(financialStatements.incomeStatement.netIncome || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(financialStatements.incomeStatement.netIncome || 0)}
                           </span>
                         </div>
                       </div>
@@ -425,9 +444,20 @@ export default function FinancialReports({
 
                   {!["balance-sheet", "income-statement"].includes(reportType) && (
                     <div className="text-center py-12 text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Report preview will appear here</p>
-                      <p className="text-sm mt-2">Click "Generate Report" to view</p>
+                      {financialLoading ? (
+                        <>
+                          <div className="animate-spin mb-4">
+                            <FileText className="h-12 w-12 mx-auto opacity-50" />
+                          </div>
+                          <p>Generating {reportTypes.find((t) => t.value === reportType)?.label}...</p>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>Report preview will appear here</p>
+                          <p className="text-sm mt-2">Click "Generate Report" to view</p>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
